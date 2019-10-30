@@ -1,0 +1,542 @@
+# set up project: 
+#     - define geometry of the object
+
+########## initializations ##########################################
+import random as rand
+import numpy as np
+from PDRfunctions import Ensemble
+from PDR import _globals
+from astropy.io import fits
+from scipy.interpolate import griddata
+
+r = 18.#18    #disk radius in kpc
+
+x_length = 37#37  max r*2+1 # odd-number edge length of map (projection)
+y_length = 37#37 # edge length of map (projection)
+z_length = 37#37 #
+x_offset = (x_length-1)/2 #  to zentralize around zero
+y_offset = (y_length-1)/2 #  (length-1)/2
+z_offset = (z_length-1)/2
+_globals['compound'] = {} 
+# directory entries for compound
+
+r_disk = r # radius disk
+z_disk = 1.5 # thickness /  scaleheight of disk
+inc_disk = 80.   /180.*np.pi # inclination of disk [rad] relative to y-axis
+#phi_disk = 0 # ancle of disk in x,y-plane
+
+_globals['compound']['r_disk'] = r_disk
+_globals['compound']['z_disk'] = z_disk
+_globals['compound']['inc_disk'] = inc_disk
+#_globals['compound']['phi_disk'] = phi_disk
+
+import math as math
+def calc_h(x,y,z,inc) : #calculates height h from koordinates relative to disk-plain
+  h = (y - np.tan(inc)*z) * np.cos(inc)
+  #print 'h', round(h,15)
+  return h
+  #return round(h,15) #to get even values like 1.0 after rounding errors
+#print "caaaaaaalc_h", calc_h(0,0.,2,45./180*np.pi)
+
+def calc_r (x,y,z,inc) : #calculates the radius in the diskplain 
+  h = (y - np.tan(inc)*z) * np.cos(inc)
+  Px = x ; Py = y - np.cos(inc)*h ; Pz = z + np.tan(inc)*np.cos(inc)*h
+  r = (Px**2 + Py**2 + Pz**2)**0.5
+  return r
+#print "calc_r", calc_r(0,0,2,45./180*np.pi)
+
+#def calc_phi (x,y)
+#  phi = np.arctan2 ( (x,y**+z**2) **0.5)
+#  return phi
+
+coords = [] # liste where coordinates [x,y,z] will be appended
+coords_index = np.zeros([x_length, y_length, z_length])
+coords_index[:] = -1
+#####################################################################
+################# parameters to be changed ##########################
+_globals['compound']['name'] = 'Galaxy' 
+# name of compound
+_globals['compound']['mapSize'] = {}
+_globals['compound']['mapSize']['x'] = x_length
+_globals['compound']['mapSize']['y'] = y_length
+_globals['compound']['mapSize']['z'] = z_length
+_globals['compound']['mapPixels'] = x_length * y_length
+_globals['compound']['offsets'] = {}
+_globals['compound']['offsets']['x'] = x_offset
+_globals['compound']['offsets']['y'] = y_offset
+_globals['compound']['offsets']['z'] = z_offset
+# map Pixels = number of lines of sight
+########### geometry parameters #####################################
+#thick = 100.   # PDR thickness 0.05 oder 0.06 pc. choose: 3pixels
+
+
+# choose coorinates [x,y,z] at which ensembles shall be put. append to coords
+
+number = 0
+for x in np.arange(x_length) - x_offset:
+  #print "x", x  
+  for y in np.arange(y_length) - y_offset:
+        for z in np.arange(z_length) - z_offset:
+            
+            if calc_r (x,y,z,inc_disk) < r_disk and abs(calc_h(x,y,z,inc_disk)) < z_disk :
+                coords.append([x, y, z])
+                coords_index[x + x_offset][y + y_offset][z + z_offset] = number
+                #print 'cacl_r' , calc_r (x,y,z,inc_disk)
+                #print 'h' , calc_h(x,y,z,inc_disk)
+                #print x,y,z
+#print "coords", coords
+#print "number\n", number
+_globals['compound']['coordinates'] = np.array(coords)
+_globals['compound']['npoints'] = _globals['compound']['coordinates'].size/3
+_globals['compound']['coords_index'] = coords_index
+
+
+
+print 'number of voxels', _globals['compound']['coordinates'].size/3
+print 'doublecheck...', number
+for i in np.arange(_globals['compound']['npoints']):
+    if np.alltrue(np.equal([0,0,0], coords[i])):
+        print 'i', i
+
+#############################################################
+
+_globals['compound']['npoints'] = _globals['compound']['coordinates'].size/3
+_globals['compound']['pixelsize'] = 1000#0.01 # pixel size in pc
+
+# print 'number of ensembles', _globals['compound']['npoints']
+# pause = raw_input('...')
+
+_globals['binomial_poisson'] = 1 # 1
+# are the clump statistics in the source best described by a 
+# binomial or a poisson distribution? 1 means binomial, other
+# input means poisson 
+
+_globals['compound']['los_start'] =  np.array([0, 0, -z_length], int)
+_globals['compound']['los_end']   =  np.array([0, 0, z_length], int)
+# define start and endpoint of line of sight.
+# currently rotation of compound is not working so line
+# of sight has to be parallel to z axis (in positive direction)
+
+
+_globals['compound']['losoffsets'] = np.array([[-1, -1]]) #obsolete, spectral cube contains all
+#_globals['compound']['losoffsets'] = np.array([[0, 1],[0, 0]])
+# give x-y-offsets of position(s) at which you want to see spectra.
+# offsets are relative to line of sight AFTER translation and rotation
+# if not given the default is [0,0].
+# inputs needs to have the form np.array([[1,1],[2,2],..])
+
+_globals['compound']['I_bg'] = 0 # Background Intensity 
+
+# distance to source in pc. needed for conversion of beam size into pixels when creating maps
+_globals['compound']['distance'] = 2.5*10**6 # 414    1kpc
+
+# side length of pixels. value used for line of sight integration (dint = ds). in cm!!!!
+_globals['compound']['dint'] = _globals['compound']['pixelsize'] *\
+     _globals['constants']['pc']
+
+
+# parameters for plots
+# _globals['plots'] = {}
+# set plotrange for geomety plot: 
+# [[x_min, x_max], [y_min, y_max], [z_min, z_max]]
+#_globals['plots']['plotrange'] = np.array([[-25, 25], [-25, 25], [-25, 25]])
+_globals['plots']['plotrange'] = np.array([[-x_offset, x_offset], [-y_offset,y_offset ], [-z_offset,z_offset]])
+
+_globals['sigma'] = {}
+_globals['sigma']['sigma_cl_j'] = np.array([1.67/2.3548, 1.67/2.3548, 1.67/2.3548, 1.67/2.3548], float) 
+# intrinsic clump linewidth (standard deviation)
+# im Moment muessen die im code fuer alle massenpunkte identisch sein, da nur der erste Eintrag zur Umrechnung
+# in peak werte genutzt wird. AENDERN!!!
+_globals['sigma']['sigma_inter_j'] = np.array([1.67/2.3548, 1.67/2.3548, 1.67/2.3548, 1.67/2.3548], float)
+# intrinsic clump linewidth for clumps representing interclump medium
+_globals['sigma']['sigma_ens_cl_j'] = np.array([1.1/2.3548, 1.1/2.3548, 1.1/2.3548, 1.1/2.3548], float)
+_globals['sigma']['sigma_ens_cl_j'] = np.array([10.1/2.3548, 10.1/2.3548, 10.1/2.3548, 10.1/2.3548], float) #broader change back
+# ensemble "inter-clump" velocity spread (standard deviation)
+_globals['sigma']['sigma_ens_inter_j'] = np.array([3.635/2.3548, 3.635/2.3548, 3.635/2.3548, 3.635/2.3548], float)
+# ensemble "inter-clump" velocity spread for interclump medium (sigma???)
+################## (FWHM = 2.3548 sigma)
+
+
+# information on sampling velocities: range: vel +- d_vel. 
+# and number of steps: nstep # km s^-1
+_globals['compound']['vel'] = float(0.) # central v
+_globals['compound']['d_vel'] = float(370) *np.cos(inc_disk) +11.# max v
+_globals['compound']['nstep'] = float(100) #number of v-baskets should be uneven
+#
+print 'min Velocity Sampling [km/s]:',-_globals['compound']['d_vel'] + _globals['compound']['vel']
+print 'max Velocity Sampling [km/s]:',_globals['compound']['d_vel'] + _globals['compound']['vel'],'\n'
+Dv = 2*_globals['compound']['d_vel'] / (_globals['compound']['nstep']-1)
+print 'bin-distance km/s' , Dv
+
+##################Abtastrate der Geschwindigkeitsbins 4 Koerbe pro Sigma
+#bin size *2 sollte  kleiner totaler halbwertsbreite sein
+sigma_cl_tot = ( np.array(_globals['sigma']['sigma_cl_j'])**2 + np.array(_globals['sigma']['sigma_ens_cl_j'])**2)**0.5
+_globals['sigma']['sigma_ens_cl_j_total'] = sigma_cl_tot
+sigma_inter_tot = (np.array(_globals['sigma']['sigma_inter_j'])**2 + np.array(_globals['sigma']['sigma_ens_inter_j'])**2)**0.5
+_globals['sigma']['sigma_inter_j_total'] = sigma_inter_tot
+print 'Sigma cl tot', sigma_cl_tot[0], 'Sigma_inter', sigma_inter_tot[0], 'km/s'
+
+print 'adviced bin-number:',round(_globals['compound']['d_vel']*2 / min(sigma_cl_tot)/2.3548 *6.,0)
+
+
+############################################################################
+_globals['plots']['unit'] = 0
+# set to 1 to get advanced map in erg/(cm^2 s sr). any other value
+# to leave map in Kkm/s
+
+#############################################################################
+# Define ensemble (clump and interclump) parameters for each voxel
+ens = [] 
+# initialize array for clumpy ensembles
+# CHOOSE THE FOLLOWING PARAMETERS
+# rho_ens_clumps, rho_ens_inter: ensemble-averaged density in cm^-3
+# for clump and interclump medium  
+# (surface density = rho_ens/1.91)
+# ......
+# Mu, Ml  are the discrete highest and lowest mass. not the
+# ensemble interval limits. can be 10^-3. 10^-2,.... 10^3 with Mu>Ml
+# Mu and Ml can be set to the same value, if only one type of clumps
+# shall be used 
+# B: for logarithmic scaling B=M_(i+1)/M_i. At the moment only B=10 has
+# been tried out
+# velocity is the systematic velocity of the pixel/ensemble. If the 
+#          pixel is not rotated only the z-component is used.
+
+
+for i in np.arange(_globals['compound']['npoints']):
+    ens.append(Ensemble(i, \
+               rho_ens_clumps  = 1. * 10**6   *1,\
+               rho_ens_inter   = 2. * 10**4   *1,\
+               Mens_clumps     = 0.00173 * 2.5 , \
+               Mens_inter      = 0.00173 * 0.286, \
+               Ml_cl           = 10., \
+               Mu_cl           = 10., \
+               Ml_inter        = 1., \
+               Mu_inter        = 1., \
+               B               = 10 ,\
+               velocity        = np.array([0, 0, 0], float)\
+               ))
+
+total_clump_mass = 0
+total_inter_mass = 0 # of model in SunMass
+total_massx = 0 # along x axis (x,0,0)
+
+
+##################################### read in rotation curve
+rot_list_r =[]
+rot_list_v =[]
+with open ('compounds/disk/rot_curve_mway','r') as rot_file:
+  for line in rot_file:
+    rot_list_r.append(line.split()[0])
+    rot_list_v.append(line.split()[1])
+
+rot_curve = np.zeros(  (len(rot_list_r),2)) #creates rot array
+
+for i in np.arange(len(rot_list_r)):
+  rot_curve[i,0] = float(rot_list_r[i])
+  rot_curve[i,1] = float(rot_list_v[i])
+#print rot_curve
+#pause = raw_input('rot_curve')
+
+
+##################################### read in mass profile
+mass_list_r =[]
+mass_list_v =[]
+with open ('compounds/disk/profile_masses','r') as mass_file:
+  for line in mass_file:
+    mass_list_r.append(line.split()[0])
+    mass_list_v.append(line.split()[1])
+
+mass_profile = np.zeros(  (len(mass_list_r),2)) #creates mass array
+
+for i in np.arange(len(mass_list_r)):
+  mass_profile[i,0] = float(mass_list_r[i])
+  mass_profile[i,1] = float(mass_list_v[i])
+#print mass_profile
+#pause = raw_input('mass_profile')
+
+
+#####################################################################
+##################################### define speed and masses for npoints
+total_clump_mass = 0
+for i in np.arange(_globals['compound']['npoints']):
+    ens[i].rho_ens_clumps  = 0
+    ens[i].rho_ens_inter   = 0
+    ens[i].Mens_clumps     = 0
+    ens[i].Mens_inter      = 0
+
+
+    ################### define all  coordinates
+    # print i
+    x = coords[i][0]
+    y = coords[i][1]
+    z = coords[i][2]
+    r = calc_r (x,y,z,inc_disk)
+    h = calc_h (x,y,z,inc_disk)
+    #phi = np.arctan2 (x,y)
+    phi = np.arctan2 (x,(y**2+z**2)**0.5)
+    #print 'x', x, 'y', y, 'z', z
+    #print 'umlaufwinkel', phi/3.14*180
+    #print r
+    ################### Setting Vz
+    ####interpolate from rot_curve for current r
+    v = griddata(rot_curve[:,0], rot_curve[:,1], r, method='linear')
+    if x == 0 and y == 0 and z == 0:
+      v = 200 # set centerspeed
+    v_z = v * np.cos(inc_disk) * np.sin(phi) # calc v_z-component
+    #v_z=0
+    ens[i].velocity[2] = v_z
+    #print "v_z [km/s]", ens[i].velocity[2]
+   
+    ################### Setting masses
+    #hh_clump = 0.059 # halfheight h2 in kpc
+    #clumps_height_factor = np.exp(h/hh_clump*np.log(0.5))
+    #clumps_r_factor = 1
+    #print "h,hf", h, clumps_height_factor
+
+    ##### atomic layer (CNM/WMN)
+    #hh_inter = 0.115
+    #inter_height_factor =  np.exp(h/hh_inter*np.log(0.5))
+    #inter_r_factor = 1
+    
+    # Gesamt-Dichteprofil in R-Richtung
+    if r < 0.6:
+      inter_d = 88.*np.exp(-1.7/1.3/np.log(3./8.))/10.515*  10.4 * 10**4 * np.exp(-3./5.5)
+    if r >= 0.6 and r <= 1.7:
+      inter_d = np.exp(-1.7/1.3/np.log(3./8.))/10.515*  10.4 * 10**4 * np.exp(-3./5.5)
+    if r >= 1.7 and r <= 3:
+      inter_d = np.exp(-r/1.3/np.log(3./8.)) /10.515*  10.4 * 10**4 * np.exp(-3./5.5)
+    if r >= 3 and r <= 18:
+      inter_d = 10.4 * 10**4 * np.exp(-r/5.5) #K/cm^3
+    inter_d = inter_d/21800
+    #1print "Voxel_density:", inter_d ,"[Sm/pc^2]" ,"at r", r
+    ens[i].Mens_clumps = inter_d * _globals['compound']['pixelsize']**3 #total voxel mass
+    #1print 'Voxelmass:', ens[i].Mens_clumps/10**9, "in G SunM"
+
+    #SM/pc->N/cm^3
+    #inter_d = inter_d * _globals['constants']['M_sol'] / _globals['constants']['M_H'] /_globals['constants']['pc']**3
+    #print "density in N/cm^3 before  h", inter_d , "at r in kpc", r
+    
+    ####### Dichteprofil in H-Richtung
+    
+    hh_clump = 0.059 # halfheight h2 in kpc
+    clumps_height_factor = np.exp(abs(h)/hh_clump*np.log(0.5))
+    hh_inter = 0.115 # halfheight h2 in kpc
+    inter_height_factor = np.exp(abs(h)/hh_inter*np.log(0.5))
+   # inter_d = inter_d * clumps_height_factor
+    #print "clumps_height_factor", clumps_height_factor
+   
+
+   ################### Setting clump density n(r)
+    ####interpolate from curve for current r
+    clump_rho = griddata(mass_profile[:,0], mass_profile[:,1], r, method='linear')
+    if x == 0 and y == 0 and z == 0:
+      clump_rho = 15000. # set centermass
+    ens[i].rho_ens_clumps = clump_rho /1 #n /cm^3
+    print "Clump density in N/cm^3", ens[i].rho_ens_clumps , "at r in kpc", r , "h in kpc", h 
+    print '\n'   
+    
+    #########voxelmass in SM
+    #density -> SM
+    #voxel_mass = ens[i].rho_ens_clumps*(_globals['compound']['pixelsize']**3*_globals['constants']['pc']**3) \
+    #*_globals['constants']['M_H']/_globals['constants']['M_sol']
+
+        
+    total_clump_mass = total_clump_mass + ens[i].Mens_clumps
+print 'min/max Sdensity'    
+print "Total mass:", total_clump_mass/10**9, 'in G SunM'
+#print coords[i]
+
+
+_globals['compound']['ens'] = ens #save ensamble to globals
+# save ensemble set-up
+# pause = raw_input()
+
+######################### END OF DEFINITIONS ###############################
+#############################################################################
+# set axis labels for 3D geometry plots. Do not need to be changed.
+_globals['plots']['xlabel'] = 'X offset [' + str(_globals['compound']['pixelsize']) + 'pc]'
+_globals['plots']['ylabel'] = 'Y offset [' + str(_globals['compound']['pixelsize']) + 'pc]'
+_globals['plots']['zlabel'] = 'to observer [' + str(_globals['compound']['pixelsize']) +  'pc]'
+#############################################################################
+
+_globals['compound']['dgrid'] = 1 
+# factor defining streching of grid in dgrid
+# currently not used
+# DO NOT CHANGE
+
+###################################################### Mass-Plot
+import PDRfunctions as pf 
+import pylab as p
+show_mass_plot = 0 #1 shows plot
+if show_mass_plot == 1:
+  Mplot = []
+  for i in np.arange(_globals['compound']['npoints']):  
+    #Mplot.append(ens[i].Mens_clumps + ens[i].Mens_inter)
+    Mplot.append(np.log10(ens[i].Mens_clumps + ens[i].Mens_inter))
+    #print "total Voxel mass", ens[i].Mens_clumps , ens[i].Mens_inter
+  #print Mplot
+  fig2 = pf.plot_geo(_globals['compound']['coordinates'], \
+           wei = Mplot, limits = _globals['plots']['plotrange'], \
+           title = 'total mass distribution', cbarLabel = "log S_mass per voxel")
+  p.show()
+##################################################### Density-Plot
+show_density_plot = 0 #1 shows plot
+if show_density_plot == 1:
+  Mplot = []
+  for i in np.arange(_globals['compound']['npoints']):  
+    Mplot.append(np.log10(ens[i].rho_ens_clumps + ens[i].rho_ens_inter))
+  #print Mplot
+  fig4 = pf.plot_geo(_globals['compound']['coordinates'], \
+           wei = Mplot, limits = _globals['plots']['plotrange'], \
+           title = 'density distribution', cbarLabel = "log density [/cm^3]")
+  p.show()
+
+#rho_ens_clumps
+
+##################################################### Vz-Plot
+show_vz_plot = 0   # 1 shows plot
+if show_vz_plot == 1:
+  Mplot = []
+  for i in np.arange(_globals['compound']['npoints']):
+      Mplot.append(ens[i].velocity[2])
+  fig3 = pf.plot_geo(_globals['compound']['coordinates'], \
+           wei = Mplot, limits = _globals['plots']['plotrange'], \
+           title = 'speed distribution', cbarLabel = "speed z-component")
+  p.show()
+
+
+################################################### Setting FUV-field
+calc_fuv = 1
+if calc_fuv == 1:
+  print "calulation disk-FUV"
+  fuv_file = open ('temp/FUV.dat','w')
+  #fuv_file = open ('temp/FUV_chris.dat','w')
+  
+  for i in np.arange(_globals['compound']['npoints']):
+    # print i
+    x = coords[i][0]
+    y = coords[i][1]
+    z = coords[i][2]
+    r = calc_r (x,y,z,inc_disk)
+    h = calc_h (x,y,z,inc_disk)
+    #phi = np.arctan2 (x,(y**2+z**2)**0.5)
+    #print r
+    r_OB = 1/6**0.5 *1000 # distance on average of OBs in pc
+    d_MC = rand.random()*30+20  #random for distances of the clouds to next OB assosiation in pc (20-50) 
+    UV = (r_OB**2 / d_MC**2)/3    
+    #print "lokal UV-field",UV        
+    fuv_file.write(str(UV) + str(" ") + str(  _globals['compound']['coordinates'][i] ) +"\n"  )
+
+  fuv_file.close()
+
+
+
+################################################### Writing fits files
+
+write_fits = 1
+if write_fits ==1:
+  print "creating fits-file"
+  
+  mass_data = np.zeros( (z_length,y_length,x_length) , dtype=np.float32)  #initialize fit grids with zeros
+  vz_data = np.zeros( (z_length,y_length,x_length), dtype=np.float32 )
+
+#  for x in np.arange(x_length) :    #for all x-Pos
+#     for y in np.arange(y_length) :    # for all y-Pos
+#        for z in np.arange(y_length) :
+
+  for i in np.arange(_globals['compound']['npoints']): # fill grids with values
+    x = coords[i][0]+x_offset #transfrom real position to array coordinates
+    y = coords[i][1]+y_offset
+    z = coords[i][2]+z_offset
+    #print "z", z - z_offset
+    mass_data[z][y][x] = ens[i].Mens_clumps # write mass data to array coordiantes
+    vz_data[z][y][x] = ens[i].velocity[2]
+        
+  #print mass_data
+
+  hdu = fits.PrimaryHDU(mass_data) # sets data as hdu-list
+  #################some Header content
+  hdu.header['OBSERVER'] = "Just a Simulation"
+  hdu.header['NAME'] = "galactic Disk"
+  #hdu.header['COMMENT'] = "  "
+  hdu.header['BTYPE'] = 'mass'
+  hdu.header['BUNIT'] = " SM /voxel"
+  #hdu.header['BZERO'] = 0
+  #hdu.header['BSCALE'] = 1
+  strech_fac = 1
+  grid_step = 1 
+
+  hdu.header['CRPIX1'] = 0   #ref Pixel
+  hdu.header['CTYPE1'] = 'x-dim kpc' #Name 
+  hdu.header['CRVAL1'] = ((-x_length+1)/2.) #Reference Value in kpc
+  hdu.header['CDELT1'] = 1. #stepsize per counting index in kpc
+ 
+  hdu.header['CRPIX2'] = 0
+  hdu.header['CTYPE2'] = "y-dim kpc"
+  hdu.header['CRVAL2'] = ((-y_length+1)/2.) 
+  hdu.header['CDELT2'] = 1. 
+ 
+  hdu.header['CRPIX3'] = 0
+  hdu.header['CTYPE3'] = "z-dim kpc"
+  hdu.header['CRVAL3'] = ((-z_length+1)/2.)
+  hdu.header['CDELT3'] = 1. 
+ 
+
+  #### clearing old file
+  open('fits_file/NGC_mass.fits', 'w').close()
+  open('fits_file/NGC_vz.fits', 'w').close()
+ 
+  hdu.writeto('fits_file/NGC_mass.fits', clobber = True) #write first list into fits file
+
+  hdu_vz = fits.PrimaryHDU(vz_data)
+  #hdu_vz = hdu
+  hdu_vz.header['Name'] = 'Vz-Data'
+  hdu_vz.header['BTYPE'] = 'Speed'
+  hdu_vz.header['BUNIT'] = 'km/s'
+  hdu_vz.header['CRPIX1'] = 0   #ref Pixel
+  hdu_vz.header['CTYPE1'] = 'x-dim kpc' #Name 
+  hdu_vz.header['CRVAL1'] = ((-x_length+1)/2. ) #Reference Value in kpc
+  hdu_vz.header['CDELT1'] = 1. #stepsize per counting index in kpc
+ 
+  hdu_vz.header['CRPIX2'] = 0
+  hdu_vz.header['CTYPE2'] = "y-dim kpc"
+  hdu_vz.header['CRVAL2'] = ((-y_length+1)/2.) 
+  hdu_vz.header['CDELT2'] = 1. 
+ 
+  hdu_vz.header['CRPIX3'] = 0
+  hdu_vz.header['CTYPE3'] = "z-dim kpc"
+  hdu_vz.header['CRVAL3'] = ((-z_length+1)/2.)
+  hdu_vz.header['CDELT3'] = 1. 
+  #hdu_vz = fits.PrimaryHDU(vz_data)
+  #fits.append('fits_file/NGC_vz.fits', vz_data, header = hdu_vz.header) # add second data in fits file
+  hdu_vz.writeto('fits_file/NGC_vz.fits', clobber = True) #write first list into fits file
+
+print "model.py gut durchgelaufen!"
+
+
+
+################ write out voxel sanity check
+write_voxel = 1
+if write_voxel == 1:
+  print "writing Voxel"
+  voxel_file = open ('temp/voxel.dat','w')
+    
+  for i in np.arange(_globals['compound']['npoints']):
+    # print i
+    x = coords[i][0]
+    y = coords[i][1]
+    z = coords[i][2]
+    r = calc_r (x,y,z,inc_disk)
+    h = calc_h (x,y,z,inc_disk)
+    phi = np.arctan2 (x,(y**2+z**2)**0.5)
+    #print r
+    k=2 #kommastellen
+    voxel_file.write( 'x,y,z' + str(  _globals['compound']['coordinates'][i] ) +\
+    ' r '+str(round(r,k)) + ' phi ' + str(round(phi/np.pi*180,k)) + ' vz' + str(round(ens[i].velocity[2],k)) + \
+    ' rho_clumps ' + str(round(ens[i].rho_ens_clumps,k)) + ' mens_clump ' + str(round(ens[i].Mens_clumps,k))  + \
+    "\n"  )
+
+
+
+  voxel_file.close()

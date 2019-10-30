@@ -1,0 +1,11 @@
+Voxels_with_mass: 409
+Number_v_bins: 101
+number_species: 8
+number_mass_classes: 2
+
+Setup_time_model_[s]: 4.50052309036
+loop_time_line_emisions_[s]: 594.04106617
+total_modul_time_line_emisions_[s]: 595.115909815
+total_radtransfer_[s]: 692.434909105
+rest_[s]: 35.2573549747
+total_time_of_programm_[s]: 1327.30869699
