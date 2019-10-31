@@ -26,5 +26,5 @@ class Masspoint(object):
       elif isinstance(element, Dust):
         self.__intensity_xi += constants.interpolateI(element.getName()) * self.__number
         self.__opticalDepth_xi += constants.interpolateTau(element.getName()) * self.__number
-      return (self.__intensity,self.__opticalDepth)
+      return np.stack((self.__intensity,self.__opticalDepth))
 
