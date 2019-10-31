@@ -1,27 +1,28 @@
 class Dimensions():
   '''
   This is a class to contain the dimensions of super-class Shape. It will
-  coordinate with class VoxelGrid to arrange the voxels.
+  coordinate with class VoxelGrid to arrange the voxels. the input dimensions must be
+  given in kpc.
   '''
   # PRIVATE
   def __init__(self, x, y, z, i=0, resolution=1000):
     self.__scale = resolution
     self.__i = i
-    self.__x = x
-    self.__y = y
-    self.__z = z
+    self.__x = np.arange(x)
+    self.__y = np.arange(y)
+    self.__z = np.arange(z)
     self.__xOffset = self.__x/2.
     self.__yOffset = self.__y/2.
     self.__zOffset = self.__z/2.
-    self.__xPosition = 0
-    self.__yPosition = 0
-    self.__zPosition = 0
-    for x in np.arange(self.__x):
-      for y in np.arange(self.__y):
-        for z in np.arange(self.__z):
-          self.__xPosition = (x) * self.__scale  - (self.__x-1)/2*self.__scale #real coordiantes
-          self.__yPosition = (y) * self.__scale  - (self.__y-1)/2*self.__scale
-          self.__zPosition = (z) * self.__scale  - (self.__z-1)/2*self.__scale
+    self.__xPosition = np.zeros(len(self.__x))
+    self.__yPosition = np.zeros(len(self.__y))
+    self.__zPosition = np.zeros(len(self.__z))
+    for ix in range(len(self.__x)):
+      for iy in range(len(self.__y)):
+        for iz in range(len(self.__z)):
+          self.__xPosition[ix] = self.__x[ix]*self.__scale  - (self.__x-1)/2*self.__scale #real coordiantes
+          self.__yPosition[iy] = self.__y[iy]*self.__scale  - (self.__y-1)/2*self.__scale
+          self.__zPosition[iz] = self.__z[iz]*self.__scale  - (self.__z-1)/2*self.__scale
           '''
           if cut_switch == 'inner':
             if self.calc_r (x_pos,y_pos,z_pos,inc_disk) < r_disk and abs(calc_h(x_pos,y_pos,z_pos,inc_disk)) < z_disk and (R0**2-x_pos**2) >= 0.  and z_pos <= (R0**2-x_pos**2)**0.5: #cutdisk inner
