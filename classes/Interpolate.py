@@ -43,7 +43,7 @@ class Interpolate(object):
     rotation = obs.rotationProfile() 
     if self.__interpolation=='linear':
       return sp.interp1d(rotation[0], rotation[1], kind='linear')    #rotation velocity interpolation
-    if self.__interpolation=='cubic':
+    if self.__interpolation=='cubic' or self.__interpolation=='radial':
       return sp.interp1d(rotation[0], rotation[1], kind='cubic')    #rotation velocity interpolation
     else: sys.exit('<<ERROR>>: There is no such method as {} to interpolate the KOSMA-tau grid.\n\n \
                    Exitting...\n\n'.format(self.__interpolation))
@@ -51,7 +51,7 @@ class Interpolate(object):
     density = obs.densityProfile()
     if self.__interpolation=='linear':
       return sp.interp1d(density[0], density[1], kind='linear')      #density interpolation
-    elif self.__interpolation=='cubic':
+    elif self.__interpolation=='cubic' or self.__interpolation=='radial':
       return sp.interp1d(density[0], density[1], kind='cubic')      #density interpolation
     else: sys.exit('<<ERROR>>: There is no such method as {} to interpolate the KOSMA-tau grid.\n\n \
                    Exitting...\n\n'.format(self.__interpolation))
@@ -59,7 +59,7 @@ class Interpolate(object):
     clumpmass = obs.interclumpMassProfile()
     if self.__interpolation=='linear':
       return sp.interp1d(clumpMass[0], clumpMass[1], kind='cubic')  #clump mass interpolation
-    elif self.__interpolation=='cubic':
+    elif self.__interpolation=='cubic' or self.__interpolation=='radial':
       return sp.interp1d(clumpMass[0], clumpMass[1], kind='cubic')  #clump mass interpolation
     else: sys.exit('<<ERROR>>: There is no such method as {} to interpolate the KOSMA-tau grid.\n\n \
                    Exitting...\n\n'.format(self.__interpolation))
@@ -67,7 +67,7 @@ class Interpolate(object):
     interclumpmass = obs.clumpMassProfile()
     if self.__interpolation=='linear':
       return sp.interp1d(interclumpMass[0], interclumpMass[1], kind='linear')   #interclump mass interpolation
-    elif self.__interpolation=='cubic':
+    elif self.__interpolation=='cubic' or self.__interpolation=='radial':
       return sp.interp1d(interclumpMass[0], interclumpMass[1], kind='cubic')   #interclump mass interpolation
     else: sys.exit('<<ERROR>>: There is no such method as {} to interpolate the KOSMA-tau grid.\n\n \
                    Exitting...\n\n'.format(self.__interpolation))
@@ -75,7 +75,7 @@ class Interpolate(object):
     afuv = obs.rhoMassAFUV()
     if self.__interpolation=='linear':
       return sp.interpolate.interp2d(afuv[:2], afuv[2], kind='linear')
-    elif self.__interpolation=='cubic':
+    elif self.__interpolation=='cubic' or self.__interpolation=='radial':
       return sp.interpolate.interp2d(afuv[:2], afuv[2], kind='cubic')
     else: sys.exit('<<ERROR>>: There is no such method as {} to interpolate the extinction in the KOSMA-tau grid.\n\n \
                    Exitting...\n\n'.format(self.__interpolation))
@@ -85,7 +85,7 @@ class Interpolate(object):
     if self.__interpolation=='linear':
       for i in range(len(fuv[1])):
         fuvInterp.append(sp.interpolate.interp1d(afuv[i]), kind='linear')
-    if self.__interpolation=='cubic':
+    if self.__interpolation=='cubic' or self.__interpolation=='radial':
       for i in range(len(fuv[1])):
         fuvInterp.append(sp.interpolate.interp1d(afuv[i]), kind='cubic')
     else: sys.exit('<<ERROR>>: There is no such method as {} to interpolate the KOSMA-tau grid.\n\n \
