@@ -39,7 +39,7 @@ class Interpolate(object):
     else: sys.exit('<<ERROR>>: There is no such method as {} to interpolate the KOSMA-tau grid.\n\n \
                    Exitting...\n\n'.format(self.__interpolation))
     return
-  def __calculaterotationVelocity(self):
+  def __calculateRotationVelocity(self):
     rotation = obs.rotationProfile() 
     if self.__interpolation=='linear':
       return sp.interp1d(rotation[0], rotation[1], kind='linear')    #rotation velocity interpolation
