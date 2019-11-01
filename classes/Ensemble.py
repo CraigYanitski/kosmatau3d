@@ -40,6 +40,7 @@ class Ensemble(object):
     '''Set the mass.'''
     self.__setMass(mass)
     return
+  def initialiseEnsemble
   def calculateMasspoints(self):
     '''This is a function to get the clump masses in this ensemble. It will soon be depreciated
        as I will change the reading of the KOSMA-tau files to convert from the fortran 10*log(values).'''
