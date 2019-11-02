@@ -58,7 +58,7 @@ class Dimensions(object):
     return len(self.__x)*len(self.__y)*len(self.__z)
   def voxelCartesianPosition(self):
     # Return the Cartesian coordinates of each voxel
-    return np.array(self.__xPosition, self.__yPosition, self.__zPosition)
+    return np.array(self.__xPosition, self.__yPosition, self.__zPosition, self.__scale)
   def voxelPolarPosition(self):
     # Return the polar coordinates of each voxel
     return np.array(self.__r, self.__phi)

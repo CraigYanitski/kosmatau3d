@@ -7,14 +7,15 @@ class Combination(object):
   probability, intensity, optical depth, and FUV field.
   '''
   # PRIVATE
-  def __init__(self, combination=[], masses=[], probability=0):
+  def __init__(self, species, interpolations, combination=[], masses=[], probability=0):
+    self.__species = species     #list of both moleculular and dust species
+    self.__interpolations = interpolations
     self.__combination = combination 	#list of the number of each masspoint
     self.__listMasspoints = masses    #list of masses in the combination
     self.__FUV = 0                    #the FUV field for this combination of mass points
     self.__intensity = []             #velocity-averaged intensity of this combination of masspoints
     self.__opticalDepth = []          #velocity-averaged optical depth of this combination of masspoints
-    self.__probability = 0           #the probability of this combination of masspoints
-    self.__listElements = elements    #list of the modelled elements; taken from the overall Model() classs
+    self.__probability = 0            #the probability of this combination of masspoints
     return
   def __setFUV(self, fuvField):
     self.__FUV = fuvField
@@ -30,8 +31,8 @@ class Combination(object):
   def addFUV(self, fuvField):
     self.__setFUV(fuvField)
     return
-  def addMasspoint(self, masspoint, number):
-    self.__listMasspoints.append(masspoint)
+  def addMasspoint(self, mass, number):
+    self.__listMasspoints.append(Masspoint(self.__species, self.__interpolations, mass, number))
     self.__combination.append(number)
     return
   def calculateEmission(self, vrange):

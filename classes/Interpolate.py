@@ -105,7 +105,7 @@ class Interpolate(object):
   def interpolateTau(self, points, species):
     if len(species)>1:
       tau = []
-      for i in range(species):
+      for i in species.number:
         tau.append(self.__tauInterpolation(i))
     elif len(species):
       tau = self.__tauInterpolation(points)

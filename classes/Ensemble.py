@@ -7,7 +7,9 @@ class Ensemble(object):
   It can be either a clump or an interclump ensemble.
   '''
   # PRIVATE
-  def __init__(self, clumpType):
+  def __init__(self, clumpType, species, interpolations):
+    self.__species = species     #list of both moleculular and dust species
+    self.__interpolations = interpolations
     self.__clumpType = clumpType     #type of mass in ensemble (clump or interclump medium)
     self.__combinations = []    #list of combinations
     self.__combinationObjects = []    #list of instances of Combination()
@@ -121,9 +123,9 @@ class Ensemble(object):
     combinations = []
     result = []
     for combination in self.__combinations:
-      self.__combinationObjects.append(Combination(combination, self.__masspoints, probability=self.__probability))
+      self.__combinationObjects.append(Combination(self.__species, self.__interpolations, combination, self.__masspoints, probability=self.__probability))
       self.__combinationObjects[-1].calculateEmission()
-      result.append(self.__combinationObjects[-1].getScaledCombinationEmission())
+      result.append(self.__combinationObjects[-1].getScaledCombinationEmission()) #<<this needs to be altered>>
     result = np.array(result)
     self.__intensity = result.sum(3)[0]
     self.__opticalDepth = result.sum(3)[1]

@@ -5,13 +5,15 @@ class VoxelGrid(Model):
   to make the Shape class functional.
   '''
   # PRIVATE
-  def __init__(self, indeces=1):
+  def __init__(self, species, indeces=1):
     self.__voxelNumber = indeces
     self.__voxels = []
     for i in indeces: self.__voxels.append(Voxel(i))
     self.__map = {}       #dictionary object to map the voxel indeces to the correct location
+    self.__species = species
     self.__voxelIntensity = []
     self.__voxelOpticalDepth = []
+    self.__interpolations = Interpolate(self.__species)
     return
 
   # PUBLIC
@@ -19,11 +21,11 @@ class VoxelGrid(Model):
   #  for i in indeces: self.__voxels.append(Voxel(i))
   #  return
   def initialiseVoxels(self):
-    x,y,z = dimensions.voxelCartesianPosition()
+    x,y,z,scale = dimensions.voxelCartesianPosition()
     r,phi = dimensions.voxelPolarPoasition()
     for i,voxel in enumerate(self.__voxels):
-      voxel.setPosition(x,y,z,r,phi)
-      voxel.setProperties()
+      voxel.setPosition(x, y, z, r, phi, scale)
+      voxel.setProperties(self.__interpolations)
     return
   def calculateEmission(self):
     for i,voxel in enumerate(self.__voxelNumber):
