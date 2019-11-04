@@ -5,7 +5,7 @@ class Molecule(object):
   '''
   # PRIVATE
   def __init__(self):
-  	self.__molecules = []  #private variable for the name of the molecule
+    self.__molecules = []  #private variable for the name of the molecule
     self.__transitions = []
     self.__frequencies = []
    	#self.__intensity = 0      #private variable for the intensity emitted (I_x)

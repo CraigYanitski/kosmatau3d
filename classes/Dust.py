@@ -5,7 +5,7 @@ class Dust(object):
   '''
   # PRIVATE
   def __init__(self):
-  	self.__dust = []  #private variable for the name of the dust element
+    self.__dust = []  #private variable for the name of the dust element
     self.__transitions = []
     self.__frequencies = []
   	#self.__intensity = 0      #private variable for the intensity emitted (I_x)

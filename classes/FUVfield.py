@@ -1,4 +1,4 @@
-class FUVfield(Combination):
+class FUVfield(object):
   '''
   This is a class to handle the FUV field for each voxel. It will be added
   in due time.

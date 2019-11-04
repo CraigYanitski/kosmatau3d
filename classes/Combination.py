@@ -1,4 +1,5 @@
-import Masspoint
+import numpy as np
+from Masspoint import *
 class Combination(object):
   '''
   This is a class to handle a combination of fractal masses in an ensemble.

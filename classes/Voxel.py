@@ -1,4 +1,8 @@
-class Voxel():
+from Ensemble import *
+from Interpolate import *
+from Molecule import *
+from Dust import *
+class Voxel(object):
   '''
   This is a class to handle each voxel in KOSMA-tau^3. It contains ensembles
   of spherical PDR simulations (to mimic the fractal structure of PDRs), a FUV
@@ -67,3 +71,7 @@ class Voxel():
     self.__interclump.initialise(properties)
     self.__clump.initialise(properties)
     return
+  def calculateEmission(self):
+    iClump,tauClump,FUVclump = self.__clump.getEmission()
+    iInterclump,tauInterclump,FUVinterclump = self.__interclump.getEmission()
+    return np.array(iClump+iInterclump, tauClump+tauInterclump, FUVclump)

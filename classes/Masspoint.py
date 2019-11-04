@@ -1,4 +1,6 @@
-import numpy
+import numpy as np
+from Molecule import *
+from Dust import *
 class Masspoint(object):
   '''
   This is a class to handle one fractal mass in a combination.
@@ -28,7 +30,7 @@ class Masspoint(object):
       interpolationPoint = [self.__density, element, self.fuv]
       if isinstance(element, Molecule):
         self.__intensity_xi += self.__interpolations.interpolateIntensity(interpolationPoint)*self.__number*np.exp(-1/2.*((vRange-vRange.reshape(vRange.size,1))/(vDispersion))**2)
-  	    self.__opticalDepth_xi += self.__interpolations.interpolateTau(interpolationPoint)*self.__number*np.exp(-1/2.*((vRange-vRange.reshape(vRange.size,1))/(vDispersion))**2)
+        self.__opticalDepth_xi += self.__interpolations.interpolateTau(interpolationPoint)*self.__number*np.exp(-1/2.*((vRange-vRange.reshape(vRange.size,1))/(vDispersion))**2)
       elif isinstance(element, Dust):
         self.__intensity_xi += self.__interpolations.interpolateIntensity(interpolationPoint) * self.__number
         self.__opticalDepth_xi += self.__interpolations.interpolateTau(interpolationPoint) * self.__number

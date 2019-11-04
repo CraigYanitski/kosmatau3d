@@ -24,9 +24,9 @@ class Dimensions(object):
       for iy in range(len(self.__y)):
         for iz in range(len(self.__z)):
           # Center the coordinates about the origin
-          self.__xPosition[ix] = self.__x[ix]*self.__scale  - (self.__x-1)/2*self.__scale
-          self.__yPosition[iy] = self.__y[iy]*self.__scale  - (self.__y-1)/2*self.__scale
-          self.__zPosition[iz] = self.__z[iz]*self.__scale  - (self.__z-1)/2*self.__scale
+          self.__xPosition[ix] = self.__x[ix]*self.__scale  - (self.__x[-1]-1)/2*self.__scale
+          self.__yPosition[iy] = self.__y[iy]*self.__scale  - (self.__y[-1]-1)/2*self.__scale
+          self.__zPosition[iz] = self.__z[iz]*self.__scale  - (self.__z[-1]-1)/2*self.__scale
           '''
           if cut_switch == 'inner':
             if self.calc_r (x_pos,y_pos,z_pos,inc_disk) < r_disk and abs(calc_h(x_pos,y_pos,z_pos,inc_disk)) < z_disk and (R0**2-x_pos**2) >= 0.  and z_pos <= (R0**2-x_pos**2)**0.5: #cutdisk inner
@@ -45,13 +45,15 @@ class Dimensions(object):
     #y = abs_coords[int(i)][1]
     #z = abs_coords[int(i)][2]
     self.__r, self.__phi = self.__convertToPolar()
-    self.__h = calc_h (self.__x,self.__y,self.__z,self.__i)
+    #self.__h = self.hCalc(self.__x,self.__y,self.__z,self.__i)
     return
   def __convertToPolar(self):
     # This is a function that calculates the polar coordinates of each voxel
-    r = (Px**2 + Py**2 + Pz**2)**0.5
-    phi = np.arcsin(self.__yPosition/self.__xPosition)
+    r = (self.__xPosition**2 + self.__yPosition**2 + self.__zPosition**2)**0.5
+    phi = 0#np.arcsin(self.__yPosition/self.__xPosition)
     return r, phi
+  def __str__(self):
+    return 'The dimensions of the model are {}x{}x{}'.format(self.__x[-1], self.__y[-1], self.__z[-1])
 
   # PUBLIC
   def voxelNumber(self):
@@ -63,9 +65,9 @@ class Dimensions(object):
   def voxelPolarPosition(self):
     # Return the polar coordinates of each voxel
     return np.array(self.__r, self.__phi)
-  def calc_h(self):
+  def hCalc(self):
     #calculates height h from koordinates relative to disk-plain
 
     # This will soon be rewritten.
-    h = (y - np.tan(i)*z) * np.cos(i)
+    h = (self.__yPosition - np.tan(self.__i)*self.__zPosition) * np.cos(self.__i)
     return h

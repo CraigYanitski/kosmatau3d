@@ -1,3 +1,10 @@
+import numpy as np
+from Masspoint import *
+from Binomial import *
+from Gauss import *
+from Poisson import *
+from Molecule import *
+from Dust import *
 class Ensemble(object):
   '''
   This class owes itself largely to the work  done by Silke Andree-Labsch and
@@ -42,7 +49,7 @@ class Ensemble(object):
     '''Set the mass.'''
     self.__setMass(mass)
     return
-  def initialiseEnsemble
+  #def initialiseEnsemble
   def calculateMasspoints(self):
     '''This is a function to get the clump masses in this ensemble. It will soon be depreciated
        as I will change the reading of the KOSMA-tau files to convert from the fortran 10*log(values).'''
@@ -123,7 +130,7 @@ class Ensemble(object):
     combinations = []
     result = []
     for combination in self.__combinations:
-      self.__combinationObjects.append(Combination(self.__species, self.__interpolations, combination, self.__masspoints, probability=self.__probability))
+      self.__combinationObjects.append(Combination(self.__species, self.__interpolations, combination=combination, masses=self.__masspoints, probability=self.__probability))
       self.__combinationObjects[-1].calculateEmission()
       result.append(self.__combinationObjects[-1].getScaledCombinationEmission()) #<<this needs to be altered>>
     result = np.array(result)

@@ -15,8 +15,9 @@ class Interpolate(object):
   grids, 'cubic' and 'radial' are the same.
   '''
   # PRIVATE
-  def __init__(self, species, directory='MilkyWay', interpolate='linear'):
+  def __init__(self, species, observations, directory='MilkyWay', interpolate='linear'):
     self.__species = species
+    self.__observations = observations
     self.__interpolation = interpolation
     self.__observations = Observations()
     self.__intensityInterpolation,self.__tauInterpolation = self.__calculateGridInterpolation()
@@ -28,8 +29,8 @@ class Interpolate(object):
     self.__FUVfieldInterpolation = self.__interpolateFUVfield()
 
   def __calculateGridInterpolation(self):
-    nI,massI,uvI,I = obs.tbCenterline()
-    nTau,massTau,uvTau,Tau = obs.tauCenterline()
+    nI,massI,uvI,I = self.__observations.tbCenterline()
+    nTau,massTau,uvTau,Tau = self.__observations.tauCenterline()
     intensityInterpolation = []
     tauInterpolation = []
     if self.__interplation=='linear':
@@ -49,7 +50,7 @@ class Interpolate(object):
     else: sys.exit('<<ERROR>>: There is no such method as {} to interpolate the KOSMA-tau grid.\n\n \
                    Exitting...\n\n'.format(self.__interpolation))
   def __calculateRotationVelocity(self):
-    rotation = obs.rotationProfile() 
+    rotation = self.__observations.rotationProfile() 
     if self.__interpolation=='linear':
       return sp.interp1d(rotation[0], rotation[1], kind='linear')    #rotation velocity interpolation
     if self.__interpolation=='cubic' or self.__interpolation=='radial':
@@ -57,7 +58,7 @@ class Interpolate(object):
     else: sys.exit('<<ERROR>>: There is no such method as {} to interpolate the KOSMA-tau grid.\n\n \
                    Exitting...\n\n'.format(self.__interpolation))
   def __calculateDensity(self):
-    density = obs.densityProfile()
+    density = self.__observations.densityProfile()
     if self.__interpolation=='linear':
       return interpolate.interp1d(density[0], density[1], kind='linear')      #density interpolation
     elif self.__interpolation=='cubic' or self.__interpolation=='radial':
@@ -65,7 +66,7 @@ class Interpolate(object):
     else: sys.exit('<<ERROR>>: There is no such method as {} to interpolate the KOSMA-tau grid.\n\n \
                    Exitting...\n\n'.format(self.__interpolation))
   def __clumpMassProfile(self):
-    clumpmass = obs.interclumpMassProfile()
+    clumpmass = self.__observations.interclumpMassProfile()
     if self.__interpolation=='linear':
       return interpolate.interp1d(clumpMass[0], clumpMass[1], kind='cubic')  #clump mass interpolation
     elif self.__interpolation=='cubic' or self.__interpolation=='radial':
@@ -73,7 +74,7 @@ class Interpolate(object):
     else: sys.exit('<<ERROR>>: There is no such method as {} to interpolate the KOSMA-tau grid.\n\n \
                    Exitting...\n\n'.format(self.__interpolation))
   def __interclumpMassProfile(self):
-    interclumpmass = obs.clumpMassProfile()
+    interclumpmass = self.__observations.clumpMassProfile()
     if self.__interpolation=='linear':
       return interpolate.interp1d(interclumpMass[0], interclumpMass[1], kind='linear')   #interclump mass interpolation
     elif self.__interpolation=='cubic' or self.__interpolation=='radial':
@@ -81,7 +82,7 @@ class Interpolate(object):
     else: sys.exit('<<ERROR>>: There is no such method as {} to interpolate the KOSMA-tau grid.\n\n \
                    Exitting...\n\n'.format(self.__interpolation))
   def __interpolateFUVextinction(self):
-    afuv = obs.rhoMassAFUV()
+    afuv = self.__observations.rhoMassAFUV()
     if self.__interpolation=='linear':
       return interpolate.interp2d(afuv[:2], afuv[2], kind='linear')
     elif self.__interpolation=='cubic' or self.__interpolation=='radial':
@@ -89,7 +90,7 @@ class Interpolate(object):
     else: sys.exit('<<ERROR>>: There is no such method as {} to interpolate the extinction in the KOSMA-tau grid.\n\n \
                    Exitting...\n\n'.format(self.__interpolation))
   def __interpolateFUVfield(self):
-    fuv = obs.FUVfield()
+    fuv = self.__observations.FUVfield()
     if self.__interpolation=='linear':
       return interpolate.interp1d(fuv[0], fuv[1], kind='linear')
     if self.__interpolation=='cubic' or self.__interpolation=='radial':
