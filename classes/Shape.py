@@ -1,4 +1,4 @@
-import Dimensions
+from Dimensions import *
 class Shape():
   '''
   This class defines the intrinsic shape of the PDR. It is used to modify the

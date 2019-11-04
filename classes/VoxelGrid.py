@@ -1,7 +1,6 @@
 import numpy as np
 from Voxel import *
 from Interpolate import *
-from Dimensions import *
 class VoxelGrid(object):
   '''
   This is a class to handle all of the voxels in KOSMA-tau^3. It contains a
@@ -31,6 +30,8 @@ class VoxelGrid(object):
   #def createGrid(self, indeces):
   #  for i in indeces: self.__voxels.append(Voxel(i))
   #  return
+  def getDimensions(self):
+    return self.__dimensions
   def initialiseVoxels(self, species, observations):
     self.__initialiseGrid(observations)
     x,y,z,scale = self.__dimensions.voxelCartesianPosition()

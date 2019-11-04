@@ -1,8 +1,7 @@
 import numpy as np
+import sys
 import scipy.interpolate as interpolate
 import Observations
-import Molecule
-import Dust
 class Interpolate(object):
   '''
   This is a class that can be used for the interpolation of the input data.

@@ -1,7 +1,4 @@
 from Ensemble import *
-from Interpolate import *
-from Molecule import *
-from Dust import *
 class Voxel(object):
   '''
   This is a class to handle each voxel in KOSMA-tau^3. It contains ensembles

@@ -1,6 +1,4 @@
 import numpy as np
-from Molecule import *
-from Dust import *
 class Masspoint(object):
   '''
   This is a class to handle one fractal mass in a combination.

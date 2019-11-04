@@ -1,7 +1,7 @@
-import Shape
-import VoxelGrid
-import Orientation
-import Observations
+from Shape import *
+from VoxelGrid import *
+from Orientation import *
+from Observations import *
 class Model():
   '''
   This is the highest class in the hierarchy of the KOSMA-tau^3 simulation.

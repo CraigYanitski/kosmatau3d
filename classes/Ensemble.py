@@ -1,10 +1,8 @@
 import numpy as np
-from Masspoint import *
+from Combination import *
 from Binomial import *
 from Gauss import *
 from Poisson import *
-from Molecule import *
-from Dust import *
 class Ensemble(object):
   '''
   This class owes itself largely to the work  done by Silke Andree-Labsch and

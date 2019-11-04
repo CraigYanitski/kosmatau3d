@@ -1,4 +1,4 @@
-
+import numpy as np
 class Observations(object):
   '''
   This class will contain the input data needed to properly simulate the PDR. All of the information specific
