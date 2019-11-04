@@ -1,15 +1,20 @@
+import Shape
+import VoxelGrid
+import Orientation
+import Observations
 class Model():
   '''
   This is the highest class in the hierarchy of the KOSMA-tau^3 simulation.
   It contains all of the information needed to properly model a PDR (I think).
   '''
   # PRIVATE
-  def __init__(self, x, y, z, type=''):
-    self.__type = type
-    self.__shape = Shape(x, y, z)
-    self.__grid = VoxelGrid(self.__shape.__dimensions.indeces())
+  def __init__(self, x, y, z, modelType=''):
+    self.__type = modelType
+    self.__shape = Shape(x, y, z, modelType=modelType)
+    self.__grid = VoxelGrid(self.__shape.getDimensions())
     self.__orientation = Orientation()
-    self.__observations = Observations('MilkyWay')
+    self.__observation = Observations
+    self.__species = []
     self.__molecules = []   #list of molecules to include in model
     self.__moleculeNames = []
     self.__moleculeNumber = []
@@ -23,8 +28,10 @@ class Model():
     return
 
   # PUBLIC
-  def setupModel(self):
-
+  def initialiseModel(self):
+    self.__species.append(self.__molecules)
+    self.__species.append(self.__dust)
+    self.__grid.initialiseVoxels(self.__species, self.__observations)
     return
   def addDust(self, transition):
     (numbers,species,transitions,frequencies) = self.__observations.__speciesData
