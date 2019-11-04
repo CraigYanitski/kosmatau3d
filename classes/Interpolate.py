@@ -83,11 +83,9 @@ class Interpolate(object):
     fuv = obs.FUVfield()
     fuvInterp = []
     if self.__interpolation=='linear':
-      for i in range(len(fuv[1])):
-        fuvInterp.append(sp.interpolate.interp1d(afuv[i]), kind='linear')
+      fuvInterp.append(sp.interpolate.interp1d(fuv[0], fuv[1]), kind='linear')
     if self.__interpolation=='cubic' or self.__interpolation=='radial':
-      for i in range(len(fuv[1])):
-        fuvInterp.append(sp.interpolate.interp1d(afuv[i]), kind='cubic')
+      fuvInterp.append(sp.interpolate.interp1d(fuv[0], fuv[1]), kind='cubic')
     else: sys.exit('<<ERROR>>: There is no such method as {} to interpolate the KOSMA-tau grid.\n\n \
                    Exitting...\n\n'.format(self.__interpolation))
     return fuvInterp
