@@ -1,3 +1,4 @@
+import numpy as np
 class Dimensions(object):
   '''
   This is a class to contain the dimensions of VoxelGrid(). It will
