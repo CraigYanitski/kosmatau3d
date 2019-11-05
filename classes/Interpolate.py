@@ -17,8 +17,7 @@ class Interpolate(object):
   def __init__(self, species, observations, directory='MilkyWay', interpolate='linear'):
     self.__species = species
     self.__observations = observations
-    self.__interpolation = interpolation
-    self.__observations = Observations()
+    self.__interpolation = interpolate
     self.__intensityInterpolation,self.__tauInterpolation = self.__calculateGridInterpolation()
     self.__rotationInterpolation = self.__calculaterotationVelocity()
     self.__densityInterpolation = self.__calculateDensity()
@@ -28,18 +27,18 @@ class Interpolate(object):
     self.__FUVfieldInterpolation = self.__interpolateFUVfield()
 
   def __calculateGridInterpolation(self):
-    nI,massI,uvI,I = self.__observations.tbCenterline()
-    nTau,massTau,uvTau,Tau = self.__observations.tauCenterline()
+    nI,massI,uvI,I = self.__observations.tbCenterline
+    nTau,massTau,uvTau,Tau = self.__observations.tauCenterline
     intensityInterpolation = []
     tauInterpolation = []
-    if self.__interplation=='linear':
+    if self.__interpolation=='linear':
       for index in self.__species.indeces():
         rInterpI = interpolate.LinearNDInterpolation(nI, massI, uvI, I[index])
         rInterpTau = interpolate.LinearNDInterpolation(nTau, massTau, uvTau, Tau[index])
         intensityInterpolation.append(rInterpI)
         tauInterpolation.append(rInterpTau)
       return intensityInterpolation,tauInterpolation
-    elif self.__interplation=='radial' or self.__interpolation=='cubic':
+    elif self.__interpolation=='radial' or self.__interpolation=='cubic':
       for index in self.__species.indeces():
         rInterpI = interpolate.Rbf(nI, massI, uvI, I[index])
         rInterpTau = interpolate.Rbf(nTau, massTau, uvTau, Tau[index])
@@ -49,15 +48,15 @@ class Interpolate(object):
     else: sys.exit('<<ERROR>>: There is no such method as {} to interpolate the KOSMA-tau grid.\n\n \
                    Exitting...\n\n'.format(self.__interpolation))
   def __calculateRotationVelocity(self):
-    rotation = self.__observations.rotationProfile() 
+    rotation = self.__observations.rotationProfile 
     if self.__interpolation=='linear':
-      return sp.interp1d(rotation[0], rotation[1], kind='linear')    #rotation velocity interpolation
+      return interpolate.interp1d(rotation[0], rotation[1], kind='linear')    #rotation velocity interpolation
     if self.__interpolation=='cubic' or self.__interpolation=='radial':
-      return sp.interp1d(rotation[0], rotation[1], kind='cubic')    #rotation velocity interpolation
+      return interpolate.interp1d(rotation[0], rotation[1], kind='cubic')    #rotation velocity interpolation
     else: sys.exit('<<ERROR>>: There is no such method as {} to interpolate the KOSMA-tau grid.\n\n \
                    Exitting...\n\n'.format(self.__interpolation))
   def __calculateDensity(self):
-    density = self.__observations.densityProfile()
+    density = self.__observations.densityProfile
     if self.__interpolation=='linear':
       return interpolate.interp1d(density[0], density[1], kind='linear')      #density interpolation
     elif self.__interpolation=='cubic' or self.__interpolation=='radial':
@@ -65,7 +64,7 @@ class Interpolate(object):
     else: sys.exit('<<ERROR>>: There is no such method as {} to interpolate the KOSMA-tau grid.\n\n \
                    Exitting...\n\n'.format(self.__interpolation))
   def __clumpMassProfile(self):
-    clumpmass = self.__observations.interclumpMassProfile()
+    clumpmass = self.__observations.interclumpMassProfile
     if self.__interpolation=='linear':
       return interpolate.interp1d(clumpMass[0], clumpMass[1], kind='cubic')  #clump mass interpolation
     elif self.__interpolation=='cubic' or self.__interpolation=='radial':
@@ -73,7 +72,7 @@ class Interpolate(object):
     else: sys.exit('<<ERROR>>: There is no such method as {} to interpolate the KOSMA-tau grid.\n\n \
                    Exitting...\n\n'.format(self.__interpolation))
   def __interclumpMassProfile(self):
-    interclumpmass = self.__observations.clumpMassProfile()
+    interclumpmass = self.__observations.clumpMassProfile
     if self.__interpolation=='linear':
       return interpolate.interp1d(interclumpMass[0], interclumpMass[1], kind='linear')   #interclump mass interpolation
     elif self.__interpolation=='cubic' or self.__interpolation=='radial':
@@ -81,7 +80,7 @@ class Interpolate(object):
     else: sys.exit('<<ERROR>>: There is no such method as {} to interpolate the KOSMA-tau grid.\n\n \
                    Exitting...\n\n'.format(self.__interpolation))
   def __interpolateFUVextinction(self):
-    afuv = self.__observations.rhoMassAFUV()
+    afuv = self.__observations.rhoMassAFUV
     if self.__interpolation=='linear':
       return interpolate.interp2d(afuv[:2], afuv[2], kind='linear')
     elif self.__interpolation=='cubic' or self.__interpolation=='radial':
@@ -89,7 +88,7 @@ class Interpolate(object):
     else: sys.exit('<<ERROR>>: There is no such method as {} to interpolate the extinction in the KOSMA-tau grid.\n\n \
                    Exitting...\n\n'.format(self.__interpolation))
   def __interpolateFUVfield(self):
-    fuv = self.__observations.FUVfield()
+    fuv = self.__observations.FUVfield
     if self.__interpolation=='linear':
       return interpolate.interp1d(fuv[0], fuv[1], kind='linear')
     if self.__interpolation=='cubic' or self.__interpolation=='radial':

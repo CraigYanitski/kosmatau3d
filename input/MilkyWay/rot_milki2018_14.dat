@@ -1,4 +1,4 @@
-r [kpc]	v [km/s]	Sig- [km/s] ((The circular velocity curve of the milky way from 5 to 25 kpc 2018 + Rotation Curve of the Milky Way out to 200kpc 2014)
+#r [kpc]	v [km/s]	Sig- [km/s] ((The circular velocity curve of the milky way from 5 to 25 kpc 2018 + Rotation Curve of the Milky Way out to 200kpc 2014)
 -0.01	233.00	13.32
 0.20	233.00	13.32
 0.38	268.92	4.67

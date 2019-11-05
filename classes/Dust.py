@@ -5,6 +5,7 @@ class Dust(object):
   '''
   # PRIVATE
   def __init__(self):
+    self.__numbers = []
     self.__dust = []  #private variable for the name of the dust element
     self.__transitions = []
     self.__frequencies = []
@@ -19,11 +20,20 @@ class Dust(object):
   #	return
 
   #PUBLIC
-  def addDust(self, dust, transition, frequency):
-    self.__dust.append(dust + '{}'.format(transition))
+  def addDust(self, dust, transition, frequency, number):
+    self.__numbers.append(number)
+    self.__dust.append(dust + ' {}'.format(transition))
     self.__transitions.append(transition)
     self.__frequencies.append(frequency)
     return
+  def addTransition(self, dust, transition, frequency, number):
+    self.__numbers.append(number)
+    self.__molecules.append(dust + ' {}'.format(transition))
+    self.__transitions.append(transition)
+    self.__frequencies.append(frequency)
+    return
+  def getDust(self):
+    return self.__dust
   def getDust(self):
     return self.__dust
   def getFrequencies(self):

@@ -1,4 +1,4 @@
-r [kpc]	| H2 surface density [n/cm³] : kubick
+#r [kpc]	| H2 surface density [n/cm³] : kubick
 0.0000  15000.0000
 0.0972	14835.6991
 0.1702	14778.1562

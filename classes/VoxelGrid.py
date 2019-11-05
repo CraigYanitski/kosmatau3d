@@ -33,7 +33,7 @@ class VoxelGrid(object):
   def getDimensions(self):
     return self.__dimensions
   def initialiseVoxels(self, species, observations):
-    self.__initialiseGrid(observations)
+    self.__initialiseGrid(species, observations)
     x,y,z,scale = self.__dimensions.voxelCartesianPosition()
     r,phi = self.__dimensions.voxelPolarPosition()
     for i,voxel in enumerate(self.__voxels):
