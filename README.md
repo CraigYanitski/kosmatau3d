@@ -1,6 +1,6 @@
 This is the development branch for KOSMA-tau^3. My intention here is to increase encapsulation
 in an effort to improve the code's efficiency and make it easier to develop overall. A side-
-effect of this is that I will be intimatly familiar with all of the nuances of setting up a
+effect of this is that I will be intimately familiar with all of the nuances of setting up a
 PDR model.
 
 This development branch is very much a work-in-progress and will not yet compile. I am slowly
