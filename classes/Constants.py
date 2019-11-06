@@ -8,7 +8,7 @@ class Constants():
     self.interclumpMassLimits = interclumpMassRange
     self.alpha = alpha
     self.gamma = gamma
-    self.nsigma = nsigma
+    self.nSigma = nsigma
     self.nGauss = nGauss
     self.pnGauss = pnGauss
     self.pixelWidth = pixelWidth

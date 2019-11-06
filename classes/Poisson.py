@@ -1,4 +1,4 @@
-class poisson():
+class Poisson():
   '''This is a classs taken directly from the work of Silke Andree-Labsch and Christoph Bruckmann.'''
   def __init__(self, la):
     self.la = float(la) # lambda = n * p

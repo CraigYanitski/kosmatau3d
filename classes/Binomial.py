@@ -1,4 +1,4 @@
-class binomial():
+class Binomial():
   '''class calculation binomial coefficients (choose) and function'''
   '''This is a classs taken directly from the work of Silke Andree-Labsch and Christoph Bruckmann.'''
   def __init__(self, n, p):

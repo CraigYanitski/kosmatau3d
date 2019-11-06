@@ -1,4 +1,4 @@
-class gauss:
+class Gauss:
   '''This is a classs taken directly from the work of Silke Andree-Labsch and Christoph Bruckmann.'''
   def __init__(self, v0, sigma, area = 1):
     self.area = float(area) # area below the curve (integrated curve) 
