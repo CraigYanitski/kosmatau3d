@@ -14,11 +14,12 @@ class Ensemble(object):
   It can be either a clump or an interclump ensemble.
   '''
   # PRIVATE
-  def __init__(self, clumpType, species, interpolations):
+  def __init__(self, clumpType, species, interpolations, combination='binomial'):
     self.__species = species     #list of both moleculular and dust species
     self.__interpolations = interpolations
     self.__clumpType = clumpType     #type of mass in ensemble (clump or interclump medium)
     self.__constants = Constants()
+    self.__flagCombination = combination
     self.__combinations = []    #list of combinations
     self.__combinationObjects = []    #list of instances of Combination()
     self.__probability = []
@@ -82,7 +83,7 @@ class Ensemble(object):
     self.__masspoints = np.arange(self.__massLimits[0], self.__massLimits[1]+1, 1)
     return
   def calculateMasspointDensity(self):
-    '''I am not entirely certain this is needed...'''
+    '''I am not entirely sure this is needed...'''
     return np.log10(self.__masspointDensity)
   def getInterpolationPoints(self):
     '''This might be removed. I'm not certain the interpolation points need to be accessed out-of-class.'''
@@ -90,6 +91,8 @@ class Ensemble(object):
   def getMasspoints(self):
     '''This is pretty self-explanatory. Return the list of clump masses when called...'''
     return self.__masspoints
+  def getCombinations(self):
+    return self.__combinations
   def calculateRadii(self):
     '''This function calculates the interpolation points necessary for reading the KOSMA-tau files.'''
     self.__masspointDensity = np.log10(self.__masspoints**(1-3/self.__constants.gamma)*sum(self.__masspoints**(1+3/self.__constants.gamma-self.__constants.alpha)) / \
@@ -97,37 +100,66 @@ class Ensemble(object):
     if (self.__masspointDensity>self.__constants.densityLimits[1]).any() or (self.__masspointDensity<self.__constants.densityLimits[0]).any(): sys.exit('WARNING: surface density outside of KOSMA-tau grid!\n\n')
     self.__interpolationPoints = np.stack((self.__masspointDensity, self.__masspoints, np.full(self.__masspoints.size, self.__FUV)))
     self.__masspointRadii = ((3/(4.0*np.pi)*(self.__masspoints*self.__constants.massSolar)/(self.__interpolationPoints[0]*self.__constants.massH*1.91))**(1./3.))/self.__constants.pc
-    print(self.__masspointRadii)
-    print(type(self.__masspointRadii))
     return
   def calculateCombinations(self):
     '''This function calculates all of the different combinations of clump masses that may be in a line-of-sight.
       It is basically the essence of the probabilistic approach used to create the superposition of clumps.'''
-    list = []
-    for line in self.__masspointNumberRange:
-      l = np.arange(line[0], line[1] + 1)
-      list.append(l)
-    self.__combinations = np.zeros([self.numbercombi, self.numberintervals]) 
-    for j in range(np.array(self.__masspointNumberRange).prod(1).sum()): # each combination
-      for i in range(len(self.__masspointNumberRange)): # each column 
-        prod = 1
-        while a < (len(self.numberintervals) - 1):
-          prod = prod * self.list[a+1].size
-          a = a + 1
-        self.__combinations[j][i] = int(j/(prod)) % self.list[i].size + self.list[i][0]
+    dimension = len(self.__masspointNumberRange)
+    ranges = self.__masspointNumberRange
+    if dimension==1:
+      grid = np.mgrid[ranges[0][0]:ranges[0][1]]
+      self.__combinations = np.array([grid[0].flatten()])
+    elif dimension==2:
+      grid = np.mgrid[ranges[0][0]:ranges[0][1], ranges[1][0]:ranges[1][1]]
+      self.__combinations = np.array([grid[0].flatten(), grid[1].flatten()])
+    elif dimension==3:
+      grid = np.mgrid[ranges[0][0]:ranges[0][1], ranges[1][0]:ranges[1][1], ranges[2][0]:ranges[2][1]]
+      self.__combinations = np.array([grid[0].flatten(), grid[1].flatten(), grid[2].flatten()])
+    elif dimension==4:
+      grid = np.mgrid[ranges[0][0]:ranges[0][1], ranges[1][0]:ranges[1][1], ranges[2][0]:ranges[2][1], ranges[3][0]:ranges[3][1]]
+      self.__combinations = np.array([grid[0].flatten(), grid[1].flatten(), grid[2].flatten(), grid[3].flatten()])
+    elif dimension==5:
+      grid = np.mgrid[ranges[0][0]:ranges[0][1], ranges[1][0]:ranges[1][1], ranges[2][0]:ranges[2][1], ranges[3][0]:ranges[3][1], \
+                      ranges[4][0]:ranges[4][1]]
+      self.__combinations = np.array([grid[0].flatten(), grid[1].flatten(), grid[2].flatten(), grid[3].flatten(), grid[4].flatten()])
+    elif dimension==6:
+      grid = np.mgrid[ranges[0][0]:ranges[0][1], ranges[1][0]:ranges[1][1], ranges[2][0]:ranges[2][1], ranges[3][0]:ranges[3][1], \
+                      ranges[4][0]:ranges[4][1], ranges[5][0]:ranges[5][1]]
+      self.__combinations = np.array([grid[0].flatten(), grid[1].flatten(), grid[2].flatten(), grid[3].flatten(), grid[4].flatten(), grid[5].flatten()])
+    elif dimension==7:
+      grid = np.mgrid[ranges[0][0]:ranges[0][1], ranges[1][0]:ranges[1][1], ranges[2][0]:ranges[2][1], ranges[3][0]:ranges[3][1], \
+                      ranges[4][0]:ranges[4][1], ranges[5][0]:ranges[5][1], ranges[6][0]:ranges[6][1]]
+      self.__combinations = np.array([grid[0].flatten(), grid[1].flatten(), grid[2].flatten(), grid[3].flatten(), grid[4].flatten(), grid[5].flatten(), grid[6].flatten()])
+    else: sys.exit('\nThere are too many masses for the current grid.\nExitting. . .\n\n')
+    # list = []
+    # for massRange in self.__masspointNumberRange:
+    #   l = np.arange(massRange[0], line[1] + 1, dtype=np.int)
+    #   list.append(l)
+    # totalNumber = 
+    # self.__combinations = np.zeros([list.shape[1]**list.shape[0], len(self.__masspointNumberRange)]) 
+    # for j in range(np.array(self.__masspointNumberRange).prod(1).sum()): # each combination
+    #   for i in range(len(self.__masspointNumberRange)): # each column 
+    #     a = i
+    #     prod = 1
+    #     while a < (len(self.__masspointNumberRange)):
+    #       prod = prod * self.list[a+1].size
+    #       a = a + 1
+    #     self.__combinations[j][i] = int(j/(prod)) % self.list[i].size + self.list[i][0]
     return
-  def getCombinations(self):
+  def getCombinationObjects(self):
     '''This function removes all of the unnecessary degenerate looping during this calculation.
-       Of course it is possible because of the wonders of nump.ndarray(). . .'''
+       Of course it is possible because of the wonders of numpy.ndarray(). . .'''
     self.__deltaNji = (self.__massObserved*(self.__masspoints)**(1-self.__constants.alpha)) / sum((self.__masspoints)**(2-self.__constants.alpha))
-    pTab = (np.pi*self.__masspointRadii**2/constants.pixelWidth**2)
+    pTab = (np.pi*self.__masspointRadii**2/self.__constants.pixelWidth**2)
+    print(self.__deltaNji, pTab)
     expectedValTab = (self.__deltaNji*pTab)
-    standardDeriTab = (np.sqrt(self.__deltaNji*pTab*(1-pTab)))
+    print(type(self.__deltaNji[0]), type(pTab[0]), type(self.__masspointRadii[0]))
+    standardDeriTab = ((self.__deltaNji*pTab*(1-pTab))**0.5)
     lower = np.maximum(np.zeros(np.size(self.__masspoints)), np.floor(expectedValTab-self.__constants.nSigma*standardDeriTab))
     upper = np.minimum(self.__deltaNji, np.ceil(expectedValTab+self.__constants.nSigma*standardDeriTab))
     self.__masspointNumberRange = np.array([lower, upper]).T
     self.calculateCombinations()
-    if self.flagBinomialPoisson:
+    if self.__flagCombination:
       if np.any(expectedValTab>self.__constants.pnGauss and number>self.__constants.nGauss):
         # use gauss!
         g = Gauss(expectedValTab[ma], standardDeriTab[ma])
@@ -155,7 +187,7 @@ class Ensemble(object):
        which is used to calculate the final sums needed for the voxel.'''
     self.calculateMasspoints()
     self.calculateRadii()
-    self.getCombinations()
+    self.getCombinationObjects()
     combinations = []
     result = []
     for combination in self.__combinations:
@@ -165,7 +197,7 @@ class Ensemble(object):
     result = np.array(result)
     self.__intensity = result.sum(3)[0]
     self.__opticalDepth = result.sum(3)[1]
-    if isinstance(self.__FUV, FUVfield): self.__FUV = result.average(3)[2]
+    if not isinstance(self.__FUV, FUVfield): self.__FUV = result.average(3)[2]
     return
   def getEnsembleEmission(self):
     '''This returns the ensemble emission...nothing more.'''
