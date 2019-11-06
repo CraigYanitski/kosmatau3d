@@ -16,10 +16,10 @@ class Model():
     self.__grid = VoxelGrid(self.__shape.getDimensions())
     self.__orientation = Orientation()
     self.__observations = Observations()
-    self.__species = []
-    self.__speciesNames = []
     self.__molecules = Molecules()   #list of molecules to include in model
     self.__dust = Dust()        #list of dust to include in model
+    self.__species = [self.__molecules, self.__dust]
+    self.__speciesNames = []
     return
 
   # PUBLIC
@@ -54,7 +54,8 @@ class Model():
       # self.__dustNumber.append(numbers[species=='dust' and transitions==transition])
       # self.__dustTransitions['dust'].append(transition)
       # self.__dustFrequencies['dust'].append(frequencies[species=='dust' and transitions==transition])
-    self.__species = self.__molecules + self.__dust
+    #self.__species = [self.__molecules, self.__dust]
+    self.__speciesNames = self.__molecules.getMolecules() + self.__dust.getDust()
     return
   def addMolecule(self, molecule, transition):
     (numbers,species,transitions,frequencies) = self.__observations.speciesData
@@ -70,7 +71,8 @@ class Model():
       #self.__moleculeNumber.append(numbers[species==molecule and transitions==transition])
       #self.__moleculeTransitions[molecule].append(transition)
       #self.__moleculeFrequencies[molecule].append(frequencies[species==molecule and transitions==transition])
-    self.__species = self.__molecules.getMolecules() + self.__dust.getDust()
+    #self.__species = [self.__molecules, self.__dust]
+    self.__speciesNames = self.__molecules.getMolecules() + self.__dust.getDust()
     return
   def addSpecies(self, species, transition):
     # find transition number as defined in

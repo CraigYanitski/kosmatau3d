@@ -32,6 +32,8 @@ class Molecules(object):
     self.__transitions.append(transition)
     self.__frequencies.append(frequency)
     return
+  def getNumbers(self):
+    return self.__numbers
   def getMolecules(self):
     return self.__molecules
   def getFrequencies(self):

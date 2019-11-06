@@ -32,8 +32,8 @@ class Dust(object):
     self.__transitions.append(transition)
     self.__frequencies.append(frequency)
     return
-  def getDust(self):
-    return self.__dust
+  def getNumbers(self):
+    return self.__numbers
   def getDust(self):
     return self.__dust
   def getFrequencies(self):

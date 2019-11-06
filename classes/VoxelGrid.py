@@ -22,7 +22,7 @@ class VoxelGrid(object):
   def __initialiseGrid(self, species, observations):
     self.__species = species
     self.__interpolations = Interpolate(self.__species, observations)
-    for i in range(self.__voxelNumber): self.__voxels.append(Voxel(i))
+    for i in range(self.__voxelNumber): self.__voxels.append(Voxel(self.__species, self.__interpolations, i))
   def __str__(self):
     return 'VoxelGrid\n  -{} voxels'.format(self.__voxelNumber)
 
@@ -32,13 +32,15 @@ class VoxelGrid(object):
   #  return
   def getDimensions(self):
     return self.__dimensions
+  def getInterpolations(self):
+    return self.__interpolations
   def initialiseVoxels(self, species, observations):
     self.__initialiseGrid(species, observations)
     x,y,z,scale = self.__dimensions.voxelCartesianPosition()
     r,phi = self.__dimensions.voxelPolarPosition()
     for i,voxel in enumerate(self.__voxels):
-      voxel.setPosition(x, y, z, r, phi, scale)
-      voxel.setProperties(self.__interpolations)
+      voxel.setPosition(x[i], y[i], z[i], r[i], phi[i], scale)
+      voxel.setProperties()
     return
   def calculateEmission(self):
     for i,voxel in enumerate(self.__voxelNumber):

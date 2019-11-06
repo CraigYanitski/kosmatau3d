@@ -5,7 +5,7 @@ class FUVfield(object):
   '''
   # PRIVATE
   def __init__(self, fuv=0):
-  	self.__FUV = fuv
+    self.__FUV = fuv
     return
 
   # PUBLIC

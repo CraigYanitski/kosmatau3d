@@ -16,10 +16,13 @@ class Interpolate(object):
   # PRIVATE
   def __init__(self, species, observations, directory='MilkyWay', interpolate='linear'):
     self.__species = species
+    self.__indeces = []
+    for element in species:
+      for i in element.getNumbers(): self.__indeces.append(i)
     self.__observations = observations
     self.__interpolation = interpolate
     self.__intensityInterpolation,self.__tauInterpolation = self.__calculateGridInterpolation()
-    self.__rotationInterpolation = self.__calculaterotationVelocity()
+    self.__rotationInterpolation = self.__calculateRotationVelocity()
     self.__densityInterpolation = self.__calculateDensity()
     self.__clumpMassInterpolation = self.__clumpMassProfile()
     self.__interclumpMassInterpolation = self.__interclumpMassProfile()
@@ -27,21 +30,22 @@ class Interpolate(object):
     self.__FUVfieldInterpolation = self.__interpolateFUVfield()
 
   def __calculateGridInterpolation(self):
-    nI,massI,uvI,I = self.__observations.tbCenterline
-    nTau,massTau,uvTau,Tau = self.__observations.tauCenterline
+    nmuvI,I = self.__observations.tbCenterline
+    nmuvTau,Tau = self.__observations.tauCenterline
     intensityInterpolation = []
     tauInterpolation = []
+    print(np.shape([nmuvI]), np.shape(I[:,5]))
     if self.__interpolation=='linear':
-      for index in self.__species.indeces():
-        rInterpI = interpolate.LinearNDInterpolation(nI, massI, uvI, I[index])
-        rInterpTau = interpolate.LinearNDInterpolation(nTau, massTau, uvTau, Tau[index])
+      for index in self.__indeces:
+        rInterpI = interpolate.LinearNDInterpolator(nmuvI, I[:, index])
+        rInterpTau = interpolate.LinearNDInterpolator(nmuvTau, Tau[:, index])
         intensityInterpolation.append(rInterpI)
         tauInterpolation.append(rInterpTau)
       return intensityInterpolation,tauInterpolation
     elif self.__interpolation=='radial' or self.__interpolation=='cubic':
-      for index in self.__species.indeces():
-        rInterpI = interpolate.Rbf(nI, massI, uvI, I[index])
-        rInterpTau = interpolate.Rbf(nTau, massTau, uvTau, Tau[index])
+      for index in self.__indeces:
+        rInterpI = interpolate.Rbf(nmI, massI, uvI, I[:, index])
+        rInterpTau = interpolate.Rbf(nTau, massTau, uvTau, Tau[:, index])
         intensityInterpolation.append(rInterpI)
         tauInterpolation.append(rInterpTau)
       return intensityInterpolation,tauInterpolation
@@ -64,7 +68,7 @@ class Interpolate(object):
     else: sys.exit('<<ERROR>>: There is no such method as {} to interpolate the KOSMA-tau grid.\n\n \
                    Exitting...\n\n'.format(self.__interpolation))
   def __clumpMassProfile(self):
-    clumpmass = self.__observations.interclumpMassProfile
+    clumpMass = self.__observations.interclumpMassProfile
     if self.__interpolation=='linear':
       return interpolate.interp1d(clumpMass[0], clumpMass[1], kind='cubic')  #clump mass interpolation
     elif self.__interpolation=='cubic' or self.__interpolation=='radial':
@@ -72,7 +76,7 @@ class Interpolate(object):
     else: sys.exit('<<ERROR>>: There is no such method as {} to interpolate the KOSMA-tau grid.\n\n \
                    Exitting...\n\n'.format(self.__interpolation))
   def __interclumpMassProfile(self):
-    interclumpmass = self.__observations.clumpMassProfile
+    interclumpMass = self.__observations.clumpMassProfile
     if self.__interpolation=='linear':
       return interpolate.interp1d(interclumpMass[0], interclumpMass[1], kind='linear')   #interclump mass interpolation
     elif self.__interpolation=='cubic' or self.__interpolation=='radial':
@@ -82,9 +86,9 @@ class Interpolate(object):
   def __interpolateFUVextinction(self):
     afuv = self.__observations.rhoMassAFUV
     if self.__interpolation=='linear':
-      return interpolate.interp2d(afuv[:2], afuv[2], kind='linear')
+      return interpolate.interp2d(afuv[0], afuv[1], afuv[2], kind='linear')
     elif self.__interpolation=='cubic' or self.__interpolation=='radial':
-      return interpolate.interp2d(afuv[:2], afuv[2], kind='cubic')
+      return interpolate.interp2d(afuv[0], afuv[1], afuv[2], kind='cubic')
     else: sys.exit('<<ERROR>>: There is no such method as {} to interpolate the extinction in the KOSMA-tau grid.\n\n \
                    Exitting...\n\n'.format(self.__interpolation))
   def __interpolateFUVfield(self):
@@ -98,32 +102,27 @@ class Interpolate(object):
 
   # PUBLIC
   def interpolateIntensity(self, points, species):
-    if len(species)>1:
+    if len(species):
       intensity = []
-      for i in species.number:
-        intensity.append(self.__intensityInterpolation(i))
-    elif len(species):
-      intensity = self.__intensityInterpolation(points)
+      for i in self.__indeces: intensity.append(self.__intensityInterpolation(i))
     else: sys.exit('<<ERROR>>: a zero-length species array has been used to interpolate the intensity.\n\n')
     return np.array(intensity)
   def interpolateTau(self, points, species):
-    if len(species)>1:
+    if len(species):
       tau = []
-      for i in species.number:
-        tau.append(self.__tauInterpolation(i))
-    elif len(species):
-      tau = self.__tauInterpolation(points)
+      for i in self.__indeces: tau.append(self.__tauInterpolation(i))
     else: sys.exit('<<ERROR>>: a zero-length species array has been used to interpolate the optical depth.\n\n')
     return np.array(tau)
-  def interpolateRotation(self, radius):
-    return self.__rotationInterpolation(radius)
+  def interpolateRotationalVelocity(self, radius):
+    return self.__rotationInterpolation(radius/1000.)
   def interpolateDensity(self, radius):
-    return self.__densityInterpolation(radius)
+    return self.__densityInterpolation(radius/1000.)
   def interpolateClumpMass(self, radius):
-    return self.__clumpMassInterpolation(radius)
+    print(radius)
+    return self.__clumpMassInterpolation(radius/1000.)
   def interpolateInterclumpMass(self, radius):
-    return self.__interclumpMassInterpolation(radius)
+    return self.__interclumpMassInterpolation(radius/1000.)
   def interpolateFUVextinction(self, density, mass):
-    return self.__FUVextinctionInterpolation([density, mass])
+    return self.__FUVextinctionInterpolation(density, mass)
   def interpolateFUVfield(self, radius):
-    return self.__FUVfieldInterpolation(radius)
+    return self.__FUVfieldInterpolation(radius/1000.)

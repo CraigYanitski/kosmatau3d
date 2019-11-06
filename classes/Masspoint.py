@@ -25,11 +25,11 @@ class Masspoint(object):
     self.__intensity = np.zeros(vrange.size)
     self.__opticalDepth = np.zeros(vrange.size)
     for element in self.__species:
-      interpolationPoint = [self.__density, element, self.fuv]
+      interpolationPoint = [self.__density, self.__mass, self.fuv]
       if isinstance(element, Molecule):
-        self.__intensity_xi += self.__interpolations.interpolateIntensity(interpolationPoint)*self.__number*np.exp(-1/2.*((vRange-vRange.reshape(vRange.size,1))/(vDispersion))**2)
-        self.__opticalDepth_xi += self.__interpolations.interpolateTau(interpolationPoint)*self.__number*np.exp(-1/2.*((vRange-vRange.reshape(vRange.size,1))/(vDispersion))**2)
+        self.__intensity_xi = self.__interpolations.interpolateIntensity(interpolationPoint).sum()*self.__number*np.exp(-1/2.*((vRange-vRange.reshape(vRange.size,1))/(vDispersion))**2)
+        self.__opticalDepth_xi = self.__interpolations.interpolateTau(interpolationPoint).sum()*self.__number*np.exp(-1/2.*((vRange-vRange.reshape(vRange.size,1))/(vDispersion))**2)
       elif isinstance(element, Dust):
-        self.__intensity_xi += self.__interpolations.interpolateIntensity(interpolationPoint) * self.__number
-        self.__opticalDepth_xi += self.__interpolations.interpolateTau(interpolationPoint) * self.__number
+        self.__intensity_xi = self.__interpolations.interpolateIntensity(interpolationPoint).sum()*self.__number
+        self.__opticalDepth_xi = self.__interpolations.interpolateTau(interpolationPoint).sum()*self.__number
       return np.stack((self.__intensity,self.__opticalDepth))

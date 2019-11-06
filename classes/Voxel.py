@@ -1,4 +1,5 @@
 from Ensemble import *
+from FUVfield import *
 class Voxel(object):
   '''
   This is a class to handle each voxel in KOSMA-tau^3. It contains ensembles
@@ -34,18 +35,19 @@ class Voxel(object):
     self.__interclump.setMass(self.__interclumpMass)
     return
   def __setVelocity(self):
-    self.__velocity = self.__interpolations.interpolateRotationVelocity(self.__r)
-    self.__velocityDispersion = 0.5*((self.__interpolations.interpolateRotationVelocity(self.__r+0.5*self.__scale)-self.__velocity)**2 + \
-                                     (self.__interpolations.interpolateRotationVelocity(self.__r-0.5*self.__scale)-self.__velocity)**2)
+    self.__velocity = self.__interpolations.interpolateRotationalVelocity(self.__r)
+    self.__velocityDispersion = 0.5*((self.__interpolations.interpolateRotationalVelocity(self.__r+0.5*self.__scale)-self.__velocity)**2 + \
+                                     (self.__interpolations.interpolateRotationalVelocity(self.__r-0.5*self.__scale)-self.__velocity)**2)
     return
   def __setDensity(self):
     self.__density = self.__interpolations.interpolateDensity(self.__r)
     return
-  def __setVelocity(self):
-    self.__UVextinction = self.__interpolations.interpolateFUVextinction(self.__r)
+  def __setExtinction(self):
+    self.__UVextinction = self.__interpolations.interpolateFUVextinction(self.__density, self.__clumpMass+self.__interclumpMass)
     return
-  def __setVelocity(self):
-    self.__FUV = self.__interpolations.interpolateFUVfield(self.__r)
+  def __setFUV(self):
+    fuv = self.__interpolations.interpolateFUVfield(self.__r)
+    self.__FUV = FUVfield(fuv)
     return
 
   # PUBLIC
@@ -64,10 +66,12 @@ class Voxel(object):
     self.__setDensity()
     self.__setExtinction()
     self.__setFUV()
-    properties = [self.__velocity, self.__velocityDispersion, self.__FUV, self.__UVextinction]
-    self.__interclump.initialise(properties)
-    self.__clump.initialise(properties)
+    properties = []
+    self.__interclump.initialise(mass=self.__interclumpMass, density=self.__density, velocity=self.__velocity, velocityDispersion=self.__velocityDispersion, FUV=self.__FUV, extinction=self.__UVextinction)
+    self.__clump.initialise(mass=self.__clumpMass, density=self.__density, velocity=self.__velocity, velocityDispersion=self.__velocityDispersion, FUV=self.__FUV, extinction=self.__UVextinction)
     return
+  def getPosition(self):
+    return (self.__x, self.__y, self.__z)
   def calculateEmission(self):
     iClump,tauClump,FUVclump = self.__clump.getEmission()
     iInterclump,tauInterclump,FUVinterclump = self.__interclump.getEmission()

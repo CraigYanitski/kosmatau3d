@@ -48,12 +48,12 @@ class Observations(object):
     # Open file for KOSMA-tau simulations of optical depths
     # FORMAT: n, M, UV, tau[molecules then dust]
     tau = np.genfromtxt(self.__GRIDPATH+file)
-    return (tau[:,0],tau[:,1],tau[:,2],tau[:,3:])
+    return (tau[:,:3],tau[:,3:])
   def __tbCenterline(self, file='Tb_linecentre.dat'):
     # Open file for KOSMA-tau simulations of line intensities
     # FORMAT: n, M, UV, intensity[molecules then dust]
     tb = np.genfromtxt(self.__GRIDPATH+file)
-    return (tb[:,0],tb[:,1],tb[:,2],tb[:,3:])
+    return (tb[:,:3],tb[:,3:])
   def __rhoMassAFUV(self, file='RhoMassAFUV.dat'):
     pma = np.genfromtxt(self.__GRIDPATH+file, names=['number_density', 'mass', 'FUV_extinction'])
     return (pma['number_density'],pma['mass'],pma['FUV_extinction'])
@@ -65,7 +65,7 @@ class Observations(object):
   # PUBLIC
   def __initialise(self):
     self.clumpMassProfile = self.__clumpMassProfile()
-    self.intermassProfile = self.__interclumpMassProfile()
+    self.interclumpMassProfile = self.__interclumpMassProfile()
     self.densityProfile =  self.__densityProfile()
     self.FUVfield = self.__FUVfield()
     self.rotationProfile = self.__rotationProfile()
