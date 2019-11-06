@@ -57,7 +57,7 @@ class Dimensions(object):
     phi = np.arcsin(self.__yPositions/self.__xPositions)
     return r, phi
   def __str__(self):
-    return 'The dimensions of the model are {}x{}x{}'.format(self.__x[-1], self.__y[-1], self.__z[-1])
+    return 'dimensions {}pc x {}pc x {}pc'.format(self.__x, self.__y, self.__z)
 
   # PUBLIC
   def voxelNumber(self):

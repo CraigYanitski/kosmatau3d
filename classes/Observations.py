@@ -11,15 +11,6 @@ class Observations(object):
     self.__GRIDPATH = '/home/yanitski/Desktop/KOSMA-tau^3/grid/'
     if directory[-1]=='/': self.__directory = directory
     else: self.__directory = directory + '/'
-    # self.clumpMassProfile = None
-    # self.interclumpMassProfile = None
-    # self.densityProfile =  None
-    # self.FUVfield = None
-    # self.rotationProfile = None
-    # self.tauCenterline = None
-    # self.tbCenterline = None
-    # self.rhoMassAFUV = None
-    # self.speciesData = None
     self.__initialise()
     return
   def __clumpMassProfile(self, file='mass_profile.dat'):
@@ -35,10 +26,10 @@ class Observations(object):
     density = np.genfromtxt(self.__INPUTPATH+self.__directory+file, names=['radius', 'h2_surface_density'])
     return (density['radius'],density['h2_surface_density'])
   def __FUVfield(self, file='galactic_FUV.dat'):
-    # Open file for the FUV profile of the object
-    fuv = np.loadtxt(self.__INPUTPATH+self.__directory+file)#, names=False)#['radius', 'energy density 912', 'energy density 1350', 'energy density 1500', \
-                                                      #'energy density 1650', 'energy density 2000', 'energy density 2200', 'energy density 2500', \
-                                                      #'energy density 2800', 'energy density 3650'])
+    '''Open file for the FUV profile of the object
+       'radius', 'energy density 912', 'energy density 1350', 'energy density 1500', 'energy density 1650', 'energy density 2000', \
+       'energy density 2200', 'energy density 2500', 'energy density 2800', 'energy density 3650'])'''
+    fuv = np.loadtxt(self.__INPUTPATH+self.__directory+file)
     return (fuv[:,0],fuv[:,1],fuv[:,2:])
   def __rotationProfile(self, file='rot_milki2018_14.dat'):
     # Open file for the rotation profile of the object

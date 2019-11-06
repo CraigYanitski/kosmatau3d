@@ -21,6 +21,8 @@ class Masspoint(object):
     self.__intensity = np.array([])       #velocity-averaged intensity of this combination of masspoints
     self.__opticalDepth = np.array([])    #velocity-averaged optical depth of this combination of masspoints
     return
+  def __str__(self):
+    return 'Simulated KOSMA-tau clump of mass {}'.format(10**self.mass)
 
   # PUBLIC
   def calculateEmission(self, vRange, vDispersion):

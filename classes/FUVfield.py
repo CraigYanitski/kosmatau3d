@@ -7,6 +7,11 @@ class FUVfield(object):
   def __init__(self, fuv=0):
     self.__FUV = fuv
     return
+  def __setFUV(self, fuv):
+    self.__FUV = fuv
+    return
+  def __str__(self):
+    return 'FUV field: {}'.format(self.__FUV)
 
   # PUBLIC
   def setFUV(self, fuv):

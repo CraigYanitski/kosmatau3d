@@ -8,18 +8,16 @@ class Molecules(object):
   def __init__(self):
     self.__fileIndex = []               #a list for the molecule index in the grid
     self.__interpolationIndex = []      #a list for the molecule index in the respective interpolation list
-    self.__molecules = []  #private variable for the name of the molecule
-    self.__transitions = []
-    self.__frequencies = []
-   	#self.__intensity = 0      #private variable for the intensity emitted (I_x)
-  	#self.__opticalDepth = 0   #private variable for the optical depth (tau_x)
+    self.__molecules = []               #list for the name of the molecule
+    self.__transitions = []             #list for the transitions being tracked
+    self.__frequencies = []             #list for the frequencies being tracked
     return
-  #def __setI(self, I):
-  #	self.__intensity = I
-  #	return
-  #def __setTau(self, tau):
-  #	self.__opticalDepth = tau
-  #	return
+  def __str__(self):
+    '''Overloaded print routine to print useful information.'''
+    printout = '  {} Molecules:'.format(len(self.__molecules))
+    for i in range(len(self.__molecules)):
+      printout += '\n    ->{} transition {}, at {} GHz'.format(self.__moleccules[i], self.__transitions[i], self.__frequencies[i])
+    return printout
 
   #PUBLIC
   def addMolecule(self, molecule, transition, frequency, index):
@@ -35,7 +33,7 @@ class Molecules(object):
        computationally-efficient to just add each molecule...'''
     self.__fileIndex.append(index)
     self.__interpolationIndex.append(len(self.__molecules))
-    self.__molecules.append(molecule + ' {}'.format(transition))
+    self.__molecules.append(molecule)
     self.__transitions.append(transition)
     self.__frequencies.append(frequency)
     return
@@ -49,9 +47,3 @@ class Molecules(object):
     return np.array(self.__frequencies)
   def getTransitions(self):
     return np.array(self.__transitions)
-  #def calculateEmission(self, velocity):
-  #	intensity_xi = inten_x_i[sp, vo]+intensityCl[sp][0][ma]*super()._Combination__combination*np.exp(-1/2.*((gbl._globals['compound']['ranges']['vbin'][v]-velocity)/(sigma_cl_j[ma]))**2)
-  #	opticalDepth_xi = tau_x_i[sp, vo]+tauCl[sp][0][ma]*super()._Combination__combination*np.exp(-1/2.*((gbl._globals['compound']['ranges']['vbin'][v]-velocity)/(super()._Voxel__sigma))**2)
-  #	self.__setI(intensity_xi)
-  #	self.__setTau(opticalDepth_xi)
-  #	return

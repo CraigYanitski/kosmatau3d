@@ -99,6 +99,9 @@ class Interpolate(object):
       return interpolate.interp1d(fuv[0], fuv[1], kind='cubic')
     else: sys.exit('<<ERROR>>: There is no such method as {} to interpolate the KOSMA-tau grid.\n\n \
                    Exitting...\n\n'.format(self.__interpolation))
+  def __str__(self):
+    return 'Available Interpolations:\n -Clump intensity\n -Clump optical depth\n -Clump mass (galactic)\n -Clump density (galactic)\n \
+            -Voxel rotation (galactic)\n -UV extinction\n -FUV field (galactic)'
 
   # PUBLIC
   def interpolateIntensity(self, points, speciesNumber, verbose=False):

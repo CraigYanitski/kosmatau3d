@@ -30,9 +30,9 @@ class Ensemble(object):
     self.__massEnsemble = 0     #ensemble-averaged mass
     self.__densityObserved = 0
     self.__radius = 0   #ensemble-averaged radius
-    if clumpType=='clump':
+    if self.__clumpType=='clump':
       self.__massLimits = self.__constants.clumpMassLimits   #maximum mass in ensemble
-    elif clumpType=='interclump':
+    elif self.__clumpType=='interclump':
       self.__massLimits = self.__constants.interclumpMassLimits   #maximum mass in ensemble
     self.__masspoints = []
     self.__masspointNumberRange = []
@@ -61,6 +61,10 @@ class Ensemble(object):
   def __setVelocityDispersion(self, velocityDispersion):
     self.__velocityDispersion = velocityDispersion
     return
+  def __str__(self):
+    return 'The {} ensemble to simulate the fractal structure with {} instances of KOSMA-tau giving \
+            {} possible combinations in the line-of-sight of an observer'\
+            .format(self.__clumpType, self.__masspoints.size, self.__combinations.shape[0])
 
   # PUBLIC
   def initialise(self, mass=0, density=0, velocity=0, velocityDispersion=0, FUV=0, extinction=0):
@@ -146,7 +150,7 @@ class Ensemble(object):
     #       a = a + 1
     #     self.__combinations[j][i] = int(j/(prod)) % self.list[i].size + self.list[i][0]
     return
-  def getCombinationObjects(self):
+  def createCombinationObjects(self):
     '''This function removes all of the unnecessary degenerate looping during this calculation.
        Of course it is possible because of the wonders of numpy.ndarray(). . .'''
     self.__deltaNji = (self.__massObserved*(self.__masspoints)**(1-self.__constants.alpha)) / sum((self.__masspoints)**(2-self.__constants.alpha))
@@ -186,7 +190,7 @@ class Ensemble(object):
        which is used to calculate the final sums needed for the voxel.'''
     self.calculateMasspoints()
     self.calculateRadii()
-    self.getCombinationObjects()
+    self.createCombinationObjects()
     combinations = []
     result = []
     for combination in self.__combinations:
@@ -201,3 +205,7 @@ class Ensemble(object):
   def getEnsembleEmission(self):
     '''This returns the ensemble emission...nothing more.'''
     return (self.__intensity,self.__opticalDepth,self.__FUV)
+  def getCombinations(self):
+    return self.__combinations
+  def getCombinationObjects(self):
+    return self.__combinationObjects

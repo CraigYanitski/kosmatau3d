@@ -51,6 +51,9 @@ class Voxel(object):
     fuv = np.log10(np.clip(fuv, 1, None))
     self.__FUV = FUVfield(fuv)
     return
+  def __str__(self):
+    return 'Voxel {}\n  ->mass {}\n  ->intensity {}\n  ->optical depth {}\n  ->FUV field {}'\
+           .format(self.__index, self.__mass, 10**self.__intensity, 10**self.__opticalDepth, self.__FUV)
 
   # PUBLIC
   def setPosition(self, x, y, z, r, phi, scale):
@@ -74,6 +77,8 @@ class Voxel(object):
     return
   def getPosition(self):
     return (self.__x, self.__y, self.__z)
+  def getClumps(self):
+    return (self.__clump, self.__interclump)
   def calculateEmission(self):
     iClump,tauClump,FUVclump = self.__clump.getEmission()
     iInterclump,tauInterclump,FUVinterclump = self.__interclump.getEmission()

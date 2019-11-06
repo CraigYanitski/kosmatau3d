@@ -8,18 +8,16 @@ class Dust(object):
   def __init__(self):
     self.__fileIndex = []             #a list for the dust index in the grid
     self.__interpolationIndex = []    #a list for the dust index in the respective interpolation list
-    self.__dust = []  #private variable for the name of the dust element
-    self.__transitions = []
-    self.__frequencies = []
-  	#self.__intensity = 0      #private variable for the intensity emitted (I_x)
-  	#self.__opticalDepth = 0   #private variable for the optical depth (tau_x)
+    self.__dust = []                  #list for the name of the dust elements being tracked
+    self.__transitions = []           #list for the transitions being tracked
+    self.__frequencies = []           #list for the frequencies being tracked
     return
-  #def __setI(self, I):
-  #	self.__intensity = I
-  #	return
-  #def __setTau(self, tau):
-  #	self.__opticalDepth = tau
-  #	return
+  def __str__(self):
+    '''Overloaded print routine to print useful information.'''
+    printout = '  {} Dust'.format(len(self.__dust))
+    for i in range(len(self.__dust)):
+      printout += '\n    ->{} transition {}, at {} GHz'.format(self.__dust[i], self.__transitions[i], self.__frequencies[i])
+    return printout
 
   #PUBLIC
   def addDust(self, dust, transition, frequency, index):
@@ -32,10 +30,10 @@ class Dust(object):
   def addTransition(self, dust, transition, frequency, index):
     '''This function might not be needed. Initially, I wanted to be able to add
        separate dust with their respective transitions, but it might be more
-       computationally-efficient to just add each molecule...'''
+       computationally-efficient to just add each dust element...'''
     self.__fileIndex.append(index)
     self.__interpolationIndex.append(len(self.__dust))
-    self.__molecules.append(dust + ' {}'.format(transition))
+    self.__dust.append(dust)
     self.__transitions.append(transition)
     self.__frequencies.append(frequency)
     return
@@ -49,8 +47,3 @@ class Dust(object):
     return np.array(self.__frequencies)
   def getTransitions(self):
     return np.array(self.__transitions)
-  #def calculateEmission(self):
-  #	for mass in super()._Combination__masspoints
-  #    intensity_xi[vo] = inten_x_i[vo] + intensityCl[0][ma] * super()._Combination__combination[ma]
-  #    tau_x_i[vo] = tau_x_i[vo] + tauCl[0][ma] * super()._Combination__combination[ma]
-  #  return
