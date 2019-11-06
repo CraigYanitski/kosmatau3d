@@ -21,4 +21,7 @@ class Constants():
     self.densityLimits = [3, 7]
     self.massLimits = [-3, 3]
     self.uvLimits = [0, 6]
+    # UV adjustment
+    self.normUV = 1.06*10**39*2.7305
+    self.globalUV = 10
     return
