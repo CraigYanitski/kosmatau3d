@@ -8,12 +8,16 @@ class Combination(object):
   probability, intensity, optical depth, and FUV field.
   '''
   # PRIVATE
-  def __init__(self, species, interpolations, combination=[], masses=[], probability=0):
+  def __init__(self, species, interpolations, combination=[], masses=[], density=[], fuv=0, probability=0):
     self.__species = species     #list of both moleculular and dust species
     self.__interpolations = interpolations
     self.__combination = combination 	#list of the number of each masspoint
-    self.__listMasspoints = masses    #list of masses in the combination
-    self.__FUV = 0                    #the FUV field for this combination of mass points
+    self.__FUV = fuv                    #the FUV field for this combination of mass points
+    self.__density = density
+    self.__listMasspoints = []
+    for i,mass in enumerate(masses):
+      masspoint = Masspoint(self.__species, self.__interpolations, self.__density[i], mass, fuv, self.__combination[i])
+      self.__listMasspoints.append(masspoint)    #list of masses in the combination
     self.__intensity = []             #velocity-averaged intensity of this combination of masspoints
     self.__opticalDepth = []          #velocity-averaged optical depth of this combination of masspoints
     self.__probability = 0            #the probability of this combination of masspoints
@@ -29,6 +33,8 @@ class Combination(object):
   #def addDust(self, element):
   #  self.__listDust.append(DustEmission(element))
   #  return
+  def getMasspoints(self):
+    return self.__listMasspoints
   def addFUV(self, fuvField):
     self.__setFUV(fuvField)
     return
@@ -36,9 +42,9 @@ class Combination(object):
     self.__listMasspoints.append(Masspoint(self.__species, self.__interpolations, mass, number))
     self.__combination.append(number)
     return
-  def calculateEmission(self, vrange):
+  def calculateEmission(self, vrange, vDispersion):
     for i,masspoint in enumerate(self.__listMasspoints):
-      (intensity,opticalDepth) = masspoint.calculateEmission(species, self.__combination[i], vrange)
+      (intensity,opticalDepth) = self.__combination[i]*masspoint.calculateEmission(vrange, vDispersion)
       self.__intensity.append(intensity)
       self.__opticalDepth.append(opticalDepth)
     return

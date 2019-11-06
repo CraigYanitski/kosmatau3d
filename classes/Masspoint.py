@@ -1,4 +1,6 @@
 import numpy as np
+from Molecules import *
+from Dust import *
 class Masspoint(object):
   '''
   This is a class to handle one fractal mass in a combination.
@@ -13,7 +15,7 @@ class Masspoint(object):
     self.__interpolations = interpolations
     self.__density = density
     self.__mass = mass 	#mass of this KOSMA-tau simulation
-    self.__fuv = fuv
+    self.__FUV = fuv
     self.__number = number    #number of this KOSMA-tau model
     #self.__FUV = FUVfield()     #the FUV field for this combination of mass points
     self.__intensity = np.array([])       #velocity-averaged intensity of this combination of masspoints
@@ -21,15 +23,16 @@ class Masspoint(object):
     return
 
   # PUBLIC
-  def calculateEmission(self, species, vRange, vDispersion):
-    self.__intensity = np.zeros(vrange.size)
-    self.__opticalDepth = np.zeros(vrange.size)
+  def calculateEmission(self, vRange, vDispersion):
+    self.__intensity = np.zeros(vRange.size)
+    self.__opticalDepth = np.zeros(vRange.size)
     for element in self.__species:
-      interpolationPoint = [self.__density, self.__mass, self.fuv]
-      if isinstance(element, Molecule):
-        self.__intensity_xi = self.__interpolations.interpolateIntensity(interpolationPoint).sum()*self.__number*np.exp(-1/2.*((vRange-vRange.reshape(vRange.size,1))/(vDispersion))**2)
-        self.__opticalDepth_xi = self.__interpolations.interpolateTau(interpolationPoint).sum()*self.__number*np.exp(-1/2.*((vRange-vRange.reshape(vRange.size,1))/(vDispersion))**2)
+      interpolationPoint = [self.__density, self.__mass, self.__FUV.getFUV()]
+      print(element)
+      if isinstance(element, Molecules):
+        self.__intensity_xi = self.__interpolations.interpolateIntensity(interpolationPoint, np.array(element.getInterpolationIndeces())).sum()*self.__number*np.exp(-1/2.*((vRange-vRange.reshape(vRange.size,1))/(vDispersion))**2)
+        self.__opticalDepth_xi = self.__interpolations.interpolateTau(interpolationPoint, element.getInterpolationIndeces()).sum()*self.__number*np.exp(-1/2.*((vRange-vRange.reshape(vRange.size,1))/(vDispersion))**2)
       elif isinstance(element, Dust):
-        self.__intensity_xi = self.__interpolations.interpolateIntensity(interpolationPoint).sum()*self.__number
-        self.__opticalDepth_xi = self.__interpolations.interpolateTau(interpolationPoint).sum()*self.__number
+        self.__intensity_xi = self.__interpolations.interpolateIntensity(interpolationPoint, element.getInterpolationIndeces()).sum()*self.__number
+        self.__opticalDepth_xi = self.__interpolations.interpolateTau(interpolationPoint, element.getInterpolationIndeces()).sum()*self.__number
       return np.stack((self.__intensity,self.__opticalDepth))

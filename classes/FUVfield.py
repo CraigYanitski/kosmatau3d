@@ -12,3 +12,5 @@ class FUVfield(object):
   def setFUV(self, fuv):
     self.__setFUV(fuv)
     return
+  def getFUV(self):
+    return self.__FUV

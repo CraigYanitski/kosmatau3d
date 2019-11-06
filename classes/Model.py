@@ -55,7 +55,7 @@ class Model():
       # self.__dustTransitions['dust'].append(transition)
       # self.__dustFrequencies['dust'].append(frequencies[species=='dust' and transitions==transition])
     #self.__species = [self.__molecules, self.__dust]
-    self.__speciesNames = self.__molecules.getMolecules() + self.__dust.getDust()
+    self.__speciesNames = np.append(self.__molecules.getMolecules(), self.__dust.getDust())
     return
   def addMolecule(self, molecule, transition):
     (numbers,species,transitions,frequencies) = self.__observations.speciesData
@@ -72,7 +72,7 @@ class Model():
       #self.__moleculeTransitions[molecule].append(transition)
       #self.__moleculeFrequencies[molecule].append(frequencies[species==molecule and transitions==transition])
     #self.__species = [self.__molecules, self.__dust]
-    self.__speciesNames = self.__molecules.getMolecules() + self.__dust.getDust()
+    self.__speciesNames = np.append(self.__molecules.getMolecules(), self.__dust.getDust())
     return
   def addSpecies(self, species, transition):
     # find transition number as defined in

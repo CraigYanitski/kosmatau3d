@@ -39,8 +39,10 @@ class VoxelGrid(object):
     x,y,z,scale = self.__dimensions.voxelCartesianPosition()
     r,phi = self.__dimensions.voxelPolarPosition()
     for i,voxel in enumerate(self.__voxels):
-      voxel.setPosition(x[i], y[i], z[i], r[i], phi[i], scale)
-      voxel.setProperties()
+      if r[i]<=max(x):
+        voxel.setPosition(x[i], y[i], z[i], r[i], phi[i], scale)
+        voxel.setProperties()
+      else: self.__voxels.remove(self.voxels[i])
     return
   def calculateEmission(self):
     for i,voxel in enumerate(self.__voxelNumber):

@@ -151,9 +151,7 @@ class Ensemble(object):
        Of course it is possible because of the wonders of numpy.ndarray(). . .'''
     self.__deltaNji = (self.__massObserved*(self.__masspoints)**(1-self.__constants.alpha)) / sum((self.__masspoints)**(2-self.__constants.alpha))
     pTab = (np.pi*self.__masspointRadii**2/self.__constants.pixelWidth**2)
-    print(self.__deltaNji, pTab)
     expectedValTab = (self.__deltaNji*pTab)
-    print(type(self.__deltaNji[0]), type(pTab[0]), type(self.__masspointRadii[0]))
     standardDeriTab = ((self.__deltaNji*pTab*(1-pTab))**0.5)
     lower = np.maximum(np.zeros(np.size(self.__masspoints)), np.floor(expectedValTab-self.__constants.nSigma*standardDeriTab))
     upper = np.minimum(self.__deltaNji, np.ceil(expectedValTab+self.__constants.nSigma*standardDeriTab))
@@ -162,22 +160,23 @@ class Ensemble(object):
     if self.__flagCombination:
       if np.any(expectedValTab>self.__constants.pnGauss and number>self.__constants.nGauss):
         # use gauss!
-        g = Gauss(expectedValTab[ma], standardDeriTab[ma])
+        g = Gauss(expectedValTab, standardDeriTab)
         self.__probability.append(g.gaussfunc)
         pause = input('gauss!!...')
       else:
         # use binomial 
-        b = Binomial(number_v[ma], pTab[ma]) # n and p for binominal 
+        # <<This will likely print an error when there are more masspoints>>
+        b = Binomial(self.__deltaNji, pTab) # n and p for binominal 
         self.__probability.append(b.binomfunc)
     else:
       if np.any(expectedValTab>self.__constants.pnGauss and number>self.__constants.nGauss):
         # use gauss
-        g = Gauss(expectedValTab[ma], standardDeriTab[ma])
+        g = Gauss(expectedValTab, standardDeriTab)
         self.__probability.append(g.gaussfunc)
         pause = input('gauss!!...')
       else:
         # use poisson
-        po = Poisson(expectedValTab[ma])
+        po = Poisson(expectedValTab)
         self.__probability.append(po.poissonfunc)
     return
   def calculate(self):
@@ -191,8 +190,8 @@ class Ensemble(object):
     combinations = []
     result = []
     for combination in self.__combinations:
-      self.__combinationObjects.append(Combination(self.__species, self.__interpolations, combination=combination, masses=self.__masspoints, probability=self.__probability))
-      self.__combinationObjects[-1].calculateEmission()
+      self.__combinationObjects.append(Combination(self.__species, self.__interpolations, combination=combination, masses=self.__masspoints, density=self.__masspointDensity, fuv=self.__FUV, probability=self.__probability))
+      self.__combinationObjects[-1].calculateEmission(self.__velocity, self.__velocityDispersion)
       result.append(self.__combinationObjects[-1].getScaledCombinationEmission()) #<<this needs to be altered>>
     result = np.array(result)
     self.__intensity = result.sum(3)[0]

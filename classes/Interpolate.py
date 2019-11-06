@@ -16,9 +16,10 @@ class Interpolate(object):
   # PRIVATE
   def __init__(self, species, observations, directory='MilkyWay', interpolate='linear'):
     self.__species = species
-    self.__indeces = []
-    for element in species:
-      for i in element.getNumbers(): self.__indeces.append(i)
+    self.__indeces = np.append(species[0].getFileIndeces(), species[1].getFileIndeces())
+    print(species[0].getFileIndeces(), self.__indeces)
+    # for element in species:
+    #   for i in element.getFileIndeces(): self.__indeces.append(i)
     self.__observations = observations
     self.__interpolation = interpolate
     self.__intensityInterpolation,self.__tauInterpolation = self.__calculateGridInterpolation()
@@ -34,18 +35,17 @@ class Interpolate(object):
     nmuvTau,Tau = self.__observations.tauCenterline
     intensityInterpolation = []
     tauInterpolation = []
-    print(np.shape([nmuvI]), np.shape(I[:,5]))
     if self.__interpolation=='linear':
       for index in self.__indeces:
-        rInterpI = interpolate.LinearNDInterpolator(nmuvI, I[:, index])
-        rInterpTau = interpolate.LinearNDInterpolator(nmuvTau, Tau[:, index])
+        rInterpI = interpolate.LinearNDInterpolator(nmuvI/10, I[:, index-1]/10)
+        rInterpTau = interpolate.LinearNDInterpolator(nmuvTau/10, Tau[:, index-1]/10)
         intensityInterpolation.append(rInterpI)
         tauInterpolation.append(rInterpTau)
       return intensityInterpolation,tauInterpolation
     elif self.__interpolation=='radial' or self.__interpolation=='cubic':
       for index in self.__indeces:
-        rInterpI = interpolate.Rbf(nmI, massI, uvI, I[:, index])
-        rInterpTau = interpolate.Rbf(nTau, massTau, uvTau, Tau[:, index])
+        rInterpI = interpolate.Rbf(nmI/10, massI/10, uvI/10, I[:, index-1]/10)
+        rInterpTau = interpolate.Rbf(nTau/10, massTau/10, uvTau/10, Tau[:, index-1]/10)
         intensityInterpolation.append(rInterpI)
         tauInterpolation.append(rInterpTau)
       return intensityInterpolation,tauInterpolation
@@ -101,18 +101,26 @@ class Interpolate(object):
                    Exitting...\n\n'.format(self.__interpolation))
 
   # PUBLIC
-  def interpolateIntensity(self, points, species):
-    if len(species):
+  def interpolateIntensity(self, points, speciesNumber, verbose=False):
+    if len(speciesNumber):
+      #number = np.array(speciesNumber)
+      print(points, np.shape(self.__intensityInterpolation))
       intensity = []
-      for i in self.__indeces: intensity.append(self.__intensityInterpolation(i))
-    else: sys.exit('<<ERROR>>: a zero-length species array has been used to interpolate the intensity.\n\n')
-    return np.array(intensity)
-  def interpolateTau(self, points, species):
-    if len(species):
+      for i in speciesNumber: 
+        if self.__interpolation=='linear': intensity.append(self.__intensityInterpolation[i](points))
+        elif self.__interpolation=='radial' or self.__interpolation=='cubic': intensity.append(self.__intensityInterpolation[i](points[0], points[1], points[2]))
+      if verbose: print('Calculated the intensity for {} species.'.format(len(speciesNumber)))
+    elif verbose: print('There are no species adding to the intensity.')
+    return (np.array(intensity)).sum(0)
+  def interpolateTau(self, points, speciesNumber, verbose=False):
+    if len(speciesNumber):
       tau = []
-      for i in self.__indeces: tau.append(self.__tauInterpolation(i))
-    else: sys.exit('<<ERROR>>: a zero-length species array has been used to interpolate the optical depth.\n\n')
-    return np.array(tau)
+      for i in speciesNumber:
+        if self.__interpolation=='linear': tau.append(self.__tauInterpolation[i](points))
+        if self.__interpolation=='radial' or self.__interpolation=='cubic': tau.append(self.__tauInterpolation[i](points[0], points[1], points[2]))
+      if verbose: print('Calculated the optical depth for {} species.'.format(len(speciesNumber)))
+    elif verbose: print('There are no species adding to the optical depth.')
+    return (np.array(tau)).sum(0)
   def interpolateRotationalVelocity(self, radius):
     return self.__rotationInterpolation(radius/1000.)
   def interpolateDensity(self, radius):

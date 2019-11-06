@@ -13,6 +13,7 @@ class Voxel(object):
     self.__species = species     #list of both moleculular and dust species
     self.__interpolations = interpolations
     self.__index = index    #index of voxel in VoxelGrid, sort of like its ID in the overall model
+    self.__constants = Constants()
     self.__velocity = 0     #velocity of mass at voxel point
     self.__velocityDispersion = 0   #dispersion of velocity at voxel point
     self.__intensity = 0      #intensity of emissions at voxel point
@@ -46,7 +47,8 @@ class Voxel(object):
     self.__UVextinction = self.__interpolations.interpolateFUVextinction(self.__density, self.__clumpMass+self.__interclumpMass)
     return
   def __setFUV(self):
-    fuv = self.__interpolations.interpolateFUVfield(self.__r)
+    fuv = self.__interpolations.interpolateFUVfield(self.__r)/self.__constants.normUV*self.__constants.globalUV
+    fuv = np.log10(np.clip(fuv, 1, None))
     self.__FUV = FUVfield(fuv)
     return
 
