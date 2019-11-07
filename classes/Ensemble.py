@@ -80,11 +80,14 @@ class Ensemble(object):
     '''Set the mass.'''
     self.__setMass(mass)
     return
+  def getMass(self):
+    return self.__massObserved
   #def initialiseEnsemble
   def calculateMasspoints(self):
     '''This is a function to get the clump masses in this ensemble. It will soon be depreciated
        as I will change the reading of the KOSMA-tau files to convert from the fortran 10*log(values).'''
-    self.__masspoints = np.arange(self.__massLimits[0], self.__massLimits[1]+1, 1)
+    self.__masspoints = np.arange(self.__massLimits[0], self.__massLimits[1])
+    print(self.__masspoints)
     return
   def calculateMasspointDensity(self):
     '''I am not entirely sure this is needed...'''
@@ -134,7 +137,7 @@ class Ensemble(object):
       grid = np.mgrid[ranges[0][0]:ranges[0][1], ranges[1][0]:ranges[1][1], ranges[2][0]:ranges[2][1], ranges[3][0]:ranges[3][1], \
                       ranges[4][0]:ranges[4][1], ranges[5][0]:ranges[5][1], ranges[6][0]:ranges[6][1]]
       self.__combinations = np.array([grid[0].flatten(), grid[1].flatten(), grid[2].flatten(), grid[3].flatten(), grid[4].flatten(), grid[5].flatten(), grid[6].flatten()])
-    else: sys.exit('\nThere are too many masses for the current grid.\nExitting. . .\n\n')
+    else: sys.exit('\nThere are too many masses for the current grid ({}).\nExitting. . .\n\n'.format(dimension))
     # list = []
     # for massRange in self.__masspointNumberRange:
     #   l = np.arange(massRange[0], line[1] + 1, dtype=np.int)
@@ -157,12 +160,12 @@ class Ensemble(object):
     pTab = (np.pi*self.__masspointRadii**2/self.__constants.pixelWidth**2)
     expectedValTab = (self.__deltaNji*pTab)
     standardDeriTab = ((self.__deltaNji*pTab*(1-pTab))**0.5)
-    lower = np.maximum(np.zeros(np.size(self.__masspoints)), np.floor(expectedValTab-self.__constants.nSigma*standardDeriTab))
+    lower = np.maximum(np.zeros(self.__masspoints.size), np.floor(expectedValTab-self.__constants.nSigma*standardDeriTab))
     upper = np.minimum(self.__deltaNji, np.ceil(expectedValTab+self.__constants.nSigma*standardDeriTab))
     self.__masspointNumberRange = np.array([lower, upper]).T
     self.calculateCombinations()
     if self.__flagCombination:
-      if np.any(expectedValTab>self.__constants.pnGauss and number>self.__constants.nGauss):
+      if np.any(expectedValTab>self.__constants.pnGauss) and np.any(number>self.__constants.nGauss):
         # use gauss!
         g = Gauss(expectedValTab, standardDeriTab)
         self.__probability.append(g.gaussfunc)
@@ -173,7 +176,7 @@ class Ensemble(object):
         b = Binomial(self.__deltaNji, pTab) # n and p for binominal 
         self.__probability.append(b.binomfunc)
     else:
-      if np.any(expectedValTab>self.__constants.pnGauss and number>self.__constants.nGauss):
+      if np.any(expectedValTab>self.__constants.pnGauss) and np.any(number>self.__constants.nGauss):
         # use gauss
         g = Gauss(expectedValTab, standardDeriTab)
         self.__probability.append(g.gaussfunc)
@@ -182,6 +185,8 @@ class Ensemble(object):
         # use poisson
         po = Poisson(expectedValTab)
         self.__probability.append(po.poissonfunc)
+    for i,combination in enumerate(self.__combinations): self.__probability[i] = self.__probability[i](combination)
+    print(self.__probability)
     return
   def calculate(self):
     '''Maybe <<PARALLELISE>> this??
@@ -191,8 +196,10 @@ class Ensemble(object):
     self.calculateMasspoints()
     self.calculateRadii()
     self.createCombinationObjects()
+    print('Calculating ensemble emission')
     combinations = []
     result = []
+    print(self.__combinations)
     for combination in self.__combinations:
       self.__combinationObjects.append(Combination(self.__species, self.__interpolations, combination=combination, masses=self.__masspoints, density=self.__masspointDensity, fuv=self.__FUV, probability=self.__probability))
       self.__combinationObjects[-1].calculateEmission(self.__velocity, self.__velocityDispersion)

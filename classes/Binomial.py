@@ -1,3 +1,5 @@
+import functools as ft
+from operator import mul
 class Binomial():
   '''class calculation binomial coefficients (choose) and function'''
   '''This is a classs taken directly from the work of Silke Andree-Labsch and Christoph Bruckmann.'''
@@ -17,11 +19,10 @@ class Binomial():
     >>> comb(20,14)
     38760
     '''
-    if k > self.n-k:  # for smaller intermediate values 
+    i = k>self.n-k  # for smaller intermediate values 
                       # use (n choose k) = (n choose n-k)
-      k = self.n-k
-    return int(reduce( mul, range(int(self.n-k+1), int(self.n+1)), 1) /
-               reduce( mul, range(1,int(k+1)), 1) )
+    k[i] = self.n[i]-k[i]
+    return np.array([ft.reduce(mul, range(self.n[0]-k[0]+1,self.n[0]+1))/ft.reduce(mul, range(1,k[0]+1)),ft.reduce(mul, range(self.n[1]-k[1]+1,self.n[1]+1))/ft.reduce(mul, range(1,k[1]+1))], dtype=np.float)
   '''
   def choose(self, k):
       """
@@ -49,4 +50,4 @@ class Binomial():
   def binomfunc(self, k):
     # print 'comb', self.comb(k)
     #print (float(self.comb(k)) * self.p**k * (1-self.p)**(self.n-k))
-    return float(self.comb(k)) * self.p**k * (1-self.p)**(self.n-k)
+    return self.comb(k) * self.p**k * (1-self.p)**(self.n-k)

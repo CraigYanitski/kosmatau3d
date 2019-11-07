@@ -24,8 +24,7 @@ class VoxelGrid(object):
     self.__interpolations = Interpolate(self.__species, observations)
     for i in range(self.__voxelNumber): self.__voxels.append(Voxel(self.__species, self.__interpolations, i))
   def __str__(self):
-    return 'VoxelGrid\n  ->{} voxels\n  ->intensity {}\n  ->optical depth {}'\
-           .format(self.__voxelNumber, 10**self.__voxelIntensity.sum(), 10**self.__voxelOpticalDepth.sum())
+    return 'VoxelGrid\n  ->{} voxels\n  ->intensity {}\n  ->optical depth {}'.format(self.__voxelNumber, sum(self.__voxelIntensity), sum(self.__voxelOpticalDepth))
 
   # PUBLIC
   #def createGrid(self, indeces):
@@ -39,14 +38,18 @@ class VoxelGrid(object):
     self.__initialiseGrid(species, observations)
     x,y,z,scale = self.__dimensions.voxelCartesianPosition()
     r,phi = self.__dimensions.voxelPolarPosition()
+    self.__unusedVoxels = []
+    print('Calculating grid emission')
     for i,voxel in enumerate(self.__voxels):
       if r[i]<=max(x):
-        voxel.setPosition(x[i], y[i], z[i], r[i], phi[i], scale)
+        print(r[i])
+        voxel.setPosition(x[i], y[i], z[i], r[i], phi, scale)
         voxel.setProperties()
-      else: self.__voxels.remove(self.voxels[i])
+      else: self.__unusedVoxels.append(i)
     return
   def calculateEmission(self):
-    for i,voxel in enumerate(self.__voxelNumber):
+    for i,voxel in enumerate(self.__voxels):
+      if i in self.__unusedVoxels: continue
       emission = voxel.calculateEmission()
       self.__voxelIntensity.append(emission[0])
       self.__voxelOpticalDepth.append(emission[1])
@@ -57,4 +60,4 @@ class VoxelGrid(object):
     return self.__voxels
   def totalEmission(self):
     # Return the emission from all of the voxels, separated by observed velocity
-    return np.array(self.__voxelIntensity,self.__voxelOpticalDepth)
+    return np.array([self.__voxelIntensity,self.__voxelOpticalDepth])

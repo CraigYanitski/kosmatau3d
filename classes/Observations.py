@@ -46,12 +46,23 @@ class Observations(object):
     tb = np.genfromtxt(self.__GRIDPATH+file)
     return (tb[:,:3],tb[:,3:])
   def __rhoMassAFUV(self, file='RhoMassAFUV.dat'):
-    pma = np.genfromtxt(self.__GRIDPATH+file, names=['number_density', 'mass', 'FUV_extinction'])
-    return (pma['number_density'],pma['mass'],pma['FUV_extinction'])
+    pma = np.genfromtxt(self.__GRIDPATH+file)
+    return (pma[:,:2],pma[:,2])
   def __speciesData(self, file='frequencies.dat'):
     # Open file containing the transition frequencies of various elements
     frequencies = np.genfromtxt(self.__GRIDPATH+file, names=['number', 'species', 'transition', 'frequency'], dtype="i8,U8,i8,f8", delimiter=',')
     return (frequencies['number'],frequencies['species'],frequencies['transition'],frequencies['frequency'])
+  def __str__(self):
+    if len(speciesData):
+      return 'There are no available transitions yet.'
+    else:
+      printout = 'Available transitions:'
+      i = np.isfinite(self.speciesData[0])&np.isfinite(self.speciesData[1])&np.isfinite(self.speciesData[2])&np.isfinite(self.speciesData[3])
+      transitions = self.speciesData[2]
+      elements = self.speciesData[1]
+      for i in range(len(elements)):
+        printout += '\n  ->{} {}'.format(element[i], transitions[i])
+      return printout
 
   # PUBLIC
   def __initialise(self):

@@ -23,7 +23,7 @@ class Dust(object):
   def addDust(self, dust, transition, frequency, index):
     self.__fileIndex.append(index)
     self.__interpolationIndex.append(len(self.__dust))
-    self.__dust.append(dust + ' {}'.format(transition))
+    self.__dust.append(dust)
     self.__transitions.append(transition)
     self.__frequencies.append(frequency)
     return

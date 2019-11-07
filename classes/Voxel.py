@@ -27,12 +27,16 @@ class Voxel(object):
     self.__phi = 0
     self.__scale = 0
     return
+  def __setMass(self):
+    self.__mass = self.__clumpMass+self.__interclumpMass
   def __setClumpMass(self):
     self.__clumpMass = self.__interpolations.interpolateClumpMass(self.__r)
+    print(self.__clumpMass)
     self.__clump.setMass(self.__clumpMass)
     return
   def __setInterclumpMass(self):
     self.__interclumpMass = self.__interpolations.interpolateInterclumpMass(self.__r)
+    print(self.__interclumpMass)
     self.__interclump.setMass(self.__interclumpMass)
     return
   def __setVelocity(self):
@@ -48,12 +52,11 @@ class Voxel(object):
     return
   def __setFUV(self):
     fuv = self.__interpolations.interpolateFUVfield(self.__r)/self.__constants.normUV*self.__constants.globalUV
-    fuv = np.log10(np.clip(fuv, 1, None))
+    fuv = 10**(np.clip(fuv, 1, None))
     self.__FUV = FUVfield(fuv)
     return
   def __str__(self):
-    return 'Voxel {}\n  ->mass {}\n  ->intensity {}\n  ->optical depth {}\n  ->FUV field {}'\
-           .format(self.__index, self.__mass, 10**self.__intensity, 10**self.__opticalDepth, self.__FUV)
+    return 'Voxel {}\n  ->mass {}\n  ->intensity {}\n  ->optical depth {}\n  ->FUV field {}'.format(self.__index, self.__mass, 10**self.__intensity, 10**self.__opticalDepth, self.__FUV)
 
   # PUBLIC
   def setPosition(self, x, y, z, r, phi, scale):
@@ -67,19 +70,24 @@ class Voxel(object):
   def setProperties(self):
     self.__setClumpMass()
     self.__setInterclumpMass()
+    self.__setMass()
     self.__setVelocity()
     self.__setDensity()
     self.__setExtinction()
     self.__setFUV()
-    properties = []
-    self.__interclump.initialise(mass=self.__interclumpMass, density=self.__density, velocity=self.__velocity, velocityDispersion=self.__velocityDispersion, FUV=self.__FUV, extinction=self.__UVextinction)
+    print('Calculating voxel emission...')
     self.__clump.initialise(mass=self.__clumpMass, density=self.__density, velocity=self.__velocity, velocityDispersion=self.__velocityDispersion, FUV=self.__FUV, extinction=self.__UVextinction)
+    self.__clump.calculate()
+    self.__interclump.initialise(mass=self.__interclumpMass, density=self.__density, velocity=self.__velocity, velocityDispersion=self.__velocityDispersion, FUV=self.__FUV, extinction=self.__UVextinction)
+    self.__interclump.calculate()
     return
   def getPosition(self):
     return (self.__x, self.__y, self.__z)
   def getClumps(self):
     return (self.__clump, self.__interclump)
   def calculateEmission(self):
-    iClump,tauClump,FUVclump = self.__clump.getEmission()
-    iInterclump,tauInterclump,FUVinterclump = self.__interclump.getEmission()
-    return np.array(iClump+iInterclump, tauClump+tauInterclump, FUVclump)
+    iClump,tauClump,FUVclump = self.__clump.getEnsembleEmission()
+    iInterclump,tauInterclump,FUVinterclump = self.__interclump.getEnsembleEmission()
+    intensity = iClump+iInterclump
+    tau = tauClump+tauInterclump
+    return np.array([intensity, tau, FUVclump])

@@ -16,14 +16,14 @@ class Molecules(object):
     '''Overloaded print routine to print useful information.'''
     printout = '  {} Molecules:'.format(len(self.__molecules))
     for i in range(len(self.__molecules)):
-      printout += '\n    ->{} transition {}, at {} GHz'.format(self.__moleccules[i], self.__transitions[i], self.__frequencies[i])
+      printout += '\n    ->{} transition {}, at {} GHz'.format(self.__molecules[i], self.__transitions[i], self.__frequencies[i])
     return printout
 
   #PUBLIC
   def addMolecule(self, molecule, transition, frequency, index):
     self.__fileIndex.append(index)
     self.__interpolationIndex.append(len(self.__molecules))
-    self.__molecules.append(molecule + ' {}'.format(transition))
+    self.__molecules.append(molecule)
     self.__transitions.append(transition)
     self.__frequencies.append(frequency)
     return

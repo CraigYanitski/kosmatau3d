@@ -1,9 +1,10 @@
+import numpy as np
 class Gauss:
   '''This is a classs taken directly from the work of Silke Andree-Labsch and Christoph Bruckmann.'''
   def __init__(self, v0, sigma, area = 1):
-    self.area = float(area) # area below the curve (integrated curve) 
-    self.v0 = float(v0) # peak velocity
-    self.sigma = float(sigma) # standard derivation
+    self.area = area # area below the curve (integrated curve) 
+    self.v0 = v0 # peak velocity
+    self.sigma = sigma # standard deviation
     return
   
   def gaussfunc(self, v):
