@@ -15,7 +15,7 @@ class Model():
     self.__shape = Shape(x, y, z, modelType=modelType)      #Shape() object to create the parameters for the grid of voxels
     self.__grid = VoxelGrid(self.__shape.getDimensions())   #VoxelGrid() object to build the model and calculate the emission
     self.__orientation = Orientation()      #Orientation() object to change the viewing angle and expected spectra
-    self.__observations = Observations()    #Observations() object to centralise the required data for the program
+    self.__observations = Observations(self.__shape.getDimensions().getResolution())    #Observations() object to centralise the required data for the program
     self.__molecules = Molecules()   #Molecules() object to centralise the molecules in model
     self.__dust = Dust()             #Dust() object to centralise the dust in the model
     self.__species = [self.__molecules, self.__dust]    #this is a list of the species objects being considered

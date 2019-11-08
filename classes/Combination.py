@@ -17,7 +17,7 @@ class Combination(object):
     self.__masspoints = []
     print(combination)
     for i,mass in enumerate(masses):
-      masspoint = Masspoint(self.__species, self.__interpolations, self.__density[i], mass, fuv, self.__combination[i])
+      masspoint = Masspoint(self.__species, self.__interpolations, density=self.__density[i], mass=mass, fuv=fuv, number=self.__combination[i])
       self.__masspoints.append(masspoint)    #list of masses in the combination
     self.__intensity = []             #velocity-averaged intensity of this combination of masspoints
     self.__opticalDepth = []          #velocity-averaged optical depth of this combination of masspoints
@@ -28,7 +28,7 @@ class Combination(object):
     return
   def __str__(self):
     return 'Combination {}:\n  ->probability {}\n  ->intensity {}\n  ->optical depth {}\n  ->FUV field {}'\
-            .format(' '.join(self.__combination), self.__probability, 10**sum(self.__intensity), 10**sum(self.__opticalDepth), self.__FUV)
+            .format(self.__combination, self.__probability, 10**sum(self.__intensity), 10**sum(self.__opticalDepth), self.__FUV)
 
   # PUBLIC
   #def addMolecule(self, element):
@@ -56,4 +56,4 @@ class Combination(object):
     self.__opticalDepth = np.array(self.__opticalDepth)
     return
   def getScaledCombinationEmission(self):
-    return self.__probability*np.stack((10**(self.__intensity), np.exp(-10**(self.__opticalDepth)), np.exp(-self.__FUV.getFUV())))
+    return (self.__probability*np.stack((10**(self.__intensity), 10**(self.__opticalDepth))),self.__probability*self.__FUV.getFUV())

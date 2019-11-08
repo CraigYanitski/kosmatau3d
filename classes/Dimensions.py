@@ -36,6 +36,8 @@ class Dimensions(object):
     return 'dimensions {}pc x {}pc x {}pc'.format(self.__x, self.__y, self.__z)
 
   # PUBLIC
+  def getResolution(self):
+    return self.__scale
   def voxelNumber(self):
     # Return the number of voxels required
     return len(self.__xPositions)

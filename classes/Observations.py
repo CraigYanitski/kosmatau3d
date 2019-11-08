@@ -6,7 +6,8 @@ class Observations(object):
   in the folder 'grid'.
   '''
   # PRIVATE
-  def __init__(self, directory='MilkyWay'):
+  def __init__(self, scale, directory='MilkyWay'):
+    self.__scale = scale
     self.__INPUTPATH = '/home/yanitski/Desktop/KOSMA-tau^3/input/'
     self.__GRIDPATH = '/home/yanitski/Desktop/KOSMA-tau^3/grid/'
     if directory[-1]=='/': self.__directory = directory
@@ -14,17 +15,17 @@ class Observations(object):
     self.__initialise()
     return
   def __clumpMassProfile(self, file='mass_profile.dat'):
-    # Open file for the mass profile (clump) of the object
+    # Open file for the mass profile (clump) of the object (Msol/pc**2)
     clumpMass = np.genfromtxt(self.__INPUTPATH+self.__directory+file, names=['radius', 'h2_mass'])
-    return (clumpMass['radius'],clumpMass['h2_mass'])
+    return (clumpMass['radius']*1000,clumpMass['h2_mass']*self.__scale**2)
   def __interclumpMassProfile(self, file='mass_profile_inter.dat'):
-    # Open file for the mass profile (interclump) of the object
+    # Open file for the mass profile (interclump) of the object (Msol/pc**2)
     interclumpMass = np.genfromtxt(self.__INPUTPATH+self.__directory+file, names=['radius', 'h2_mass'])
-    return (interclumpMass['radius'],interclumpMass['h2_mass'])
+    return (interclumpMass['radius']*1000,interclumpMass['h2_mass']*self.__scale**2)
   def __densityProfile(self, file='densities_clouds.dat'):
-    # Open file for the density profile of the object
-    density = np.genfromtxt(self.__INPUTPATH+self.__directory+file, names=['radius', 'h2_surface_density'])
-    return (density['radius'],density['h2_surface_density'])
+    # Open file for the density profile of the object (n/cm**3)
+    density = np.genfromtxt(self.__INPUTPATH+self.__directory+file, names=['radius', 'h2_density'])
+    return ((density['radius']*1000),density['h2_density'])
   def __FUVfield(self, file='galactic_FUV.dat'):
     '''Open file for the FUV profile of the object
        'radius', 'energy density 912', 'energy density 1350', 'energy density 1500', 'energy density 1650', 'energy density 2000', \
@@ -34,7 +35,7 @@ class Observations(object):
   def __rotationProfile(self, file='rot_milki2018_14.dat'):
     # Open file for the rotation profile of the object
     rotation = np.genfromtxt(self.__INPUTPATH+self.__directory+file, names=['radius', 'rotation_velocity'])
-    return (rotation['radius'],rotation['rotation_velocity'])
+    return (rotation['radius']*1000,rotation['rotation_velocity'])
   def __tauCenterline(self, file='tau_linecentre.dat'):
     # Open file for KOSMA-tau simulations of optical depths
     # FORMAT: n, M, UV, tau[molecules then dust]

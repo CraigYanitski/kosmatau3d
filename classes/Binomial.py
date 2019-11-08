@@ -1,10 +1,11 @@
+import numpy as np
 import functools as ft
 from operator import mul
 class Binomial():
   '''class calculation binomial coefficients (choose) and function'''
   '''This is a classs taken directly from the work of Silke Andree-Labsch and Christoph Bruckmann.'''
   def __init__(self, n, p):
-    self.n = n
+    self.n = np.array(n, dtype=np.int)
     self.p = p
     return
   
@@ -19,10 +20,16 @@ class Binomial():
     >>> comb(20,14)
     38760
     '''
-    i = k>self.n-k  # for smaller intermediate values 
-                      # use (n choose k) = (n choose n-k)
-    k[i] = self.n[i]-k[i]
-    return np.array([ft.reduce(mul, range(self.n[0]-k[0]+1,self.n[0]+1))/ft.reduce(mul, range(1,k[0]+1)),ft.reduce(mul, range(self.n[1]-k[1]+1,self.n[1]+1))/ft.reduce(mul, range(1,k[1]+1))], dtype=np.float)
+    k = np.array(k, dtype=np.int)
+    i = k>self.n-k          # for smaller intermediate values 
+    k[i] = self.n[i]-k[i]   # use (n choose k) = (n choose n-k)
+    if np.any(k>0):
+      range1 = range(self.n[0]-k[0]+1,self.n[0]+1)
+      range2 = range(1,k[0]+1)
+      range3 = range(self.n[1]-k[1]+1,self.n[1]+1)
+      range4 = range(1,k[1]+1)
+      return np.array([ft.reduce(mul, range1)/ft.reduce(mul, range2),ft.reduce(mul, range3)/ft.reduce(mul, range4)], dtype=np.float)
+    else: return 0
   '''
   def choose(self, k):
       """

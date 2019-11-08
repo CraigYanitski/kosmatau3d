@@ -9,13 +9,15 @@ class Voxel(object):
   for the diffuse surroundings of a clump.
   '''
   # PRIVATE
-  def __init__(self, species, interpolations, index):
+  def __init__(self, species, interpolations, index, vNumber=10):
     self.__species = species     #list of both moleculular and dust species
     self.__interpolations = interpolations
     self.__index = index    #index of voxel in VoxelGrid, sort of like its ID in the overall model
     self.__constants = Constants()
     self.__velocity = 0     #velocity of mass at voxel point
     self.__velocityDispersion = 0   #dispersion of velocity at voxel point
+    self.__velocityNumber = vNumber
+    self.__velocityRange = 0
     self.__intensity = 0      #intensity of emissions at voxel point
     self.__opticalDepth = 0   #optical depth at voxel point
     self.__clump = Ensemble('clump', self.__species, self.__interpolations)    #clumpy ensemble at voxel point
@@ -31,18 +33,17 @@ class Voxel(object):
     self.__mass = self.__clumpMass+self.__interclumpMass
   def __setClumpMass(self):
     self.__clumpMass = self.__interpolations.interpolateClumpMass(self.__r)
-    print(self.__clumpMass)
     self.__clump.setMass(self.__clumpMass)
     return
   def __setInterclumpMass(self):
     self.__interclumpMass = self.__interpolations.interpolateInterclumpMass(self.__r)
-    print(self.__interclumpMass)
     self.__interclump.setMass(self.__interclumpMass)
     return
   def __setVelocity(self):
     self.__velocity = self.__interpolations.interpolateRotationalVelocity(self.__r)
     self.__velocityDispersion = 0.5*((self.__interpolations.interpolateRotationalVelocity(self.__r+0.5*self.__scale)-self.__velocity)**2 + \
                                      (self.__interpolations.interpolateRotationalVelocity(self.__r-0.5*self.__scale)-self.__velocity)**2)
+    self.__velocityRange = np.linspace(self.__velocity-self.__velocityDispersion, self.__velocity+self.__velocityDispersion, self.__velocityNumber)
     return
   def __setDensity(self):
     self.__density = self.__interpolations.interpolateDensity(self.__r)
@@ -76,9 +77,9 @@ class Voxel(object):
     self.__setExtinction()
     self.__setFUV()
     print('Calculating voxel emission...')
-    self.__clump.initialise(mass=self.__clumpMass, density=self.__density, velocity=self.__velocity, velocityDispersion=self.__velocityDispersion, FUV=self.__FUV, extinction=self.__UVextinction)
+    self.__clump.initialise(mass=self.__clumpMass, density=self.__density, velocity=self.__velocityRange, velocityDispersion=self.__velocityDispersion, FUV=self.__FUV, extinction=self.__UVextinction)
     self.__clump.calculate()
-    self.__interclump.initialise(mass=self.__interclumpMass, density=self.__density, velocity=self.__velocity, velocityDispersion=self.__velocityDispersion, FUV=self.__FUV, extinction=self.__UVextinction)
+    self.__interclump.initialise(mass=self.__interclumpMass, density=self.__density, velocity=self.__velocityRange, velocityDispersion=self.__velocityDispersion, FUV=self.__FUV, extinction=self.__UVextinction)
     self.__interclump.calculate()
     return
   def getPosition(self):

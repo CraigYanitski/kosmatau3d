@@ -109,33 +109,38 @@ class Interpolate(object):
   def getObservations(self):
     return self.__observations
   def interpolateIntensity(self, points, speciesNumber, verbose=False):
+    verbose = verbose and self.__verbose
     if len(speciesNumber):
       intensity = []
       for i in speciesNumber: 
-        if self.__interpolation=='linear': intensity.append(self.__intensityInterpolation[i](points))
-        elif self.__interpolation=='radial' or self.__interpolation=='cubic': intensity.append(self.__intensityInterpolation[i](points[0], points[1], points[2]))
+        if self.__interpolation=='linear': intensity.append(10**self.__intensityInterpolation[i](points))
+        elif self.__interpolation=='radial' or self.__interpolation=='cubic': intensity.append(10**self.__intensityInterpolation[i](points[0], points[1], points[2]))
       if verbose: print('Calculated the intensity for {} species.'.format(len(speciesNumber)))
-    elif verbose: print('There are no species adding to the intensity.')
+    else:
+      if verbose: print('There are no species of this type adding to the intensity.')
+      intensity = 0
     return (np.array(intensity)).sum(0)
   def interpolateTau(self, points, speciesNumber, verbose=False):
+    verbose = verbose and self.__verbose
     if len(speciesNumber):
       tau = []
       for i in speciesNumber:
-        if self.__interpolation=='linear': tau.append(self.__tauInterpolation[i](points))
-        if self.__interpolation=='radial' or self.__interpolation=='cubic': tau.append(self.__tauInterpolation[i](points[0], points[1], points[2]))
+        if self.__interpolation=='linear': tau.append(10**self.__tauInterpolation[i](points))
+        if self.__interpolation=='radial' or self.__interpolation=='cubic': tau.append(10**self.__tauInterpolation[i](points[0], points[1], points[2]))
       if verbose: print('Calculated the optical depth for {} species.'.format(len(speciesNumber)))
-    elif verbose: print('There are no species adding to the optical depth.')
+    else:
+      if verbose: print('There are no species adding to the optical depth.')
+      tau = 0
     return (np.array(tau)).sum(0)
   def interpolateRotationalVelocity(self, radius):
     return self.__rotationInterpolation(radius/1000.)
   def interpolateDensity(self, radius):
     return self.__densityInterpolation(radius/1000.)
   def interpolateClumpMass(self, radius):
-    print(radius)
     return self.__clumpMassInterpolation(radius/1000.)
   def interpolateInterclumpMass(self, radius):
     return self.__interclumpMassInterpolation(radius/1000.)
   def interpolateFUVextinction(self, density, mass):
-    return self.__FUVextinctionInterpolation(density, mass)
+    return 10**self.__FUVextinctionInterpolation(density, mass)
   def interpolateFUVfield(self, radius):
     return self.__FUVfieldInterpolation(radius/1000.)
