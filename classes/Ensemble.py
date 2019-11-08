@@ -26,10 +26,12 @@ class Ensemble(object):
     self.__intensity = 0        #ensemble-averaged intensity for each velocity
     self.__opticalDepth = 0     #ensemble-averaged optical depth for each velocity
     self.__FUV = 0
-    self.__massObserved = 0
-    self.__massEnsemble = 0     #ensemble-averaged mass
+    self.__massObserved = 0     #'observed' mass
+    self.__massEnsemble = 0     #ensemble mass
+    self.__radiusEnsemble = 0   #ensemble radius
+    self.__volumeEnsemble = 0   #ensemble volume
     self.__densityObserved = 0
-    self.__radius = 0   #ensemble-averaged radius
+    self.__densityEnsemble = 0
     if self.__clumpType=='clump':
       self.__massLimits = self.__constants.clumpMassLimits   #maximum mass in ensemble
     elif self.__clumpType=='interclump':
@@ -39,7 +41,7 @@ class Ensemble(object):
     self.__masspointRadii = []
     self.__masspointDensity = []
     self.__interpolationPoints = []
-    self.__deltaNji = []
+    self.__Nj = []    #this is 'deltaNji' in the original code, and comepletely confusing regarding the inconsistency with Silke's thesis
     return
   def __setMass(self, mass):
     '''Set the mass.'''
@@ -115,28 +117,28 @@ class Ensemble(object):
     ranges = self.__masspointNumberRange
     if dimension==1:
       grid = np.mgrid[ranges[0][0]:ranges[0][1]]
-      self.__combinations = np.array([grid[0].flatten()])
+      combinations = np.array([grid[0].flatten()])
     elif dimension==2:
       grid = np.mgrid[ranges[0][0]:ranges[0][1], ranges[1][0]:ranges[1][1]]
-      self.__combinations = np.array([grid[0].flatten(), grid[1].flatten()])
+      combinations = np.array([grid[0].flatten(), grid[1].flatten()])
     elif dimension==3:
       grid = np.mgrid[ranges[0][0]:ranges[0][1], ranges[1][0]:ranges[1][1], ranges[2][0]:ranges[2][1]]
-      self.__combinations = np.array([grid[0].flatten(), grid[1].flatten(), grid[2].flatten()])
+      combinations = np.array([grid[0].flatten(), grid[1].flatten(), grid[2].flatten()])
     elif dimension==4:
       grid = np.mgrid[ranges[0][0]:ranges[0][1], ranges[1][0]:ranges[1][1], ranges[2][0]:ranges[2][1], ranges[3][0]:ranges[3][1]]
-      self.__combinations = np.array([grid[0].flatten(), grid[1].flatten(), grid[2].flatten(), grid[3].flatten()])
+      combinations = np.array([grid[0].flatten(), grid[1].flatten(), grid[2].flatten(), grid[3].flatten()])
     elif dimension==5:
       grid = np.mgrid[ranges[0][0]:ranges[0][1], ranges[1][0]:ranges[1][1], ranges[2][0]:ranges[2][1], ranges[3][0]:ranges[3][1], \
                       ranges[4][0]:ranges[4][1]]
-      self.__combinations = np.array([grid[0].flatten(), grid[1].flatten(), grid[2].flatten(), grid[3].flatten(), grid[4].flatten()])
+      combinations = np.array([grid[0].flatten(), grid[1].flatten(), grid[2].flatten(), grid[3].flatten(), grid[4].flatten()])
     elif dimension==6:
       grid = np.mgrid[ranges[0][0]:ranges[0][1], ranges[1][0]:ranges[1][1], ranges[2][0]:ranges[2][1], ranges[3][0]:ranges[3][1], \
                       ranges[4][0]:ranges[4][1], ranges[5][0]:ranges[5][1]]
-      self.__combinations = np.array([grid[0].flatten(), grid[1].flatten(), grid[2].flatten(), grid[3].flatten(), grid[4].flatten(), grid[5].flatten()])
+      combinations = np.array([grid[0].flatten(), grid[1].flatten(), grid[2].flatten(), grid[3].flatten(), grid[4].flatten(), grid[5].flatten()])
     elif dimension==7:
       grid = np.mgrid[ranges[0][0]:ranges[0][1], ranges[1][0]:ranges[1][1], ranges[2][0]:ranges[2][1], ranges[3][0]:ranges[3][1], \
                       ranges[4][0]:ranges[4][1], ranges[5][0]:ranges[5][1], ranges[6][0]:ranges[6][1]]
-      self.__combinations = np.array([grid[0].flatten(), grid[1].flatten(), grid[2].flatten(), grid[3].flatten(), grid[4].flatten(), grid[5].flatten(), grid[6].flatten()])
+      combinations = np.array([grid[0].flatten(), grid[1].flatten(), grid[2].flatten(), grid[3].flatten(), grid[4].flatten(), grid[5].flatten(), grid[6].flatten()])
     else: sys.exit('\nThere are too many masses for the current grid ({}).\nExitting. . .\n\n'.format(dimension))
     # list = []
     # for massRange in self.__masspointNumberRange:
@@ -152,38 +154,46 @@ class Ensemble(object):
     #       prod = prod * self.list[a+1].size
     #       a = a + 1
     #     self.__combinations[j][i] = int(j/(prod)) % self.list[i].size + self.list[i][0]
-    return
+    return combinations
   def createCombinationObjects(self):
     '''This function removes all of the unnecessary degenerate looping during this calculation.
        Of course it is possible because of the wonders of numpy.ndarray(). . .'''
-    self.__deltaNji = (self.__massObserved*(self.__masspoints)**(1-self.__constants.alpha)) / sum((self.__masspoints)**(2-self.__constants.alpha))
-    pTab = (np.pi*self.__masspointRadii**2/self.__constants.pixelWidth**2)
-    expectedValTab = (self.__deltaNji*pTab)
-    standardDeriTab = ((self.__deltaNji*pTab*(1-pTab))**0.5)
-    lower = np.maximum(np.zeros(self.__masspoints.size), np.floor(expectedValTab-self.__constants.nSigma*standardDeriTab))
-    upper = np.minimum(self.__deltaNji, np.ceil(expectedValTab+self.__constants.nSigma*standardDeriTab))
+    self.__Nj = (self.__massObserved*(self.__masspoints)**(1-self.__constants.alpha)) / sum((self.__masspoints)**(2-self.__constants.alpha))
+    print('\nNj:\n', self.__Nj)
+    self.__massEnsemble = sum(self.__Nj*self.__masspoints)
+    self.__radiusEnsemble = sum(self.__Nj*self.__masspointRadii)
+    self.__volumeEnsemble = sum(self.__Nj*np.pi*4./3.*self.__masspointRadii**3)
+    self.__densityEnsemble = self.__massEnsemble/self.__volumeEnsemble
+    apparentSurfaceDensity = (np.pi*self.__masspointRadii**2/self.__constants.pixelWidth**2)    #this is 'pTab' in the original code
+    expectedMass = (self.__Nj*apparentSurfaceDensity)   #this is 'expectedValTab' in the original code
+    standardDeviation = ((self.__Nj*apparentSurfaceDensity*(1-apparentSurfaceDensity))**0.5)    #this is 'standardDeriTab' in the original code
+    print('\napparent suface density, expected mass, standard deviation:\n', apparentSurfaceDensity, expectedMass, standardDeviation)
+    lower = np.maximum(np.zeros(self.__masspoints.size), np.floor(expectedMass-self.__constants.nSigma*standardDeviation))
+    upper = np.minimum(self.__Nj, np.ceil(expectedMass+self.__constants.nSigma*standardDeviation))
     self.__masspointNumberRange = np.array([lower, upper]).T
-    self.calculateCombinations()
+    print('\nMasspoint number range:\n', self.__masspointNumberRange)
+    self.__combinations = self.calculateCombinations()
+    print('\nCombinations:\n', self.__combinations)
     if self.__flagCombination:
       if np.any(expectedValTab>self.__constants.pnGauss) and np.any(number>self.__constants.nGauss):
         # use gauss!
-        g = Gauss(expectedValTab, standardDeriTab)
+        g = Gauss(expectedMass, standardDeviation)
         self.__probability.append(g.gaussfunc)
         pause = input('gauss!!...')
       else:
         # use binomial 
         # <<This will likely print an error when there are more masspoints>>
-        b = Binomial(self.__deltaNji, pTab) # n and p for binominal 
+        b = Binomial(self.__Nj, apparentSurfaceDensity) # n and p for binominal 
         self.__probability.append(b.binomfunc)
     else:
       if np.any(expectedValTab>self.__constants.pnGauss) and np.any(number>self.__constants.nGauss):
         # use gauss
-        g = Gauss(expectedValTab, standardDeriTab)
+        g = Gauss(expectedMass, standardDeviation)
         self.__probability.append(g.gaussfunc)
         pause = input('gauss!!...')
       else:
         # use poisson
-        po = Poisson(expectedValTab)
+        po = Poisson(expectedMass)
         self.__probability.append(po.poissonfunc)
     for i,combination in enumerate(self.__combinations): self.__probability[i] = self.__probability[i](combination)
     print(self.__probability)
