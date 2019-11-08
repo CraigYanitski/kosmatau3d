@@ -133,14 +133,14 @@ class Interpolate(object):
       tau = 0
     return (np.array(tau)).sum(0)
   def interpolateRotationalVelocity(self, radius):
-    return self.__rotationInterpolation(radius/1000.)
+    return self.__rotationInterpolation(radius)
   def interpolateDensity(self, radius):
-    return self.__densityInterpolation(radius/1000.)
+    return self.__densityInterpolation(radius)
   def interpolateClumpMass(self, radius):
-    return self.__clumpMassInterpolation(radius/1000.)
+    return self.__clumpMassInterpolation(radius)
   def interpolateInterclumpMass(self, radius):
-    return self.__interclumpMassInterpolation(radius/1000.)
+    return self.__interclumpMassInterpolation(radius)
   def interpolateFUVextinction(self, density, mass):
     return 10**self.__FUVextinctionInterpolation(density, mass)
   def interpolateFUVfield(self, radius):
-    return self.__FUVfieldInterpolation(radius/1000.)
+    return self.__FUVfieldInterpolation(radius)

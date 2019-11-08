@@ -141,7 +141,7 @@ class Ensemble(object):
       combinations = np.array([grid[0].flatten(), grid[1].flatten(), grid[2].flatten(), grid[3].flatten(), grid[4].flatten(), grid[5].flatten(), grid[6].flatten()], dtype=np.int)
     else: sys.exit('\nThere are too many masses for the current grid ({}).\nExitting. . .\n\n'.format(dimension))
     return combinations.T
-  def createCombinationObjects(self):
+  def createCombinationObjects(self, verbose=False):
     '''This function removes all of the unnecessary degenerate looping during this calculation.
        Of course it is possible because of the wonders of numpy.ndarray(). . .'''
     self.__Nj = (self.__massObserved*10**(self.__masspoints.astype(float)*(1-self.__constants.alpha))) / sum(10**(self.__masspoints.astype(float)*(2-self.__constants.alpha)))
@@ -150,21 +150,44 @@ class Ensemble(object):
     self.__radiusEnsemble = sum(self.__Nj*self.__masspointRadii)
     self.__volumeEnsemble = sum(self.__Nj*np.pi*4./3.*self.__masspointRadii**3)
     self.__densityEnsemble = self.__massEnsemble/self.__volumeEnsemble
+    print('velocity, mean, dispersion', self.__velocity, self.__velocity.mean(), self.__velocityDispersion)
+    self.__deltaNji = self.__Nj/np.sqrt(2*np.pi)/self.__velocityDispersion*(np.exp(-0.5*((self.__velocity-self.__velocity.mean())/self.__velocityDispersion)**2)).T*self.__velocityStep
+    # if self.__flagCombination=='binomial':
+    #   #  Use BINOMIAL distribution
+    #   Lbox = Lbox / np.sqrt(float(number_v[(number_masspoints - 1)]))
+    #   number_v = number_v / float(number_v[(number_masspoints - 1)])
+    #   Lbox = Lbox * np.sqrt(float(gbl._globals['statistic']['Nmin']))
+    #   number_v = number_v * float(gbl._globals['statistic']['Nmin'])
+    #   if np.pi * max(RclTab) ** 2 / Lbox ** 2 >= 1:
+    #       scale = np.ceil(np.pi * max(RclTab) ** 2 / Lbox ** 2)
+    #       Lbox = Lbox * np.sqrt(scale)
+    #       number_v = number_v * scale
+    #   number_v = np.around(number_v)
+    # else:
+    #   # Use Poisson distribution
+    #   scale = 1./float(number_v[number_masspoints - 1]) * 100
+    #   Lbox = Lbox * np.sqrt(scale)
+    #   number_v = number_v * scale
+    #   if np.pi * max(RclTab) ** 2 / Lbox ** 2 >= 1:
+    #     scale = np.ceil(np.pi * max(RclTab) ** 2 / Lbox ** 2) * 100.
+    #     Lbox = Lbox * np.sqrt(scale)
+    #     number_v = number_v * scale   
+    #   number_v = np.around(number_v) # round to integer value
     apparentSurfaceDensity = (np.pi*self.__masspointRadii**2/self.__constants.pixelWidth**2)    #this is 'pTab' in the original code
-    expectedMass = (self.__Nj*apparentSurfaceDensity)   #this is 'expectedValTab' in the original code
-    standardDeviation = ((self.__Nj*apparentSurfaceDensity*(1-apparentSurfaceDensity))**0.5)    #this is 'standardDeriTab' in the original code
+    expectedMass = (self.__deltaNji*apparentSurfaceDensity)   #this is 'expectedValTab' in the original code
+    standardDeviation = ((self.__deltaNji*apparentSurfaceDensity*(1-apparentSurfaceDensity))**0.5)    #this is 'standardDeriTab' in the original code
     #print('\napparent suface density, expected mass, standard deviation:\n', apparentSurfaceDensity, expectedMass, standardDeviation)
     lower = np.maximum(np.zeros(self.__masspoints.size), np.floor(expectedMass-self.__constants.nSigma*standardDeviation))
-    upper = np.minimum(self.__Nj, np.ceil(expectedMass+self.__constants.nSigma*standardDeviation))
+    upper = np.minimum(self.__deltaNji, np.ceil(expectedMass+self.__constants.nSigma*standardDeviation))
     self.__masspointNumberRange = np.array([lower, upper]).T
-    #print('\nMasspoint number range:\n', self.__masspointNumberRange)
+    if verbose: print('\nMasspoint number range:\n', self.__masspointNumberRange)
     self.__combinations = self.calculateCombinations()
     self.__probability = np.zeros((len(self.__combinations),2))
-    #print('\nCombinations:\n', self.__combinations)
+    if verbose: print('\nCombinations:\n', self.__combinations)
     for i,combination in enumerate(self.__combinations):
       print(combination)
-      if self.__flagCombination=='Gauss':
-        if np.any(expectedMass>self.__constants.pnGauss) and np.any(self.__Nj>self.__constants.nGauss):
+      if self.__flagCombination=='binomial':
+        if np.any(expectedMass>self.__constants.pnGauss) and np.any(self.__deltaNji>self.__constants.nGauss):
           # use gauss!
           g = Gauss(expectedMass, standardDeviation)
           self.__probability[i] = g.gaussfunc(combination)
@@ -172,10 +195,10 @@ class Ensemble(object):
         else:
           # use binomial 
           # <<This will likely print an error when there are more masspoints>>
-          b = Binomial(self.__Nj, apparentSurfaceDensity) # n and p for binominal 
+          b = Binomial(self.__deltaNji, apparentSurfaceDensity) # n and p for binominal 
           self.__probability[i] = b.binomfunc(combination)
       else:
-        if np.any(expectedMass>self.__constants.pnGauss) and np.any(self.__Nj>self.__constants.nGauss):
+        if np.any(expectedMass>self.__constants.pnGauss) and np.any(self.__deltaNji>self.__constants.nGauss):
           # use gauss
           g = Gauss(expectedMass, standardDeviation)
           self.__probability[i] = g.gaussfunc(combination)
@@ -185,7 +208,7 @@ class Ensemble(object):
           po = Poisson(expectedMass)
           self.__probability[i] = po.poissonfunc(combination)
     #for i,combination in enumerate(self.__combinations): self.__probability[i] = self.__probability[i](combination)
-    # print(self.__probability)
+    if verbose: print('Probability:', self.__probability)
     return
   def calculate(self):
     '''Maybe <<PARALLELISE>> this??
