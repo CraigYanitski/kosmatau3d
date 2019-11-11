@@ -15,7 +15,6 @@ class Combination(object):
     self.__FUV = fuv                    #the FUV field for this combination of mass points
     self.__density = density
     self.__masspoints = []
-    print(combination)
     for i,mass in enumerate(masses):
       masspoint = Masspoint(self.__species, self.__interpolations, density=self.__density[i], mass=mass, fuv=fuv, number=self.__combination[i])
       self.__masspoints.append(masspoint)    #list of masses in the combination
@@ -47,7 +46,7 @@ class Combination(object):
     self.__combination.append(number)
     return
   def calculateEmission(self, vrange, vDispersion):
-    print('Calculating combination emission')
+    #print('Calculating combination emission')
     for i,masspoint in enumerate(self.__masspoints):
       (intensity,opticalDepth) = self.__combination[i]*masspoint.calculateEmission(vrange, vDispersion)
       self.__intensity.append(intensity)

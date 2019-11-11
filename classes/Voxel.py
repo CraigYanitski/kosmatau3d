@@ -41,8 +41,7 @@ class Voxel(object):
     return
   def __setVelocity(self):
     self.__velocity = self.__interpolations.interpolateRotationalVelocity(self.__r)
-    self.__velocityDispersion = 0.5*((self.__interpolations.interpolateRotationalVelocity(self.__r+0.5*self.__scale)-self.__velocity)**2 + \
-                                     (self.__interpolations.interpolateRotationalVelocity(self.__r-0.5*self.__scale)-self.__velocity)**2)
+    self.__velocityDispersion = self.__interpolations.interpolateVelocityDispersion(self.__r)
     self.__velocityRange = np.linspace(self.__velocity-self.__velocityDispersion, self.__velocity+self.__velocityDispersion, self.__velocityNumber)
     return
   def __setDensity(self):

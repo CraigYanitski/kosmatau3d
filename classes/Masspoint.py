@@ -34,7 +34,7 @@ class Masspoint(object):
     else:
       for element in self.__species:
         interpolationPoint = [self.__density, self.__mass, self.__FUV.getFUV()]
-        print(element)
+        #print(element)
         if isinstance(element, Molecules):
           self.__intensity_xi = self.__interpolations.interpolateIntensity(interpolationPoint, np.array(element.getInterpolationIndeces())).sum()*self.__number*np.exp(-1/2.*((vRange-vRange.reshape(vRange.size,1))/(vDispersion))**2)
           self.__opticalDepth_xi = self.__interpolations.interpolateTau(interpolationPoint, element.getInterpolationIndeces()).sum()*self.__number*np.exp(-1/2.*((vRange-vRange.reshape(vRange.size,1))/(vDispersion))**2)
