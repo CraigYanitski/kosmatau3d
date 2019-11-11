@@ -8,8 +8,8 @@ class Observations(object):
   # PRIVATE
   def __init__(self, scale, directory='MilkyWay'):
     self.__scale = scale
-    self.__INPUTPATH = '/home/yanitski/Desktop/KOSMA-tau^3/input/'
-    self.__GRIDPATH = '/home/yanitski/Desktop/KOSMA-tau^3/grid/'
+    self.__INPUTPATH = '/home/craig/Desktop/Köln/kosma-tau^3-develop/kosma-tau-3d/input/'#'/home/yanitski/Desktop/KOSMA-tau^3/input/'#
+    self.__GRIDPATH = '/home/craig/Desktop/Köln/kosma-tau^3-develop/kosma-tau-3d/grid/'#'/home/yanitski/Desktop/KOSMA-tau^3/grid/'#
     if directory[-1]=='/': self.__directory = directory
     else: self.__directory = directory + '/'
     self.__initialise()
@@ -34,8 +34,8 @@ class Observations(object):
     return (fuv[:,0],fuv[:,1],fuv[:,2:])
   def __rotationProfile(self, file='rot_milki2018_14.dat'):
     # Open file for the rotation profile of the object
-    rotation = np.genfromtxt(self.__INPUTPATH+self.__directory+file, names=['radius', 'rotation_velocity'])
-    return (rotation['radius']*1000,rotation['rotation_velocity'])
+    rotation = np.genfromtxt(self.__INPUTPATH+self.__directory+file)
+    return (rotation[:,0]*1000., rotation[:,1:])
   def __tauCenterline(self, file='tau_linecentre.dat'):
     # Open file for KOSMA-tau simulations of optical depths
     # FORMAT: n, M, UV, tau[molecules then dust]

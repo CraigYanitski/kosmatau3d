@@ -24,6 +24,7 @@ class Interpolate(object):
     self.__verbose = verbose
     self.__intensityInterpolation,self.__tauInterpolation = self.__calculateGridInterpolation()
     self.__rotationInterpolation = self.__calculateRotationVelocity()
+    self.__dispersionInterpolation = self.__calculateVelocityDispersion()
     self.__densityInterpolation = self.__calculateDensity()
     self.__clumpMassInterpolation = self.__clumpMassProfile()
     self.__interclumpMassInterpolation = self.__interclumpMassProfile()
@@ -58,10 +59,18 @@ class Interpolate(object):
     if self.__verbose: print('Creating rotation velocity interpolation')
     rotation = self.__observations.rotationProfile 
     if self.__interpolation=='linear':
-      return interpolate.interp1d(rotation[0], rotation[1], kind='linear')    #rotation velocity interpolation
+      return interpolate.interp1d(rotation[0], rotation[1][:,0], kind='linear')    #rotation velocity interpolation
     if self.__interpolation=='cubic' or self.__interpolation=='radial':
-      return interpolate.interp1d(rotation[0], rotation[1], kind='cubic')    #rotation velocity interpolation
-    else: sys.exit('<<ERROR>>: There is no such method as {} to interpolate the KOSMA-tau grid.\n\nExitting...\n\n'.format(self.__interpolation))
+      return interpolate.interp1d(rotation[0], rotation[1][:,0], kind='cubic')    #rotation velocity interpolation
+    else: sys.exit('<<ERROR>>: There is no such method as {} to interpolate the velocity profile.\n\nExitting...\n\n'.format(self.__interpolation))
+  def __calculateVelocityDispersion(self):
+    if self.__verbose: print('Creating velocity dispersion interpolation')
+    rotation = self.__observations.rotationProfile 
+    if self.__interpolation=='linear':
+      return interpolate.interp1d(rotation[0], rotation[1][:,1], kind='linear')    #rotation velocity interpolation
+    if self.__interpolation=='cubic' or self.__interpolation=='radial':
+      return interpolate.interp1d(rotation[0], rotation[1][:,1], kind='cubic')    #rotation velocity interpolation
+    else: sys.exit('<<ERROR>>: There is no such method as {} to interpolate the velocity profile.\n\nExitting...\n\n'.format(self.__interpolation))
   def __calculateDensity(self):
     if self.__verbose: print('Creating density interpolation')
     density = self.__observations.densityProfile
@@ -134,6 +143,8 @@ class Interpolate(object):
     return (np.array(tau)).sum(0)
   def interpolateRotationalVelocity(self, radius):
     return self.__rotationInterpolation(radius)
+  def interpolateVelocityDispersion(self, radius):
+    return self.__dispersionInterpolation(radius)
   def interpolateDensity(self, radius):
     return self.__densityInterpolation(radius)
   def interpolateClumpMass(self, radius):
