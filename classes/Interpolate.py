@@ -119,6 +119,7 @@ class Interpolate(object):
     return self.__observations
   def interpolateIntensity(self, points, speciesNumber, verbose=False):
     verbose = verbose and self.__verbose
+    points = np.log10(points)
     if len(speciesNumber):
       intensity = []
       for i in speciesNumber: 
@@ -131,6 +132,7 @@ class Interpolate(object):
     return (np.array(intensity)).sum(0)
   def interpolateTau(self, points, speciesNumber, verbose=False):
     verbose = verbose and self.__verbose
+    points = np.log10(points)
     if len(speciesNumber):
       tau = []
       for i in speciesNumber:

@@ -8,8 +8,8 @@ class Observations(object):
   # PRIVATE
   def __init__(self, scale, directory='MilkyWay'):
     self.__scale = scale
-    self.__INPUTPATH = '/home/craig/Desktop/Köln/kosma-tau^3-develop/kosma-tau-3d/input/'#'/home/yanitski/Desktop/KOSMA-tau^3/input/'#
-    self.__GRIDPATH = '/home/craig/Desktop/Köln/kosma-tau^3-develop/kosma-tau-3d/grid/'#'/home/yanitski/Desktop/KOSMA-tau^3/grid/'#
+    self.__INPUTPATH = '/home/yanitski/Desktop/KOSMA-tau^3/input/'#'/home/craig/Desktop/Köln/kosma-tau^3-develop/kosma-tau-3d/input/'#
+    self.__GRIDPATH = '/home/yanitski/Desktop/KOSMA-tau^3/grid/'#'/home/craig/Desktop/Köln/kosma-tau^3-develop/kosma-tau-3d/grid/'#
     if directory[-1]=='/': self.__directory = directory
     else: self.__directory = directory + '/'
     self.__initialise()
@@ -53,8 +53,14 @@ class Observations(object):
     # Open file containing the transition frequencies of various elements
     frequencies = np.genfromtxt(self.__GRIDPATH+file, names=['number', 'species', 'transition', 'frequency'], dtype="i8,U8,i8,f8", delimiter=',')
     return (frequencies['number'],frequencies['species'],frequencies['transition'],frequencies['frequency'])
+  def __eTildeReal(self, file='Ereal.dat'):
+    eReal = np.genfromtxt(self.__GRIDPATH+file, names=['x', 'Ereal'])
+    return (eReal['x'],eReal['Ereal'])
+  def __eTildeImaginary(self, file='Eimag.dat'):
+    eImaginary = np.genfromtxt(self.__GRIDPATH+file, names=['x', 'Eimaginary'])
+    return (eImaginary['x'],eImaginary['Eimaginary'])
   def __str__(self):
-    if len(speciesData):
+    if not len(speciesData):
       return 'There are no available transitions yet.'
     else:
       printout = 'Available transitions:'
@@ -76,4 +82,6 @@ class Observations(object):
     self.tbCenterline = self.__tbCenterline()
     self.rhoMassAFUV = self.__rhoMassAFUV()
     self.speciesData = self.__speciesData()
+    self.eTildeReal = self.__eTildeReal()
+    self.eTildeImaginary = self.__eTildeImaginary()
     return
