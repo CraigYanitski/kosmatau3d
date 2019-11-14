@@ -20,16 +20,22 @@ class Binomial():
     >>> comb(20,14)
     38760
     '''
-    k = np.array(k, dtype=np.int)
-    i = k>self.n-k          # for smaller intermediate values 
-    k[i] = self.n[i]-k[i]   # use (n choose k) = (n choose n-k)
-    if np.any(k>0):
-      range1 = range(self.n[0]-k[0]+1,self.n[0]+1)
-      range2 = range(1,k[0]+1)
-      range3 = range(self.n[1]-k[1]+1,self.n[1]+1)
-      range4 = range(1,k[1]+1)
-      return np.array([ft.reduce(mul, range1)/ft.reduce(mul, range2),ft.reduce(mul, range3)/ft.reduce(mul, range4)], dtype=np.float)
-    else: return 0
+    i = (k>self.n-k).any(1)          # for smaller intermediate values
+    #iComb = i.any(1)
+    #print(k[iComb], self.n[i], i)
+    if k[i].size: k[i] = self.n[i]-k[i]   # use (n choose k) = (n choose n-k)
+    probability = np.zeros([self.n[0].size, 2])
+    for i in range(self.n[0].size):
+      if np.any(k>0):
+        range1 = range(int(self.n[0][i]-k[0]+1),int(self.n[0][i]+1))
+        range2 = range(1,int(k[0]+1))
+        range3 = range(int(self.n[1][i]-k[1]+1),int(self.n[1][i]+1))
+        range4 = range(1,int(k[1]+1))
+        #print(range1, range2, range3, range4)
+        probability[i] = np.array([ft.reduce(mul, range1, 1)/ft.reduce(mul, range2, 1),ft.reduce(mul, range3, 1)/ft.reduce(mul, range4, 1)], dtype=np.float)
+      else: probability[i] = 0
+    #print(probability)
+    return probability
   '''
   def choose(self, k):
       """
@@ -56,5 +62,6 @@ class Binomial():
   # large numbers compared to choose
   def binomfunc(self, k):
     # print 'comb', self.comb(k)
+    k = np.array(k, dtype=np.int)
     #print (float(self.comb(k)) * self.p**k * (1-self.p)**(self.n-k))
-    return self.comb(k) * self.p**k * (1-self.p)**(self.n-k)
+    return self.comb(k).T * self.p.T**k * (1-self.p.T)**(self.n-k)
