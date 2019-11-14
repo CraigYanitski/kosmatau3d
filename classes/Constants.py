@@ -11,12 +11,12 @@ class Constants():
     self.nSigma = nsigma
     self.nGauss = nGauss
     self.pnGauss = pnGauss
-    self.pixelWidth = pixelWidth
-    self.massH = 1.008*1.6605*10**-27  #in [kg]
-    self.massSolar = 1.998892*10**30  #in [kg]
-    self.c = 2.998*10**8  #in [m/s]
+    self.pixelWidth = pixelWidth  #in pc
+    self.massH = 1.008*1.6605*10**-24  #in [g]
+    self.massSolar = 1.998892*10**33  #in [g]
+    self.c = 2.998*10**10  #in [cm/s]
     self.kB = 1.3806*10**-23  #in [J/K]
-    self.pc = 3.0856776*10**16  #in [m]
+    self.pc = 3.0856776*10**18  #in [cm]
     # Grid boundaries
     self.densityLimits = [3, 7]
     self.massLimits = [-3, 3]
