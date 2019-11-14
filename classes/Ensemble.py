@@ -15,12 +15,13 @@ class Ensemble(object):
   It can be either a clump or an interclump ensemble.
   '''
   # PRIVATE
-  def __init__(self, clumpType, species, interpolations, combination='binomial'):
+  def __init__(self, clumpType, species, interpolations, combination='binomial', verbose=False):
     self.__species = species     #list of both moleculular and dust species
     self.__interpolations = interpolations
     self.__clumpType = clumpType     #type of mass in ensemble (clump or interclump medium)
     self.__constants = Constants()
     self.__flagCombination = combination
+    self.__verbose = verbose
     self.__combinations = []    #list of combinations
     self.__combinationObjects = []    #list of instances of Combination()
     self.__probability = []
@@ -156,6 +157,7 @@ class Ensemble(object):
   def createCombinationObjects(self, verbose=False):
     '''This function removes all of the unnecessary degenerate looping during this calculation.
        Of course it is possible because of the wonders of numpy.ndarray(). . .'''
+    verbose = self.__verbose or verbose
     self.__Nj = (self.__massObserved*10.**(self.__masspoints*(1-self.__constants.alpha))) / sum(10.**(self.__masspoints*(2-self.__constants.alpha)))
     #print('\nNj:\n', self.__Nj)
     self.__massEnsemble = sum(self.__Nj*10.**self.__masspoints)
@@ -164,27 +166,6 @@ class Ensemble(object):
     self.__densityEnsemble = self.__massEnsemble/self.__volumeEnsemble
     if verbose: print('velocity, mean, dispersion', self.__velocity, self.__velocity.mean(), self.__velocityDispersion)
     self.__deltaNji = np.array([self.__Nj]).T/np.sqrt(2*np.pi)/self.__velocityDispersion*(np.exp(-0.5*((self.__velocity-self.__velocity.mean())/self.__velocityDispersion)**2)).T*self.__velocityStep
-    # if self.__flagCombination=='binomial':
-    #   #  Use BINOMIAL distribution
-    #   Lbox = Lbox / np.sqrt(float(number_v[(number_masspoints - 1)]))
-    #   number_v = number_v / float(number_v[(number_masspoints - 1)])
-    #   Lbox = Lbox * np.sqrt(float(gbl._globals['statistic']['Nmin']))
-    #   number_v = number_v * float(gbl._globals['statistic']['Nmin'])
-    #   if np.pi * max(RclTab) ** 2 / Lbox ** 2 >= 1:
-    #       scale = np.ceil(np.pi * max(RclTab) ** 2 / Lbox ** 2)
-    #       Lbox = Lbox * np.sqrt(scale)
-    #       number_v = number_v * scale
-    #   number_v = np.around(number_v)
-    # else:
-    #   # Use Poisson distribution
-    #   scale = 1./float(number_v[number_masspoints - 1]) * 100
-    #   Lbox = Lbox * np.sqrt(scale)
-    #   number_v = number_v * scale
-    #   if np.pi * max(RclTab) ** 2 / Lbox ** 2 >= 1:
-    #     scale = np.ceil(np.pi * max(RclTab) ** 2 / Lbox ** 2) * 100.
-    #     Lbox = Lbox * np.sqrt(scale)
-    #     number_v = number_v * scale   
-    #   number_v = np.around(number_v) # round to integer value
     surfaceProbability = np.array([np.pi*self.__masspointRadii**2/self.__constants.pixelWidth**2])    #this is 'pTab' in the original code
     probableNumber = (self.__deltaNji*surfaceProbability.T)   #this is 'expectedValTab' in the original code
     standardDeviation = np.sqrt(self.__deltaNji*surfaceProbability.T*(1-surfaceProbability.T))    #this is 'standardDeriTab' in the original code
@@ -202,9 +183,12 @@ class Ensemble(object):
       if verbose: print(combinations)
       combinations = np.array(combinations).T
       probability = []
+      if verbose: print('\nEnsemble combinations:\n', combinations)
       for combination in combinations:
-        combination = np.array([combination]).T
-        if verbose: print(combination)
+        combination = np.array([combination])
+        if verbose:
+          print('\nCombination:\n', combination)
+          input()
         if self.__flagCombination=='binomial':
           if np.any(probableNumber>self.__constants.pnGauss) and np.any(self.__deltaNji>self.__constants.nGauss):
             # use gauss!
@@ -226,7 +210,7 @@ class Ensemble(object):
             # use poisson
             po = Poisson(probableNumber)
             probability.append(po.poissonfunc(combination))
-        self.__combinationObjects.append(Combination(self.__species, self.__interpolations, combination=combination, masses=self.__masspoints, density=self.__masspointDensity, fuv=self.__FUV, probability=probability[-1]))
+        self.__combinationObjects.append(Combination(self.__species, self.__interpolations, combination=combination.flatten(), masses=self.__masspoints, density=self.__masspointDensity, fuv=self.__FUV, probability=probability[-1]))
       self.__probability.append(probability)
     #for i,combination in enumerate(self.__combinations): self.__probability[i] = self.__probability[i](combination)
     if verbose: print('Probability:', self.__probability)
@@ -236,11 +220,7 @@ class Ensemble(object):
     self.calculateMasspoints()
     self.calculateRadii()
     self.createCombinationObjects()
-    #print(self.__combinations)
-    print(self.__clumpType)
-    #for combinations in self.__combinations:
-      #print(combinations.T[0])
-      #for combination in combinations.T:
+    if self.__verbose: print(self.__clumpType)
     return
   def calculate(self):
     '''Maybe <<PARALLELISE>> this??
