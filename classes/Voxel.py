@@ -20,6 +20,7 @@ class Voxel(object):
     self.__velocityRange = 0
     self.__intensity = 0      #intensity of emissions at voxel point
     self.__opticalDepth = 0   #optical depth at voxel point
+    self.__FUV = 0
     self.__clump = Ensemble('clump', self.__species, self.__interpolations)    #clumpy ensemble at voxel point
     self.__interclump = Ensemble('interclump', self.__species, self.__interpolations)    #diffuse interclump ensemble at voxel point
     self.__x = 0
@@ -56,9 +57,12 @@ class Voxel(object):
     self.__FUV = FUVfield(fuv)
     return
   def __str__(self):
-    return 'Voxel {}\n  ->mass {}\n  ->intensity {}\n  ->optical depth {}\n  ->FUV field {}'.format(self.__index, self.__mass, 10**self.__intensity, 10**self.__opticalDepth, self.__FUV)
+    return 'Voxel {}\n  ->Cartesian position: ({}, {}, {})\n  ->mass {}\n  ->intensity {}\n  ->optical depth {}\n  ->FUV field {}'.format(self.__index, self.__x, self.__y, self.__z, self.__mass, 10**self.__intensity, 10**self.__opticalDepth, self.__FUV)
 
   # PUBLIC
+  def setIndex(self, index):
+    self.__index = index
+    return
   def setPosition(self, x, y, z, r, phi, scale):
     self.__x = x
     self.__y = y
@@ -75,19 +79,22 @@ class Voxel(object):
     self.__setDensity()
     self.__setExtinction()
     self.__setFUV()
-    print('Calculating voxel emission...')
     self.__clump.initialise(mass=self.__clumpMass, density=self.__density, velocity=self.__velocityRange, velocityDispersion=self.__velocityDispersion, FUV=self.__FUV, extinction=self.__UVextinction)
-    self.__clump.calculate()
     self.__interclump.initialise(mass=self.__interclumpMass, density=self.__density, velocity=self.__velocityRange, velocityDispersion=self.__velocityDispersion, FUV=self.__FUV, extinction=self.__UVextinction)
-    self.__interclump.calculate()
     return
   def getPosition(self):
     return (self.__x, self.__y, self.__z)
   def getClumps(self):
     return (self.__clump, self.__interclump)
   def calculateEmission(self):
+    print('Calculating voxel emission...')
+    self.__clump.calculate()
+    self.__interclump.calculate()
     iClump,tauClump,FUVclump = self.__clump.getEnsembleEmission()
     iInterclump,tauInterclump,FUVinterclump = self.__interclump.getEnsembleEmission()
-    intensity = iClump+iInterclump
-    tau = tauClump+tauInterclump
-    return np.array([intensity, tau, FUVclump])
+    self.__intensity = iClump+iInterclump
+    self.__opticalDepth = tauClump+tauInterclump
+    self.__FUV = FUVclump
+    return
+  def getEmission(self):
+    return np.array([self.__intensity, self.__opticalDepth, self.__FUV])

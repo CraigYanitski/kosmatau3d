@@ -67,7 +67,7 @@ class Ensemble(object):
     return
   def __str__(self):
     return 'The {} ensemble to simulate the fractal structure with {} instances of KOSMA-tau giving\n  {} possible combinations in the line-of-sight of an observer'\
-            .format(self.__clumpType, self.__masspoints.size, self.__combinations.shape[0])
+            .format(self.__clumpType, self.__masspoints.size, self.__combinations)
 
   # PUBLIC
   def initialise(self, mass=0, density=0, velocity=0, velocityDispersion=0, FUV=0, extinction=0):
@@ -77,7 +77,7 @@ class Ensemble(object):
     self.__setVelocityDispersion(velocityDispersion)
     self.__setExtinction(extinction)
     self.__setFUV(FUV)
-    self.calculate()
+    self.initialiseEnsemble()
     return
   def setMass(self, mass):
     '''Set the mass.'''
@@ -104,12 +104,18 @@ class Ensemble(object):
     return self.__combinations
   def calculateRadii(self):
     '''This function calculates the interpolation points necessary for reading the KOSMA-tau files.'''
-    self.__masspointDensity = np.log10(self.__masspoints**(1-3/self.__constants.gamma)*sum(self.__masspoints**(1+3/self.__constants.gamma-self.__constants.alpha)) / \
-                                       sum(self.__masspoints**(2-self.__constants.alpha))*self.__densityObserved/1.91)
+    self.__masspointDensity = np.log10(10.**(self.__masspoints*(1-3./self.__constants.gamma))*sum(10.**(self.__masspoints*(1+3./self.__constants.gamma-self.__constants.alpha))) / \
+                                       sum(10.**(self.__masspoints*(2-self.__constants.alpha)))*self.__densityObserved/1.91)
+    #print(self.__masspointDensity)
     if (self.__masspointDensity>self.__constants.densityLimits[1]).any() or (self.__masspointDensity<self.__constants.densityLimits[0]).any(): sys.exit('WARNING: surface density outside of KOSMA-tau grid!\n\n')
     self.__interpolationPoints = np.stack((self.__masspointDensity, self.__masspoints, np.full(self.__masspoints.size, self.__FUV)))
-    self.__masspointRadii = ((3/(4.0*np.pi)*(self.__masspoints*self.__constants.massSolar)/(self.__interpolationPoints[0]*self.__constants.massH*1.91))**(1./3.))/self.__constants.pc
+    self.__masspointRadii = (3./(4.*np.pi)*(10.**self.__masspoints*self.__constants.massSolar)/(10.**self.__masspointDensity*self.__constants.massH*1.91))**(1./3.)/self.__constants.pc
+    #print(self.__masspointRadii, 'cm')
     return
+  def getRadii(self):
+    return self.__masspointRadii
+  def getDensity(self):
+    return self.__masspointDensity
   def calculateCombinations(self, verbose=False):
     '''This function calculates all of the different combinations of clump masses that may be in a line-of-sight.
       It is basically the essence of the probabilistic approach used to create the superposition of clumps.'''
@@ -150,9 +156,9 @@ class Ensemble(object):
   def createCombinationObjects(self, verbose=False):
     '''This function removes all of the unnecessary degenerate looping during this calculation.
        Of course it is possible because of the wonders of numpy.ndarray(). . .'''
-    self.__Nj = (self.__massObserved*10**(self.__masspoints.astype(float)*(1-self.__constants.alpha))) / sum(10**(self.__masspoints.astype(float)*(2-self.__constants.alpha)))
+    self.__Nj = (self.__massObserved*10.**(self.__masspoints*(1-self.__constants.alpha))) / sum(10.**(self.__masspoints*(2-self.__constants.alpha)))
     #print('\nNj:\n', self.__Nj)
-    self.__massEnsemble = sum(self.__Nj*self.__masspoints)
+    self.__massEnsemble = sum(self.__Nj*10.**self.__masspoints)
     self.__radiusEnsemble = sum(self.__Nj*self.__masspointRadii)
     self.__volumeEnsemble = sum(self.__Nj*np.pi*4./3.*self.__masspointRadii**3)
     self.__densityEnsemble = self.__massEnsemble/self.__volumeEnsemble
@@ -179,13 +185,14 @@ class Ensemble(object):
     #     Lbox = Lbox * np.sqrt(scale)
     #     number_v = number_v * scale   
     #   number_v = np.around(number_v) # round to integer value
-    apparentSurfaceDensity = np.array([np.pi*self.__masspointRadii**2/self.__constants.pixelWidth**2])    #this is 'pTab' in the original code
-    expectedMass = (self.__deltaNji*apparentSurfaceDensity.T)   #this is 'expectedValTab' in the original code
-    standardDeviation = ((self.__deltaNji*apparentSurfaceDensity.T*(1-apparentSurfaceDensity.T))**0.5)    #this is 'standardDeriTab' in the original code
-    #print('\napparent suface density, expected mass, standard deviation:\n', apparentSurfaceDensity[:,0], expectedMass, standardDeviation)
-    if verbose: print(apparentSurfaceDensity, expectedMass, standardDeviation)
-    lower = np.maximum(np.zeros([self.__masspoints.size, self.__velocity.size]), np.floor(expectedMass-self.__constants.nSigma*standardDeviation))
-    upper = np.minimum(self.__deltaNji, np.ceil(expectedMass+self.__constants.nSigma*standardDeviation))
+    surfaceProbability = np.array([np.pi*self.__masspointRadii**2/self.__constants.pixelWidth**2])    #this is 'pTab' in the original code
+    probableNumber = (self.__deltaNji*surfaceProbability.T)   #this is 'expectedValTab' in the original code
+    standardDeviation = np.sqrt(self.__deltaNji*surfaceProbability.T*(1-surfaceProbability.T))    #this is 'standardDeriTab' in the original code
+    if verbose: print('\nsuface probability, expected number, standard deviation:\n', surfaceProbability, '\n', probableNumber, '\n', standardDeviation)
+    #print(surfaceProbability, probableNumber, standardDeviation)
+    lower = np.maximum(np.zeros([self.__masspoints.size, self.__velocity.size]), np.floor(probableNumber-self.__constants.nSigma*standardDeviation))
+    upper = np.minimum(self.__deltaNji, np.ceil(probableNumber+self.__constants.nSigma*standardDeviation))
+    if verbose: print('\nupper,lower:\n',upper,'\n',lower)
     self.__masspointNumberRange = np.array([lower, upper]).T
     if verbose: print('\nMasspoint number range:\n', self.__masspointNumberRange)
     self.__combinations = self.calculateCombinations()
@@ -197,47 +204,53 @@ class Ensemble(object):
       probability = []
       for combination in combinations:
         combination = np.array([combination]).T
+        if verbose: print(combination)
         if self.__flagCombination=='binomial':
-          if np.any(expectedMass>self.__constants.pnGauss) and np.any(self.__deltaNji>self.__constants.nGauss):
+          if np.any(probableNumber>self.__constants.pnGauss) and np.any(self.__deltaNji>self.__constants.nGauss):
             # use gauss!
-            g = Gauss(expectedMass, standardDeviation)
+            g = Gauss(probableNumber, standardDeviation)
             probability.append(g.gaussfunc(combination))
             #print('gauss!!...')
           else:
             # use binomial 
             # <<This will likely print an error when there are more masspoints>>
-            b = Binomial(self.__deltaNji, apparentSurfaceDensity) # n and p for binominal 
+            b = Binomial(self.__deltaNji, surfaceProbability) # n and p for binominal 
             probability.append(b.binomfunc(combination))
         else:
-          if np.any(expectedMass>self.__constants.pnGauss) and np.any(self.__deltaNji>self.__constants.nGauss):
+          if np.any(probableNumber>self.__constants.pnGauss) and np.any(self.__deltaNji>self.__constants.nGauss):
             # use gauss
-            g = Gauss(expectedMass, standardDeviation)
+            g = Gauss(probableNumber, standardDeviation)
             probability.append(g.gaussfunc(combination))
             #print('gauss!!...')
           else:
             # use poisson
-            po = Poisson(expectedMass)
+            po = Poisson(probableNumber)
             probability.append(po.poissonfunc(combination))
+        self.__combinationObjects.append(Combination(self.__species, self.__interpolations, combination=combination, masses=self.__masspoints, density=self.__masspointDensity, fuv=self.__FUV, probability=probability[-1]))
       self.__probability.append(probability)
     #for i,combination in enumerate(self.__combinations): self.__probability[i] = self.__probability[i](combination)
     if verbose: print('Probability:', self.__probability)
+    return
+  def initialiseEnsemble(self):
+
+    self.calculateMasspoints()
+    self.calculateRadii()
+    self.createCombinationObjects()
+    #print(self.__combinations)
+    print(self.__clumpType)
+    #for combinations in self.__combinations:
+      #print(combinations.T[0])
+      #for combination in combinations.T:
     return
   def calculate(self):
     '''Maybe <<PARALLELISE>> this??
 
        This is a function to cycle through the Combination instances to create a large numpy.ndarray,
        which is used to calculate the final sums needed for the voxel.'''
-    self.calculateMasspoints()
-    self.calculateRadii()
-    self.createCombinationObjects()
     print('Calculating ensemble emission')
     result = []
-    #print(self.__combinations)
-    print(self.__clumpType)
     for combinations in self.__combinations:
-      print(combinations.T[0])
-      for combination in combinations.T:
-        self.__combinationObjects.append(Combination(self.__species, self.__interpolations, combination=combination, masses=self.__masspoints, density=self.__masspointDensity, fuv=self.__FUV, probability=self.__probability))
+      for combination in combinations:
         self.__combinationObjects[-1].calculateEmission(self.__velocity, self.__velocityDispersion)
         result.append(self.__combinationObjects[-1].getScaledCombinationEmission()) #<<this needs to be altered>>
     result = np.array(result)

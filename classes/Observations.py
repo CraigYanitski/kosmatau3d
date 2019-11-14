@@ -23,7 +23,7 @@ class Observations(object):
     interclumpMass = np.genfromtxt(self.__INPUTPATH+self.__directory+file, names=['radius', 'h2_mass'])
     return (interclumpMass['radius']*1000,interclumpMass['h2_mass']*self.__scale**2)
   def __densityProfile(self, file='densities_clouds.dat'):
-    # Open file for the density profile of the object (n/cm**3)
+    # Open file for the number density profile of the object (n/cm**3)
     density = np.genfromtxt(self.__INPUTPATH+self.__directory+file, names=['radius', 'h2_density'])
     return ((density['radius']*1000),density['h2_density'])
   def __FUVfield(self, file='galactic_FUV.dat'):

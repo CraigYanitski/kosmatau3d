@@ -39,22 +39,27 @@ class VoxelGrid(object):
     x,y,z,scale = self.__dimensions.voxelCartesianPosition()
     r,phi = self.__dimensions.voxelPolarPosition()
     self.__unusedVoxels = []
-    print('Calculating grid emission')
     for i,voxel in enumerate(self.__voxels):
-      if r[i]<=max(x):
+      if r[i]<=2*max(x):
         print(r[i])
+        voxel.setIndex(i-len(self.__unusedVoxels))
         voxel.setPosition(x[i], y[i], z[i], r[i], phi, scale)
         voxel.setProperties()
       else: self.__unusedVoxels.append(i)
+    for i in self.__unusedVoxels[::-1]:
+      self.__voxels.remove(self.__voxels[i])
+    self.__voxelNumber = len(self.__voxels)
     return
   def calculateEmission(self):
+    print('Calculating grid emission')
     for i,voxel in enumerate(self.__voxels):
-      if i in self.__unusedVoxels: continue
       emission = voxel.calculateEmission()
       self.__voxelIntensity.append(emission[0])
       self.__voxelOpticalDepth.append(emission[1])
       self.__voxelFUV.append(emission[2])
     return
+  def getVoxelNumber(self):
+    return self.__voxelNumber
   def allVoxels(self):
     # Just in case all of the Voxel() instances need to be retrieved
     return self.__voxels

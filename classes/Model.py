@@ -14,8 +14,8 @@ class Model():
     self.__type = modelType   #this just adds a label to the type of model being created. ie 'disk', 'bar', 'sphere', etc.
     self.__shape = Shape(x, y, z, modelType=modelType)      #Shape() object to create the parameters for the grid of voxels
     self.__grid = VoxelGrid(self.__shape.getDimensions())   #VoxelGrid() object to build the model and calculate the emission
-    self.__orientation = Orientation()      #Orientation() object to change the viewing angle and expected spectra
     self.__observations = Observations(self.__shape.getDimensions().getResolution())    #Observations() object to centralise the required data for the program
+    self.__orientation = Orientation(self.__shape.getDimensions(), self.__observations)      #Orientation() object to change the viewing angle and expected spectra
     self.__molecules = Molecules()   #Molecules() object to centralise the molecules in model
     self.__dust = Dust()             #Dust() object to centralise the dust in the model
     self.__species = [self.__molecules, self.__dust]    #this is a list of the species objects being considered
@@ -95,10 +95,9 @@ class Model():
       transition = int(species.split(' ')[1])
       if element=='Dust':
         self.addDust(element, transition)
-        return
       else:
         self.addMolecule(element, transition)
-        return
+    return
   def calculateEmission(self):
     self.__grid.calculateEmission()
     return
