@@ -18,27 +18,38 @@ class Masspoint(object):
     self.__FUV = fuv
     self.__number = number    #number of this KOSMA-tau model in the combination
     #self.__FUV = FUVfield()     #the FUV field for this combination of mass points
-    self.__intensity_xi = np.array([])       #velocity-averaged intensity of this combination of masspoints
-    self.__opticalDepth_xi = np.array([])    #velocity-averaged optical depth of this combination of masspoints
+    self.__intensity_xi = []       #velocity-averaged intensity of this combination of masspoints
+    self.__opticalDepth_xi = []    #velocity-averaged optical depth of this combination of masspoints
     return
   def __str__(self):
     return 'Simulated KOSMA-tau clump of mass {}'.format(10**self.mass)
 
   # PUBLIC
-  def calculateEmission(self, vRange, vDispersion):
-    self.__intensity = np.zeros(vRange.size)
-    self.__opticalDepth = np.zeros(vRange.size)
+  def calculateEmission(self, velocity, vDispersion, verbose=False):
     if self.__number==0:
-      self.__intensity_xi = np.zeros((len(vRange),len(vRange)))
-      self.__opticalDepth_xi = np.zeros((len(vRange),len(vRange)))
+      self.__intensity = np.zeros((len(self.__species),len(velocity)))
+      self.__opticalDepth = np.zeros((len(self.__species),len(velocity)))
     else:
-      for element in self.__species:
-        interpolationPoint = [self.__density, self.__mass, self.__FUV.getFUV()]
-        #print(element)
+      for i,element in enumerate(self.__species):
+        interpolationPoint = [self.__density, self.__mass, np.log10(self.__FUV.getFUV())]
+        if verbose: print(element)
         if isinstance(element, Molecules):
-          self.__intensity_xi = self.__interpolations.interpolateIntensity(interpolationPoint, np.array(element.getInterpolationIndeces())).sum()*self.__number*np.exp(-1/2.*((vRange-vRange.reshape(vRange.size,1))/(vDispersion))**2)
-          self.__opticalDepth_xi = self.__interpolations.interpolateTau(interpolationPoint, element.getInterpolationIndeces()).sum()*self.__number*np.exp(-1/2.*((vRange-vRange.reshape(vRange.size,1))/(vDispersion))**2)
+          self.__intensity_xi.append(self.__interpolations.interpolateIntensity(interpolationPoint, element.getInterpolationIndeces())*self.__number*np.exp(-1/2.*((velocity-velocity.mean())/(vDispersion))**2))
+          self.__opticalDepth_xi.append(self.__interpolations.interpolateTau(interpolationPoint, element.getInterpolationIndeces())*self.__number*np.exp(-1/2.*((velocity-velocity.mean())/(vDispersion))**2))
         elif isinstance(element, Dust):
-          self.__intensity_xi = self.__interpolations.interpolateIntensity(interpolationPoint, element.getInterpolationIndeces()).sum()*self.__number
-          self.__opticalDepth_xi = self.__interpolations.interpolateTau(interpolationPoint, element.getInterpolationIndeces()).sum()*self.__number
-    return np.stack((self.__intensity_xi,self.__opticalDepth_xi))
+          self.__intensity_xi.append(np.full(len(velocity), self.__interpolations.interpolateIntensity(interpolationPoint, element.getInterpolationIndeces())*self.__number))
+          self.__opticalDepth_xi.append(np.full(len(velocity), self.__interpolations.interpolateTau(interpolationPoint, element.getInterpolationIndeces())*self.__number))
+      self.__intensity = (np.array(self.__intensity_xi)).sum(0)
+      self.__opticalDepth = (np.array(self.__opticalDepth_xi)).sum(0)
+      if np.isnan(self.__intensity).any():
+        print('\nThere is an invalid intensity:\n', interpolationPoint)
+        input()
+    return
+  def getEmission(self, verbose=False):
+    if verbose:
+      print('\nMasspoint intensity, optical depth\n', self.__intensity, '\n', self.__opticalDepth)
+      input()
+    return (self.__intensity,self.__opticalDepth)
+  def getSpeciesEmission(self, number=-1):
+    if number==-1: return [self.__intensity_xi,self.__opticalDepth_xi]
+    else: return [self.__intensity_xi[number],self.__opticalDepth_xi[number]]

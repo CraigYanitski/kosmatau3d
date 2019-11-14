@@ -86,15 +86,17 @@ class Voxel(object):
     return (self.__x, self.__y, self.__z)
   def getClumps(self):
     return (self.__clump, self.__interclump)
-  def calculateEmission(self):
-    print('Calculating voxel emission...')
+  def calculateEmission(self, verbose=False):
+    if verbose: print('\nCalculating voxel V{} emission'.format(self.__index))
     self.__clump.calculate()
     self.__interclump.calculate()
     iClump,tauClump,FUVclump = self.__clump.getEnsembleEmission()
     iInterclump,tauInterclump,FUVinterclump = self.__interclump.getEnsembleEmission()
     self.__intensity = iClump+iInterclump
     self.__opticalDepth = tauClump+tauInterclump
-    self.__FUV = FUVclump
+    if isinstance(FUVclump, FUVfield): self.__FUV = FUVfield(FUVclump.getFUV()+FUCinterclump.getFUV())
     return
-  def getEmission(self):
-    return np.array([self.__intensity, self.__opticalDepth, self.__FUV])
+  def getEmission(self, verbose=False):
+    emission = (self.__intensity, self.__opticalDepth, self.__FUV)
+    if verbose: print(emission)
+    return emission

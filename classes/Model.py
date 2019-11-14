@@ -23,7 +23,7 @@ class Model():
     self.__verbose = verbose
     return
   def __str__(self):
-    printout = 'A {} model of {} voxels'.format(self.__type, self.__shape.getDimensions().voxelNumber())
+    printout = 'A {} model of {} voxels'.format(self.__type, self.getGrid().getVoxelNumber())
     if self.__verbose:
       printout += '\n  arranged in {}'.format(self.__shape.getDimensions())
       printout += '\n\nConsidering {} species:\n{}\n{}'.format(len(self.speciesNames), self.__molecules, self.__dust)

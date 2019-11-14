@@ -67,8 +67,8 @@ class Ensemble(object):
     self.__velocityDispersion = velocityDispersion
     return
   def __str__(self):
-    return 'The {} ensemble to simulate the fractal structure with {} instances of KOSMA-tau giving\n  {} possible combinations in the line-of-sight of an observer'\
-            .format(self.__clumpType, self.__masspoints.size, self.__combinations)
+    return 'The {} ensemble to simulate the fractal structure with {} instances of KOSMA-tau giving\n  {} possible combinations in the line-of-sight of an observer:'\
+            .format(self.__clumpType, self.__masspoints.size, len(self.__combinations), self.__combinations)
 
   # PUBLIC
   def initialise(self, mass=0, density=0, velocity=0, velocityDispersion=0, FUV=0, extinction=0):
@@ -181,10 +181,10 @@ class Ensemble(object):
     if verbose: print('\nCombinations:\n', self.__combinations)
     for i,combinations in enumerate(self.__combinations):
       if verbose: print(combinations)
-      combinations = np.array(combinations).T
+      self.__combinations[i] = np.array(combinations).T
       probability = []
       if verbose: print('\nEnsemble combinations:\n', combinations)
-      for combination in combinations:
+      for combination in self.__combinations[i]:
         combination = np.array([combination])
         if verbose:
           print('\nCombination:\n', combination)
@@ -198,9 +198,9 @@ class Ensemble(object):
           else:
             # use binomial 
             # <<This will likely print an error when there are more masspoints>>
-            b = Binomial(self.__deltaNji, surfaceProbability) # n and p for binominal 
+            b = Binomial(self.__deltaNji, surfaceProbability, debug=False) # n and p for binominal 
             probability.append(b.binomfunc(combination))
-        else:
+        elif self.__flagCombination=='poisson':
           if np.any(probableNumber>self.__constants.pnGauss) and np.any(self.__deltaNji>self.__constants.nGauss):
             # use gauss
             g = Gauss(probableNumber, standardDeviation)
@@ -210,6 +210,13 @@ class Ensemble(object):
             # use poisson
             po = Poisson(probableNumber)
             probability.append(po.poissonfunc(combination))
+        else: probability.append([0, 0])
+        if verbose:
+          print(probability[-1])
+          input()
+        if (probability[-1]==np.nan).any():
+          print('\nThere is an invalid probability:\n')
+          input()
         self.__combinationObjects.append(Combination(self.__species, self.__interpolations, combination=combination.flatten(), masses=self.__masspoints, density=self.__masspointDensity, fuv=self.__FUV, probability=probability[-1]))
       self.__probability.append(probability)
     #for i,combination in enumerate(self.__combinations): self.__probability[i] = self.__probability[i](combination)
@@ -222,24 +229,36 @@ class Ensemble(object):
     self.createCombinationObjects()
     if self.__verbose: print(self.__clumpType)
     return
-  def calculate(self):
+  def calculate(self, debug=False):
     '''Maybe <<PARALLELISE>> this??
 
        This is a function to cycle through the Combination instances to create a large numpy.ndarray,
        which is used to calculate the final sums needed for the voxel.'''
-    print('Calculating ensemble emission')
-    result = []
-    for combinations in self.__combinations:
-      for combination in combinations:
-        self.__combinationObjects[-1].calculateEmission(self.__velocity, self.__velocityDispersion)
-        result.append(self.__combinationObjects[-1].getScaledCombinationEmission()) #<<this needs to be altered>>
-    result = np.array(result)
-    self.__intensity = result#.sum(3)[0]
-    self.__opticalDepth = result#.sum(3)[1]
-    if not isinstance(self.__FUV, FUVfield): self.__FUV = result#.average(3)[2]
+    emissionResult = []
+    FUVresult = []
+    if debug:
+      print('Calculating {} ensemble emission'.format(self.__clumpType))
+      input()
+    for combination in self.__combinationObjects:
+      combination.calculateEmission(self.__velocity, self.__velocityDispersion)
+      result = combination.getScaledCombinationEmission() #<<this needs to be altered>>
+      emissionResult = result[0]
+      self.__FUV = result[1]
+    emissionResult = np.array(emissionResult)
+    if debug:
+      print(emissionResult)
+      input()
+    self.__intensity = emissionResult[0]#.sum(3)[0]
+    self.__opticalDepth = emissionResult[1]#.sum(3)[1]
+    if debug:
+      print('\nIntensity\n', self.__intensity, '\nOptical depth\n', self.__opticalDepth)
+      input()
     return
   def getEnsembleEmission(self):
     '''This returns the ensemble emission...nothing more.'''
+    if (self.__intensity==np.nan).any():
+      print('\nInvalid intensity:\n', self.__intensity)
+      input()
     return (self.__intensity,self.__opticalDepth,self.__FUV)
   def getCombinations(self):
     return self.__combinations

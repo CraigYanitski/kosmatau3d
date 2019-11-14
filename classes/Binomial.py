@@ -27,8 +27,8 @@ class Binomial():
       print('\nCombination, n, p, i:\n', k, '\n', self.n, '\n', self.p, '\n', i)
       input()
     if k[:,i].size: k[:,i] = self.n[:,i]-k[:,i]   # use (n choose k) = (n choose n-k)
-    probability = np.zeros([self.n[:,0].size, k.size])
-    for i in range(self.n[0].size):
+    comb = np.zeros([self.n[:,0].size, k.size])
+    for i in range(self.n[:,0].size):
       if np.any(k>0):
         range1 = range(int(self.n[:,0][i]-k[:,0]+1),int(self.n[:,0][i]+1))
         range2 = range(1,int(k[:,0]+1))
@@ -37,12 +37,12 @@ class Binomial():
         if self.debug:
           print('\nRanges:\n', range1, '\n', range2, '\n', range3, '\n', range4)
           input()
-        probability[i] = np.array([ft.reduce(mul, range1, 1)/ft.reduce(mul, range2, 1),ft.reduce(mul, range3, 1)/ft.reduce(mul, range4, 1)], dtype=np.float)
-      else: probability[i] = 0
+        comb[i] = np.array([ft.reduce(mul, range1, 1)/ft.reduce(mul, range2, 1),ft.reduce(mul, range3, 1)/ft.reduce(mul, range4, 1)], dtype=np.float)
+      else: comb[i] = 0
     if self.debug:
-      print('\nProbability:\n', probability)
+      print('\nComb:\n', comb)
       input()
-    return probability
+    return comb
   '''
   def choose(self, k):
       """
@@ -71,4 +71,6 @@ class Binomial():
     # print 'comb', self.comb(k)
     k = np.array(k, dtype=np.int)
     #print (float(self.comb(k)) * self.p**k * (1-self.p)**(self.n-k))
-    return self.comb(k) * self.p**k * (1-self.p)**(self.n-k)
+    probability = self.comb(k) * self.p**k * (1-self.p)**(self.n-k)
+    if self.debug: print('\nProbability\n', probability)
+    return np.array([probability.mean(0)])

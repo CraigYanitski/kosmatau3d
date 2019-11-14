@@ -20,10 +20,10 @@ class Combination(object):
       self.__masspoints.append(masspoint)    #list of masses in the combination
     self.__intensity = []             #velocity-averaged intensity of this combination of masspoints
     self.__opticalDepth = []          #velocity-averaged optical depth of this combination of masspoints
-    self.__probability = 0            #the probability of this combination of masspoints
+    self.__probability = probability            #the probability of this combination of masspoints
     return
   def __setFUV(self, fuvField):
-    self.__FUV = fuvField
+    self.__FUV = self.__probability*fuvField
     return
   def __str__(self):
     return 'Combination {}:\n  ->probability {}\n  ->intensity {}\n  ->optical depth {}\n  ->FUV field {}'\
@@ -38,6 +38,8 @@ class Combination(object):
   #  return
   def getMasspoints(self):
     return self.__masspoints
+  def getProbability(self):
+    return self.__probability
   def addFUV(self, fuvField):
     self.__setFUV(fuvField)
     return
@@ -45,14 +47,28 @@ class Combination(object):
     self.__masspoints.append(Masspoint(self.__species, self.__interpolations, mass, number))
     self.__combination.append(number)
     return
-  def calculateEmission(self, vrange, vDispersion):
+  def calculateEmission(self, velocity, vDispersion, debug=False):
     #print('Calculating combination emission')
+    if isinstance(self.__intensity,np.ndarray):
+      print('The emission has already been calculated for this combination.')
+      return
+    if debug:
+      print(self.__combination)
+      input()
     for i,masspoint in enumerate(self.__masspoints):
-      (intensity,opticalDepth) = self.__combination[i]*masspoint.calculateEmission(vrange, vDispersion)
+      masspoint.calculateEmission(velocity, vDispersion)
+      (intensity,opticalDepth) = masspoint.getEmission()
       self.__intensity.append(intensity)
       self.__opticalDepth.append(opticalDepth)
-    self.__intensity = np.array(self.__intensity)
-    self.__opticalDepth = np.array(self.__opticalDepth)
+    self.__intensity = self.__probability.T*np.array(self.__intensity)
+    self.__opticalDepth = self.__probability.T*np.array(self.__opticalDepth)
+    if debug:
+      print(self.__intensity, self.__opticalDepth)
+      input()
     return
-  def getScaledCombinationEmission(self):
-    return (self.__probability*np.stack((10**(self.__intensity), 10**(self.__opticalDepth))),self.__probability*self.__FUV.getFUV())
+  def getScaledCombinationEmission(self, verbose=False):
+    emission = ([self.__intensity,self.__opticalDepth],self.__FUV.getFUV())
+    if verbose:
+      print('\nCombination emission:\n', emission)
+      input()
+    return emission
