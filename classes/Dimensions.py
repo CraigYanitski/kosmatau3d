@@ -11,9 +11,9 @@ class Dimensions(object):
   def __init__(self, x, y, z, i=0, resolution=1000):
     self.__scale = resolution
     self.__i = i
-    self.__x = x*1000
-    self.__y = y*1000
-    self.__z = z*1000
+    self.__x = np.floor_divide(x*1000, self.__scale)*self.__scale
+    self.__y = np.floor_divide(y*1000, self.__scale)*self.__scale
+    self.__z = np.floor_divide(z*1000, self.__scale)*self.__scale
     self.__xOffset = self.__x/2.
     self.__yOffset = self.__y/2.
     self.__zOffset = self.__z/2.
@@ -38,6 +38,8 @@ class Dimensions(object):
   # PUBLIC
   def getResolution(self):
     return self.__scale
+  def getDimensions(self):
+    return (self.__x,self.__y,self.__z)
   def voxelNumber(self):
     # Return the number of voxels required
     return len(self.__xPositions)
