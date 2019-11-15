@@ -102,3 +102,9 @@ class Model():
   def calculateEmission(self):
     self.__grid.calculateEmission()
     return
+  def setLOS(self, x=0, y=0):
+    self.__orientation.setLOS(self.__grid, x=x, y=y)
+    return
+  def calculateObservation(self, velocity=[0]):
+    intensity = self.__orientation.calculateRadiativeTransfer(velocity)
+    return intensity
