@@ -81,9 +81,9 @@ class Interpolate(object):
     else: sys.exit('<<ERROR>>: There is no such method as {} to interpolate the KOSMA-tau grid.\n\nExitting...\n\n'.format(self.__interpolation))
   def __clumpMassProfile(self):
     if self.__verbose: print('Creating clump mass interpolation')
-    clumpMass = self.__observations.interclumpMassProfile
+    clumpMass = self.__observations.clumpMassProfile
     if self.__interpolation=='linear':
-      return interpolate.interp1d(clumpMass[0], clumpMass[1], kind='cubic')  #clump mass interpolation
+      return interpolate.interp1d(clumpMass[0], clumpMass[1], kind='linear')  #clump mass interpolation
     elif self.__interpolation=='cubic' or self.__interpolation=='radial':
       return interpolate.interp1d(clumpMass[0], clumpMass[1], kind='cubic')  #clump mass interpolation
     else: sys.exit('<<ERROR>>: There is no such method as {} to interpolate the KOSMA-tau grid.\n\nExitting...\n\n'.format(self.__interpolation))
@@ -148,11 +148,23 @@ class Interpolate(object):
   def interpolateVelocityDispersion(self, radius):
     return self.__dispersionInterpolation(radius)
   def interpolateDensity(self, radius):
-    return self.__densityInterpolation(radius)
+    density=self.__densityInterpolation(radius)
+    if density<0:
+      input('<<ERROR>> density {} at radius {} pc!'.format(density, radius))
+      sys.exit()
+    return density
   def interpolateClumpMass(self, radius):
-    return self.__clumpMassInterpolation(radius)
+    mass=self.__clumpMassInterpolation(radius)
+    if mass<0:
+      input('<<ERROR>> clump mass {} at radius {} pc!'.format(mass, radius))
+      sys.exit()
+    return mass
   def interpolateInterclumpMass(self, radius):
-    return self.__interclumpMassInterpolation(radius)
+    mass=self.__interclumpMassInterpolation(radius)
+    if mass<0:
+      input('<<ERROR>> interclump mass {} at radius {} pc!'.format(mass, radius))
+      sys.exit()
+    return mass
   def interpolateFUVextinction(self, density, mass):
     return 10**self.__FUVextinctionInterpolation(density, mass)
   def interpolateFUVfield(self, radius):
