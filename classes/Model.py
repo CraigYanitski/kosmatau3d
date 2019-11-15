@@ -10,9 +10,10 @@ class Model():
   It contains all of the information needed to properly model a PDR (I think).
   '''
   # PRIVATE
-  def __init__(self, x, y, z, modelType='', verbose=False):
+  def __init__(self, x, y, z, modelType='', resolution=1000, verbose=False):
     self.__type = modelType   #this just adds a label to the type of model being created. ie 'disk', 'bar', 'sphere', etc.
-    self.__shape = Shape(x, y, z, modelType=modelType)      #Shape() object to create the parameters for the grid of voxels
+    self.__scale = resolution
+    self.__shape = Shape(x, y, z, modelType=modelType, resolution=self.__scale)      #Shape() object to create the parameters for the grid of voxels
     self.__grid = VoxelGrid(self.__shape.getDimensions())   #VoxelGrid() object to build the model and calculate the emission
     self.__observations = Observations(self.__shape.getDimensions().getResolution())    #Observations() object to centralise the required data for the program
     self.__orientation = Orientation(self.__shape.getDimensions(), self.__observations)      #Orientation() object to change the viewing angle and expected spectra
