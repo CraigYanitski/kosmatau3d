@@ -57,7 +57,10 @@ class Voxel(object):
     self.__FUV = FUVfield(fuv)
     return
   def __str__(self):
-    return 'Voxel {}\n  ->Cartesian position: ({}, {}, {})\n  ->mass {}\n  ->intensity {}\n  ->optical depth {}\n  ->FUV field {}'.format(self.__index, self.__x, self.__y, self.__z, self.__mass, 10**self.__intensity, 10**self.__opticalDepth, self.__FUV)
+    #try self.__FUV.getFUV():
+      return 'Voxel {}\n  ->Cartesian position: ({}, {}, {})\n  ->mass {}\n  ->intensity {}\n  ->optical depth {}\n  ->FUV field {}'.format(self.__index, self.__x, self.__y, self.__z, self.__mass, 10**self.__intensity, 10**self.__opticalDepth, self.__FUV.getFUV())
+    #except:
+    #  return 'Voxel {}\n  ->Cartesian position: ({}, {}, {})\n  ->mass {}\n  ->intensity {}\n  ->optical depth {}\n  ->FUV field {}'.format(self.__index, self.__x, self.__y, self.__z, self.__mass, 10**self.__intensity, 10**self.__opticalDepth, self.__FUV)
 
   # PUBLIC
   def setIndex(self, index):

@@ -43,8 +43,8 @@ class VoxelGrid(object):
     self.__unusedVoxels = []
     with tqdm(total=len(self.__voxels), desc='Voxels initialised') as progress:
       for i,voxel in enumerate(self.__voxels):
-        if r[i]<=2*max(x):
-          if verbose: print(r[i])
+        if r[i]<=max(x):
+          if verbose: print('\nMax X, Radius:', max(x), r[i], '\n')
           voxel.setIndex(i-len(self.__unusedVoxels))
           voxel.setPosition(x[i], y[i], z[i], r[i], phi, scale)
           voxel.setProperties()

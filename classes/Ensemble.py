@@ -103,12 +103,12 @@ class Ensemble(object):
     return self.__masspoints
   def getCombinations(self):
     return self.__combinations
-  def calculateRadii(self):
+  def calculateRadii(self, verbose=False):
     '''This function calculates the interpolation points necessary for reading the KOSMA-tau files.'''
     self.__masspointDensity = np.log10(10.**(self.__masspoints*(1-3./self.__constants.gamma))*sum(10.**(self.__masspoints*(1+3./self.__constants.gamma-self.__constants.alpha))) / \
                                        sum(10.**(self.__masspoints*(2-self.__constants.alpha)))*self.__densityObserved/1.91)
-    #print(self.__masspointDensity)
-    if (self.__masspointDensity>self.__constants.densityLimits[1]).any() or (self.__masspointDensity<self.__constants.densityLimits[0]).any(): sys.exit('WARNING: surface density outside of KOSMA-tau grid!\n\n')
+    if verbose: print(self.__masspointDensity)
+    #if (self.__masspointDensity>self.__constants.densityLimits[1]).any() or (self.__masspointDensity<self.__constants.densityLimits[0]).any(): sys.exit('WARNING: surface density {} outside of KOSMA-tau grid!\n\n'.format(self.__masspointDensity))
     self.__interpolationPoints = np.stack((self.__masspointDensity, self.__masspoints, np.full(self.__masspoints.size, self.__FUV)))
     self.__masspointRadii = (3./(4.*np.pi)*(10.**self.__masspoints*self.__constants.massSolar)/(10.**self.__masspointDensity*self.__constants.massH*1.91))**(1./3.)/self.__constants.pc
     #print(self.__masspointRadii, 'cm')
@@ -168,7 +168,9 @@ class Ensemble(object):
     self.__deltaNji = np.array([self.__Nj]).T/np.sqrt(2*np.pi)/self.__velocityDispersion*(np.exp(-0.5*((self.__velocity-self.__velocity.mean())/self.__velocityDispersion)**2)).T*self.__velocityStep
     surfaceProbability = np.array([np.pi*self.__masspointRadii**2/self.__constants.pixelWidth**2])    #this is 'pTab' in the original code
     probableNumber = (self.__deltaNji*surfaceProbability.T)   #this is 'expectedValTab' in the original code
-    standardDeviation = np.sqrt(self.__deltaNji*surfaceProbability.T*(1-surfaceProbability.T))    #this is 'standardDeriTab' in the original code
+    try: standardDeviation = np.sqrt(self.__deltaNji*surfaceProbability.T*(1-surfaceProbability.T))    #this is 'standardDeriTab' in the original code
+    except ValueError:
+      input('\nObserved mass, sufaceProbability, standardDeviation**2:\n', self.__massObserved, surfaceProbability, '\n', self.__deltaNji*surfaceProbability.T*(1-surfaceProbability.T))
     if verbose: print('\nsuface probability, expected number, standard deviation:\n', surfaceProbability, '\n', probableNumber, '\n', standardDeviation)
     #print(surfaceProbability, probableNumber, standardDeviation)
     lower = np.maximum(np.zeros([self.__masspoints.size, self.__velocity.size]), np.floor(probableNumber-self.__constants.nSigma*standardDeviation))
