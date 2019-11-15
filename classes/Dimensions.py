@@ -29,7 +29,7 @@ class Dimensions(object):
     return
   def __convertToPolar(self):
     # This is a function that calculates the polar coordinates of each voxel
-    r = ((self.__xPositions-self.__xOffset)**2 + (self.__yPositions-self.__yOffset)**2)**0.5
+    r = ((self.__xPositions)**2 + (self.__yPositions)**2)**0.5
     phi = 0#np.arcsin(self.__yPositions/self.__xPositions)
     return r, phi
   def __str__(self):

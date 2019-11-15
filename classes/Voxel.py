@@ -53,7 +53,7 @@ class Voxel(object):
     return
   def __setFUV(self):
     fuv = self.__interpolations.interpolateFUVfield(self.__r)/self.__constants.normUV*self.__constants.globalUV
-    fuv = 10**(np.clip(fuv, 1, None))
+    fuv = np.clip(fuv, 1, None)
     self.__FUV = FUVfield(fuv)
     return
   def __str__(self):
