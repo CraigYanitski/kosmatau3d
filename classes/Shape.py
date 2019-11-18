@@ -1,3 +1,4 @@
+import importlib as il
 from Dimensions import *
 class Shape():
   '''
@@ -13,6 +14,9 @@ class Shape():
     return
 
   # PUBLIC
+  def reloadModules(self):
+    il.reload(Dimensions)
+    return
   def getType(self):
     return self.__type
   def getDimensions(self):

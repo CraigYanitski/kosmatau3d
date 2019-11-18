@@ -1,5 +1,6 @@
 import numpy as np
 from tqdm import tqdm
+import importlib as il
 from Voxel import *
 from Interpolate import *
 class VoxelGrid(object):
@@ -19,6 +20,9 @@ class VoxelGrid(object):
     self.__voxelOpticalDepth = []
     self.__voxelFUV = []
     self.__interpolations = None
+    self.__x = []
+    self.__y = []
+    self.__z = []
     return
   def __initialiseGrid(self, species, observations):
     self.__species = species
@@ -31,6 +35,13 @@ class VoxelGrid(object):
   #def createGrid(self, indeces):
   #  for i in indeces: self.__voxels.append(Voxel(i))
   #  return
+  def reloadModules(self):
+    il.reload(Voxel)
+    il.reload(Interpolate)
+    for voxel in self.__grid:
+      voxel.reloadModules()
+    self.__interpolations.reloadModules()
+    return
   def getDimensions(self):
     return self.__dimensions
   def getInterpolations(self):
@@ -45,6 +56,9 @@ class VoxelGrid(object):
       for i,voxel in enumerate(self.__voxels):
         if r[i]<=max(x):
           if verbose: print('\nMax X, Radius:', max(x), r[i], '\n')
+          self.__x.append(x[i])
+          self.__y.append(y[i])
+          self.__z.append(z[i])
           voxel.setIndex(i-len(self.__unusedVoxels))
           voxel.setPosition(x[i], y[i], z[i], r[i], phi, scale)
           voxel.setProperties()
@@ -63,11 +77,13 @@ class VoxelGrid(object):
         if verbose: print(emission)
         self.__voxelIntensity.append(emission[0])
         self.__voxelOpticalDepth.append(emission[1])
-        self.__voxelFUV.append(emission[2].getFUV())
+        self.__voxelFUV.append(emission[2])
         progress.update(1)
     return
   def getVoxelNumber(self):
     return self.__voxelNumber
+  def getVoxelPositions(self):
+    return np.array([self.__x, self.__y, self.__z])
   def allVoxels(self):
     # Just in case all of the Voxel() instances need to be retrieved
     return self.__voxels

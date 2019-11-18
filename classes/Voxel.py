@@ -1,3 +1,4 @@
+import importlib as il
 from Ensemble import *
 from FUVfield import *
 class Voxel(object):
@@ -58,11 +59,17 @@ class Voxel(object):
     return
   def __str__(self):
     #try self.__FUV.getFUV():
-      return 'Voxel {}\n  ->Cartesian position: ({}, {}, {})\n  ->mass {}\n  ->intensity {}\n  ->optical depth {}\n  ->FUV field {}'.format(self.__index, self.__x, self.__y, self.__z, self.__mass, 10**self.__intensity, 10**self.__opticalDepth, self.__FUV.getFUV())
+      return 'Voxel {}\n  ->Cartesian position: ({}, {}, {})\n  ->mass {}\n  ->intensity {}\n  ->optical depth {}\n  ->FUV field {}'.format(self.__index, self.__x, self.__y, self.__z, self.__mass, (10**self.__intensity).sum(), (10**self.__opticalDepth).sum(), self.__FUV.getFUV())
     #except:
     #  return 'Voxel {}\n  ->Cartesian position: ({}, {}, {})\n  ->mass {}\n  ->intensity {}\n  ->optical depth {}\n  ->FUV field {}'.format(self.__index, self.__x, self.__y, self.__z, self.__mass, 10**self.__intensity, 10**self.__opticalDepth, self.__FUV)
 
   # PUBLIC
+  def reloadModules(self):
+    il.reload(Ensemble)
+    il.reload(FUVfield)
+    self.__clump.reloadModules()
+    self.__interclump.reloadModules()
+    return
   def setIndex(self, index):
     self.__index = index
     return
@@ -89,6 +96,8 @@ class Voxel(object):
     return (self.__x, self.__y, self.__z)
   def getClumps(self):
     return (self.__clump, self.__interclump)
+  def getVelocity(self):
+    return self.__velocityRange
   def calculateEmission(self, verbose=False):
     if verbose: print('\nCalculating voxel V{} emission'.format(self.__index))
     self.__clump.calculate()
@@ -100,6 +109,6 @@ class Voxel(object):
     if isinstance(FUVclump, FUVfield): self.__FUV = FUVfield(FUVclump.getFUV()+FUCinterclump.getFUV())
     return
   def getEmission(self, verbose=False):
-    emission = (self.__intensity, self.__opticalDepth, self.__FUV)
+    emission = ((10**self.__intensity).sum(0), (10**self.__opticalDepth).sum(0), self.__FUV)
     if verbose: print(emission)
     return emission

@@ -1,6 +1,7 @@
 import numpy as np
 import sys
 import scipy.interpolate as interpolate
+import importlib as il
 import Observations
 class Interpolate(object):
   '''
@@ -115,6 +116,9 @@ class Interpolate(object):
     return 'Available Interpolations:\n -Clump intensity\n -Clump optical depth\n -Clump mass (galactic)\n -Clump density (galactic)\n -Voxel rotation (galactic)\n -UV extinction\n -FUV field (galactic)'
 
   # PUBLIC
+  def reloadModules(self):
+    il.reload(Observations)
+    return
   def getObservations(self):
     return self.__observations
   def interpolateIntensity(self, points, speciesNumber, verbose=False):

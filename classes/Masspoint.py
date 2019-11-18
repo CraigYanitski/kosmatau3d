@@ -1,4 +1,5 @@
 import numpy as np
+import importlib as il
 from Molecules import *
 from Dust import *
 class Masspoint(object):
@@ -25,6 +26,10 @@ class Masspoint(object):
     return 'Simulated KOSMA-tau clump of mass {}'.format(10**self.mass)
 
   # PUBLIC
+  def reloadModule(self):
+    il.reload(Molecules)
+    il.reload(Dust)
+    return
   def calculateEmission(self, velocity, vDispersion, verbose=False):
     if self.__number==0:
       self.__intensity = np.zeros((len(self.__species),len(velocity)))

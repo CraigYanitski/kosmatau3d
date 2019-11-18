@@ -1,3 +1,4 @@
+import importlib as il
 import numpy as np
 import sys
 from Combination import *
@@ -71,6 +72,16 @@ class Ensemble(object):
             .format(self.__clumpType, self.__masspoints.size, len(self.__combinations), self.__combinations)
 
   # PUBLIC
+  def reloadModules(self):
+    il.reload(Combination)
+    il.reload(Binomial)
+    il.reload(Gauss)
+    il.reload(Poisson)
+    il.reload(FUVfield)
+    il.reload(Constants)
+    for combination in self.__combinationObjects:
+      combination.reloadModules()
+    return
   def initialise(self, mass=0, density=0, velocity=0, velocityDispersion=0, FUV=0, extinction=0):
     self.__setMass(mass)
     self.__setDensity(density)

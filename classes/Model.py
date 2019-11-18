@@ -1,10 +1,11 @@
+import importlib as il
 from Shape import *
 from VoxelGrid import *
 from Orientation import *
 from Observations import *
 from Molecules import *
 from Dust import *
-class Model():
+class Model(object):
   '''
   This is the highest class in the hierarchy of the KOSMA-tau^3 simulation.
   It contains all of the information needed to properly model a PDR (I think).
@@ -47,13 +48,27 @@ class Model():
     return self.__species
   def getSpeciesNames(self):
     return self.__molecules.getMolecules() + self.__dust.getDust()
+  def reloadModules(self):
+    il.reload(Shape)
+    il.reload(VoxelGrid)
+    il.reload(Orientation)
+    il.reload(Observations)
+    il.reload(Molecules)
+    il.reload(Dust)
+    self.__shape.reloadModules()
+    self.__grid.reloadModules()
+    #self.__observations.reloadModules()
+    #self.__orientation.reloadModules()
+    self.__molecules.reloadModules()
+    self.__dust.reloadModules()
+    return
   def initialiseModel(self):
     self.__grid.initialiseVoxels(self.__species, self.__observations)
     return
   def addDust(self, dust, transition):
     (numbers,species,transitions,frequencies) = self.__observations.speciesData
     i = (species==dust)&(transitions==transition)
-    if dust in self.__dust.getDust():
+    if transition in self.__dust.getTransitions():
       self.__dust.addTransition(dust, transition, frequencies[i], numbers[i])
       # self.__dustNumber.append(numbers[species=='dust' and transitions==transition])
       # self.__dustTransitions['dust'].append(transition)

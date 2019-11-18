@@ -1,4 +1,4 @@
-class Constants():
+class Constants(object):
   '''
   This is a class to contain all of the constants used throughout the program.
   '''

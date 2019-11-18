@@ -1,4 +1,5 @@
 import numpy as np
+import importlib as il
 from Masspoint import *
 class Combination(object):
   '''
@@ -36,6 +37,9 @@ class Combination(object):
   #def addDust(self, element):
   #  self.__listDust.append(DustEmission(element))
   #  return
+  def reloadModules(self):
+    il.reload(Masspoint)
+    for masspoint in self.__masspoints: masspoint.reloadModules()
   def getMasspoints(self):
     return self.__masspoints
   def getProbability(self):
