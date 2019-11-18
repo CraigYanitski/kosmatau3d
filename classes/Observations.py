@@ -1,3 +1,5 @@
+import os
+import inspect
 import numpy as np
 class Observations(object):
   '''
@@ -8,8 +10,10 @@ class Observations(object):
   # PRIVATE
   def __init__(self, scale, directory='MilkyWay'):
     self.__scale = scale
-    self.__INPUTPATH = '/home/yanitski/Desktop/KOSMA-tau^3/input/'#'/home/craig/Desktop/Köln/kosma-tau^3-develop/kosma-tau-3d/input/'#
-    self.__GRIDPATH = '/home/yanitski/Desktop/KOSMA-tau^3/grid/'#'/home/craig/Desktop/Köln/kosma-tau^3-develop/kosma-tau-3d/grid/'#
+    filename = inspect.getframeinfo(inspect.currentframe()).filename
+    self.__KOSMAPATH = os.path.dirname(filename) + '/../'
+    self.__INPUTPATH = self.__KOSMAPATH + 'input/'#'/home/craig/Desktop/Köln/kosma-tau^3-develop/kosma-tau-3d/input/'#
+    self.__GRIDPATH = self.__KOSMAPATH + 'grid/'#'/home/craig/Desktop/Köln/kosma-tau^3-develop/kosma-tau-3d/grid/'#
     if directory[-1]=='/': self.__directory = directory
     else: self.__directory = directory + '/'
     self.__initialise()
