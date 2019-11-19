@@ -64,6 +64,9 @@ class Combination(object):
       (intensity,opticalDepth) = masspoint.getEmission()
       self.__intensity.append(intensity)
       self.__opticalDepth.append(opticalDepth)
+    if debug:
+      print('\nProbability:', self.__probability)
+      input()
     self.__intensity = self.__probability.T*np.array(self.__intensity)
     self.__opticalDepth = self.__probability.T*np.array(self.__opticalDepth)
     if debug:

@@ -211,7 +211,7 @@ class Ensemble(object):
           else:
             # use binomial 
             # <<This will likely print an error when there are more masspoints>>
-            b = Binomial(self.__deltaNji, surfaceProbability, debug=False) # n and p for binominal 
+            b = Binomial(self.__deltaNji, surfaceProbability, debug=verbose) # n and p for binominal 
             probability.append(b.binomfunc(combination))
         elif self.__flagCombination=='poisson':
           if np.any(probableNumber>self.__constants.pnGauss) and np.any(self.__deltaNji>self.__constants.nGauss):

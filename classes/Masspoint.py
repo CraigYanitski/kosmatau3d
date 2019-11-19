@@ -30,13 +30,16 @@ class Masspoint(object):
     il.reload(Molecules)
     il.reload(Dust)
     return
-  def calculateEmission(self, velocity, vDispersion, verbose=False):
+  def calculateEmission(self, velocity, vDispersion, verbose=False, debug=False):
     if self.__number==0:
       self.__intensity = np.zeros((len(self.__species),len(velocity)))
       self.__opticalDepth = np.zeros((len(self.__species),len(velocity)))
     else:
       for i,element in enumerate(self.__species):
         interpolationPoint = [self.__density, self.__mass, np.log10(self.__FUV.getFUV())]
+        if debug:
+          print(interpolationPoint)
+          input()
         if verbose: print(element)
         if isinstance(element, Molecules):
           self.__intensity_xi.append(self.__interpolations.interpolateIntensity(interpolationPoint, element.getInterpolationIndeces())*self.__number*np.exp(-1/2.*((velocity-velocity.mean())/(vDispersion))**2))
@@ -46,6 +49,9 @@ class Masspoint(object):
           self.__opticalDepth_xi.append(np.full(len(velocity), self.__interpolations.interpolateTau(interpolationPoint, element.getInterpolationIndeces())*self.__number))
       self.__intensity = (np.array(self.__intensity_xi)).sum(0)
       self.__opticalDepth = (np.array(self.__opticalDepth_xi)).sum(0)
+      if debug:
+        print('\nIntensity, optical depth:\n', self.__intensity, '\n', self.__opticalDepth)
+        input()
       if np.isnan(self.__intensity).any():
         print('\nThere is an invalid intensity:\n', interpolationPoint)
         input()
