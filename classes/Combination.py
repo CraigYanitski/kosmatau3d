@@ -59,16 +59,20 @@ class Combination(object):
     if debug:
       print(self.__combination)
       input()
+    intensityList = []
+    tauList = []
     for i,masspoint in enumerate(self.__masspoints):
       masspoint.calculateEmission(velocity, vDispersion)
       (intensity,opticalDepth) = masspoint.getEmission()
-      self.__intensity.append(intensity)
-      self.__opticalDepth.append(opticalDepth)
+      intensityList.append(intensity)
+      tauList.append(opticalDepth)
     if debug:
       print('\nProbability:', self.__probability)
       input()
-    self.__intensity = self.__probability.T*np.array(self.__intensity)
-    self.__opticalDepth = self.__probability.T*np.array(self.__opticalDepth)
+    intensity = np.array(intensityList)
+    opticalDepth = np.array(tauList)
+    self.__intensity = self.__probability.T*intensity
+    self.__opticalDepth = np.log(self.__probability.T*(np.exp(opticalDepth)))
     if debug:
       print(self.__intensity, self.__opticalDepth)
       input()

@@ -32,8 +32,8 @@ class Masspoint(object):
     return
   def calculateEmission(self, velocity, vDispersion, verbose=False, debug=False):
     if self.__number==0:
-      self.__intensity = np.zeros((len(self.__species),len(velocity)))
-      self.__opticalDepth = np.zeros((len(self.__species),len(velocity)))
+      self.__intensity = np.zeros(len(velocity))
+      self.__opticalDepth = np.zeros(len(velocity))
     else:
       for i,element in enumerate(self.__species):
         interpolationPoint = [self.__density, self.__mass, np.log10(self.__FUV.getFUV())]
