@@ -57,7 +57,7 @@ class Binomial():
         if self.debug:
           input('\nRanges:\n{}\n{}\n'.format(range1, range2))
         comb[i] = np.array([ft.reduce(mul, range1, 1)/ft.reduce(mul, range2, 1)], dtype=np.float)
-      if self.n[0,:].size==2:
+      elif self.n[0,:].size==2:
         if self.debug:
           input('\n({}, {})\n'.format(int(self.n[:,1][i]-k[:,1]+1),int(self.n[:,1][i]+1)))
         range1 = range(int(self.n[:,0][i]-k[:,0]+1),int(self.n[:,0][i]+1))
@@ -65,91 +65,91 @@ class Binomial():
         range3 = range(int(self.n[:,1][i]-k[:,1]+1),int(self.n[:,1][i]+1))
         range4 = range(1,int(k[:,1]+1))
         if self.debug:
-          input('\nRanges:\n{}\n{}\n{}\n{}\n'.format(range1, range2, range3, range4))
+          input('\nRanges:\n1:{}\n2:{}\n3:{}\n4:{}\n'.format(range1, range2, range3, range4))
         comb[i] = np.array([ft.reduce(mul, range1, 1)/ft.reduce(mul, range2, 1), ft.reduce(mul, range3, 1)/ft.reduce(mul, range4, 1)], dtype=np.float)
-      if self.n[0,:].size==3:
+      elif self.n[0,:].size==3:
         if self.debug:
           input('\n({}, {})\n'.format(int(self.n[:,2][i]-k[:,2]+1),int(self.n[:,2][i]+1)))
         range1 = range(int(self.n[:,0][i]-k[:,0]+1),int(self.n[:,0][i]+1))
         range2 = range(1,int(k[:,0]+1))
-        range3 = range(int(self.n[:,0][i]-k[:,0]+1),int(self.n[:,0][i]+1))
-        range4 = range(1,int(k[:,0]+1))
-        range5 = range(int(self.n[:,0][i]-k[:,0]+1),int(self.n[:,0][i]+1))
-        range6 = range(1,int(k[:,0]+1))
+        range3 = range(int(self.n[:,1][i]-k[:,1]+1),int(self.n[:,1][i]+1))
+        range4 = range(1,int(k[:,1]+1))
+        range5 = range(int(self.n[:,2][i]-k[:,2]+1),int(self.n[:,2][i]+1))
+        range6 = range(1,int(k[:,2]+1))
         if self.debug:
           input('\nRanges:\n{}\n{}\n{}\n{}\n{}\n{}\n'.format(range1, range2, range3, range4, range5, range6))
         comb[i] = np.array([ft.reduce(mul, range1, 1)/ft.reduce(mul, range2, 1), ft.reduce(mul, range3, 1)/ft.reduce(mul, range4, 1), \
                             ft.reduce(mul, range5, 1)/ft.reduce(mul, range6, 1)], dtype=np.float)
-      if self.n[0,:].size==4:
+      elif self.n[0,:].size==4:
         if self.debug:
           input('\n({}, {})\n'.format(int(self.n[:,3][i]-k[:,3]+1),int(self.n[:,3][i]+1)))
         range1 = range(int(self.n[:,0][i]-k[:,0]+1),int(self.n[:,0][i]+1))
         range2 = range(1,int(k[:,0]+1))
-        range3 = range(int(self.n[:,0][i]-k[:,0]+1),int(self.n[:,0][i]+1))
-        range4 = range(1,int(k[:,0]+1))
-        range5 = range(int(self.n[:,0][i]-k[:,0]+1),int(self.n[:,0][i]+1))
-        range6 = range(1,int(k[:,0]+1))
-        range7 = range(int(self.n[:,0][i]-k[:,0]+1),int(self.n[:,0][i]+1))
-        range8 = range(1,int(k[:,0]+1))
+        range3 = range(int(self.n[:,1][i]-k[:,1]+1),int(self.n[:,1][i]+1))
+        range4 = range(1,int(k[:,1]+1))
+        range5 = range(int(self.n[:,2][i]-k[:,2]+1),int(self.n[:,2][i]+1))
+        range6 = range(1,int(k[:,2]+1))
+        range7 = range(int(self.n[:,0][i]-k[:,3]+1),int(self.n[:,3][i]+1))
+        range8 = range(1,int(k[:,3]+3))
         if self.debug:
           input('\nRanges:\n{}\n{}\n{}\n{}\n{}\n{}\n{}\n{}\n'.format(range1, range2, range3, range4, range5, range6, range7, range8))
         comb[i] = np.array([ft.reduce(mul, range1, 1)/ft.reduce(mul, range2, 1), ft.reduce(mul, range3, 1)/ft.reduce(mul, range4, 1), \
                             ft.reduce(mul, range5, 1)/ft.reduce(mul, range6, 1), ft.reduce(mul, range7, 1)/ft.reduce(mul, range8, 1)], dtype=np.float)
-      if self.n[0,:].size==5:
+      elif self.n[0,:].size==5:
         if self.debug:
           input('\n({}, {})\n'.format(int(self.n[:,4][i]-k[:,4]+1),int(self.n[:,4][i]+1)))
         range1 = range(int(self.n[:,0][i]-k[:,0]+1),int(self.n[:,0][i]+1))
         range2 = range(1,int(k[:,0]+1))
-        range3 = range(int(self.n[:,0][i]-k[:,0]+1),int(self.n[:,0][i]+1))
-        range4 = range(1,int(k[:,0]+1))
-        range5 = range(int(self.n[:,0][i]-k[:,0]+1),int(self.n[:,0][i]+1))
-        range6 = range(1,int(k[:,0]+1))
-        range7 = range(int(self.n[:,0][i]-k[:,0]+1),int(self.n[:,0][i]+1))
-        range8 = range(1,int(k[:,0]+1))
-        range9 = range(int(self.n[:,0][i]-k[:,0]+1),int(self.n[:,0][i]+1))
-        range10 = range(1,int(k[:,0]+1))
+        range3 = range(int(self.n[:,1][i]-k[:,1]+1),int(self.n[:,1][i]+1))
+        range4 = range(1,int(k[:,1]+1))
+        range5 = range(int(self.n[:,2][i]-k[:,2]+1),int(self.n[:,2][i]+1))
+        range6 = range(1,int(k[:,2]+1))
+        range7 = range(int(self.n[:,3][i]-k[:,3]+1),int(self.n[:,3][i]+1))
+        range8 = range(1,int(k[:,3]+1))
+        range9 = range(int(self.n[:,4][i]-k[:,4]+1),int(self.n[:,4][i]+1))
+        range10 = range(1,int(k[:,4]+1))
         if self.debug:
           input('\nRanges:\n{}\n{}\n{}\n{}\n{}\n{}\n{}\n{}\n{}\n{}\n'.format(range1, range2, range3, range4, range5, range6, range7, range8, range9, range10))
         comb[i] = np.array([ft.reduce(mul, range1, 1)/ft.reduce(mul, range2, 1), ft.reduce(mul, range3, 1)/ft.reduce(mul, range4, 1), \
                             ft.reduce(mul, range5, 1)/ft.reduce(mul, range6, 1), ft.reduce(mul, range7, 1)/ft.reduce(mul, range8, 1), \
                             ft.reduce(mul, range9, 1)/ft.reduce(mul, range10, 1)], dtype=np.float)
-      if self.n[0,:].size==6:
+      elif self.n[0,:].size==6:
         if self.debug:
           input('\n({}, {})\n'.format(int(self.n[:,5][i]-k[:,5]+1),int(self.n[:,5][i]+1)))
         range1 = range(int(self.n[:,0][i]-k[:,0]+1),int(self.n[:,0][i]+1))
         range2 = range(1,int(k[:,0]+1))
-        range3 = range(int(self.n[:,0][i]-k[:,0]+1),int(self.n[:,0][i]+1))
-        range4 = range(1,int(k[:,0]+1))
-        range5 = range(int(self.n[:,0][i]-k[:,0]+1),int(self.n[:,0][i]+1))
-        range6 = range(1,int(k[:,0]+1))
-        range7 = range(int(self.n[:,0][i]-k[:,0]+1),int(self.n[:,0][i]+1))
-        range8 = range(1,int(k[:,0]+1))
-        range9 = range(int(self.n[:,0][i]-k[:,0]+1),int(self.n[:,0][i]+1))
-        range10 = range(1,int(k[:,0]+1))
-        range11 = range(int(self.n[:,0][i]-k[:,0]+1),int(self.n[:,0][i]+1))
-        range12 = range(1,int(k[:,0]+1))
+        range3 = range(int(self.n[:,1][i]-k[:,1]+1),int(self.n[:,1][i]+1))
+        range4 = range(1,int(k[:,1]+1))
+        range5 = range(int(self.n[:,2][i]-k[:,2]+1),int(self.n[:,2][i]+1))
+        range6 = range(1,int(k[:,2]+1))
+        range7 = range(int(self.n[:,3][i]-k[:,3]+1),int(self.n[:,3][i]+1))
+        range8 = range(1,int(k[:,3]+1))
+        range9 = range(int(self.n[:,4][i]-k[:,4]+1),int(self.n[:,4][i]+1))
+        range10 = range(1,int(k[:,4]+1))
+        range11 = range(int(self.n[:,5][i]-k[:,5]+1),int(self.n[:,5][i]+1))
+        range12 = range(1,int(k[:,5]+1))
         if self.debug:
           input('\nRanges:\n{}\n{}\n{}\n{}\n{}\n{}\n{}\n{}\n{}\n{}\n{}\n{}\n'.format(range1, range2, range3, range4, range5, range6, range7, range8, range9, range10, range11, range12))
         comb[i] = np.array([ft.reduce(mul, range1, 1)/ft.reduce(mul, range2, 1), ft.reduce(mul, range3, 1)/ft.reduce(mul, range4, 1), \
                             ft.reduce(mul, range5, 1)/ft.reduce(mul, range6, 1), ft.reduce(mul, range7, 1)/ft.reduce(mul, range8, 1), \
                             ft.reduce(mul, range9, 1)/ft.reduce(mul, range10, 1), ft.reduce(mul, range11, 1)/ft.reduce(mul, range12, 1)], dtype=np.float)
-      if self.n[0,:].size==7:
+      elif self.n[0,:].size==7:
         if self.debug:
           input('\n({}, {})\n'.format(int(self.n[:,6][i]-k[:,6]+1),int(self.n[:,6][i]+1)))
         range1 = range(int(self.n[:,0][i]-k[:,0]+1),int(self.n[:,0][i]+1))
         range2 = range(1,int(k[:,0]+1))
-        range3 = range(int(self.n[:,0][i]-k[:,0]+1),int(self.n[:,0][i]+1))
-        range4 = range(1,int(k[:,0]+1))
-        range5 = range(int(self.n[:,0][i]-k[:,0]+1),int(self.n[:,0][i]+1))
-        range6 = range(1,int(k[:,0]+1))
-        range7 = range(int(self.n[:,0][i]-k[:,0]+1),int(self.n[:,0][i]+1))
-        range8 = range(1,int(k[:,0]+1))
-        range9 = range(int(self.n[:,0][i]-k[:,0]+1),int(self.n[:,0][i]+1))
-        range10 = range(1,int(k[:,0]+1))
-        range11 = range(int(self.n[:,0][i]-k[:,0]+1),int(self.n[:,0][i]+1))
-        range12 = range(1,int(k[:,0]+1))
-        range13 = range(int(self.n[:,0][i]-k[:,0]+1),int(self.n[:,0][i]+1))
-        range14 = range(1,int(k[:,0]+1))
+        range3 = range(int(self.n[:,1][i]-k[:,1]+1),int(self.n[:,1][i]+1))
+        range4 = range(1,int(k[:,1]+1))
+        range5 = range(int(self.n[:,2][i]-k[:,2]+1),int(self.n[:,2][i]+1))
+        range6 = range(1,int(k[:,2]+1))
+        range7 = range(int(self.n[:,3][i]-k[:,3]+1),int(self.n[:,3][i]+1))
+        range8 = range(1,int(k[:,3]+1))
+        range9 = range(int(self.n[:,4][i]-k[:,4]+1),int(self.n[:,4][i]+1))
+        range10 = range(1,int(k[:,4]+1))
+        range11 = range(int(self.n[:,5][i]-k[:,5]+1),int(self.n[:,5][i]+1))
+        range12 = range(1,int(k[:,5]+1))
+        range13 = range(int(self.n[:,6][i]-k[:,6]+1),int(self.n[:,6][i]+1))
+        range14 = range(1,int(k[:,6]+1))
         if self.debug:
           input('\nRanges:\n{}\n{}\n{}\n{}\n{}\n{}\n{}\n{}\n{}\n{}\n{}\n{}\n{}\n{}\n'.format(range1, range2, range3, range4, range5, range6, range7, range8, range9, range10, range11, range12, range13, range14))
         comb[i] = np.array([ft.reduce(mul, range1, 1)/ft.reduce(mul, range2, 1), ft.reduce(mul, range3, 1)/ft.reduce(mul, range4, 1), \
