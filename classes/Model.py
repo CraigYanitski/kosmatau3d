@@ -13,7 +13,7 @@ class Model(object):
   # PRIVATE
   def __init__(self, x, y, z, modelType='', resolution=1000, verbose=False):
     self.__type = modelType   #this just adds a label to the type of model being created. ie 'disk', 'bar', 'sphere', etc.
-    self.__scale = resolution
+    self.__scale = float(resolution)
     self.__shape = Shape(x, y, z, modelType=modelType, resolution=self.__scale)      #Shape() object to create the parameters for the grid of voxels
     self.__grid = VoxelGrid(self.__shape.getDimensions())   #VoxelGrid() object to build the model and calculate the emission
     self.__observations = Observations(self.__shape.getDimensions().getResolution())    #Observations() object to centralise the required data for the program
@@ -117,8 +117,8 @@ class Model(object):
   def calculateEmission(self):
     self.__grid.calculateEmission()
     return
-  def setLOS(self, x=0, y=0):
-    self.__orientation.setLOS(self.__grid, x=x, y=y)
+  def setLOS(self, x=0, y=0, z=0, dim='xy'):
+    self.__orientation.setLOS(self.__grid, x=x, y=y, z=z, dim=dim)
     return
   def calculateObservation(self, velocity=[0]):
     intensity = self.__orientation.calculateRadiativeTransfer(velocity)
