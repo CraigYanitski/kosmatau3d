@@ -29,7 +29,7 @@ class VoxelGrid(object):
     self.__interpolations = Interpolate(self.__species, observations)
     for i in range(self.__voxelNumber): self.__voxels.append(Voxel(self.__species, self.__interpolations, i))
   def __str__(self):
-    return 'VoxelGrid\n  ->{} voxels\n  ->intensity {}\n  ->optical depth {}'.format(self.__voxelNumber, sum(self.__voxelIntensity), sum(self.__voxelOpticalDepth))
+    return 'VoxelGrid\n  ->{} voxels\n  ->intensity {}\n  ->optical depth {}'.format(self.__voxelNumber, sum(self.__voxelIntensity), -np.log(np.exp(-self.__voxelOpticalDepth)))
 
   # PUBLIC
   #def createGrid(self, indeces):

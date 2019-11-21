@@ -44,7 +44,7 @@ class Voxel(object):
   def __setVelocity(self):
     self.__velocity = self.__interpolations.interpolateRotationalVelocity(self.__r)
     self.__velocityDispersion = self.__interpolations.interpolateVelocityDispersion(self.__r)
-    self.__velocityRange = np.linspace(self.__velocity-self.__velocityDispersion, self.__velocity+self.__velocityDispersion, self.__velocityNumber)
+    self.__velocityRange = np.linspace(self.__velocity-self.__velocityDispersion/2., self.__velocity+self.__velocityDispersion, self.__velocityNumber/2.)
     return
   def __setDensity(self):
     self.__density = self.__interpolations.interpolateDensity(self.__r)
@@ -58,8 +58,18 @@ class Voxel(object):
     self.__FUV = FUVfield(fuv)
     return
   def __str__(self):
+    iClump,tauClump,FUVclump = self.__clump.getEnsembleEmission()
+    iInterclump,tauInterclump,FUVinterclump = self.__interclump.getEnsembleEmission()
     #try self.__FUV.getFUV():
-      return 'Voxel {}\n  ->Cartesian position: ({}, {}, {})\n  ->mass {}\n  ->intensity {}\n  ->optical depth {}\n  ->FUV field {}'.format(self.__index, self.__x, self.__y, self.__z, self.__mass, (10**self.__intensity).sum(), (10**self.__opticalDepth).sum(), self.__FUV.getFUV())
+    return 'Voxel {}\n  ->Cartesian position: ({}, {}, {})\n'.format(self.__index, self.__x, self.__y, self.__z) + \
+                     '  ->mass {}\n'.format(self.__mass) + \
+                     '  ->intensity {}\n'.format((self.__intensity.sum(0)).max()) + \
+                     '    -clump {}\n'.format(iClump.max()) + \
+                     '    -interclump {}\n'.format(iInterclump.max()) + \
+                     '  ->optical depth {}\n'.format(self.__opticalDepth.max()) + \
+                     '    -clump {}\n'.format(tauClump.max()) + \
+                     '    -interclump {}\n'.format(tauInterclump.max()) + \
+                     '  ->FUV field {}'.format(self.__FUV.getFUV())
     #except:
     #  return 'Voxel {}\n  ->Cartesian position: ({}, {}, {})\n  ->mass {}\n  ->intensity {}\n  ->optical depth {}\n  ->FUV field {}'.format(self.__index, self.__x, self.__y, self.__z, self.__mass, 10**self.__intensity, 10**self.__opticalDepth, self.__FUV)
 
@@ -98,16 +108,18 @@ class Voxel(object):
     return (self.__clump, self.__interclump)
   def getVelocity(self):
     return self.__velocityRange
-  def calculateEmission(self, verbose=False):
+  def calculateEmission(self, verbose=True):
     if verbose: print('\nCalculating voxel V{} emission'.format(self.__index))
     self.__clump.calculate()
     self.__interclump.calculate()
     iClump,tauClump,FUVclump = self.__clump.getEnsembleEmission()
     iInterclump,tauInterclump,FUVinterclump = self.__interclump.getEnsembleEmission()
-    if verbose: print('\nClump and interclump intensity:', iClump, iInterclump)
-    if verbose: print('\nClump and interclump optical depth:', tauClump, tauInterclump)
+    if verbose:
+      print('\nClump and interclump intensity:', iClump, iInterclump)
+      print('\nClump and interclump optical depth:', tauClump, tauInterclump)
+      input()
     self.__intensity = iClump+iInterclump
-    self.__opticalDepth = np.log(np.exp(tauClump)+np.exp(tauInterclump))
+    self.__opticalDepth = -tauClump+tauInterclump
     if isinstance(FUVclump, FUVfield): self.__FUV = FUVfield(np.average(FUVclump.getFUV()+FUVinterclump.getFUV()))
     return
   def getEmission(self, verbose=False):

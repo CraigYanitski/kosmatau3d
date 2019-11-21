@@ -28,7 +28,7 @@ class Combination(object):
     return
   def __str__(self):
     return 'Combination {}:\n  ->probability {}\n  ->intensity {}\n  ->optical depth {}\n  ->FUV field {}'\
-            .format(self.__combination, self.__probability, 10**sum(self.__intensity), 10**sum(self.__opticalDepth), self.__FUV)
+            .format(self.__combination, self.__probability, sum(self.__intensity), sum(self.__opticalDepth), self.__FUV)
 
   # PUBLIC
   #def addMolecule(self, element):
@@ -71,14 +71,14 @@ class Combination(object):
       input()
     intensity = np.array(intensityList)
     opticalDepth = np.array(tauList)
-    self.__intensity = self.__probability.T*intensity
-    self.__opticalDepth = np.log(self.__probability.T*(np.exp(opticalDepth)))
+    self.__intensity = (self.__probability.T*intensity).sum(0)
+    self.__opticalDepth = -np.log((self.__probability.T*(np.exp(-opticalDepth))).sum(0))
     if debug:
       print(self.__intensity, self.__opticalDepth)
       input()
     return
   def getScaledCombinationEmission(self, verbose=False):
-    emission = ([self.__intensity,self.__opticalDepth],self.__FUV.getFUV())
+    emission = (self.__intensity,self.__opticalDepth,self.__FUV.getFUV())
     if verbose:
       print('\nCombination emission:\n', emission)
       input()

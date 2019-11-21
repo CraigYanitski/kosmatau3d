@@ -31,6 +31,7 @@ class Masspoint(object):
     il.reload(Dust)
     return
   def calculateEmission(self, velocity, vDispersion, verbose=False, debug=False):
+    velocity.resize((len(velocity), 1))
     if self.__number==0:
       self.__intensity = np.zeros(len(velocity))
       self.__opticalDepth = np.zeros(len(velocity))
@@ -42,15 +43,19 @@ class Masspoint(object):
           input()
         if verbose: print(element)
         if isinstance(element, Molecules):
-          self.__intensity_xi.append(self.__interpolations.interpolateIntensity(interpolationPoint, element.getInterpolationIndeces())*self.__number*np.exp(-1/2.*((velocity-velocity.mean())/(vDispersion))**2))
-          self.__opticalDepth_xi.append(self.__interpolations.interpolateTau(interpolationPoint, element.getInterpolationIndeces())*self.__number*np.exp(-1/2.*((velocity-velocity.mean())/(vDispersion))**2))
+          self.__intensity_xi.append(self.__interpolations.interpolateIntensity(interpolationPoint, element.getInterpolationIndeces())*self.__number*np.exp(-1/2.*((velocity-velocity.T)/(vDispersion))**2))
+          self.__opticalDepth_xi.append(self.__interpolations.interpolateTau(interpolationPoint, element.getInterpolationIndeces())*self.__number*np.exp(-1/2.*((velocity-velocity.T)/(vDispersion))**2))
+          self.__intensity_xi[-1] = self.__intensity_xi[-1].sum(1)
+          self.__opticalDepth_xi[-1] = self.__opticalDepth_xi[-1].sum(1)
+          if debug: input('intensity_xi:\n{}\n'.format(self.__intensity_xi[-1]))
         elif isinstance(element, Dust):
           self.__intensity_xi.append(np.full(len(velocity), self.__interpolations.interpolateIntensity(interpolationPoint, element.getInterpolationIndeces())*self.__number))
           self.__opticalDepth_xi.append(np.full(len(velocity), self.__interpolations.interpolateTau(interpolationPoint, element.getInterpolationIndeces())*self.__number))
       self.__intensity = (np.array(self.__intensity_xi)).sum(0)
       self.__opticalDepth = (np.array(self.__opticalDepth_xi)).sum(0)
+      #self.__opticalDepth = -np.log((np.exp(-np.array(self.__opticalDepth_xi))).sum(0))
       if debug:
-        print('\nIntensity, optical depth:\n', self.__intensity, '\n', self.__opticalDepth)
+        print('\nIntensity, optical depth:\n{}\n{}\n'.format(self.__intensity, self.__opticalDepth))
         input()
       if np.isnan(self.__intensity).any():
         print('\nThere is an invalid intensity:\n', interpolationPoint)

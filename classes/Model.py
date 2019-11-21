@@ -1,4 +1,5 @@
 import importlib as il
+import numpy as np
 from Shape import *
 from VoxelGrid import *
 from Orientation import *
@@ -30,7 +31,7 @@ class Model(object):
       printout += '\n  arranged in {}'.format(self.__shape.getDimensions())
       printout += '\n\nConsidering {} species:\n{}\n{}'.format(len(self.speciesNames), self.__molecules, self.__dust)
     emission = self.__grid.totalEmission()
-    printout += '\n\nTotal intensity: {}\nTotal optical depth: {}'.format(emission[0].sum(), emission[1].sum())
+    printout += '\n\nTotal intensity: {}\nTotal optical depth: {}'.format(emission[0].sum(), np.log(np.exp(emission[1]).sum()))
     return printout
 
   # PUBLIC
