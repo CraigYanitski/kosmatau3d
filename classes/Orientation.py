@@ -28,7 +28,7 @@ class Orientation(object):
     self.__losEpsilon = []
     self.__losEpsilonStep = []
     self.__backgroundI = backgroundI
-    self.__intensity = 0
+    self.__intensity = 0.
     #observations = Observations()
     eTildeReal = observations.eTildeReal
     eTildeImaginary = observations.eTildeImaginary
@@ -41,20 +41,42 @@ class Orientation(object):
     self.__scale.reloadModules()
     for voxel in self.__losVoxels: voxel.reloadModules()
     return
-  def setLOS(self, grid, x=0, y=0, verbose=True):
+  def setLOS(self, grid, x=0, y=0, z=0, dim='xy', verbose=False):
     voxels = []
     zPosition = []
     epsilon = []
     kappa = []
     scale = self.__scale*3.086*10**18
-    self.__xLoS = x
-    self.__yLoS = y
+    if ('x' in dim) and ('y' in dim):
+      self.__x1LoS = x
+      self.__x2LoS = y
+    elif ('x' in dim) and ('z' in dim):
+      self.__x1LoS = x
+      self.__x2LoS = z
+    elif ('z' in dim) and ('y' in dim):
+      self.__x1LoS = z
+      self.__x2LoS = y
+    else:
+      print('\nPlease enter valid dimensions.\n')
+      return
     for voxel in grid.allVoxels():
       x,y,z = voxel.getPosition()
       intensity,tau,fuv = voxel.getEmission()
-      if (x<(self.__xLoS+self.__scale/2.)) and (x>(self.__xLoS-self.__scale/2.)) and (y<(self.__yLoS+self.__scale/2.)) and (y>(self.__yLoS-self.__scale/2.)):
+      if ('x' in dim) and ('y' in dim):
+        x1 = x
+        x2 = y
+        z0 = z
+      elif ('x' in dim) and ('z' in dim):
+        x1 = x
+        x2 = z
+        z0 = y
+      elif ('z' in dim) and ('y' in dim):
+        x1 = z
+        x2 = y
+        z0 = x
+      if (x1<(self.__x1LoS+self.__scale/2.)) and (x1>(self.__x1LoS-self.__scale/2.)) and (x2<(self.__x2LoS+self.__scale/2.)) and (x2>(self.__x2LoS-self.__scale/2.)):
         voxels.append(voxel)
-        zPosition.append(z)
+        zPosition.append(z0)
         #if z:
         factor = np.exp(-z**2/500.**2)
         epsilon.append(factor*intensity/(self.__scale))
@@ -64,7 +86,8 @@ class Orientation(object):
         #  kappa.append(tau/(self.__scale))
         if verbose: print(tau, self.__scale)
     i = np.argsort(zPosition)
-    print(i)
+    if verbose: print(i)
+    self.__losVoxels = []
     for idx in i:
       self.__losVoxels.append(voxels[idx])
     self.__losZ = np.array(zPosition)[i[::-1]]
@@ -73,7 +96,7 @@ class Orientation(object):
     self.__kappa = np.array(kappa, dtype=np.float)[i[::-1]]
     self.__kappaStep = (self.__kappa[1:]-self.__kappa[:-1])/(scale)
     return
-  def calculateRadiativeTransfer(self, velocity, verbose=True):
+  def calculateRadiativeTransfer(self, velocity, verbose=False):
     intensity = np.full((1, 10), self.__backgroundI)
     scale = self.__scale*3.086*10**18
     # Boolean indeces to separate how the intensity is calculated
@@ -86,7 +109,9 @@ class Orientation(object):
     if verbose: print('\nkappa, kappa step:\n', self.__kappa, '\n', self.__kappaStep)
     a = (self.__kappa[:-1]/np.sqrt(2*self.__kappaStep.astype(np.complex))).astype(np.complex)
     b = ((self.__kappa[:-1]+self.__kappaStep*self.__scale)/np.sqrt(2*self.__scale)).astype(np.complex)
+    if verbose: print(len(self.__losVoxels[:-1]))
     for i in range(len(self.__losVoxels[:-1])):
+      print('\nepsilon, epsilon steop, scale\n', type(self.__epsilon[i][0]), type(self.__epsilonStep[i][0]), type(scale))
       if (self.__kappaStep[i]==0).any() & (abs(self.__kappa[i]*scale)<10**-10).any():
         intensity += self.__epsilon[i]*scale+0.5*self.__epsilonStep[i]*scale**2
       elif (self.__kappa[i]>10**3*abs(self.__kappaStep[i])*scale).any():
@@ -111,7 +136,7 @@ class Orientation(object):
                          (np.exp(a[i]**2.-b[i]**2.)*aE-bE) + \
                          intensity*np.exp(-self.__kappa[i]*scale-self.__kappaStep[i]/2.*scale**2.)).real
     return intensity
-  def Ereal(self, x, verbose=True):
+  def Ereal(self, x, verbose=False):
     if verbose: print('E real input:', x)
     if (x.imag==0).any(): x = x.real
     # x should be a real number. remove imaginary party '0j' which
@@ -122,7 +147,7 @@ class Orientation(object):
       return 1/(np.sqrt(np.pi) * x)
     else:
       return np.array(list(map(self.__eTildeReal, x)))
-  def Eimag(self, x, verbose=True):
+  def Eimag(self, x, verbose=False):
     if verbose: print('E imaginary input:', x)
     if (x==abs(x)*1j).any():
       # maser case. treated in linear approximation
