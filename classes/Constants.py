@@ -3,7 +3,7 @@ class Constants(object):
   This is a class to contain all of the constants used throughout the program.
   '''
   #PRIVATE
-  def __init__(self, clumpMassRange=[1,3], interclumpMassRange=[-3,-1], pixelWidth=1000, alpha=1.84, gamma=2.31, nsigma=3, nGauss=1000, pnGauss=5):
+  def __init__(self, clumpMassRange=[1,3], interclumpMassRange=[-2,-1], pixelWidth=1000, alpha=1.84, gamma=2.31, nsigma=3, nGauss=1000, pnGauss=5):
     self.clumpMassLimits = clumpMassRange
     self.interclumpMassLimits = interclumpMassRange
     self.alpha = alpha
