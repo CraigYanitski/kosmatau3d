@@ -51,7 +51,7 @@ class Combination(object):
     self.__masspoints.append(Masspoint(self.__species, self.__interpolations, mass, number))
     self.__combination.append(number)
     return
-  def calculateEmission(self, velocity, vDispersion, debug=False):
+  def calculateEmission(self, velocity, vDispersion, emission='element', debug=False):
     #print('Calculating combination emission')
     if isinstance(self.__intensity,np.ndarray):
       print('The emission has already been calculated for this combination.')
@@ -63,16 +63,23 @@ class Combination(object):
     tauList = []
     for i,masspoint in enumerate(self.__masspoints):
       masspoint.calculateEmission(velocity, vDispersion)
-      (intensity,opticalDepth) = masspoint.getEmission()
+      (intensity,opticalDepth) = masspoint.getSpeciesEmission()
       intensityList.append(intensity)
       tauList.append(opticalDepth)
+    iList = np.array(intensityList)
+    tauList = np.array(tauList)
     if debug:
       print('\nProbability:', self.__probability)
+      print('\n', intensity, '\n\n', opticalDepth)
       input()
-    intensity = np.array(intensityList)
-    opticalDepth = np.array(tauList)
-    self.__intensity = (self.__probability.T*intensity).sum(0)
-    self.__opticalDepth = -np.log((self.__probability.T*(np.exp(-opticalDepth))).sum(0))
+    if emission=='element':
+      self.__intensity = (self.__probability.prod()*iList.sum(0))
+      self.__opticalDepth = (self.__probability.prod()*np.exp(-tauList.sum(0)))
+    elif emission=='all':
+      self.__intensity = (self.__probability.T*iList).sum(0)
+      self.__opticalDepth = -np.log(self.__probability.T*(np.exp(-tauList))).sum(0) # WRONG
+    #self.__intensity = np.array(self.__intensity)
+    #self.__opticalDepth = np.array(self.__opticalDepth)
     if debug:
       print(self.__intensity, self.__opticalDepth)
       input()

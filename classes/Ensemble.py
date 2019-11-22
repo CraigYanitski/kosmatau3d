@@ -83,6 +83,7 @@ class Ensemble(object):
       combination.reloadModules()
     return
   def initialise(self, mass=0, density=0, velocity=0, velocityDispersion=0, FUV=0, extinction=0):
+    #print('Ensemble instance initialised\n')
     self.__setMass(mass)
     self.__setDensity(density)
     self.__setVelocity(velocity)
@@ -271,7 +272,7 @@ class Ensemble(object):
       print(opticalDepthResult)
       input()
     self.__intensity = intensityResult.sum(0)
-    self.__opticalDepth = opticalDepthResult.sum(0)
+    self.__opticalDepth = -np.log(opticalDepthResult.sum(0))
     if debug:
       print('\nIntensity\n{}\nOptical depth\n{}\n'.format(self.__intensity, self.__opticalDepth))
       input()
