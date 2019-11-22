@@ -134,7 +134,7 @@ class Interpolate(object):
     else:
       if verbose: print('There are no species of this type adding to the intensity.')
       intensity = 0
-    return (np.array(intensity)).sum(0)
+    return np.array(intensity)
   def interpolateTau(self, points, speciesNumber, verbose=False):
     verbose = verbose or self.__verbose
     #points = np.log10(points)
@@ -152,7 +152,7 @@ class Interpolate(object):
     else:
       if verbose: print('There are no species adding to the optical depth.')
       tau = 0
-    return np.log((np.exp(np.array(tau))).sum(0))
+    return np.array(tau)
   def interpolateRotationalVelocity(self, radius):
     return self.__rotationInterpolation(radius)
   def interpolateVelocityDispersion(self, radius):
