@@ -42,8 +42,8 @@ class Dust(object):
   def getInterpolationIndeces(self):
     return np.array(self.__interpolationIndex, dtype=int)
   def getDust(self):
-    return np.array(self.__dust)
+    return self.__dust
   def getFrequencies(self):
-    return np.array(self.__frequencies)
+    return self.__frequencies
   def getTransitions(self):
-    return np.array(self.__transitions)
+    return self.__transitions

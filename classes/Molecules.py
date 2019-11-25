@@ -44,6 +44,6 @@ class Molecules(object):
   def getMolecules(self):
     return self.__molecules
   def getFrequencies(self):
-    return np.array(self.__frequencies)
+    return self.__frequencies
   def getTransitions(self):
-    return np.array(self.__transitions)
+    return self.__transitions
