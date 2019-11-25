@@ -46,8 +46,8 @@ class Voxel(object):
     self.__velocityDispersion = self.__interpolations.interpolateVelocityDispersion(self.__r)
     self.__velocityRange = np.linspace(self.__velocity-self.__velocityDispersion/2., self.__velocity+self.__velocityDispersion/2, self.__velocityNumber)
     return
-  def __setDensity(self):
-    self.__density = self.__interpolations.interpolateDensity(self.__r)
+  def __setDensity(self, densityFactor=2):
+    self.__density = densityFactor*self.__interpolations.interpolateDensity(self.__r)
     return
   def __setExtinction(self):
     self.__UVextinction = self.__interpolations.interpolateFUVextinction(self.__density, self.__clumpMass+self.__interclumpMass)
@@ -63,12 +63,12 @@ class Voxel(object):
     #try self.__FUV.getFUV():
     return 'Voxel {}\n  ->Cartesian position: ({}, {}, {})\n'.format(self.__index, self.__x, self.__y, self.__z) + \
                      '  ->mass {}\n'.format(self.__mass) + \
-                     '  ->intensity {}\n'.format(self.__intensity) + \
-                     '    -clump {}\n'.format(iClump) + \
-                     '    -interclump {}\n'.format(iInterclump) + \
-                     '  ->optical depth {}\n'.format(self.__opticalDepth) + \
-                     '    -clump {}\n'.format(tauClump) + \
-                     '    -interclump {}\n'.format(tauInterclump) + \
+                     '  ->intensity {}\n'.format(self.__intensity[:,:,0]) + \
+                     '    -clump {}\n'.format(iClump[:,:,0]) + \
+                     '    -interclump {}\n'.format(iInterclump[:,:,0]) + \
+                     '  ->optical depth {}\n'.format(self.__opticalDepth[:,:,0]) + \
+                     '    -clump {}\n'.format(tauClump[:,:,0]) + \
+                     '    -interclump {}\n'.format(tauInterclump[:,:,0]) + \
                      '  ->FUV field {}'.format(self.__FUV.getFUV())
     #except:
     #  return 'Voxel {}\n  ->Cartesian position: ({}, {}, {})\n  ->mass {}\n  ->intensity {}\n  ->optical depth {}\n  ->FUV field {}'.format(self.__index, self.__x, self.__y, self.__z, self.__mass, 10**self.__intensity, 10**self.__opticalDepth, self.__FUV)
@@ -101,7 +101,7 @@ class Voxel(object):
     self.__setExtinction()
     self.__setFUV()
     self.__clump.initialise(mass=self.__clumpMass, density=self.__density, velocity=self.__velocityRange, velocityDispersion=self.__velocityDispersion, FUV=self.__FUV, extinction=self.__UVextinction)
-    self.__interclump.initialise(mass=self.__interclumpMass, density=self.__density, velocity=self.__velocityRange, velocityDispersion=self.__velocityDispersion, FUV=self.__FUV, extinction=self.__UVextinction)
+    self.__interclump.initialise(mass=self.__interclumpMass, density=1911, velocity=self.__velocityRange, velocityDispersion=self.__velocityDispersion, FUV=self.__FUV, extinction=self.__UVextinction)
     return
   def getPosition(self):
     return (self.__x, self.__y, self.__z)
@@ -111,17 +111,18 @@ class Voxel(object):
     return (self.__velocity, self.__velocityDispersion, self.__velocityRange)
   def calculateEmission(self, verbose=False):
     if verbose: print('\nCalculating voxel V{} emission'.format(self.__index))
-    self.__clump.calculate()
-    self.__interclump.calculate()
+    self.__clump.calculate(test=False)
+    self.__interclump.calculate(test=False)
     iClump,tauClump,FUVclump = self.__clump.getEnsembleEmission()
     iInterclump,tauInterclump,FUVinterclump = self.__interclump.getEnsembleEmission()
     if verbose:
       print('\nClump and interclump intensity:', iClump, iInterclump)
       print('\nClump and interclump optical depth:', tauClump, tauInterclump)
       input()
-    self.__intensity = (iClump+iInterclump).sum(1)
-    self.__opticalDepth = (tauClump+tauInterclump).sum(1)
-    print(self.__intensity.shape)
+    # Sum over 
+    self.__intensity = (iClump+iInterclump)
+    self.__opticalDepth = (tauClump+tauInterclump)
+    if verbose: print('\nShape: ', self.__intensity.shape, '\n\n')
     if isinstance(FUVclump, FUVfield): self.__FUV = FUVfield(np.average(FUVclump.getFUV()+FUVinterclump.getFUV()))
     return
   def getEmission(self, verbose=False):

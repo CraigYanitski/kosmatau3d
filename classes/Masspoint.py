@@ -18,6 +18,7 @@ class Masspoint(object):
     self.__density = density
     self.__mass = mass 	#mass of this KOSMA-tau simulation
     self.__FUV = fuv
+    #input('{}: {}'.format(mass, number))
     self.__number = number    #number of this KOSMA-tau model contributing to the combination
     #self.__FUV = FUVfield()     #the FUV field for this combination of mass points
     self.__constants = Constants()
@@ -25,37 +26,43 @@ class Masspoint(object):
     self.__opticalDepth_xi = []    #velocity-averaged optical depth of this combination of masspoints
     return
   def __str__(self):
-    return 'Simulated KOSMA-tau clump of mass {}'.format(10**self.mass)
+    return 'Simulated KOSMA-tau clump of mass {}'.format(10**float(self.__mass))
 
   # PUBLIC
   def reloadModule(self):
     il.reload(Molecules)
     il.reload(Dust)
     return
-  def calculateEmission(self, velocity, vDispersion, verbose=False, debug=False):
-    velocity.resize((len(velocity), 1))
+  def calculateEmission(self, velocity, vDispersion, verbose=False, debug=False, test=False):
+    #velocity.resize((len(velocity), 1))
+    velocityRange = np.linspace(velocity-3*vDispersion, velocity+3*vDispersion, num=7)      #a range of 7 is used to account for the observed velocity +/- 3 sigma
+    if debug:
+      input('Masspoint velocity argument:\n{}'.format(velocity))
+      input('Masspoint velocity range variable:\n{}'.format(velocityRange))
+      input('Masspoint velocity difference result:\n{}'.format(velocityRange-velocity))
     speciesNumber = len(self.__species[0].getInterpolationIndeces()) + len(self.__species[1].getInterpolationIndeces())
     if self.__number==0:
-      self.__intensity_xi = np.full((speciesNumber, len(velocity), len(velocity)), 10**-100)
-      self.__opticalDepth_xi = np.full((speciesNumber, len(velocity), len(velocity)), 10**-100)
+      self.__intensity_xi = np.full((speciesNumber, 7, len(velocity)), 10**-100)
+      self.__opticalDepth_xi = np.full((speciesNumber, 7, len(velocity)), 10**-100)
     else:
+      interpolationPoint = [self.__density, self.__mass, np.log10(self.__FUV.getFUV())]
+      if debug==False:
+        if test: print(interpolationPoint)
+        #input()
       for i,element in enumerate(self.__species):
-        interpolationPoint = [self.__density, self.__mass, np.log10(self.__FUV.getFUV())]
-        if debug:
-          print(interpolationPoint)
-          input()
         if verbose: print(element)
         if isinstance(element, Molecules):
           for index in element.getInterpolationIndeces():
-            self.__intensity_xi.append(self.__interpolations.interpolateIntensity(interpolationPoint, [index])*self.__number*np.exp(-1/2.*((velocity-velocity.T)/(self.__constants.clumpDispersion))**2))
-            self.__opticalDepth_xi.append(self.__interpolations.interpolateTau(interpolationPoint, [index])*self.__number*np.exp(-1/2.*((velocity-velocity.T)/(self.__constants.clumpDispersion))**2))
+            self.__intensity_xi.append(self.__interpolations.interpolateIntensity(interpolationPoint, [index])*self.__number*np.exp(-1/2.*((velocityRange-velocity)/(self.__constants.clumpDispersion))**2))
+            self.__opticalDepth_xi.append(self.__interpolations.interpolateTau(interpolationPoint, [index])*self.__number*np.exp(-1/2.*((velocityRange-velocity)/(self.__constants.clumpDispersion))**2))
             #self.__intensity_xi[-1] = self.__intensity_xi[-1].sum(1)
             #self.__opticalDepth_xi[-1] = self.__opticalDepth_xi[-1].sum(1)
+            if test: print('\n', self.__intensity_xi[-1].max(), '\n')
           if debug: input('intensity_xi:\n{}\n'.format(self.__intensity_xi[-1]))
         elif isinstance(element, Dust):
           for index in element.getInterpolationIndeces():
-            self.__intensity_xi.append(np.full(len(velocity), self.__interpolations.interpolateIntensity(interpolationPoint, [index])*self.__number))
-            self.__opticalDepth_xi.append(np.full(len(velocity), self.__interpolations.interpolateTau(interpolationPoint, [index])*self.__number))
+            self.__intensity_xi.append((np.full(len(velocity), 7), self.__interpolations.interpolateIntensity(interpolationPoint, [index])*self.__number))
+            self.__opticalDepth_xi.append((np.full(len(velocity), 7), self.__interpolations.interpolateTau(interpolationPoint, [index])*self.__number))
       if speciesNumber>1:
         self.__intensity_xi = np.array(self.__intensity_xi)
         self.__opticalDepth_xi = np.array(self.__opticalDepth_xi)
@@ -66,7 +73,7 @@ class Masspoint(object):
     self.__opticalDepth = (self.__opticalDepth_xi).sum(0)
     #self.__opticalDepth = -np.log((np.exp(-np.array(self.__opticalDepth_xi))).sum(0))
     if debug:
-      print('\nIntensity, optical depth:\n{}\n{}\n'.format(self.__intensity, self.__opticalDepth))
+      print('\nIntensity, optical depth:\n{}\n{}\n{}\n{}\n'.format(self.__intensity.shape, self.__intensity, self.__opticalDepth.shape, self.__opticalDepth))
       input()
     if np.isnan(self.__intensity).any():
       print('\nThere is an invalid intensity:\n', interpolationPoint)

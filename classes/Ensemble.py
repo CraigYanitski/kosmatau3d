@@ -102,7 +102,7 @@ class Ensemble(object):
   def calculateMasspoints(self, verbose=False):
     '''This is a function to get the clump masses in this ensemble. It will soon be depreciated
        as I will change the reading of the KOSMA-tau files to convert from the fortran 10*log(values).'''
-    self.__masspoints = np.arange(self.__massLimits[0], self.__massLimits[1])
+    self.__masspoints = np.arange(self.__massLimits[0], self.__massLimits[1])[::-1]
     if verbose: input(self.__masspoints)
     return
   def calculateMasspointDensity(self):
@@ -123,7 +123,8 @@ class Ensemble(object):
     if verbose: print(self.__masspointDensity)
     #if (self.__masspointDensity>self.__constants.densityLimits[1]).any() or (self.__masspointDensity<self.__constants.densityLimits[0]).any(): sys.exit('WARNING: surface density {} outside of KOSMA-tau grid!\n\n'.format(self.__masspointDensity))
     self.__interpolationPoints = np.stack((self.__masspointDensity, self.__masspoints, np.full(self.__masspoints.size, self.__FUV)))
-    self.__masspointRadii = ((3./(4.*np.pi)*(10.**self.__masspoints*self.__constants.massSolar)/(10.**self.__masspointDensity*self.__constants.massH*1.91))**(1./3.)/self.__constants.pc)
+    self.__masspointRadii = ((3./(4.*np.pi)*(10.**self.__masspoints*self.__constants.massSolar)/ \
+                              (10.**self.__masspointDensity*self.__constants.massH*1.91))**(1./3.)/self.__constants.pc)
     self.__masspointRadii.resize(len(self.__masspoints),1)
     if verbose: input('\nRadii:\n{}\n'.format(self.__masspointRadii))
     return
@@ -195,7 +196,7 @@ class Ensemble(object):
     if verbose: print('\nMasspoint number range:\n', self.__masspointNumberRange)
     self.__combinations = self.calculateCombinations()
     #self.__probability = np.zeros((len(self.__combinations),2))
-    if verbose: print('\nCombinations:\n', self.__combinations)
+    if verbose: print('\nCombinations:\n', self.__combinations, '\n\n')
     for i,combinations in enumerate(self.__combinations):
       if verbose: print(combinations)
       self.__combinations[i] = np.array(combinations).T
@@ -246,7 +247,7 @@ class Ensemble(object):
     self.createCombinationObjects()
     if self.__verbose: print(self.__clumpType)
     return
-  def calculate(self, debug=False):
+  def calculate(self, debug=False, test=False):
     '''Maybe <<PARALLELISE>> this??
 
        This is a function to cycle through the Combination instances to create a large numpy.ndarray,
@@ -257,8 +258,10 @@ class Ensemble(object):
     if debug:
       print('Calculating {} ensemble emission'.format(self.__clumpType))
       input()
+    if test: print('\n', self.__clumpType, len(self.__combinationObjects))
     for combination in self.__combinationObjects:
-      combination.calculateEmission(self.__velocity, self.__velocityDispersion)
+      if (combination in self.__combinationObjects[-50:]) and test: combination.calculateEmission(self.__velocity, self.__velocityDispersion, test=False)
+      else: combination.calculateEmission(self.__velocity, self.__velocityDispersion)
       result = combination.getScaledCombinationEmission() #<<this needs to be altered>>
       intensityResult.append(result[0])
       opticalDepthResult.append(result[1])
@@ -271,6 +274,7 @@ class Ensemble(object):
       print(intensityResult)
       print(opticalDepthResult)
       input()
+    # Average over combinations 
     self.__intensity = intensityResult.sum(0)
     self.__opticalDepth = -np.log(opticalDepthResult.sum(0))
     if debug:
