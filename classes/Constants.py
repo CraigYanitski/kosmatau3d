@@ -15,7 +15,7 @@ class Constants(object):
     self.clumpDispersion = clumpDispersion
     self.ensembleDispersion = ensembleDispersion
     self.massH = 1.008*1.6605*10**-24  #in [g]
-    self.massSolar = 1.998892*10**33  #in [g]
+    self.massSolar = 1.98892*10**33  #in [g]
     self.c = 2.998*10**10  #in [cm/s]
     self.kB = 1.3806*10**-23  #in [J/K]
     self.pc = 3.0856776*10**18  #in [cm]
