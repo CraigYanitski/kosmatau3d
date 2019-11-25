@@ -127,8 +127,8 @@ class Interpolate(object):
     if len(speciesNumber):
       intensity = []
       for i in speciesNumber: 
-        if self.__interpolation=='linear': intensity.append(self.__intensityInterpolation[i-1](points))
-        elif self.__interpolation=='radial' or self.__interpolation=='cubic': intensity.append(self.__intensityInterpolation[i-1](points[0], points[1], points[2]))
+        if self.__interpolation=='linear': intensity.append(self.__intensityInterpolation[i](points))
+        elif self.__interpolation=='radial' or self.__interpolation=='cubic': intensity.append(self.__intensityInterpolation[i](points[0], points[1], points[2]))
         if intensity[-1]<=0: intensity[-1] = 10**-100
       if verbose: print('Calculated the intensity for {} species.'.format(len(speciesNumber)))
     else:
@@ -141,8 +141,8 @@ class Interpolate(object):
     if len(speciesNumber):
       tau = []
       for i in speciesNumber:
-        if self.__interpolation=='linear': tau.append(self.__tauInterpolation[i-1](points))
-        elif self.__interpolation=='radial' or self.__interpolation=='cubic': tau.append(self.__tauInterpolation[i-1](points[0], points[1], points[2]))
+        if self.__interpolation=='linear': tau.append(self.__tauInterpolation[i](points))
+        elif self.__interpolation=='radial' or self.__interpolation=='cubic': tau.append(self.__tauInterpolation[i](points[0], points[1], points[2]))
         if tau[-1]==0: tau[-1] = 10**-100
         elif tau[-1]<0:
           temp = tau[-1]
