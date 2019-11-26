@@ -40,18 +40,18 @@ class Interpolate(object):
     if self.__interpolation=='linear':
       for index in self.__indeces:
         if self.__verbose: print('Creating intensity grid interpolation')
-        rInterpI = interpolate.LinearNDInterpolator(nmuvI/10, I[:,index-1])
+        rInterpI = interpolate.LinearNDInterpolator(nmuvI/10, np.log10(I[:,index-1]))
         if self.__verbose: print('Creating tau grid interpolation')
-        rInterpTau = interpolate.LinearNDInterpolator(nmuvTau/10, Tau[:,index-1])
+        rInterpTau = interpolate.LinearNDInterpolator(nmuvTau/10, np.log10(Tau[:,index-1]))
         intensityInterpolation.append(rInterpI)
         tauInterpolation.append(rInterpTau)
       return intensityInterpolation,tauInterpolation
     elif self.__interpolation=='radial' or self.__interpolation=='cubic':
       for index in self.__indeces:
         if self.__verbose: print('Creating intensity grid interpolation')
-        rInterpI = interpolate.Rbf(nmuvI[:,0]/10, nmuvI[:,1]/10, nmuvI[:,2]/10, I[:,index-1])
+        rInterpI = interpolate.Rbf(nmuvI[:,0]/10, nmuvI[:,1]/10, nmuvI[:,2]/10, np.log10(I[:,index-1]))
         if self.__verbose: print('Creating tau grid interpolation')
-        rInterpTau = interpolate.Rbf(nmuvTau[:,0]/10, nmuvTau[:,1]/10, nmuvTau[:,2]/10, Tau[:,index-1])
+        rInterpTau = interpolate.Rbf(nmuvTau[:,0]/10, nmuvTau[:,1]/10, nmuvTau[:,2]/10, np.log10(Tau[:,index-1]))
         intensityInterpolation.append(rInterpI)
         tauInterpolation.append(rInterpTau)
       return intensityInterpolation,tauInterpolation
@@ -127,8 +127,8 @@ class Interpolate(object):
     if len(speciesNumber):
       intensity = []
       for i in speciesNumber: 
-        if self.__interpolation=='linear': intensity.append(self.__intensityInterpolation[i](points))
-        elif self.__interpolation=='radial' or self.__interpolation=='cubic': intensity.append(self.__intensityInterpolation[i](points[0], points[1], points[2]))
+        if self.__interpolation=='linear': intensity.append(10**self.__intensityInterpolation[i](points))
+        elif self.__interpolation=='radial' or self.__interpolation=='cubic': intensity.append(10**self.__intensityInterpolation[i](points[0], points[1], points[2]))
         if intensity[-1]<=0: intensity[-1] = 10**-100
       if verbose: print('Calculated the intensity for {} species.'.format(len(speciesNumber)))
     else:
@@ -141,8 +141,8 @@ class Interpolate(object):
     if len(speciesNumber):
       tau = []
       for i in speciesNumber:
-        if self.__interpolation=='linear': tau.append(self.__tauInterpolation[i](points))
-        elif self.__interpolation=='radial' or self.__interpolation=='cubic': tau.append(self.__tauInterpolation[i](points[0], points[1], points[2]))
+        if self.__interpolation=='linear': tau.append(10**self.__tauInterpolation[i](points))
+        elif self.__interpolation=='radial' or self.__interpolation=='cubic': tau.append(10**self.__tauInterpolation[i](points[0], points[1], points[2]))
         if tau[-1]==0: tau[-1] = 10**-100
         elif tau[-1]<0:
           temp = tau[-1]
