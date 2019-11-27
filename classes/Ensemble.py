@@ -16,11 +16,12 @@ class Ensemble(object):
   It can be either a clump or an interclump ensemble.
   '''
   # PRIVATE
-  def __init__(self, clumpType, species, interpolations, combination='binomial', verbose=False):
+  def __init__(self, clumpType, species, interpolations, vNumber=51, combination='binomial', verbose=False):
     self.__species = species     #list of both moleculular and dust species
     self.__interpolations = interpolations
     self.__clumpType = clumpType     #type of mass in ensemble (clump or interclump medium)
     self.__constants = Constants()
+    self.__velocityNumber = vNumber
     self.__flagCombination = combination
     self.__verbose = verbose
     self.__combinations = []    #list of combinations
@@ -63,6 +64,7 @@ class Ensemble(object):
   def __setVelocity(self, velocity):
     self.__velocity = velocity
     self.__velocityStep = abs(velocity[-1]-velocity[-2])
+    self.__velocityBins = np.linspace(-360, 360, self.__velocityNumber)
     return
   def __setVelocityDispersion(self, velocityDispersion):
     self.__velocityDispersion = velocityDispersion
@@ -181,7 +183,7 @@ class Ensemble(object):
     if verbose: print(self.__massEnsemble, self.__volumeEnsemble)
     self.__densityEnsemble = self.__massEnsemble/self.__volumeEnsemble
     if verbose: print('velocity, mean, dispersion', self.__velocity, self.__velocity.mean(), self.__velocityDispersion)
-    self.__deltaNji = np.array([self.__Nj]).T/np.sqrt(2*np.pi)/self.__velocityDispersion*(np.exp(-0.5*((self.__velocity-self.__velocity.mean())/self.__velocityDispersion)**2)).T*self.__velocityStep
+    self.__deltaNji = np.array([self.__Nj]).T/np.sqrt(2*np.pi)/self.__velocityDispersion*(np.exp(-0.5*((self.__velocityBins-self.__velocity.mean())/self.__constants.ensembleDispersion)**2)).T*self.__velocityStep
     surfaceProbability = np.array(np.pi*self.__masspointRadii.T**2/self.__constants.pixelWidth**2)    #this is 'pTab' in the original code
     probableNumber = (self.__deltaNji*surfaceProbability.T)   #this is 'expectedValTab' in the original code
     try: standardDeviation = np.sqrt(self.__deltaNji*surfaceProbability.T*(1-surfaceProbability.T))    #this is 'standardDeriTab' in the original code
@@ -195,6 +197,7 @@ class Ensemble(object):
     self.__masspointNumberRange = np.array([lower, upper]).T
     if verbose: print('\nMasspoint number range:\n', self.__masspointNumberRange)
     self.__combinations = self.calculateCombinations()
+    input(self.__combinations)
     #self.__probability = np.zeros((len(self.__combinations),2))
     if verbose: print('\nCombinations:\n', self.__combinations, '\n\n')
     for i,combinations in enumerate(self.__combinations):
@@ -216,7 +219,7 @@ class Ensemble(object):
           else:
             # use binomial 
             # <<This will likely print an error when there are more masspoints>>
-            b = Binomial(self.__deltaNji, surfaceProbability, debug=verbose) # n and p for binominal 
+            b = Binomial(self.__deltaNji, surfaceProbability, debug=True) # n and p for binominal 
             probability.append(b.binomfunc(combination))
         elif self.__flagCombination=='poisson':
           if np.any(probableNumber>self.__constants.pnGauss) and np.any(self.__deltaNji>self.__constants.nGauss):
@@ -229,9 +232,9 @@ class Ensemble(object):
             po = Poisson(probableNumber)
             probability.append(po.poissonfunc(combination))
         else: probability.append([0, 0])
-        if verbose:
-          print(probability[-1])
-          #input()
+        if verbose==False:
+          print('probability:', probability[-1])
+          input()
         if (probability[-1]==np.nan).any():
           print('\nThere is an invalid probability:\n')
           input()

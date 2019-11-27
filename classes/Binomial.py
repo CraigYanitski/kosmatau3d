@@ -24,7 +24,7 @@ class Binomial():
     i = (k>self.n-k).any(0)          # for smaller intermediate values
     #iComb = i.any(1)
     if self.debug:
-      print('\nCombination, n, p, i:\n{}\n{}\n{}\n{}'.format(k, self.n, self.p, i))
+      print('\nCombination, n, p, i:\n{}\n{}\n{}\n{}\n'.format(k, self.n, self.p, i))
     if k[:,i].size: k[:,i] = self.n[:,i]-k[:,i]   # use (n choose k) = (n choose n-k)
     comb = np.zeros([self.n[:,0].size, k.size])
     '''
