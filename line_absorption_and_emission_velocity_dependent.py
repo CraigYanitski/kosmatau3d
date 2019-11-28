@@ -4,6 +4,7 @@
 # seperately and summed up later  
 ##############################################################
 ##########################################################
+import pdb
 import numpy as np
 import scipy as sc
 import time
@@ -171,7 +172,7 @@ def lineAbsorptionEmission():
   sigma_cl_j =  gbl._globals['sigma']['sigma_j']
   # intrinsic clump linewidth standard deviation)
   gbl._globals['compound']['iterator'] = []
-  if gbl._globals['compound']['npoints']>0:
+  if gbl._globals['compound']['npoints']<0:
     print('Parallel')
     #pf.progressBar(gbl._globals['compound']['iterator'], gbl._globals['compound']['npoints'], length=50)
     with tqdm(total=gbl._globals['compound']['npoints'], desc='Progress') as gbl._globals['compound']['progress']:
@@ -179,9 +180,12 @@ def lineAbsorptionEmission():
       #print([pix for pix in gbl._globals['compound']['ranges']['npoints']])
       test=pool.starmap_async(I_calc, [(i, pix) for (i, pix) in enumerate(gbl._globals['compound']['ranges']['npoints'])]).get()
       pool.close()
+      print('FUV')
       for result in test:
+        print(gbl._globals['compound']['ens'][result[0]].FUV)
         gbl._globals['compound']['ens'][result[0]].tau = result[1]
-        gbl._globals['compound']['ens'][result[0]].inten = result[2] 
+        gbl._globals['compound']['ens'][result[0]].inten = result[2]
+        gbl._globals['compound']['ens'][result[0]].Mens_sum = result[3]
     #input()
   else:
     print('Series')
@@ -189,12 +193,13 @@ def lineAbsorptionEmission():
       for pix in gbl._globals['compound']['ranges']['npoints']:
         result = I_calc(pix, pix)
         gbl._globals['compound']['ens'][result[0]].tau = result[1]
-        gbl._globals['compound']['ens'][result[0]].inten = result[2] 
+        gbl._globals['compound']['ens'][result[0]].inten = result[2]
+        gbl._globals['compound']['ens'][result[0]].Mens_sum = result[3]
   # pause = input('calculation of averaged opacities and emissivities finished')
   return
   
 # P A R A L L E L I S E
-def I_calc(idx, pix):
+def I_calc(idx, pix, debug=False):
   '''
   This is my attempt to parallelise this section. Don't judge me...
   Created on 22.10.2019 by Craig.
@@ -213,10 +218,12 @@ def I_calc(idx, pix):
   run = time.time()- gbl._globals['runtimes']['line_absorption'][0]
   if gbl._globals['verbose']:
     print('pixel number ', pix, 'of', gbl._globals['compound']['npoints'])
-    print('running ', run, 's of an estimated ', run/((pix+1.)/gbl._globals['compound']['npoints']), 's')
+    print('running ', run, 's of an estimated ', run/((pix+1.)/gbl._globals['compound']['npoints']), 's') 
+  sigma_cl_j =  gbl._globals['sigma']['sigma_j']
   sigma_ens_j = ( (np.array(gbl._globals['sigma']['sigma_ens_j']))**2 + gbl._globals['compound']['ens'][pix].v_dispersion**2 )**0.5
   # sum of inner clump turbulence + ensemble v_dispersion
   Mens = gbl._globals['compound']['ens'][pix].Mens # ensemble mass in solar masses
+  totalSUM = 0
   if Mens == 0:
     if gbl._globals['verbose']: print('Mens = 0; no mass contained in pixel ', pix, \
                       ', setting line optical depth and intensity to zero for this pixel')
@@ -225,6 +232,7 @@ def I_calc(idx, pix):
   else:
     Mu = gbl._globals['compound']['ens'][pix].Mu    # highest clump mass
     Ml = gbl._globals['compound']['ens'][pix].Ml    # lowest clump mass
+    #print(Mu, Ml)
     MuLog = np.log10(Mu) * 10  # 0.1 -> -10 while 10 stays 10
     MlLog = np.log10(Ml) * 10
     #print MuLog
@@ -233,6 +241,7 @@ def I_calc(idx, pix):
       print('WARNING: Outside mass grid')
       pause = input('Warning read? press enter!...')
     MLogArray = np.arange(MlLog, MuLog + 10, 10)
+    #print(MLogArray)
     uv_log = np.log10(gbl._globals['compound']['ens'][pix].FUV) * 10
     rho_ens = gbl._globals['compound']['ens'][pix].rho_ens
     # rho_ens in cm^-3; needed to calculate surface density
@@ -258,6 +267,7 @@ def I_calc(idx, pix):
         print('At voxel ', pix)
         sys.exit('WARNING: surface density lies outside grid ...exiting...')
       n_s_binned_log = np.log10(n_s_binned) * 10
+      if gbl._globals['verbose']: print('density', n_s_binned)
       interpolationPoints.append([n_s_binned_log, M_log, uv_log])
       number.append((Mens * (10 ** (M_log / 10.0)) ** (1 - gbl._globals['constants']['alpha'])) / \
                     (sum((10 ** (M_log2 / 10.0)) ** (2 - gbl._globals['constants']['alpha']) for \
@@ -265,6 +275,7 @@ def I_calc(idx, pix):
     #print 'interpolatiogbl._globals['compound']['ranges']['npoints'] Rho,Cl-Mass,UV', interpolatiogbl._globals['compound']['ranges']['npoints']
     #print 'number of clumps for each clump mass', number
     #raw = input (' OKOK?')
+    print('\n', interpolationPoints, '\n')
     tauCl =  [None] * gbl._globals['compound']['nspe']
     intensityCl =  [None] * gbl._globals['compound']['nspe']
     for sp in gbl._globals['compound']['ranges']['nspe']:  
@@ -279,15 +290,19 @@ def I_calc(idx, pix):
       intensityCl[sp].append(10 ** (griddata(gbl._globals['compound']['ranges']['rhoMassUV_intensity'], \
                               gbl._globals['compound']['ranges']['log intensity Cl Grid'][sp], interpolationPoints, method='linear')/10.))          
       # interpolated, line averaged intensity in Kkm/s
+    print(intensityCl)
+    print(tauCl)
     RclTab = []
     for i in n_masspoints:
       # calculate clump radii
+      if gbl._globals['verbose']: print('log density', interpolationPoints[i][0])
       Rcl = ((3 / (4.0 * np.pi) * (10 ** (MLogArray[i] / 10.0) * \
-      gbl._globals['constants']['M_sol']) / (10 ** (interpolationPoints[i][0]\
-      / 10.0) * gbl._globals['constants']['M_H'] * 1.91)) ** (1 / 3.0))\
-      / gbl._globals['constants']['pc']
+            gbl._globals['constants']['M_sol']) / (10 ** (interpolationPoints[i][0] / \
+            10.0) * gbl._globals['constants']['M_H'] * 1.91)) ** (1 / 3.0)) / \
+            gbl._globals['constants']['pc']
       #print 'Rcl', Rcl
       RclTab.append(Rcl)
+    if gbl._globals['verbose']: print('Radius:', RclTab)
     #print 'interpolated tau:\n ', tauCl
     # print tauCl
     # print 'tauCl[0][0]', tauCl[0][0] #list build as: tauCl[species][0][mass]
@@ -357,6 +372,7 @@ def I_calc(idx, pix):
         print('Achtung! Anteil abgedeckter Masse [%] nur:', totalbinnedmass/number[ma]*100)
         print('increase v-range or reduce v-dispersion')
         pause = input('Proceed?')  
+    #print(DeltaN_ji)
         ############### dust with mass
         ## 2 dust difference
         ## for dust all mass is at each velocity at the same time
@@ -371,7 +387,7 @@ def I_calc(idx, pix):
     #print 'dust-masses', DeltaN_ji_dust
     #number_v_dust = copy(DeltaN_ji_dust[:,v]) #scaling can be done normaly
     #print 'number_v_dust', number_v_dust
-    #print 'DeltaN_ji', DeltaN_ji     
+    #print('DeltaN_ji', DeltaN_ji)
     #pause = input('...DeltaN_ji OK?')
     tau_v = []
     inten_v = []       
@@ -407,7 +423,7 @@ def I_calc(idx, pix):
           Lbox = Lbox / np.sqrt(float(number_v[(number_masspoints - 1)]))
           number_v = number_v / float(number_v[(number_masspoints - 1)])
           #print 'number of clumps, scaled to N_nM=1',
-          #print number_v
+          #print(number_v)
           Lbox = Lbox * np.sqrt(float(gbl._globals['statistic']['Nmin']))
           number_v = number_v * float(gbl._globals['statistic']['Nmin'])
           #print 'number of clumps, scaled to Nmin',
@@ -480,6 +496,7 @@ def I_calc(idx, pix):
               # use poisson
               po = poisson(expectedValTab[ma])
               probabilityTab.append(po.poissonfunc)
+        print(probabilityTab[0](0), probabilityTab[0](1), probabilityTab[1](0), probabilityTab[1](1))
         #print 'pTab', pTab
         #print 'expectedValTab', expectedValTab
         #print 'standardDeriTab', standardDeriTab
@@ -508,9 +525,12 @@ def I_calc(idx, pix):
         #     tau_v_i[i] = np.zeros([nspe, len(vobs)])
         #     eps_v_i[i] = np.zeros([nspe, len(vobs)])
         p = 0
+        totalSUM = copy((combis[-1]*10**(MLogArray/10)).sum())
+        #pdb.set_trace()
         for c in n_combis:
         # loop over possible combinations of clumps
-          # print 'number combis', len(combis)
+          #print('combis:', combis)
+          #input()
           tau_x_i = np.zeros([gbl._globals['compound']['nspe'], len(gbl._globals['compound']['ranges']['vobs'])])
           inten_x_i = np.zeros([gbl._globals['compound']['nspe'], len(gbl._globals['compound']['ranges']['vobs'])])
           # that means tautot[species, vobs]
@@ -518,10 +538,12 @@ def I_calc(idx, pix):
           for ma in n_masspoints:
             # loop over mass intervals
             for sp in gbl._globals['compound']['ranges']['nspe']:
+              #pdb.set_trace()
                             
                             
                             ##### for dust this v loop is not nessesary 
               for vo in gbl._globals['compound']['ranges']['number vobs']:
+                  #print('vo:', gbl._globals['compound']['ranges']['vobs'][vo])
                   #print 'v', v
                   #print 'sp', sp
                   #print 'vo', vo
@@ -543,22 +565,16 @@ def I_calc(idx, pix):
                                 ##################################################################################
                   # version without integral.
                   if gbl._globals['compound']['number'][sp] < gbl._globals['constants']['dust_numb']: #means species is non dust  
-                    tau_x_i[sp, vo] = tau_x_i[sp, vo] + tauCl[sp][0][ma] * \
-                                      combis[c][ma] * \
-                                      np.exp(-1/2. * ((gbl._globals['compound']['ranges']['vbin'][v]-gbl._globals['compound']['ranges']['vobs'][vo])/(sigma_cl_j[ma]))**2)
-                    inten_x_i[sp, vo] = inten_x_i[sp, vo] + intensityCl[sp][0][ma] * \
-                                        combis[c][ma] * \
-                                        np.exp(-1/2. * ((gbl._globals['compound']['ranges']['vbin'][v]-gbl._globals['compound']['ranges']['vobs'][vo])/(sigma_cl_j[ma]))**2)
+                    tau_x_i[sp, vo] = tau_x_i[sp, vo] + tauCl[sp][0][ma] * combis[c][ma] * np.exp(-1/2. * ((gbl._globals['compound']['ranges']['vbin'][v]-gbl._globals['compound']['ranges']['vobs'][vo])/(sigma_cl_j[ma]))**2)
+                    inten_x_i[sp, vo] = inten_x_i[sp, vo] + intensityCl[sp][0][ma] * combis[c][ma] * np.exp(-1/2. * ((gbl._globals['compound']['ranges']['vbin'][v]-gbl._globals['compound']['ranges']['vobs'][vo])/(sigma_cl_j[ma]))**2)
                                 ##################################################################################
                               
                   # if dust
                   if gbl._globals['compound']['number'][sp] >= gbl._globals['constants']['dust_numb']: #means species is dust
                                     ##################################################################################
-                    tau_x_i[sp, vo] = tau_x_i[sp, vo] + tauCl[sp][0][ma] * \
-                                  combis[c][ma] #* \
+                    tau_x_i[sp, vo] = tau_x_i[sp, vo] + tauCl[sp][0][ma] * combis[c][ma] #* \
                                   #np.exp(-1/2. * ((vbin[v]-vobs[vo])/(sigma_cl_j[ma]))**2)
-                    inten_x_i[sp, vo] = inten_x_i[sp, vo] + intensityCl[sp][0][ma] * \
-                                  combis[c][ma] #* \
+                    inten_x_i[sp, vo] = inten_x_i[sp, vo] + intensityCl[sp][0][ma] * combis[c][ma] #* \
                                   #np.exp(-1/2. * ((vbin[v]-vobs[vo])/(sigma_cl_j[ma]))**2) relative mass is always 1
                                     ########### no mass fraction nessesary
                     #tau_x_i_dust[sp, vo] =  tauCl[sp][0][ma] * combis[c][ma] * 1 # 
@@ -568,22 +584,41 @@ def I_calc(idx, pix):
                       tau_x_i[sp, v_fill] = tau_x_i[sp, 0] # fills all array fields of dust with same value
                       inten_x_i[sp, v_fill] = inten_x_i[sp, 0] # ...
                     #input('pause dust')
-                    break #one time in v is enough for dust 
+                    break #one time in v is enough for dust
                                     ##################################################################################
               ptot = ptot * float(probabilityTab[ma](int(combis[c][ma])))
-            p = p + ptot
-            tau_v_i.append([ptot, tau_x_i])
-            inten_v_i.append([ptot, inten_x_i])
-            # for each combination of clumps: save probability p_x_i and related tau and
-            # emissivity for each vobs and for each species
+              #pdb.set_trace()
+          p = p + ptot
+          Itemp = copy(inten_x_i)
+          Ttemp = copy(tau_x_i)
+          print(ma, combis[c][ma], ptot)
+          ptot = float(probabilityTab[0](int(combis[c][0]))*probabilityTab[1](int(combis[c][1])))
+          print(ma, combis[c][ma], probabilityTab[ma](int(combis[c][ma])))
+          inten_v_i.append([ptot, Itemp])
+          tau_v_i.append([ptot, Ttemp])
+          print('\nIntensity\n', inten_v_i[-1])
+          print('\nTau\n', tau_v_i[-1])
+          input()
+          # for each combination of clumps: save probability p_x_i and related tau and
+          # emissivity for each vobs and for each species
+          if debug:
+            print('velocity {}\ncombination {}\np {}\nI 13CO, I C+, I CO\n{}\n{}\n{}'.format(gbl._globals['compound']['ranges']['vbin'][v], combis[c], ptot, inten_x_i[0], inten_x_i[1], inten_x_i[2]))
+            print('velocity {}\ncombination {}\np {}\ntau 13CO, tau C+, tau CO\n{}\n{}\n{}'.format(gbl._globals['compound']['ranges']['vbin'][v], combis[c], ptot, tau_x_i[0], tau_x_i[1], tau_x_i[2]))
+            #print(combis[c], ptot, np.amax(inten_x_i[0]), np.amax(inten_x_i[1]), np.amax(inten_x_i[2]))
+            #print(combis[c], ptot, np.amax(tau_x_i[0]), np.amax(tau_x_i[1]), np.amax(tau_x_i[2]))
+            input()
         #print 'p =',
         #print p
         #print 'to obtain exact results p needs to be close to 1. If p is too small increase nsigma'
         # determine ensemble averaged tau and intensity for each velocity bin
         #print 'tau_v_i_total', tau_v_i[:][:]
         #print 'tau_v_i[:][0]', tau_v_i[:][0] , ' tau_v_i[:][1]', tau_v_i[:][1]
-        tau_v_i_Av = -np.log(sum(tau_v_i[i][0] * np.exp(-tau_v_i[i][1] ) for i in range(len(tau_v_i)))) 
+        #input(inten_v_i)
         I_v_i_Av = sum(inten_v_i[i][0] * inten_v_i[i][1] for i in range(len(inten_v_i)))
+        tau_v_i_Av = -np.log(sum(tau_v_i[i][0] * np.exp(-tau_v_i[i][1] ) for i in range(len(tau_v_i)))) 
+        print(I_v_i_Av)
+        print(tau_v_i_Av)
+        input()
         #print 'tau_v_i_Av', tau_v_i_Av
         #print len(tau_v_i_Av), type(tau_v_i_Av)
         #print 'I_v_i_Av', I_v_i_Av  
@@ -592,6 +627,10 @@ def I_calc(idx, pix):
         inten_v.append(I_v_i_Av)
     tau   = sum(tau_v[i] for i in range(len(tau_v)))
     inten = sum(inten_v[i] for i in range(len(inten_v)))
+    if debug==False:
+      print(inten)
+      print(tau)
+      input()
     #gbl._globals['compound']['ens'][pix].tau = tau
     #gbl._globals['compound']['ens'][pix].inten = inten 
     # tau[species, vobs]
@@ -608,5 +647,5 @@ def I_calc(idx, pix):
   #print(c, standardDeriTab)
   #gbl._globals['compound']['ens'][pix].tau = tau
   #gbl._globals['compound']['ens'][pix].inten = inten 
-  return (idx, tau, inten)
+  return (idx, tau, inten, totalSUM)
 
