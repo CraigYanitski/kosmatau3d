@@ -12,7 +12,7 @@ from scipy.interpolate import griddata
 import globals as gbl
 #end edit
 gbl._globals['compound'] = {}  #directory entries for compound
-r = 18.1*1000#18    #disk radius in pc
+r = 6*1000#18    #disk radius in pc
 #r = 18.1*1000
 factor = 1 #larger makes finer voxelgrid
 scale = gbl._globals['compound']['pixelsize'] = 1000.0 / factor #voxel size in pc
@@ -32,7 +32,7 @@ inc_disk = 0.   /180.*np.pi # inclination of disk [rad] relative to y-axis
 # Naming and setting for testcases
 global_UV = 10 #in drain-field - max UV
 clump_mass_l = 10.#0.1 # used clump masses in SM, lower
-clump_mass_u = 10.0# upper boundary
+clump_mass_u = 100# upper boundary
 global_densityfactor = 2. #multiplies surface density  1 bis 3
 global_massfactor = 1. #multiplies mass   1 bis 4
 # with intermedium parameters
@@ -168,7 +168,7 @@ gbl._globals['sigma']['sigma_ens_inter_j'] = np.array([10./2.3548, 10./2.3548, 1
 # and number of steps: nstep # km s^-1
 gbl._globals['compound']['vel'] = float(0.) # central v
 gbl._globals['compound']['d_vel'] = float(350) *np.cos(inc_disk) +10.# max v
-gbl._globals['compound']['nstep'] = int(101) #101 #number of v-baskets should be uneven
+gbl._globals['compound']['nstep'] = int(51) #101 #number of v-baskets should be uneven
 #gbl._globals['compound']['nstep'] = int(101) #101 #number of v-baskets should be uneven
 print('min Velocity Sampling [km/s]: ', -gbl._globals['compound']['d_vel'] + gbl._globals['compound']['vel'])
 print('max Velocity Sampling [km/s]: ', gbl._globals['compound']['d_vel'] + gbl._globals['compound']['vel'], '\n')
@@ -427,7 +427,6 @@ if calc_fuv == 1:
     d_MC = rand.random()*30+20  #random for distances of the clouds to next OB assosiation in pc (20-50) 
     UV = (r_OB**2 / d_MC**2)/3
     UV = global_UV #if constant and not random method
-    #UV_interpol = 'yes'
     if UV_interpol == 'yes':
       temp = griddata( uv_r, uv_v, r, method='linear') #UV interpol for actual position
       #print 'temp', temp

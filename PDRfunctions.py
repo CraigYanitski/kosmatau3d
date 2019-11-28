@@ -71,7 +71,9 @@ class Ensemble:
     self.rho_ens_clumps = rho_ens_clumps
     self.rho_ens_inter = rho_ens_inter
     self.Mens_clumps = Mens_clumps
+    self.Mens_cl_sum = None
     self.Mens_inter = Mens_inter
+    self.Mens_int_sum = None
     self.FUV = FUV
     self.Ml_cl = Ml_cl
     self.Mu_cl = Mu_cl
@@ -82,6 +84,7 @@ class Ensemble:
     self.velocity = velocity
     # systematic velocity
     self.Mens = None
+    self.Mens_sum = None
     self.rho_ens = None
     self.Mu = None
     self.Ml = None
@@ -246,15 +249,16 @@ def runKOSMAt():
     print('  (2) Initialise velocities')
     print('  (3) Calculate FUV absorption')
     print('  (4) Calculate line absorption and emission')
-    print('  (5) Show plots')
-    print('  (6) Write data files')
+    print('  (5) Calculate radiative transfer')
+    print('  (6) Show plots')
     print('  (7) Execute all')
     INPUT = input('\nSelection: ')
     if INPUT=='1': setupModel()
     elif INPUT=='2': initVelocities()
     elif INPUT=='3': calculateFUV()
     elif INPUT=='4': lineAE()
-    elif INPUT=='5':
+    elif INPUT=='5': radTransfer()
+    elif INPUT=='6':
       PLOTS = True
       while PLOTS:
         print('\nWhich plot would you like to see?')
@@ -274,8 +278,8 @@ def runKOSMAt():
         if PLOT=='1':gbl.plotFlags['Total mass'] = True
         elif PLOT=='2': gbl.plotFlags['Clump mass'] = True
         elif PLOT=='3': gbl.plotFlags['Interclump mass'] = True
-        elif PLOT=='4': gbl.plotFlags['Total Intensity'] = True
-        elif PLOT=='5': gbl.plotFlags['Clump Intensity'] = True
+        elif PLOT=='4': gbl.plotFlags['Total intensity'] = True
+        elif PLOT=='5': gbl.plotFlags['Clump intensity'] = True
         elif PLOT=='6': gbl.plotFlags['Interclump intensity'] = True
         elif PLOT=='7': gbl.plotFlags['Density'] = True
         elif PLOT=='8': gbl.plotFlags['Z velocity'] = True
@@ -298,14 +302,13 @@ def runKOSMAt():
           gbl.plotFlags['Total velocity'] = gbl.plotFlags['Total dispersion'] = gbl.plotFlags['FUV distribution'] = \
           gbl.plotFlags['FUV distribution'] = gbl.plotFlags['Z velocity'] = gbl.plotFlags['Total velocity'] = \
           gbl.plotFlags['Total dispersion'] = gbl.plotFlags['Total dispersion'] = gbl.plotFlags['FUV distribution'] = False
-    elif INPUT=='6': writeFiles()
     elif INPUT=='7':
       setupModel()
       initVelocities()
       calculateFUV()
       lineAE()
-      showPlots()
-      writeFiles()
+      #radTransfer()
+      #showPlots()
     else: RUN = False
   print('\nAuf Wiedersehen !!\n')
   return
@@ -535,11 +538,15 @@ def lineAE(timed=True):
     ##
     gbl._globals['runtimes']['module_line_absorption'] = time.time()-temp
     for i in npoints:
+      gbl._globals['compound']['ens'][(i)].Mens_cl_sum = \
+        copy(gbl._globals['compound']['ens'][(i)].Mens_sum)
       gbl._globals['compound']['ens'][(i)].inten_tot = \
         copy(gbl._globals['compound']['ens'][(i)].inten)
       gbl._globals['compound']['ens'][(i)].tau_tot = \
         copy(gbl._globals['compound']['ens'][(i)].tau)
+      print('Clump: {}\nMass: {}\nIntensity: {}\nOptical Depth: {}'.format(i, gbl._globals['compound']['ens'][(i)].Mens_cl_sum, (gbl._globals['compound']['ens'][(i)].inten).max(1), (gbl._globals['compound']['ens'][(i)].tau).max(1)))
     # Write to data file (for dense clumps)
+    input()
     with open(gbl.KOSMAPATH+'temp/tau_line_clumps.dat', 'w') as t:
       # write tau_tot to file for dense clumps
       # textwrap ensures that the arrays are not wraped
@@ -584,6 +591,7 @@ def lineAE(timed=True):
       ##
       gbl._globals['constants']['alpha'] = None
       for i in npoints:
+        print('Interclump: {}\nMass: {}\nIntensity: {}\nOptical Depth: {}'.format(i, gbl._globals['compound']['ens'][(i)].Mens_cl_sum, (gbl._globals['compound']['ens'][(i)].inten).max(1), (gbl._globals['compound']['ens'][(i)].tau).max(1)))
         gbl._globals['compound']['ens'][(i)].Mens = None
         gbl._globals['compound']['ens'][(i)].rho_ens = None
         gbl._globals['compound']['ens'][(i)].Mu = None
@@ -604,6 +612,8 @@ def lineAE(timed=True):
             t.write(textwrap.fill(str(pix) + ' ' + str(species) + ' ' + str(gbl._globals['compound']['ens'][pix].inten[species,:])[1:-1], width = gbl._globals['compound']['nstep'] *20))
             t.write('\n')   
       for i in npoints:
+        gbl._globals['compound']['ens'][(i)].Mens_inter_sum = \
+          copy(gbl._globals['compound']['ens'][(i)].Mens_sum)
         gbl._globals['compound']['ens'][(i)].inten_tot = \
           copy(gbl._globals['compound']['ens'][(i)].inten_tot + gbl._globals['compound']['ens'][(i)].inten)
         gbl._globals['compound']['ens'][(i)].tau_tot = \
@@ -631,6 +641,9 @@ def lineAE(timed=True):
         # pause = input('...ensemble averaged emissivity and optical depth have been written into folder ./temp/... hit enter to go on!')
   print('\nLine absorption and emission calculated successfully.')
   if timed: print('  in', time.time()-t_init, 's')
+  if gbl._globals['verbose']:
+    for ens in gbl._globals['compound']['ens']:
+      print('clump', ens.Mens_clumps, ens.Mens_cl_sum, '-- interclump', ens.Mens_inter, ens.Mens_inter_sum, '-- last run', ens.Mens_sum)
   return
 
 
@@ -645,7 +658,7 @@ def lineAE(timed=True):
 #print 'tau tot 0', gbl._globals['compound']['ens'][0].tau_tot
 # pause = input('...ok?????...')
   
-def writeFiles(timed=True):
+def radTransfer(timed=True):
   '''
   A function to separate the writing of the data files.
   Created on 17.10.2019 by Craig.
@@ -904,18 +917,18 @@ def showPlots():
       pause = input('...')
     # plot clump intensity(velocity_plot) for each species
     for spe in nspe:
-      # label = gbl._globals['compound']['species'][spe] + \
-      #       str(gbl._globals['compound']['transition'][spe]) + \
-      #       ' line intensity; clump' + ' v=' + str(velocities[velocity_plot])
-      label =  gbl._globals['compound']['species'][sp] + '_' + \
-                str(gbl._globals['compound']['transition'][sp]) + \
+       #label = gbl._globals['compound']['species'][spe] + \
+       #      str(gbl._globals['compound']['transition'][spe]) + \
+       #      ' line intensity; clump' + ' v=' + str(velocities[velocity_plot])
+      label =  gbl._globals['compound']['species'][spe] + '_' + \
+                str(gbl._globals['compound']['transition'][spe]) + \
                 ' line centre intensity [K] (only clumps)'# + ' v=' + str(velocities[velocity_plot])
       fig = plot_geo(gbl._globals['compound']['coordinates'], \
                         wei = np.array(clumps_inten_peak_plot[(spe)], float), \
                         species = spe ,\
                         limits = gbl._globals['plots']['plotrange'],\
                         title =  'title' , cbarLabel= label)
-      plt.show()
+    plt.show()
   
   # Interclump intensity plot
   if gbl.plotFlags['Interclump intensity']:
@@ -936,15 +949,15 @@ def showPlots():
       #label = gbl._globals['compound']['species'][spe] + \
       #       str(gbl._globals['compound']['transition'][spe]) + \
       #       ' line intensity; interclump' + ' v=' + str(velocities[velocity_plot]) 
-      label = gbl._globals['compound']['species'][sp] + '_' + \
-              str(gbl._globals['compound']['transition'][sp]) + \
+      label = gbl._globals['compound']['species'][spe] + '_' + \
+              str(gbl._globals['compound']['transition'][spe]) + \
               ' line centre intensity [K] (only interclump)'# + ' v=' + str(velocities[velocity_plot])
       fig = plot_geo(gbl._globals['compound']['coordinates'], \
                         wei = np.array(interclump_inten_plot[(spe)], float), \
                         species = spe, \
                         limits = gbl._globals['plots']['plotrange'],\
                         title =  'title' , cbarLabel= label)
-      plt.show()
+    plt.show()
   
   # Total intensity plot
   if gbl.plotFlags['Total intensity']:
@@ -962,15 +975,15 @@ def showPlots():
       pause = input('...')
     # plot total intensity(velocity_plot) for each species
     for spe in nspe:
-      label = gbl._globals['compound']['species'][sp] + '_' + \
-              str(gbl._globals['compound']['transition'][sp]) + \
+      label = gbl._globals['compound']['species'][spe] + '_' + \
+              str(gbl._globals['compound']['transition'][spe]) + \
               ' line centre intensity (K)'# + ' v=' + str(velocities[velocity_plot])
       fig = plot_geo(gbl._globals['compound']['coordinates'], \
                         wei = np.array(inten_tot_peak_plot[(spe)], float), \
                         species = spe, \
                         limits = gbl._globals['plots']['plotrange'],\
                         title =  'title' , cbarLabel= label)
-      plt.show()
+    plt.show()
   
   # Plot FUV distribution
   if gbl.plotFlags['FUV distribution']:
