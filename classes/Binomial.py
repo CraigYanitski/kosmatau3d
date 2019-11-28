@@ -25,7 +25,7 @@ class Binomial():
     #iComb = i.any(1)
     if self.debug:
       print('\nCombination, n, p, i:\n{}\n{}\n{}\n{}\n'.format(k, self.n, self.p, i))
-    if k[:,i].size: k[:,i] = self.n[:,i]-k[:,i]   # use (n choose k) = (n choose n-k)
+    #if k[:,i].size: k[:,i] = self.n[:,i]-k[:,i]   # use (n choose k) = (n choose n-k)
     comb = np.zeros([self.n[:,0].size, k.size])
     '''
     # This is the working version I had for two masspoints.
