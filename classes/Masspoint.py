@@ -33,7 +33,7 @@ class Masspoint(object):
     il.reload(Molecules)
     il.reload(Dust)
     return
-  def calculateEmission(self, velocity, vDispersion, verbose=False, debug=False, test=False):
+  def calculateEmission(self, velocity, vDispersion, verbose=False, debug=False, test=True):
     #velocity.resize((len(velocity), 1))
     velocityRange = np.linspace(velocity-3*vDispersion, velocity+3*vDispersion, num=7)      #a range of 7 is used to account for the observed velocity +/- 3 sigma
     if debug:

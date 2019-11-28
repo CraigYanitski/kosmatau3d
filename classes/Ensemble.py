@@ -1,4 +1,5 @@
 import importlib as il
+import pprint
 import numpy as np
 import sys
 from Combination import *
@@ -197,7 +198,9 @@ class Ensemble(object):
     self.__masspointNumberRange = np.array([lower, upper]).T
     if verbose: print('\nMasspoint number range:\n', self.__masspointNumberRange)
     self.__combinations = self.calculateCombinations()
-    input(self.__combinations)
+    #input(self.__combinations)
+    #input(self.__velocity)
+    #input(self.__velocityBins)
     #self.__probability = np.zeros((len(self.__combinations),2))
     if verbose: print('\nCombinations:\n', self.__combinations, '\n\n')
     for i,combinations in enumerate(self.__combinations):
@@ -219,7 +222,7 @@ class Ensemble(object):
           else:
             # use binomial 
             # <<This will likely print an error when there are more masspoints>>
-            b = Binomial(self.__deltaNji, surfaceProbability, debug=True) # n and p for binominal 
+            b = Binomial(self.__deltaNji, surfaceProbability, debug=False) # n and p for binominal 
             probability.append(b.binomfunc(combination))
         elif self.__flagCombination=='poisson':
           if np.any(probableNumber>self.__constants.pnGauss) and np.any(self.__deltaNji>self.__constants.nGauss):
@@ -232,7 +235,7 @@ class Ensemble(object):
             po = Poisson(probableNumber)
             probability.append(po.poissonfunc(combination))
         else: probability.append([0, 0])
-        if verbose==False:
+        if verbose:
           print('probability:', probability[-1])
           input()
         if (probability[-1]==np.nan).any():
@@ -241,7 +244,9 @@ class Ensemble(object):
         self.__combinationObjects.append(Combination(self.__species, self.__interpolations, combination=combination.flatten(), masses=self.__masspoints, density=self.__masspointDensity, fuv=self.__FUV, probability=probability[-1]))
       self.__probability.append(probability)
     #for i,combination in enumerate(self.__combinations): self.__probability[i] = self.__probability[i](combination)
-    if verbose: input('Probability: {}'.format(self.__probability))
+    if verbose==False:
+      print('\nProbability {}:\n{}\n'.format(len(self.__probability), self.__probability))
+      input()
     return
   def initialiseEnsemble(self):
 
