@@ -6,6 +6,7 @@ class Binomial():
   '''This is a classs taken directly from the work of Silke Andree-Labsch and Christoph Bruckmann.'''
   def __init__(self, n, p, debug=False):
     self.debug = debug
+    if debug: print(n)
     self.n = np.array(n, dtype=np.int).T
     self.p = p
     return
