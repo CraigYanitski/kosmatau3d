@@ -184,25 +184,29 @@ class Ensemble(object):
     if verbose: print(self.__massEnsemble, self.__volumeEnsemble)
     self.__densityEnsemble = self.__massEnsemble/self.__volumeEnsemble
     if verbose: print('velocity, mean, dispersion', self.__velocity, self.__velocity.mean(), self.__velocityDispersion)
-    self.__deltaNji = np.array([self.__Nj]).T/np.sqrt(2*np.pi)/self.__velocityDispersion*(np.exp(-0.5*((self.__velocityBins-self.__velocity.mean())/self.__constants.ensembleDispersion)**2)).T*self.__velocityStep
+    self.__deltaNji = (np.array([self.__Nj]).T/np.sqrt(2*np.pi)/self.__velocityDispersion*\
+                       (np.exp(-0.5*((self.__velocityBins-self.__velocity.mean())/self.__constants.ensembleDispersion)**2)).T*self.__velocityStep).max(1)
+    self.__deltaNji = np.array([self.__deltaNji]).T
     surfaceProbability = np.array(np.pi*self.__masspointRadii.T**2/self.__constants.pixelWidth**2)    #this is 'pTab' in the original code
     probableNumber = (self.__deltaNji*surfaceProbability.T)   #this is 'expectedValTab' in the original code
     try: standardDeviation = np.sqrt(self.__deltaNji*surfaceProbability.T*(1-surfaceProbability.T))    #this is 'standardDeriTab' in the original code
     except ValueError:
       input('\nObserved mass, sufaceProbability, standardDeviation**2:\n', self.__massObserved, surfaceProbability, '\n', self.__deltaNji*surfaceProbability.T*(1-surfaceProbability.T))
-    if verbose: print('\nsuface probability, expected number, standard deviation:\n', surfaceProbability, '\n', probableNumber, '\n', standardDeviation)
+    if verbose:
+      print('\nDelta Nji\n', self.__deltaNji)
+      print('\nsuface probability, expected number, standard deviation:\n', surfaceProbability, '\n', probableNumber, '\n', standardDeviation)
     #print(surfaceProbability, probableNumber, standardDeviation)
-    lower = np.maximum(np.zeros([self.__masspoints.size, self.__velocity.size]), np.floor(probableNumber-self.__constants.nSigma*standardDeviation))
+    lower = np.maximum(np.zeros([self.__masspoints.size, 1]), np.floor(probableNumber-self.__constants.nSigma*standardDeviation))
     upper = np.minimum(self.__deltaNji, np.ceil(probableNumber+self.__constants.nSigma*standardDeviation))
     if verbose: print('\nupper,lower:\n',upper,'\n',lower)
     self.__masspointNumberRange = np.array([lower, upper]).T
     if verbose: print('\nMasspoint number range:\n', self.__masspointNumberRange)
     self.__combinations = self.calculateCombinations()
-    #input(self.__combinations)
+    if verbose: input(self.__combinations)
     #input(self.__velocity)
     #input(self.__velocityBins)
     #self.__probability = np.zeros((len(self.__combinations),2))
-    if verbose: print('\nCombinations:\n', self.__combinations, '\n\n')
+    if verbose: input('\nCombinations:\n{}\n'.format(self.__combinations))
     for i,combinations in enumerate(self.__combinations):
       if verbose: print(combinations)
       self.__combinations[i] = np.array(combinations).T
@@ -244,7 +248,7 @@ class Ensemble(object):
         self.__combinationObjects.append(Combination(self.__species, self.__interpolations, combination=combination.flatten(), masses=self.__masspoints, density=self.__masspointDensity, fuv=self.__FUV, probability=probability[-1]))
       self.__probability.append(probability)
     #for i,combination in enumerate(self.__combinations): self.__probability[i] = self.__probability[i](combination)
-    if verbose==False:
+    if verbose:
       print('\nProbability {}:\n{}\n'.format(len(self.__probability), self.__probability))
       input()
     return
@@ -268,7 +272,7 @@ class Ensemble(object):
       input()
     if test: print('\n', self.__clumpType, len(self.__combinationObjects))
     for combination in self.__combinationObjects:
-      if (combination in self.__combinationObjects[-50:]) and test: combination.calculateEmission(self.__velocity, self.__velocityDispersion, test=False)
+      if (combination in self.__combinationObjects[-50:]) and test: combination.calculateEmission(self.__velocityBins, self.__velocityDispersion, test=False)
       else: combination.calculateEmission(self.__velocity, self.__velocityDispersion)
       result = combination.getScaledCombinationEmission() #<<this needs to be altered>>
       intensityResult.append(result[0])

@@ -33,7 +33,7 @@ class Masspoint(object):
     il.reload(Molecules)
     il.reload(Dust)
     return
-  def calculateEmission(self, velocity, vDispersion, verbose=False, debug=False, test=True):
+  def calculateEmission(self, velocity, vDispersion, verbose=False, debug=False, test=False):
     #velocity.resize((len(velocity), 1))
     velocityRange = np.linspace(velocity-3*vDispersion, velocity+3*vDispersion, num=7)      #a range of 7 is used to account for the observed velocity +/- 3 sigma
     if debug:
@@ -47,7 +47,7 @@ class Masspoint(object):
     else:
       interpolationPoint = [self.__density, self.__mass, np.log10(self.__FUV.getFUV())]
       if debug==False:
-        if test: print(interpolationPoint)
+        if test: print('\n', interpolationPoint)
         #input()
       for i,element in enumerate(self.__species):
         if verbose: print(element)
@@ -57,7 +57,7 @@ class Masspoint(object):
             self.__opticalDepth_xi.append(self.__interpolations.interpolateTau(interpolationPoint, [index])*self.__number*np.exp(-1/2.*((velocityRange-velocity)/(self.__constants.clumpDispersion))**2))
             #self.__intensity_xi[-1] = self.__intensity_xi[-1].sum(1)
             #self.__opticalDepth_xi[-1] = self.__opticalDepth_xi[-1].sum(1)
-            if test: print('\n', self.__intensity_xi[-1].max(), '\n')
+            if test: input('\n{}\n'.format(self.__intensity_xi[-1].max()))
           if debug: input('intensity_xi:\n{}\n'.format(self.__intensity_xi[-1]))
         elif isinstance(element, Dust):
           for index in element.getInterpolationIndeces():

@@ -63,12 +63,12 @@ class Voxel(object):
     #try self.__FUV.getFUV():
     return 'Voxel {}\n  ->Cartesian position: ({}, {}, {})\n'.format(self.__index, self.__x, self.__y, self.__z) + \
                      '  ->mass {}\n'.format(self.__mass) + \
-                     '  ->intensity {}\n'.format(self.__intensity[:,:,0]) + \
-                     '    -clump {}\n'.format(iClump[:,:,0]) + \
-                     '    -interclump {}\n'.format(iInterclump[:,:,0]) + \
-                     '  ->optical depth {}\n'.format(self.__opticalDepth[:,:,0]) + \
-                     '    -clump {}\n'.format(tauClump[:,:,0]) + \
-                     '    -interclump {}\n'.format(tauInterclump[:,:,0]) + \
+                     '  ->intensity {}\n'.format(self.__intensity.sum(2).max(1)) + \
+                     '    -clump {}\n'.format(iClump.sum(2).max(1)) + \
+                     '    -interclump {}\n'.format(iInterclump.sum(2).max(1)) + \
+                     '  ->optical depth {}\n'.format(self.__opticalDepth.sum(2).max(1)) + \
+                     '    -clump {}\n'.format(tauClump.sum(2).max(1)) + \
+                     '    -interclump {}\n'.format(tauInterclump.sum(2).max(1)) + \
                      '  ->FUV field {}'.format(self.__FUV.getFUV())
     #except:
     #  return 'Voxel {}\n  ->Cartesian position: ({}, {}, {})\n  ->mass {}\n  ->intensity {}\n  ->optical depth {}\n  ->FUV field {}'.format(self.__index, self.__x, self.__y, self.__z, self.__mass, 10**self.__intensity, 10**self.__opticalDepth, self.__FUV)
