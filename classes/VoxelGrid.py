@@ -1,5 +1,6 @@
 import numpy as np
 from tqdm import tqdm
+import progressbar as pb
 import importlib as il
 from Voxel import *
 from Interpolate import *
@@ -48,14 +49,15 @@ class VoxelGrid(object):
     return self.__interpolations
   def initialiseVoxels(self, species, observations, verbose=False):
     self.__initialiseGrid(species, observations)
-    print('Initialising Grid...')
+    print('\nInitialising Grid...')
     x,y,z,scale = self.__dimensions.voxelCartesianPosition()
     r,phi = self.__dimensions.voxelPolarPosition()
     self.__unusedVoxels = []
-    with tqdm(total=len(self.__voxels), desc='Voxels initialised') as progress:
+    with tqdm(total=len(self.__voxels), desc='Voxels initialised', miniters=1, dynamic_ncols=True) as progress:
       for i,voxel in enumerate(self.__voxels):
         if r[i]<=max(x):
-          if verbose: print('\nMax X, Radius:', max(x), r[i], '\n')
+          if verbose:
+              print('\nMax X, Radius:', max(x), r[i], '\n')
           self.__x.append(x[i])
           self.__y.append(y[i])
           self.__z.append(z[i])
@@ -63,22 +65,25 @@ class VoxelGrid(object):
           voxel.setPosition(x[i], y[i], z[i], r[i], phi, scale)
           voxel.setProperties()
         else: self.__unusedVoxels.append(i)
-        progress.update(1)
+        progress.update()
+      progress.close()
     for i in self.__unusedVoxels[::-1]:
       self.__voxels.remove(self.__voxels[i])
     self.__voxelNumber = len(self.__voxels)
     return
   def calculateEmission(self, verbose=False):
-    print('Calculating grid emission')
-    with tqdm(total=len(self.__voxels), desc='Calculating voxel emissions') as progress:
+    print('\nCalculating grid emission...')
+    with tqdm(total=len(self.__voxels), desc='Voxel emissions', miniters=1, dynamic_ncols=True) as progress:
       for i,voxel in enumerate(self.__voxels):
         voxel.calculateEmission()
         emission = voxel.getEmission()
         if verbose: print(emission)
+        progress.update()
         self.__voxelIntensity.append(emission[0])
         self.__voxelOpticalDepth.append(emission[1])
         self.__voxelFUV.append(emission[2])
-        progress.update(1)
+      progress.close()
+    print('\nCalculation complete.\n')
     return
   def getVoxelNumber(self):
     return self.__voxelNumber
