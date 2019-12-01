@@ -123,13 +123,15 @@ class Ensemble(object):
     '''This function calculates the interpolation points necessary for reading the KOSMA-tau files.'''
     self.__masspointDensity = np.log10(10.**(self.__masspoints*(1-3./self.__constants.gamma))*sum(10.**(self.__masspoints*(1+3./self.__constants.gamma-self.__constants.alpha))) / \
                                        sum(10.**(self.__masspoints*(2-self.__constants.alpha)))*self.__densityObserved/1.91)
-    if verbose: print(self.__masspointDensity)
+    if verbose:
+      print(self.__masspointDensity)
     #if (self.__masspointDensity>self.__constants.densityLimits[1]).any() or (self.__masspointDensity<self.__constants.densityLimits[0]).any(): sys.exit('WARNING: surface density {} outside of KOSMA-tau grid!\n\n'.format(self.__masspointDensity))
     self.__interpolationPoints = np.stack((self.__masspointDensity, self.__masspoints, np.full(self.__masspoints.size, self.__FUV)))
     self.__masspointRadii = ((3./(4.*np.pi)*(10.**self.__masspoints*self.__constants.massSolar)/ \
                               (10.**self.__masspointDensity*self.__constants.massH*1.91))**(1./3.)/self.__constants.pc)
     self.__masspointRadii.resize(len(self.__masspoints),1)
-    if verbose: input('\nRadii:\n{}\n'.format(self.__masspointRadii))
+    if verbose:
+      input('\nRadii:\n{}\n'.format(self.__masspointRadii))
     return
   def getRadii(self):
     return self.__masspointRadii
@@ -140,7 +142,8 @@ class Ensemble(object):
       It is basically the essence of the probabilistic approach used to create the superposition of clumps.'''
     dimension = len(self.__masspointNumberRange[0])
     ranges = self.__masspointNumberRange
-    if verbose: input('\nMasspoint Ranges:\n', ranges)
+    if verbose:
+      input('\nMasspoint Ranges:\n', ranges)
     ranges[:,:,1] += 1
     combinations = []
     for i in range(len(ranges)):
@@ -168,22 +171,27 @@ class Ensemble(object):
         grid = np.mgrid[ranges[i,0,0]:ranges[i,0,1], ranges[i,1,0]:ranges[i,1,1], ranges[i,2,0]:ranges[i,2,1], ranges[i,3,0]:ranges[i,3,1], \
                         ranges[i,4,0]:ranges[i,4,1], ranges[i,5,0]:ranges[i,5,1], ranges[i,6,0]:ranges[i,6,1]]
         combinations.append(np.array([grid[0].flatten(), grid[1].flatten(), grid[2].flatten(), grid[3].flatten(), grid[4].flatten(), grid[5].flatten(), grid[6].flatten()], dtype=np.int))
-      else: sys.exit('\nThere are too many masses for the current grid ({}).\nExitting. . .\n\n'.format(dimension))
+      else:
+        sys.exit('\nThere are too many masses for the current grid ({}).\nExitting. . .\n\n'.format(dimension))
     #combinations = np.array(combinations)
-    if verbose: print('\nCalculated combinations:\n', combinations)
+    if verbose:
+      print('\nCalculated combinations:\n', combinations)
     return combinations
   def createCombinationObjects(self, verbose=False):
     '''This function removes all of the unnecessary degenerate looping during this calculation.
        Of course it is possible because of the wonders of numpy.ndarray(). . .'''
     verbose = self.__verbose or verbose
     self.__Nj = (self.__massObserved*10.**(self.__masspoints*(1-self.__constants.alpha))) / sum(10.**(self.__masspoints*(2-self.__constants.alpha)))
-    if verbose: print('\nNj:\n', self.__Nj)
+    if verbose:
+      print('\nNj:\n', self.__Nj)
     self.__massEnsemble = sum(self.__Nj*10.**self.__masspoints)
     self.__radiusEnsemble = sum(self.__Nj*self.__masspointRadii)
     self.__volumeEnsemble = sum(self.__Nj*np.pi*4./3.*self.__masspointRadii.T**3)
-    if verbose: print(self.__massEnsemble, self.__volumeEnsemble)
+    if verbose:
+      print(self.__massEnsemble, self.__volumeEnsemble)
     self.__densityEnsemble = self.__massEnsemble/self.__volumeEnsemble
-    if verbose: print('velocity, mean, dispersion', self.__velocity, self.__velocity.mean(), self.__velocityDispersion)
+    if verbose:
+      print('velocity, mean, dispersion', self.__velocity, self.__velocity.mean(), self.__velocityDispersion)
     self.__deltaNji = (np.array([self.__Nj]).T/np.sqrt(2*np.pi)/self.__velocityDispersion*\
                        (np.exp(-0.5*((self.__velocityBins-self.__velocity.mean())/self.__constants.ensembleDispersion)**2)).T*self.__velocityStep).max(1)
     self.__deltaNji = np.array([self.__deltaNji]).T
@@ -243,7 +251,7 @@ class Ensemble(object):
           print('probability:', probability[-1])
           input()
         if (probability[-1]==np.nan).any():
-          print('\nThere is an invalid probability:\n')
+          print('\nThere is an invalid probability:', probability[-1], '\n')
           input()
         self.__combinationObjects.append(Combination(self.__species, self.__interpolations, combination=combination.flatten(), masses=self.__masspoints, density=self.__masspointDensity, fuv=self.__FUV, probability=probability[-1]))
       self.__probability.append(probability)
@@ -296,7 +304,7 @@ class Ensemble(object):
   def getEnsembleEmission(self):
     '''This returns the ensemble emission...nothing more.'''
     if (self.__intensity==np.nan).any():
-      print('\nInvalid intensity:\n', self.__intensity)
+      print('\nInvalid intensity:\n{}\n'.format(self.__intensity))
       input()
     return (self.__intensity,self.__opticalDepth,self.__FUV)
   def getCombinations(self):

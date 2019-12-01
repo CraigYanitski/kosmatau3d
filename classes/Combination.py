@@ -54,7 +54,7 @@ class Combination(object):
   def calculateEmission(self, velocity, vDispersion, emission='element', debug=False, test=False):
     #print('Calculating combination emission')
     if isinstance(self.__intensity,np.ndarray):
-      print('The emission has already been calculated for this combination.')
+      print('\nThe emission has already been calculated for this combination.\n')
       return
     if debug:
       print(self.__combination)

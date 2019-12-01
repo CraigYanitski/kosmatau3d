@@ -7,8 +7,10 @@ class Poisson():
     self.la = la # lambda = n * p
     return
   
-  def poissonfunc(self, k):
+  def poissonfunc(self, k, verbose=False):
     # print 'comb', self.comb(k)
     factorial = scipy.special.factorial(k)
-    print('\nself.la, k, factorial:\n', self.la, k, factorial)
+    if debug:
+      print('\nself.la, k, factorial:\n', self.la, k, factorial)
+      input()
     return (self.la**k/factorial*np.e**(-self.la))

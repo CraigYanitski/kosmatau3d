@@ -110,7 +110,8 @@ class Voxel(object):
   def getVelocity(self):
     return (self.__velocity, self.__velocityDispersion, self.__velocityRange)
   def calculateEmission(self, verbose=False):
-    if verbose: print('\nCalculating voxel V{} emission'.format(self.__index))
+    if verbose:
+      print('\nCalculating voxel V{} emission'.format(self.__index))
     self.__clump.calculate(test=False)
     self.__interclump.calculate(test=False)
     iClump,tauClump,FUVclump = self.__clump.getEnsembleEmission()
