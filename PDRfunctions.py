@@ -544,7 +544,7 @@ def lineAE(timed=True):
         copy(gbl._globals['compound']['ens'][(i)].inten)
       gbl._globals['compound']['ens'][(i)].tau_tot = \
         copy(gbl._globals['compound']['ens'][(i)].tau)
-      print('Clump: {}\nMass: {}\nIntensity: {}\nOptical Depth: {}'.format(i, gbl._globals['compound']['ens'][(i)].Mens_cl_sum, (gbl._globals['compound']['ens'][(i)].inten).max(1), (gbl._globals['compound']['ens'][(i)].tau).max(1)))
+      print('Clump: {}\nMass: {}\nFUV: {}\nIntensity: {}\nOptical Depth: {}'.format(i, gbl._globals['compound']['ens'][(i)].Mens_cl_sum, gbl._globals['compound']['ens'][i].FUV, (gbl._globals['compound']['ens'][(i)].inten), (gbl._globals['compound']['ens'][(i)].tau)))
     # Write to data file (for dense clumps)
     input()
     with open(gbl.KOSMAPATH+'temp/tau_line_clumps.dat', 'w') as t:
@@ -591,7 +591,7 @@ def lineAE(timed=True):
       ##
       gbl._globals['constants']['alpha'] = None
       for i in npoints:
-        print('Interclump: {}\nMass: {}\nIntensity: {}\nOptical Depth: {}'.format(i, gbl._globals['compound']['ens'][(i)].Mens_cl_sum, (gbl._globals['compound']['ens'][(i)].inten).max(1), (gbl._globals['compound']['ens'][(i)].tau).max(1)))
+        print('Interclump: {}\nMass: {}\nFUV: {}\nIntensity: {}\nOptical Depth: {}'.format(i, gbl._globals['compound']['ens'][(i)].Mens_cl_sum, gbl._globals['compound']['ens'][i].FUV, (gbl._globals['compound']['ens'][(i)].inten), (gbl._globals['compound']['ens'][(i)].tau)))
         gbl._globals['compound']['ens'][(i)].Mens = None
         gbl._globals['compound']['ens'][(i)].rho_ens = None
         gbl._globals['compound']['ens'][(i)].Mu = None
@@ -707,6 +707,7 @@ def radTransfer(timed=True):
     for x in xlength:   #for all x-Pos
       #print x+1, 'position out of:', x_length
       for y in ylength:   # for all y-Pos
+        print('Species, x, y:', sp, x, y)
         yval = rt.rad_transfer(offset = [x - x_offset,y - y_offset], species = sp) #rad transfer for real pos
         for i in nstep:
           spec_cube[((i))][y][x] = yval[(i)]

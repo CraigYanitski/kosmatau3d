@@ -239,6 +239,8 @@ def rad_transfer(offset = np.array([0,0]), species = 0):
         # print 'ds
         a = k/cmath.sqrt(2. * kstep)
         b = (k + kstep * ds)/cmath.sqrt(2. * kstep)
+        print('Kappa, kappa step:', k, kstep)
+        print('a, b:', a, b)
         # print 'k:', k,'kstep:', kstep 
         # print 'ee', ee,'estep', eestep
         # print 'a:', a,'b:', b
@@ -266,6 +268,8 @@ def rad_transfer(offset = np.array([0,0]), species = 0):
     # print 'I', I
     # print 'I[-1]', I[-1]
     I_v.append(I[-1])
+  print('Integrated radiative transfer:', I_v)
+  input()
 
   #print 'integrated I for all velocities \n', I_v
   # pause = input('..rad_trans for one los done..')

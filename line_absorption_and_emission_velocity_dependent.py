@@ -275,7 +275,7 @@ def I_calc(idx, pix, debug=False):
     #print 'interpolatiogbl._globals['compound']['ranges']['npoints'] Rho,Cl-Mass,UV', interpolatiogbl._globals['compound']['ranges']['npoints']
     #print 'number of clumps for each clump mass', number
     #raw = input (' OKOK?')
-    print('\n', interpolationPoints, '\n')
+    if debug: print('\n', interpolationPoints, '\n')
     tauCl =  [None] * gbl._globals['compound']['nspe']
     intensityCl =  [None] * gbl._globals['compound']['nspe']
     for sp in gbl._globals['compound']['ranges']['nspe']:  
@@ -290,8 +290,9 @@ def I_calc(idx, pix, debug=False):
       intensityCl[sp].append(10 ** (griddata(gbl._globals['compound']['ranges']['rhoMassUV_intensity'], \
                               gbl._globals['compound']['ranges']['log intensity Cl Grid'][sp], interpolationPoints, method='linear')/10.))          
       # interpolated, line averaged intensity in Kkm/s
-    print(intensityCl)
-    print(tauCl)
+    if debug:
+      print(intensityCl)
+      print(tauCl)
     RclTab = []
     for i in n_masspoints:
       # calculate clump radii
@@ -496,7 +497,7 @@ def I_calc(idx, pix, debug=False):
               # use poisson
               po = poisson(expectedValTab[ma])
               probabilityTab.append(po.poissonfunc)
-        print(probabilityTab[0](0), probabilityTab[0](1), probabilityTab[1](0), probabilityTab[1](1))
+        #print(probabilityTab[0](0), probabilityTab[0](1), probabilityTab[1](0), probabilityTab[1](1))
         #print 'pTab', pTab
         #print 'expectedValTab', expectedValTab
         #print 'standardDeriTab', standardDeriTab
@@ -591,14 +592,17 @@ def I_calc(idx, pix, debug=False):
           p = p + ptot
           Itemp = copy(inten_x_i)
           Ttemp = copy(tau_x_i)
-          print(ma, combis[c][ma], ptot)
-          ptot = float(probabilityTab[0](int(combis[c][0]))*probabilityTab[1](int(combis[c][1])))
-          print(ma, combis[c][ma], probabilityTab[ma](int(combis[c][ma])))
+          if debug: print(ma, combis[c][ma], ptot)
+          if len(probabilityTab)==1: ptot = float(probabilityTab[0](combis[c][0]))
+          elif len(probabilityTab)==2: ptot = float(probabilityTab[0](int(combis[c][0]))*probabilityTab[1](int(combis[c][1])))
+          elif len(probabilityTab)==3: ptot = float(probabilityTab[0](int(combis[c][0]))*probabilityTab[1](int(combis[c][1]))*probabilityTab[2](int(combis[c][2])))
+          if debug: print(ma, combis[c][ma], probabilityTab[ma](int(combis[c][ma])))
           inten_v_i.append([ptot, Itemp])
           tau_v_i.append([ptot, Ttemp])
-          print('\nIntensity\n', inten_v_i[-1])
-          print('\nTau\n', tau_v_i[-1])
-          input()
+          if debug:
+            print('\nIntensity\n', inten_v_i[-1])
+            print('\nTau\n', tau_v_i[-1])
+            input()
           # for each combination of clumps: save probability p_x_i and related tau and
           # emissivity for each vobs and for each species
           if debug:
@@ -616,9 +620,10 @@ def I_calc(idx, pix, debug=False):
         #input(inten_v_i)
         I_v_i_Av = sum(inten_v_i[i][0] * inten_v_i[i][1] for i in range(len(inten_v_i)))
         tau_v_i_Av = -np.log(sum(tau_v_i[i][0] * np.exp(-tau_v_i[i][1] ) for i in range(len(tau_v_i)))) 
-        print(I_v_i_Av)
-        print(tau_v_i_Av)
-        input()
+        if debug:
+          print(I_v_i_Av)
+          print(tau_v_i_Av)
+          input()
         #print 'tau_v_i_Av', tau_v_i_Av
         #print len(tau_v_i_Av), type(tau_v_i_Av)
         #print 'I_v_i_Av', I_v_i_Av  
@@ -627,7 +632,7 @@ def I_calc(idx, pix, debug=False):
         inten_v.append(I_v_i_Av)
     tau   = sum(tau_v[i] for i in range(len(tau_v)))
     inten = sum(inten_v[i] for i in range(len(inten_v)))
-    if debug==False:
+    if debug:
       print(inten)
       print(tau)
       input()
