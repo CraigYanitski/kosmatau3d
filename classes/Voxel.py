@@ -58,20 +58,7 @@ class Voxel(object):
     self.__FUV = FUVfield(fuv)
     return
   def __str__(self):
-    iClump,tauClump,FUVclump = self.__clump.getEnsembleEmission()
-    iInterclump,tauInterclump,FUVinterclump = self.__interclump.getEnsembleEmission()
-    #try self.__FUV.getFUV():
-    return 'Voxel {}\n  ->Cartesian position: ({}, {}, {})\n'.format(self.__index, self.__x, self.__y, self.__z) + \
-                     '  ->mass {}\n'.format(self.__mass) + \
-                     '  ->intensity {}\n'.format(self.__intensity.sum(2).max(1)) + \
-                     '    -clump {}\n'.format(iClump.sum(2).max(1)) + \
-                     '    -interclump {}\n'.format(iInterclump.sum(2).max(1)) + \
-                     '  ->optical depth {}\n'.format(self.__opticalDepth.sum(2).max(1)) + \
-                     '    -clump {}\n'.format(tauClump.sum(2).max(1)) + \
-                     '    -interclump {}\n'.format(tauInterclump.sum(2).max(1)) + \
-                     '  ->FUV field {}'.format(self.__FUV.getFUV())
-    #except:
-    #  return 'Voxel {}\n  ->Cartesian position: ({}, {}, {})\n  ->mass {}\n  ->intensity {}\n  ->optical depth {}\n  ->FUV field {}'.format(self.__index, self.__x, self.__y, self.__z, self.__mass, 10**self.__intensity, 10**self.__opticalDepth, self.__FUV)
+    return 'Voxel {}'.format(self.__index)
 
   # PUBLIC
   def reloadModules(self):
@@ -127,6 +114,39 @@ class Voxel(object):
     if isinstance(FUVclump, FUVfield): self.__FUV = FUVfield(np.average(FUVclump.getFUV()+FUVinterclump.getFUV()))
     return
   def getEmission(self, verbose=False):
-    emission = ((self.__intensity).sum(0), (self.__opticalDepth).sum(0), self.__FUV)
+    emission = ((self.__intensity), (self.__opticalDepth), self.__FUV)
     if verbose: print(emission)
     return emission
+  def printVoxel(self):
+    iClump,tauClump,FUVclump = self.__clump.getEnsembleEmission()
+    iInterclump,tauInterclump,FUVinterclump = self.__interclump.getEnsembleEmission()
+    names = self.__species[0].getMolecules() + self.__species[1].getDust()
+    transitions = self.__species[0].getTransitions() + self.__species[1].getTransitions()
+    totalIntensity = np.array([names, transitions, self.__intensity.sum(2).max(1)]).T
+    clumpIntensity = np.array([names, transitions, iClump.sum(2).max(1)]).T
+    interclumpIntensity = np.array([names, transitions, iInterclump.sum(2).max(1)]).T
+    totalTau = np.array([names, transitions, self.__opticalDepth.sum(2).max(1)]).T
+    clumpTau = np.array([names, transitions, tauClump.sum(2).max(1)]).T
+    interclumpTau = np.array([names, transitions, tauInterclump.sum(2).max(1)]).T
+    print('\nVoxel {}\n  ->Cartesian position: ({}, {}, {})'.format(self.__index, self.__x, self.__y, self.__z))
+    print('  ->mass {} M_sol'.format(self.__mass))
+    print('  ->intensity')
+    for i in range(len(names)):
+      print('    {} {}: {}'.format(totalIntensity[i][0],totalIntensity[i][1],totalIntensity[i][2]))
+    print('    -clump')
+    for i in range(len(names)):
+      print('      {} {}: {}'.format(clumpIntensity[i][0],clumpIntensity[i][1],clumpIntensity[i][2]))
+    print('    -interclump')
+    for i in range(len(names)):
+      print('      {} {}: {}'.format(interclumpIntensity[i][0],interclumpIntensity[i][1],interclumpIntensity[i][2]))
+    print('  ->optical depth')
+    for i in range(len(names)):
+      print('    {} {}: {}'.format(totalTau[i][0],totalTau[i][1],totalTau[i][2]))
+    print('    -clump')
+    for i in range(len(names)):
+      print('      {} {}: {}'.format(clumpTau[i][0],clumpTau[i][1],clumpTau[i][2]))
+    print('    -interclump')
+    for i in range(len(names)):
+      print('      {} {}: {}'.format(interclumpTau[i][0],interclumpTau[i][1],interclumpTau[i][2]))
+    print('  ->FUV field {}'.format(self.__FUV.getFUV()))
+    return

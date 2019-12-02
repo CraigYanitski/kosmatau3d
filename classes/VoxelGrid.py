@@ -1,6 +1,6 @@
 import numpy as np
 from tqdm import tqdm
-import progressbar as pb
+#import progressbar as pb
 import importlib as il
 from Voxel import *
 from Interpolate import *
@@ -95,3 +95,6 @@ class VoxelGrid(object):
   def totalEmission(self):
     # Return the emission from all of the voxels, separated by observed velocity
     return np.array([self.__voxelIntensity,self.__voxelOpticalDepth])
+  def printVoxels(self):
+    for voxel in self.__voxels: voxel.printVoxel()
+    return
