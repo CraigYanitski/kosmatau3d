@@ -78,26 +78,26 @@ class Orientation(object):
         voxels.append(voxel)
         zPosition.append(z0)
         #if z:
-        factor = np.exp(-z**2/500.**2)
-        epsilon.append(factor*intensity/(self.__scale))
-        kappa.append(factor*tau/(self.__scale))
+        factor = 1#np.exp(-z**2/500.**2)      #this is to make the disk more centrally-located
+        epsilon.append(factor*intensity/(scale))
+        kappa.append(factor*tau/(scale))
         #else:
         #  epsilon.append(intensity/(self.__scale))
         #  kappa.append(tau/(self.__scale))
-        if verbose: print(tau, self.__scale)
-    i = np.argsort(zPosition)
-    if verbose: print(i)
+        if verbose: print(tau, scale)
+    i = np.argsort(zPosition)[::-1]
+    if verbose==False: print('voxels:', i)
     self.__losVoxels = []
     for idx in i:
       self.__losVoxels.append(voxels[idx])
-    self.__losZ = np.array(zPosition)[i[::-1]]
-    self.__epsilon = np.array(epsilon, dtype=np.float)[i[::-1]]
+    self.__losZ = np.array(zPosition)[i]
+    self.__epsilon = np.array(epsilon, dtype=np.float)[i]
     self.__epsilonStep = (self.__epsilon[1:]-self.__epsilon[:-1])/(scale)
-    self.__kappa = np.array(kappa, dtype=np.float)[i[::-1]]
+    self.__kappa = np.array(kappa, dtype=np.float)[i]
     self.__kappaStep = (self.__kappa[1:]-self.__kappa[:-1])/(scale)
     return
-  def calculateRadiativeTransfer(self, velocity, verbose=False):
-    intensity = np.full((1, 10), self.__backgroundI)
+  def calculateRadiativeTransfer(self, velocity, verbose=True):
+    intensity = np.full((10,7,51), self.__backgroundI)
     scale = self.__scale*3.086*10**18
     # Boolean indeces to separate how the intensity is calculated
     k0 = (self.__kappaStep==0)&(abs(self.__kappa[:-1]*self.__scale)<10**-10)
@@ -106,12 +106,13 @@ class Orientation(object):
     kEg = ~(k0|kg)&(self.__kappaStep>0)
     kEl = ~(k0|kg)&(self.__kappaStep<0)
     # Variables for utilising the E tilde tables
-    if verbose: print('\nkappa, kappa step:\n', self.__kappa, '\n', self.__kappaStep)
-    a = (self.__kappa[:-1]/np.sqrt(2*self.__kappaStep.astype(np.complex))).astype(np.complex)
-    b = ((self.__kappa[:-1]+self.__kappaStep*self.__scale)/np.sqrt(2*self.__scale)).astype(np.complex)
+    a = (self.__kappa[:-1]/np.sqrt(2*self.__kappaStep.astype(np.complex)))
+    b = ((self.__kappa[:-1]+self.__kappaStep*scale)/np.sqrt(2*self.__kappaStep.astype(np.complex)))
     if verbose: print(len(self.__losVoxels[:-1]))
     for i in range(len(self.__losVoxels[:-1])):
-      print('\nepsilon, epsilon steop, scale\n', type(self.__epsilon[i][0]), type(self.__epsilonStep[i][0]), type(scale))
+      if verbose:
+        print('\nkappa, kappa step:\n', self.__kappa[i], '\n', self.__kappaStep[i])
+        print('\nepsilon, epsilon step, scale\n', self.__epsilon[i], self.__epsilonStep[i], scale)
       if (self.__kappaStep[i]==0).any() & (abs(self.__kappa[i]*scale)<10**-10).any():
         intensity += self.__epsilon[i]*scale+0.5*self.__epsilonStep[i]*scale**2
       elif (self.__kappa[i]>10**3*abs(self.__kappaStep[i])*scale).any():
@@ -124,15 +125,16 @@ class Orientation(object):
         bE = np.array(list(self.Ereal(b[i])))
         intensity = (self.__epsilonStep[i]/self.__kappaStep[i]*(1-np.exp(-self.__kappa[i]*scale-self.__kappaStep[:-1][i]/2.*scale**2.)) - \
                          (self.__epsilon[i]*self.__kappaStep[i]-self.__epsilonStep[i]*self.__kappa[i])/self.__kappaStep[i] * \
-                         np.sqrt(np.pi/(2.*abs(self.__kappaStep[i]))) * \
+                         np.sqrt(np.pi/(2.*abs(self.__kappaStep[i].astype(np.complex)))) * \
                          (np.exp(a[i]**2.-b[i]**2.)*aE-bE) + \
                          intensity*np.exp(-self.__kappa[:-1][i]*scale-self.__kappaStep[i]/2.*scale**2.)).real 
       elif (self.__kappaStep[i]<0).any():
+        print('\na, b:\n', a[i], '\n', b[i])
         aE = np.array(list(self.Eimag(a[i])))
         bE = np.array(list(self.Eimag(b[i])))
         intensity = (self.__epsilonStep[i]/self.__kappaStep[i]*(1-np.exp(-self.__kappa[i]*scale-self.__kappaStep[i]/2.*scale**2.))\
                          -(self.__epsilon[i]*self.__kappaStep[i]-self.__epsilonStep[i]*self.__kappa[i])/self.__kappaStep[i] * \
-                         np.sqrt(np.pi/(2.*abs(self.__kappaStep[i])))* \
+                         np.sqrt(np.pi/(2.*abs(self.__kappaStep[i].astype(np.complex))))* \
                          (np.exp(a[i]**2.-b[i]**2.)*aE-bE) + \
                          intensity*np.exp(-self.__kappa[i]*scale-self.__kappaStep[i]/2.*scale**2.)).real
     return intensity
