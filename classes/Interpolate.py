@@ -33,6 +33,7 @@ class Interpolate(object):
     self.__FUVfieldInterpolation = self.__interpolateFUVfield()
 
   def __calculateGridInterpolation(self):
+    np.seterr(divide='ignore')
     nmuvI,I = self.__observations.tbCenterline
     nmuvTau,Tau = self.__observations.tauCenterline
     intensityInterpolation = []
@@ -133,7 +134,7 @@ class Interpolate(object):
       for i in speciesNumber:
         if self.__interpolation=='linear': intensity.append(10**self.__intensityInterpolation[i](points))
         elif self.__interpolation=='radial' or self.__interpolation=='cubic': intensity.append(10**self.__intensityInterpolation[i](points[0], points[1], points[2]))
-        if intensity[-1]<=0: intensity[-1] = 10**-100
+        if np.isnan(intensity[-1]): intensity[-1] = 10**-100
       if verbose:
         print('Calculated the intensity for {} species.'.format(len(speciesNumber)))
     else:
@@ -149,7 +150,7 @@ class Interpolate(object):
       for i in speciesNumber:
         if self.__interpolation=='linear': tau.append(10**self.__tauInterpolation[i](points))
         elif self.__interpolation=='radial' or self.__interpolation=='cubic': tau.append(10**self.__tauInterpolation[i](points[0], points[1], points[2]))
-        if tau[-1]==0: tau[-1] = 10**-100
+        if np.isnan(tau[-1]): tau[-1] = 10**-100
         elif tau[-1]<0:
           temp = tau[-1]
           tau[-1] = 10**-100
