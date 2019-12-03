@@ -13,7 +13,7 @@ import cmath
 import globals as gbl
 #end edit
 
-def rad_transfer(offset = np.array([0,0]), species = 0):
+def rad_transfer(offset=np.array([0,0]), species=0, verbose=False):
   '''
   Adapted from the Bruckmann version.
   Modified for optimisation on 18.10.2019 by Craig.
@@ -70,10 +70,10 @@ def rad_transfer(offset = np.array([0,0]), species = 0):
   n_steps = range(steps)
   for i in npoints:
     if gbl._globals['compound']['coordinates'][i][0] == offset[0] and \
-      gbl._globals['compound']['coordinates'][int(i)][1] == offset[1]: 
+      gbl._globals['compound']['coordinates'][int(i)][2] == offset[1]: 
       # if x and y position lie on line of sight          
       for j in n_position:
-        if gbl._globals['compound']['coordinates'][int(i)][2] == position[int(j)]:
+        if gbl._globals['compound']['coordinates'][int(i)][1] == position[int(j)]:
         # if z position coincides with integration position[j]
         # ensemble number i goes to position_newpos[j]
         # (filter out esembles relevant for los integration
@@ -239,8 +239,10 @@ def rad_transfer(offset = np.array([0,0]), species = 0):
         # print 'ds
         a = k/cmath.sqrt(2. * kstep)
         b = (k + kstep * ds)/cmath.sqrt(2. * kstep)
-        print('Kappa, kappa step:', k, kstep)
-        print('a, b:', a, b)
+        if verbose:
+          print('Kappa, kappa step:', k, kstep)
+          print('Epsilon, epsilon step:', ee, eestep)
+          print('a, b:', a, b)
         # print 'k:', k,'kstep:', kstep 
         # print 'ee', ee,'estep', eestep
         # print 'a:', a,'b:', b
@@ -268,8 +270,9 @@ def rad_transfer(offset = np.array([0,0]), species = 0):
     # print 'I', I
     # print 'I[-1]', I[-1]
     I_v.append(I[-1])
-  print('Integrated radiative transfer:', I_v)
-  input()
+  if verbose:
+    print('Integrated radiative transfer:', I_v)
+    input()
 
   #print 'integrated I for all velocities \n', I_v
   # pause = input('..rad_trans for one los done..')

@@ -666,11 +666,11 @@ def radTransfer(timed=True):
   t_init = time.time()    #a variable to time this section
   # Initialise the spectral cube
   x_length = gbl._globals['compound']['mapSize']['x']
-  y_length = gbl._globals['compound']['mapSize']['y']
+  y_length = gbl._globals['compound']['mapSize']['z']
   n_spe    = gbl._globals['compound']['nspe']
   n_step   = gbl._globals['compound']['nstep']
   x_offset = gbl._globals['compound']['offsets']['x']
-  y_offset = gbl._globals['compound']['offsets']['y']
+  y_offset = gbl._globals['compound']['offsets']['z']
   scale = gbl._globals['compound']['pixelsize']
   spec_cube = np.zeros(  (n_step,y_length,x_length) , dtype=np.float32 )
   hdu = fits.PrimaryHDU(spec_cube) # sets data as hdu-list
@@ -707,10 +707,12 @@ def radTransfer(timed=True):
     for x in xlength:   #for all x-Pos
       #print x+1, 'position out of:', x_length
       for y in ylength:   # for all y-Pos
-        print('Species, x, y:', sp, x, y)
+        #print('Species, x, y:', sp, x, y)
         yval = rt.rad_transfer(offset = [x - x_offset,y - y_offset], species = sp) #rad transfer for real pos
         for i in nstep:
           spec_cube[((i))][y][x] = yval[(i)]
+    np.set_printoptions(threshold=100000)
+    print(spec_cube.max())
     run = (time.time()-gbl._globals['runtimes']['start_rad_transfer'])
     if gbl._globals['verbose']: print('running ', run, 's of total estimated ',  run/((sp+1.)/gbl._globals['compound']['nspe']), 's')
     spec_name = gbl._globals['compound']['species'][sp] + '_' + \

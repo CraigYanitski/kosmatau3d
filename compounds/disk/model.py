@@ -20,7 +20,7 @@ scale = gbl._globals['compound']['pixelsize'] = 1000.0 / factor #voxel size in p
 #print 'cells in one dimension', (36*factor+1)
 x_length = 36*factor+1#37  number of elements/voxels along x axis,r*2+1 # odd-number
 y_length = 36*factor+1#37 # edge length of map (projection) can be lower for think galactic disk in 90 degree ancle
-y_length = 2*factor+1#37 # edge length of map (projection - increases last parts speed radiative transfer
+y_length = 4*factor+1#37 # edge length of map (projection - increases last parts speed radiative transfer
 z_length = 36*factor+1#37 #
 x_offset = (x_length-1)/2 #  to zentralize around zero
 y_offset = (y_length-1)/2 #  (length-1)/2
@@ -131,8 +131,8 @@ gbl._globals['binomial_poisson'] = True # 1
 # are the clump statistics in the source best described by a 
 # binomial or a poisson distribution? 1 means binomial, other
 # input means poisson 
-gbl._globals['compound']['los_start'] =  np.array([0, 0, -z_length], int)
-gbl._globals['compound']['los_end']   =  np.array([0, 0, z_length], int)
+gbl._globals['compound']['los_start'] =  np.array([0, 0, -y_length], int)
+gbl._globals['compound']['los_end']   =  np.array([0, 0, y_length], int)
 # define start and endpoint of line of sight.
 # line of sight has to be parallel to z axis (in positive direction)
 #gbl._globals['compound']['losoffsets'] = np.array([[-1, -1]]) #obsolete, fit cubes contains all possible LoS
