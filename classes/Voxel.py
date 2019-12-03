@@ -114,7 +114,7 @@ class Voxel(object):
     if isinstance(FUVclump, FUVfield): self.__FUV = FUVfield(np.average(FUVclump.getFUV()+FUVinterclump.getFUV()))
     return
   def getEmission(self, verbose=False):
-    emission = ((self.__intensity), (self.__opticalDepth), self.__FUV)
+    emission = ((self.__intensity.sum(2)), (self.__opticalDepth.sum(2)), self.__FUV)
     if verbose: print(emission)
     return emission
   def printVoxel(self):
