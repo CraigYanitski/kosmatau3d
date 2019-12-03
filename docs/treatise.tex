@@ -1,4 +1,6 @@
-\documentclass[amsmath,align]{paper}
+\documentclass[onecolumn]{article}
+\usepackage{amsmath,array}
+\usepackage[top=2.5cm,left=2.5cm,right=2.5cm,bottom=2.5cm,dvips]{geometry}
 \title{A treatise on the state of KOSMA-$\tau$ 3D}
 \author{Craig Yanitski}
 \date{}
@@ -7,45 +9,45 @@
   \section{From Silke's thesis...}
   The PDR emission is calculated from a probabilistic approach to the fractal PDR structure. The PDR is modeled from multiple instances of the spherical KOSMA-$\tau$ PDR simulations (hereafter called \textit{masspoints}). The probability is applied to how many (if any) of these masspoints can be seen. For observed element[sic] (read: \textit{molecule}). the intensity and optical depth depend on the observing velocity ($v_{obs}$) and the velocity of the masspoint ($v_i$).
   
-  \begin{align}
-    I_{x_i}(v_{obs}) =& \sum_{j=1}^{n_M} k_{j,i} \bar{I_{j,line}} \mathrm{exp}\big[-\frac{1}{2}\big(\frac{v_i-v_obs}{\sigma_{line,j}}\big)^2\big] \\
-    \tau_{x_i}(v_{obs}) =& \sum_{j=1}^{n_M} k_{j,i} \bar{\tau_{j,line}} \mathrm{exp}\big[-\frac{1}{2}\big(\frac{v_i-v_obs}{\sigma_{line,j}}\big)^2\big]
-  \end{align}
+  \begin{align*}
+    I_{x_i}(v_{obs}) =& \sum_{j=1}^{n_M} k_{j,i} \overline{I_{j,line}} \mathrm{exp}\big[-\frac{1}{2}\big(\frac{v_i-v_obs}{\sigma_{line,j}}\big)^2\big] \\
+    \tau_{x_i}(v_{obs}) =& \sum_{j=1}^{n_M} k_{j,i} \overline{\tau_{j,line}} \mathrm{exp}\big[-\frac{1}{2}\big(\frac{v_i-v_obs}{\sigma_{line,j}}\big)^2\big]
+  \end{align*}
   
   In this case, the intensity and optical depth are summed over the observed number ($k_{j,i}$) of each masspoint ($j$) at a particular velocity ($i$). This is combined with the probability of seeing an element[sic], $p_{x_i}$. Since we summed over the visible masspoints, this probability is a product of the probabilities of seeing each masspoint.
   
-  \begin{equation}
+  \begin{equation*}
     p_{x_i} = \prod_{j=1}^{n_M} B(k_{j,i}|p_{j,i}, N_{j,i})
-  \end{equation}
+  \end{equation*}
   
   Finally the emission of each element[sic] is combined, and the contribution from elements at different velocities summed-over.
   
-  \begin{align}
+  \begin{align*}
     \langle I \rangle_i(v_{obs}) =& \sum_{x_i} p_{x_i} I_{x_i} \\
     e^{-\langle \tau \rangle_i(v_{obs})} =& \sum_{x_i} p_{x_i} e^{-\tau_{x_i}}
-  \end{align}
+  \end{align*}
   
-  \begin{align}
+  \begin{align*}
     \langle I \rangle(v_{obs}) =& \sum_{i} I_i(v_{obs}) \\
     \langle \tau \rangle(v_{obs}) =& \sum_{i} \tau_i(v_{obs})
-  \end{align}
+  \end{align*}
   
   \section{The issues}
   On the implementation side, the probability of seeing different masspoints is calculated for each combination of masspoints (depending on how many can be seen). The probability is determined by the masspoint and its velocity: from the size of the masspoint compared to the projected area of the voxel ($p_{vox}=\frac{\pi R_j^2}{s^2}$ for voxel side length $s$) one can determine the expected number of masspoints that can be seen at a certain velocity ($\mu_{j,i}$) and its standard derivation[sic] ($\sigma_{j,i}$).
   
-  \begin{align}
+  \begin{align*}
     \mu_{j,i} =& N_j p_{vox} \\
     \sigma_{j,i} =& \sqrt{N_j p_{vox} (1-p_{vox})}
-  \end{align}
+  \end{align*}
   
   This is used to determine the combinations, as the number of masspoints seen is $\mu_{j,i} \pm 3\sigma_{j,i}$ to account for $\geq 98 \%$ of the mass at that velocity. The combinations are then summed over, using their respective probabilities $p_{x_i}$, where $x_i$ now refers to the masspoint and not the species. The issue with this (besides the change in nomenclature) is that it was implemented in a way such that the contribution in accumulated in each combination. For example, if there is a combination of $x_0 = 10 M_\odot$ and $x_1 = 100 M_\odot$ masspoints, the code yields $I_{x_0}$ for the 10 $M_\odot$ masspoint and $I_{x_0}+I_{x_1}$ for the 100 $M_\odot$ masspoint, while they are added separately with their probabilities. This is an erroneous treatment of the procedure, and contrasts what is written in the thesis.
   
   Beyond this, there is also an error with how the probability is treated. Following the new nomenclature where $x_i$ refers to a masspoint in a combination, the probability of seeing a particular combination is $p_{c,x_i} = \prod_{j=1}^{n_M} p_{j,x_i}$ for all the masspoints $n_M$ in the combination. Similar to how the emissions were accumulated over the combination, the probability is accumulated over all combinations. This forces the averaged expression to become:
   
-  \begin{align}
+  \begin{align*}
     \langle I \rangle_i(v_{obs}) =& \sum_{x_i} \prod_{c=0}^{x_i} p_{c,x_i} I_{x_i} \\
     e^{-\langle \tau \rangle_i(v_{obs})} =& \sum_{x_i} \prod_{c=0}^{x_i} p_{c,x_i} e^{-\tau_{x_i}}
-  \end{align}
+  \end{align*}
   
   This is clearly incorrect. Using the same two-masspoint example and considering a the combinations ((0,0), (0,1), (1,0), (1,1)), this method would have a product of all of the probabilities, when we are not looking for a probability of seeing all combinations at once (nor is that conceptually possible).
   
