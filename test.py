@@ -6,7 +6,7 @@ print(os.path.dirname(pathname))
 sys.path.append(os.path.abspath(os.path.dirname(pathname))+'/classes/')
 from Model import *
 species = ['13CO 10', 'C+ 1', 'CO 1', '13CO 1', 'O 2', 'Dust 1', 'Dust 2', 'Dust 3', 'Dust 4', 'Dust 5']
-kosma = Model(12, 12, 2,modelType='disk',resolution=1000)
+kosma = Model(12, 12, 3,modelType='disk',resolution=1000)
 kosma.addSpecies(species)
 kosma.initialiseModel()
 kosma.calculateEmission()
