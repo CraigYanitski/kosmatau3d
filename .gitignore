@@ -3,4 +3,4 @@ __pycache__/
 *.py[cod]
 *.log
 *.aux
-*.syntex.gz
+*.synctex.gz
