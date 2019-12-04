@@ -36,6 +36,8 @@ class Masspoint(object):
   def calculateEmission(self, velocity, vDispersion, verbose=False, debug=False, test=False):
     #velocity.resize((len(velocity), 1))
     velocityRange = np.linspace(velocity-3*vDispersion, velocity+3*vDispersion, num=7)      #a range of 7 is used to account for the observed velocity +/- 3 sigma
+    print(velocity)
+    input(velocityRange)
     if debug:
       input('Masspoint velocity argument:\n{}'.format(velocity))
       input('Masspoint velocity range variable:\n{}'.format(velocityRange))
@@ -72,8 +74,9 @@ class Masspoint(object):
     self.__intensity = (self.__intensity_xi).sum(0)
     self.__opticalDepth = (self.__opticalDepth_xi).sum(0)
     #self.__opticalDepth = -np.log((np.exp(-np.array(self.__opticalDepth_xi))).sum(0))
-    if debug:
-      print('\nIntensity, optical depth:\n{}\n{}\n{}\n{}\n'.format(self.__intensity.shape, self.__intensity, self.__opticalDepth.shape, self.__opticalDepth))
+    if debug==False:
+      np.set_printoptions(threshold=100000)
+      print('\nIntensity xi, optical depth xi:\n{}\n{}\n{}\n{}\n'.format(self.__intensity_xi.shape, self.__intensity_xi[:3,:,:], self.__opticalDepth_xi.shape, self.__opticalDepth_xi[:3,:,:]))
       input()
     if np.isnan(self.__intensity).any():
       print('\nThere is an invalid intensity:\n', interpolationPoint)

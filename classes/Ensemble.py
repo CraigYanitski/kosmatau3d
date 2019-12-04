@@ -21,11 +21,12 @@ class Ensemble(object):
     self.__species = species     #list of both moleculular and dust species
     self.__interpolations = interpolations
     self.__clumpType = clumpType     #type of mass in ensemble (clump or interclump medium)
-    self.__constants = Constants()
+    self.__constants = Constants(velocityNumber=vNumber)
     self.__velocityNumber = vNumber
     self.__flagCombination = combination
     self.__verbose = verbose
     self.__combinations = []    #list of combinations
+    self.__combinationIndeces = []
     self.__combinationObjects = []    #list of instances of Combination()
     self.__probability = []
     self.__intensity = 0        #ensemble-averaged intensity for each velocity
@@ -64,7 +65,7 @@ class Ensemble(object):
     return
   def __setVelocity(self, velocity):
     self.__velocity = velocity
-    self.__velocityStep = abs(velocity[-1]-velocity[-2])
+    self.__velocityStep = abs(self.__constants.velocityBins[-1]-self.__constants.velocityBins[-2])
     self.__velocityBins = np.linspace(-360, 360, self.__velocityNumber)
     return
   def __setVelocityDispersion(self, velocityDispersion):
@@ -177,7 +178,7 @@ class Ensemble(object):
     if verbose:
       print('\nCalculated combinations:\n', combinations)
     return combinations
-  def createCombinationObjects(self, verbose=False):
+  def createCombinationObjects(self, verbose=True):
     '''This function removes all of the unnecessary degenerate looping during this calculation.
        Of course it is possible because of the wonders of numpy.ndarray(). . .'''
     verbose = self.__verbose or verbose
@@ -193,8 +194,8 @@ class Ensemble(object):
     if verbose:
       print('velocity, mean, dispersion', self.__velocity, self.__velocity.mean(), self.__velocityDispersion)
     self.__deltaNji = (np.array([self.__Nj]).T/np.sqrt(2*np.pi)/self.__velocityDispersion*\
-                       (np.exp(-0.5*((self.__velocityBins-self.__velocity.mean())/self.__constants.ensembleDispersion)**2)).T*self.__velocityStep).max(1)
-    self.__deltaNji = np.array([self.__deltaNji]).T
+                       (np.exp(-0.5*((self.__constants.velocityBins-self.__velocity)/self.__constants.ensembleDispersion)**2)).T*self.__velocityStep)
+    #self.__deltaNji = np.array([self.__deltaNji]).T
     surfaceProbability = np.array(np.pi*self.__masspointRadii.T**2/self.__constants.pixelWidth**2)    #this is 'pTab' in the original code
     probableNumber = (self.__deltaNji*surfaceProbability.T)   #this is 'expectedValTab' in the original code
     try: standardDeviation = np.sqrt(self.__deltaNji*surfaceProbability.T*(1-surfaceProbability.T))    #this is 'standardDeriTab' in the original code
@@ -203,25 +204,31 @@ class Ensemble(object):
     if verbose:
       print('\nDelta Nji\n', self.__deltaNji)
       print('\nsuface probability, expected number, standard deviation:\n', surfaceProbability, '\n', probableNumber, '\n', standardDeviation)
+      input()
     #print(surfaceProbability, probableNumber, standardDeviation)
     lower = np.maximum(np.zeros([self.__masspoints.size, 1]), np.floor(probableNumber-self.__constants.nSigma*standardDeviation))
     upper = np.minimum(self.__deltaNji, np.ceil(probableNumber+self.__constants.nSigma*standardDeviation))
-    if verbose: print('\nupper,lower:\n',upper,'\n',lower)
+    if verbose:
+      print('\nupper,lower:\n',upper,'\n',lower)
     self.__masspointNumberRange = np.array([lower, upper]).T
-    if verbose: print('\nMasspoint number range:\n', self.__masspointNumberRange)
+    if verbose:
+      print('\nMasspoint number range:\n', self.__masspointNumberRange)
     self.__combinations = self.calculateCombinations()
-    if verbose: input(self.__combinations)
+    if verbose:
+      input(self.__combinations)
     #input(self.__velocity)
     #input(self.__velocityBins)
     #self.__probability = np.zeros((len(self.__combinations),2))
     if verbose: input('\nCombinations:\n{}\n'.format(self.__combinations))
     for i,combinations in enumerate(self.__combinations):
-      if verbose: print(combinations)
       self.__combinations[i] = np.array(combinations).T
+      if not combinations.any(): continue
+      if verbose: print(combinations)
       probability = []
       if verbose: print('\nEnsemble combinations:\n', combinations)
       for combination in self.__combinations[i]:
         combination = np.array([combination])
+        self.__combinationIndeces.append(i)
         if verbose:
           print('\nCombination:\n', combination)
           input()
@@ -248,13 +255,14 @@ class Ensemble(object):
             probability.append(po.poissonfunc(combination))
         else: probability.append([0, 0])
         if verbose:
-          print('probability:', probability[-1])
+          print('probability:', self.__probability[-1])
           input()
         if (probability[-1]==np.nan).any():
           print('\nThere is an invalid probability:', probability[-1], '\n')
           input()
-        self.__combinationObjects.append(Combination(self.__species, self.__interpolations, combination=combination.flatten(), masses=self.__masspoints, density=self.__masspointDensity, fuv=self.__FUV, probability=probability[-1]))
       self.__probability.append(probability)
+    for combination in self.__combinations[self.__combinationIndeces[0]]:
+      self.__combinationObjects.append(Combination(self.__species, self.__interpolations, combination=combination.flatten(), masses=self.__masspoints, density=self.__masspointDensity, fuv=self.__FUV, probability=self.__probability.prod(1)))
     #for i,combination in enumerate(self.__combinations): self.__probability[i] = self.__probability[i](combination)
     if verbose:
       print('\nProbability {}:\n{}\n'.format(len(self.__probability), self.__probability))

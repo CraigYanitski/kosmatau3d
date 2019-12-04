@@ -77,8 +77,8 @@ class Combination(object):
       print('\n', intensity, '\n\n', opticalDepth)
       input()
     if emission=='element':    #sum masspoints and prepare to average over combinations
-      self.__intensity = (self.__probability.prod()*intensityList.sum(0))
-      self.__opticalDepth = (self.__probability.prod()*np.exp(-tauList.sum(0)))
+      self.__intensity = (self.__probability*intensityList.sum(0))
+      self.__opticalDepth = (self.__probability*np.exp(-tauList.sum(0)))
     elif emission=='all':
       self.__intensity = (self.__probability.T*iList).sum(0)
       self.__opticalDepth = -np.log(self.__probability.T*(np.exp(-tauList))).sum(0) # WRONG
