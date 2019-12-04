@@ -393,6 +393,7 @@ def I_calc(idx, pix, debug=False):
     tau_v = []
     inten_v = []       
     for v in gbl._globals['compound']['ranges']['number vbin']:
+      print('velocity bin', gbl._globals['compound']['ranges']['vbin'][v])
       #print 'MA',ma
       #print 'V', v
       if DeltaN_ji[number_masspoints-1,v] == 0: #no masses at this velocity
@@ -406,7 +407,7 @@ def I_calc(idx, pix, debug=False):
       else:
         erster_durchlauf=1        
         #print ("\033c") #clear the terminal
-    # loop over v-bins 
+        # loop over v-bins 
         #print 'scaling velocity interval number: ', v
         #print 'pixel number', pix
         # pause = input('...')
@@ -415,7 +416,7 @@ def I_calc(idx, pix, debug=False):
         #print number_v
         #pause = input('number_v?')
         #if number_v[(number_masspoints-1)] == 0 : 
-          #print 'no mass with this v found'
+        #  print 'no mass with this v found'
         #print 'number_v', number_v
         #print 'Lbox, before scaling', Lbox
         #print 'number of clumps per mass interval, before scaling', number_v
@@ -620,7 +621,9 @@ def I_calc(idx, pix, debug=False):
         #input(inten_v_i)
         I_v_i_Av = sum(inten_v_i[i][0] * inten_v_i[i][1] for i in range(len(inten_v_i)))
         tau_v_i_Av = -np.log(sum(tau_v_i[i][0] * np.exp(-tau_v_i[i][1] ) for i in range(len(tau_v_i)))) 
-        if debug:
+        if debug==False:
+          for tau in tau_v_i:
+            print(tau[0])
           print(I_v_i_Av)
           print(tau_v_i_Av)
           input()
@@ -632,7 +635,8 @@ def I_calc(idx, pix, debug=False):
         inten_v.append(I_v_i_Av)
     tau   = sum(tau_v[i] for i in range(len(tau_v)))
     inten = sum(inten_v[i] for i in range(len(inten_v)))
-    if debug:
+    if debug==False:
+      print()
       print(inten)
       print(tau)
       input()
