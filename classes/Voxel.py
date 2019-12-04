@@ -44,7 +44,7 @@ class Voxel(object):
   def __setVelocity(self):
     self.__velocity = self.__interpolations.interpolateRotationalVelocity(self.__r)
     self.__velocityDispersion = self.__interpolations.interpolateVelocityDispersion(self.__r)
-    self.__velocityRange = np.linspace(self.__velocity-self.__velocityDispersion/2., self.__velocity+self.__velocityDispersion/2, self.__velocityNumber)
+    self.__velocityRange = np.linspace(self.__velocity-self.__velocityDispersion/2., self.__velocity+self.__velocityDispersion/2, num=self.__velocityNumber)
     return
   def __setDensity(self, densityFactor=2):
     self.__density = densityFactor*self.__interpolations.interpolateDensity(self.__r)
@@ -87,8 +87,8 @@ class Voxel(object):
     self.__setDensity()
     self.__setExtinction()
     self.__setFUV()
-    self.__clump.initialise(mass=self.__clumpMass, density=self.__density, velocity=self.__velocityRange, velocityDispersion=self.__velocityDispersion, FUV=self.__FUV, extinction=self.__UVextinction)
-    self.__interclump.initialise(mass=self.__interclumpMass, density=1911, velocity=self.__velocityRange, velocityDispersion=self.__velocityDispersion, FUV=self.__FUV, extinction=self.__UVextinction)
+    self.__clump.initialise(mass=self.__clumpMass, density=self.__density, velocity=self.__velocity, velocityDispersion=self.__velocityDispersion, FUV=self.__FUV, extinction=self.__UVextinction)
+    self.__interclump.initialise(mass=self.__interclumpMass, density=1911, velocity=self.__velocity, velocityDispersion=self.__velocityDispersion, FUV=self.__FUV, extinction=self.__UVextinction)
     return
   def getPosition(self):
     return (self.__x, self.__y, self.__z)
@@ -107,7 +107,8 @@ class Voxel(object):
       print('\nClump and interclump intensity:', iClump, iInterclump)
       print('\nClump and interclump optical depth:', tauClump, tauInterclump)
       input()
-    # Sum over 
+    # Sum over ensembles
+    input(iClump.sum(2))
     self.__intensity = (iClump+iInterclump)
     self.__opticalDepth = (tauClump+tauInterclump)
     if verbose: print('\nShape: ', self.__intensity.shape, '\n\n')
