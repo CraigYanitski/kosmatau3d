@@ -6,10 +6,11 @@ class Binomial():
   '''This is a classs taken directly from the work of Silke Andree-Labsch and Christoph Bruckmann.'''
   def __init__(self, n, p, debug=False):
     self.debug = debug
-    if self.debug: print(n)
     self.n = np.array(n, dtype=np.int).T
-    self.nIndeces = np.where(self.n>0)[0]   #this is used to isolate where in the velocity array there is a masspoint
-    if self.debug: print(self.nIndeces)
+    self.nIndeces = np.unique(np.where(self.n>0)[0])   #this is used to isolate where in the velocity array there is a masspoint
+    if self.debug:
+      print(n)
+      print(self.nIndeces, self.n[self.nIndeces])
     self.p = p
     return
   
@@ -24,13 +25,14 @@ class Binomial():
     >>> comb(20,14)
     38760
     '''
-    i = (k>self.n[self.nIndeces]-k).any(0)          # for smaller intermediate values
-    print(i)
+    i = np.where(self.n[self.nIndeces]-k<k)         # for smaller intermediate values
+    if self.debug: input(i)
     #iComb = i.any(1)
+    k = np.full((self.n[:,0].size, k.size), k)
     if self.debug:
-      print('\nCombination, n, p, i:\n{}\n{}\n{}\n{}\n'.format(k, self.n, self.p, i))
-    if k[:,i].size: k[:,i] = self.n[:,i]-k[:,i]   # use (n choose k) = (n choose n-k)
-    comb = np.zeros([self.n[:,0].size, k.size])
+      input('\nCombination, n, p, i:\n{}\n{}\n{}\n{}\n'.format(k, self.n, self.p, i))
+    if k[self.nIndeces][i].size: k[self.nIndeces][i] = self.n[self.nIndeces][i]-k[self.nIndeces][i]   # use (n choose k) = (n choose n-k)
+    comb = np.zeros([self.n[:,0].size, k[0,:].size])
     '''
     # This is the working version I had for two masspoints.
     for i in range(self.n[:,0].size):
@@ -55,21 +57,23 @@ class Binomial():
       # This needs to be fixed in the future...
       if self.n[0,:].size==1:
         if self.debug:
-          print('\n({}, {})\n'.format(int(self.n[:,0][i]-k[:,0]+1),int(self.n[:,0][i]+1)))
-        range1 = range(int(self.n[:,0][i]-k[:,0]+1),int(self.n[:,0][i]+1))
-        range2 = range(1,int(k[:,0]+1))
+          print('\n({}, {})\n'.format(int(self.n[:,0][i]-k[:,0][i]+1),int(self.n[:,0][i]+1)))
+        range1 = range(int(self.n[:,0][i]-k[:,0][i]+1),int(self.n[:,0][i]+1))
+        range2 = range(1,int(k[:,0][i]+1))
+        if self.debug:
+          print('\nRanges:\n1:  {}\n2:  {}\n'.format(range1, range2))
         if self.debug:
           print('\nRanges:\n{}\n{}\n'.format(range1, range2))
         comb[i] = np.array([ft.reduce(mul, range1, 1)/ft.reduce(mul, range2, 1)], dtype=np.float)
       elif self.n[0,:].size==2:
         if self.debug:
-          print('\n({}, {})\n'.format(int(self.n[:,1][i]-k[:,1]+1),int(self.n[:,1][i]+1)))
-        range1 = range(int(self.n[:,0][i]-k[:,0]+1),int(self.n[:,0][i]+1))
-        range2 = range(1,int(k[:,0]+1))
-        range3 = range(int(self.n[:,1][i]-k[:,1]+1),int(self.n[:,1][i]+1))
-        range4 = range(1,int(k[:,1]+1))
+          print('\n({}, {})\n'.format(int(self.n[:,1][i]-k[:,1][i]+1),int(self.n[:,1][i]+1)))
+        range1 = range(int(self.n[:,0][i]-k[:,0][i]+1),int(self.n[:,0][i]+1))
+        range2 = range(1,int(k[:,0][i]+1))
+        range3 = range(int(self.n[:,1][i]-k[:,1][i]+1),int(self.n[:,1][i]+1))
+        range4 = range(1,int(k[:,1][i]+1))
         if self.debug:
-          print('\nRanges:\n1:{}\n2:{}\n3:{}\n4:{}\n'.format(range1, range2, range3, range4))
+          print('\nRanges:\n1:  {}\n2:  {}\n3:  {}\n4:  {}\n'.format(range1, range2, range3, range4))
         comb[i] = np.array([ft.reduce(mul, range1, 1)/ft.reduce(mul, range2, 1), ft.reduce(mul, range3, 1)/ft.reduce(mul, range4, 1)], dtype=np.float)
       elif self.n[0,:].size==3:
         if self.debug:
@@ -170,5 +174,6 @@ class Binomial():
     k = np.array(k, dtype=np.int)
     #print (float(self.comb(k)) * self.p**k * (1-self.p)**(self.n-k))
     probability = self.comb(k) * self.p**k * (1-self.p)**(self.n-k)
+    probability[probability==1] = 0
     if self.debug: print('\nProbability\n{}'.format(probability))
-    return np.array([probability.mean(0)])
+    return probability
