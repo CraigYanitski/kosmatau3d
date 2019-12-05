@@ -4,10 +4,12 @@ from operator import mul
 class Binomial():
   '''class calculation binomial coefficients (choose) and function'''
   '''This is a classs taken directly from the work of Silke Andree-Labsch and Christoph Bruckmann.'''
-  def __init__(self, n, p, debug=False):
+  def __init__(self, n, p, debug=True):
     self.debug = debug
     if debug: print(n)
     self.n = np.array(n, dtype=np.int).T
+    self.nIndeces = np.where(self.n>0)[0]   #this is used to isolate where in the velocity array there is a masspoint
+    if debug: print(self.nIndeces)
     self.p = p
     return
   
@@ -22,7 +24,8 @@ class Binomial():
     >>> comb(20,14)
     38760
     '''
-    i = (k>self.n-k).any(0)          # for smaller intermediate values
+    i = (k>self.n[self.nIndeces]-k).any(0)          # for smaller intermediate values
+    print(i)
     #iComb = i.any(1)
     if self.debug:
       print('\nCombination, n, p, i:\n{}\n{}\n{}\n{}\n'.format(k, self.n, self.p, i))
