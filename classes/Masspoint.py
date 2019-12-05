@@ -33,9 +33,10 @@ class Masspoint(object):
     il.reload(Molecules)
     il.reload(Dust)
     return
-  def calculateEmission(self, velocity, vDispersion, verbose=False, debug=False, test=False):
+  def calculateEmission(self, velocity, vDispersion, verbose=False, debug=True, test=False):
     #velocity.resize((len(velocity), 1))
-    velocityRange = np.linspace(velocity-3*vDispersion, velocity+3*vDispersion, num=7)      #a range of 7 is used to account for the observed velocity +/- 3 sigma
+    velocityRange = self.__constants.velocityBins.resize(1,self.__constants.velocityBins.size)
+    #velocityRange = np.linspace(velocity-3*vDispersion, velocity+3*vDispersion, num=7)      #a range of 7 is used to account for the observed velocity +/- 3 sigma
     print(velocity)
     input(velocityRange)
     if debug:
@@ -55,16 +56,16 @@ class Masspoint(object):
         if verbose: print(element)
         if isinstance(element, Molecules):
           for index in element.getInterpolationIndeces():
-            self.__intensity_xi.append(self.__interpolations.interpolateIntensity(interpolationPoint, [index])*self.__number*np.exp(-1/2.*((velocityRange-velocity)/(self.__constants.clumpDispersion))**2))
-            self.__opticalDepth_xi.append(self.__interpolations.interpolateTau(interpolationPoint, [index])*self.__number*np.exp(-1/2.*((velocityRange-velocity)/(self.__constants.clumpDispersion))**2))
+            self.__intensity_xi.append((self.__interpolations.interpolateIntensity(interpolationPoint, [index])*self.__number*np.exp(-1/2.*((velocityRange-velocityRange.T)/(self.__constants.clumpDispersion))**2)).sum(0))
+            self.__opticalDepth_xi.append((self.__interpolations.interpolateTau(interpolationPoint, [index])*self.__number*np.exp(-1/2.*((velocityRange-velocityRange.T)/(self.__constants.clumpDispersion))**2)).sum(0))
             #self.__intensity_xi[-1] = self.__intensity_xi[-1].sum(1)
             #self.__opticalDepth_xi[-1] = self.__opticalDepth_xi[-1].sum(1)
             if test: input('\n{}\n'.format(self.__intensity_xi[-1].max()))
           if debug: input('intensity_xi:\n{}\n'.format(self.__intensity_xi[-1]))
         elif isinstance(element, Dust):
           for index in element.getInterpolationIndeces():
-            self.__intensity_xi.append(np.full((7, len(velocity)), self.__interpolations.interpolateIntensity(interpolationPoint, [index])*self.__number))
-            self.__opticalDepth_xi.append(np.full((7, len(velocity)), self.__interpolations.interpolateTau(interpolationPoint, [index])*self.__number))
+            self.__intensity_xi.append(np.full((7, len(velocityRange)), self.__interpolations.interpolateIntensity(interpolationPoint, [index])*self.__number))
+            self.__opticalDepth_xi.append(np.full((7, len(velocityRange)), self.__interpolations.interpolateTau(interpolationPoint, [index])*self.__number))
       if speciesNumber>1:
         self.__intensity_xi = np.array(self.__intensity_xi)
         self.__opticalDepth_xi = np.array(self.__opticalDepth_xi)

@@ -178,10 +178,11 @@ class Ensemble(object):
     if verbose:
       print('\nCalculated combinations:\n', combinations)
     return combinations
-  def createCombinationObjects(self, verbose=True):
+  def createCombinationObjects(self, verbose=False, debug=False):
     '''This function removes all of the unnecessary degenerate looping during this calculation.
        Of course it is possible because of the wonders of numpy.ndarray(). . .'''
     verbose = self.__verbose or verbose
+    if verbose: print(self.__clumpType)
     self.__Nj = (self.__massObserved*10.**(self.__masspoints*(1-self.__constants.alpha))) / sum(10.**(self.__masspoints*(2-self.__constants.alpha)))
     if verbose:
       print('\nNj:\n', self.__Nj)
@@ -223,50 +224,75 @@ class Ensemble(object):
     for i,combinations in enumerate(self.__combinations):
       self.__combinations[i] = np.array(combinations).T
       if not combinations.any(): continue
+      self.__combinationIndeces.append(i)
       if verbose: print(combinations)
       probability = []
       if verbose: print('\nEnsemble combinations:\n', combinations)
       for combination in self.__combinations[i]:
         combination = np.array([combination])
-        self.__combinationIndeces.append(i)
         if verbose:
           print('\nCombination:\n', combination)
           input()
         if self.__flagCombination=='binomial':
+          if verbose:
+            print(probableNumber.shape, combination.shape)
           if np.any(probableNumber>self.__constants.pnGauss) and np.any(self.__deltaNji>self.__constants.nGauss):
             # use gauss!
-            g = Gauss(probableNumber, standardDeviation)
+            if verbose:
+              print('Gauss')
+            g = Gauss(probableNumber, standardDeviation, debug=debug)
             probability.append(g.gaussfunc(combination))
             #print('gauss!!...')
           else:
-            # use binomial 
+            # use binomial
+            if verbose:
+              print('Binomial')
             # <<This will likely print an error when there are more masspoints>>
-            b = Binomial(self.__deltaNji, surfaceProbability, debug=False) # n and p for binominal 
+            b = Binomial(self.__deltaNji, surfaceProbability, debug=debug) # n and p for binominal 
             probability.append(b.binomfunc(combination))
         elif self.__flagCombination=='poisson':
           if np.any(probableNumber>self.__constants.pnGauss) and np.any(self.__deltaNji>self.__constants.nGauss):
             # use gauss
+            if verbose:
+              print('Gauss')
             g = Gauss(probableNumber, standardDeviation)
             probability.append(g.gaussfunc(combination))
-            #print('gauss!!...')
           else:
             # use poisson
+            if verbose:
+              print('Poisson')
             po = Poisson(probableNumber)
             probability.append(po.poissonfunc(combination))
-        else: probability.append([0, 0])
-        if verbose:
-          print('probability:', self.__probability[-1])
+        else: probability.append(np.zeros(len(self.__masspoints)))
+        if debug:
+          print('probability:', probability[-1])
           input()
-        if (probability[-1]==np.nan).any():
+        if (np.array(probability[-1])==np.nan).any():
           print('\nThere is an invalid probability:', probability[-1], '\n')
           input()
       self.__probability.append(probability)
-    for combination in self.__combinations[self.__combinationIndeces[0]]:
-      self.__combinationObjects.append(Combination(self.__species, self.__interpolations, combination=combination.flatten(), masses=self.__masspoints, density=self.__masspointDensity, fuv=self.__FUV, probability=self.__probability.prod(1)))
-    #for i,combination in enumerate(self.__combinations): self.__probability[i] = self.__probability[i](combination)
+    self.__combinationIndeces = np.array(self.__combinationIndeces)
     if verbose:
-      print('\nProbability {}:\n{}\n'.format(len(self.__probability), self.__probability))
+      print('\nProbability ({}):\n{}\n'.format(len(self.__probability), self.__probability))
+      print('Combination indeces:\n{}\n'.format(self.__combinationIndeces))
+      print('Combination sizes:\n{}\n'.format(np.array(list(self.__combinations[i].size for i in self.__combinationIndeces))))
       input()
+    if (np.array(list(self.__combinations[i].size for i in self.__combinationIndeces))==self.__combinations[self.__combinationIndeces[0]].size).all():
+      self.__probability = np.array(self.__probability)
+      for combination in self.__combinations[self.__combinationIndeces[0]]:
+        self.__combinationObjects.append(Combination(self.__species, self.__interpolations, combination=combination.flatten(), masses=self.__masspoints, density=self.__masspointDensity, fuv=self.__FUV, probability=self.__probability.prod(1)))
+    else:
+      for i in self.__combinationIndeces:
+        idx = np.where(self.__combinationIndeces==i)[0][0]
+        self.__probability[idx] = np.array(self.__probability[idx])
+        for j,combination in enumerate(self.__combinations[i]):
+          if verbose:
+            print('Combination probability:\n', type((self.__probability[idx])[j]))
+            print('Combination probability shape: ', (self.__probability[idx]).shape)
+            if len((self.__probability[idx])[0])>1: print((self.__probability[idx]).prod(1))
+            else: print(self.__probability[idx].prod(1))
+          self.__combinationObjects.append(Combination(self.__species, self.__interpolations, combination=combination.flatten(), masses=self.__masspoints, density=self.__masspointDensity, fuv=self.__FUV, probability=(self.__probability[idx])[j].prod(1)))
+    #for i,combination in enumerate(self.__combinations): self.__probability[i] = self.__probability[i](combination)
     return
   def initialiseEnsemble(self):
 

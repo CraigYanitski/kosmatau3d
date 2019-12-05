@@ -64,7 +64,7 @@ class Combination(object):
     for i,masspoint in enumerate(self.__masspoints):
       if test:
         print(masspoint)
-        masspoint.calculateEmission(velocity, vDispersion, test=True)
+        masspoint.calculateEmission(velocity, vDispersion, test=False)
         input()
       else: masspoint.calculateEmission(velocity, vDispersion)
       (intensity,opticalDepth) = masspoint.getSpeciesEmission()
