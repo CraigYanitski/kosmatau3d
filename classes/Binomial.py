@@ -6,10 +6,10 @@ class Binomial():
   '''This is a classs taken directly from the work of Silke Andree-Labsch and Christoph Bruckmann.'''
   def __init__(self, n, p, debug=True):
     self.debug = debug
-    if debug: print(n)
+    if self.debug: print(n)
     self.n = np.array(n, dtype=np.int).T
     self.nIndeces = np.where(self.n>0)[0]   #this is used to isolate where in the velocity array there is a masspoint
-    if debug: print(self.nIndeces)
+    if self.debug: print(self.nIndeces)
     self.p = p
     return
   
