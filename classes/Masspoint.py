@@ -35,18 +35,19 @@ class Masspoint(object):
     return
   def calculateEmission(self, velocity, vDispersion, verbose=False, debug=True, test=False):
     #velocity.resize((len(velocity), 1))
-    velocityRange = self.__constants.velocityBins.resize(1,self.__constants.velocityBins.size)
+    velocityRange = self.__constants.velocityBins
     #velocityRange = np.linspace(velocity-3*vDispersion, velocity+3*vDispersion, num=7)      #a range of 7 is used to account for the observed velocity +/- 3 sigma
+    velocityRange.resize(1, velocityRange.size)
     print(velocity)
-    input(velocityRange)
     if debug:
-      input('Masspoint velocity argument:\n{}'.format(velocity))
-      input('Masspoint velocity range variable:\n{}'.format(velocityRange))
-      input('Masspoint velocity difference result:\n{}'.format(velocityRange-velocity))
+      print('Masspoint velocity argument:\n{}'.format(velocity))
+      print('Masspoint velocity range variable:\n{}'.format(velocityRange))
+      print('Masspoint velocity difference result:\n{}'.format(velocityRange-velocity))
+      input()
     speciesNumber = len(self.__species[0].getInterpolationIndeces()) + len(self.__species[1].getInterpolationIndeces())
     if self.__number==0:
-      self.__intensity_xi = np.full((speciesNumber, 7, len(velocity)), 10**-100)
-      self.__opticalDepth_xi = np.full((speciesNumber, 7, len(velocity)), 10**-100)
+      self.__intensity_xi = np.full((speciesNumber, velocityRange.size, velocityRange.size), 10**-100)
+      self.__opticalDepth_xi = np.full((speciesNumber, velocityRange.size, velocityRange.size), 10**-100)
     else:
       interpolationPoint = [self.__density, self.__mass, np.log10(self.__FUV.getFUV())]
       if debug==False:
@@ -64,8 +65,8 @@ class Masspoint(object):
           if debug: input('intensity_xi:\n{}\n'.format(self.__intensity_xi[-1]))
         elif isinstance(element, Dust):
           for index in element.getInterpolationIndeces():
-            self.__intensity_xi.append(np.full((7, len(velocityRange)), self.__interpolations.interpolateIntensity(interpolationPoint, [index])*self.__number))
-            self.__opticalDepth_xi.append(np.full((7, len(velocityRange)), self.__interpolations.interpolateTau(interpolationPoint, [index])*self.__number))
+            self.__intensity_xi.append(np.full((len(velocityRange), len(velocityRange)), self.__interpolations.interpolateIntensity(interpolationPoint, [index])*self.__number))
+            self.__opticalDepth_xi.append(np.full((len(velocityRange), len(velocityRange)), self.__interpolations.interpolateTau(interpolationPoint, [index])*self.__number))
       if speciesNumber>1:
         self.__intensity_xi = np.array(self.__intensity_xi)
         self.__opticalDepth_xi = np.array(self.__opticalDepth_xi)

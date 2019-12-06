@@ -19,6 +19,8 @@ class Combination(object):
     for i,mass in enumerate(masses):
       masspoint = Masspoint(self.__species, self.__interpolations, density=self.__density[i], mass=mass, fuv=fuv, number=self.__combination[i])
       self.__masspoints.append(masspoint)    #list of masses in the combination
+    self.__intensityList = []
+    self.__opticalDepthList = []
     self.__intensity = []             #velocity-averaged intensity of this combination of masspoints
     self.__opticalDepth = []          #velocity-averaged optical depth of this combination of masspoints
     self.__probability = probability            #the probability of this combination of masspoints
@@ -60,7 +62,7 @@ class Combination(object):
       print(self.__combination)
       input()
     intensityList = []
-    tauList = []
+    opticalDepthList = []
     for i,masspoint in enumerate(self.__masspoints):
       if test:
         print(masspoint)
@@ -69,21 +71,24 @@ class Combination(object):
       else: masspoint.calculateEmission(velocity, vDispersion)
       (intensity,opticalDepth) = masspoint.getSpeciesEmission()
       intensityList.append(intensity)
-      tauList.append(opticalDepth)
-    intensityList = np.array(intensityList)
-    tauList = np.array(tauList)
+      opticalDepthList.append(opticalDepth)
+    self.__intensityList = np.array(intensityList)
+    self.__opticalDepthList = np.array(opticalDepthList)
     if debug:
       print('\nProbability:', self.__probability)
       print('\n', intensity, '\n\n', opticalDepth)
       input()
     if emission=='element':    #sum masspoints and prepare to average over combinations
-      self.__intensity = (self.__probability*intensityList.sum(0))
-      self.__opticalDepth = (self.__probability*np.exp(-tauList.sum(0)))
+      if probability.size==1:
+        self.__intensity = (self.__probability*self.__intensityList.sum(0))
+        self.__opticalDepth = (self.__probability*np.exp(-self.__opticalDepthList.sum(0)))
+      else:
+        self.__intensity = sum(self.__probability[i]*self.__intensityList.sum(0) for i in self.__probability)
+        self.__opticalDepth = sum(self.__probability[i]*np.exp(-self.__opticalDepthList.sum(0)) for i in self.__probability)
+    # The next if statement is incorrect and will be removed soon
     elif emission=='all':
-      self.__intensity = (self.__probability.T*iList).sum(0)
-      self.__opticalDepth = -np.log(self.__probability.T*(np.exp(-tauList))).sum(0) # WRONG
-    #self.__intensity = np.array(self.__intensity)
-    #self.__opticalDepth = np.array(self.__opticalDepth)
+      self.__intensity = (self.__probability.T*self.__iList).sum(0)
+      self.__opticalDepth = -np.log(self.__probability.T*(np.exp(-tauList))).sum(0)
     if debug:
       print(self.__intensity, self.__opticalDepth)
       input()

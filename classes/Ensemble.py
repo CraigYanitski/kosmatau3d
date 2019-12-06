@@ -144,7 +144,8 @@ class Ensemble(object):
     dimension = len(self.__masspointNumberRange[0])
     ranges = self.__masspointNumberRange
     if verbose:
-      input('\nMasspoint Ranges:\n', ranges)
+      print('\nMasspoint Ranges:\n{}\n'.format(ranges))
+      input()
     ranges[:,:,1] += 1
     combinations = []
     for i in range(len(ranges)):
@@ -195,7 +196,7 @@ class Ensemble(object):
     if verbose:
       print('velocity, mean, dispersion', self.__velocity, self.__velocity.mean(), self.__velocityDispersion)
     self.__deltaNji = (np.array([self.__Nj]).T/np.sqrt(2*np.pi)/self.__velocityDispersion*\
-                       (np.exp(-0.5*((self.__constants.velocityBins-self.__velocity)/self.__constants.ensembleDispersion)**2)).T*self.__velocityStep)
+                       (np.exp(-0.5*((self.__constants.velocityBins-self.__velocity)/self.__constants.ensembleDispersion)**2)).T*self.__velocityStep).round()
     #self.__deltaNji = np.array([self.__deltaNji]).T
     surfaceProbability = np.array(np.pi*self.__masspointRadii.T**2/self.__constants.pixelWidth**2)    #this is 'pTab' in the original code
     probableNumber = (self.__deltaNji*surfaceProbability.T)   #this is 'expectedValTab' in the original code
@@ -213,17 +214,19 @@ class Ensemble(object):
       print('\nupper,lower:\n',upper,'\n',lower)
     self.__masspointNumberRange = np.array([lower, upper]).T
     if verbose:
-      print('\nMasspoint number range:\n', self.__masspointNumberRange)
+      print('\nMasspoint number range:\n', self.__masspointNumberRange.round())
     self.__combinations = self.calculateCombinations()
     if verbose:
       input(self.__combinations)
     #input(self.__velocity)
     #input(self.__velocityBins)
     #self.__probability = np.zeros((len(self.__combinations),2))
+    largestCombination = (self.__masspointNumberRange[:,:,1]-self.__masspointNumberRange[:,:,0]).max()
+    largestCombinationIndex = np.where(self.__masspointNumberRange==largestCombination)[0][0]
     if verbose: input('\nCombinations:\n{}\n'.format(self.__combinations))
-    for i,combinations in enumerate(self.__combinations):
+    for i,combinations in enumerate(self.__combinations):   #loop over combinations of masspoints in each velocity
       self.__combinations[i] = np.array(combinations).T
-      if not combinations.any(): continue
+      if not combinations.any(): continue   #skip this loop if there are no masspoints at this velocity
       self.__combinationIndeces.append(i)
       if verbose: print(combinations)
       probability = []
@@ -263,35 +266,50 @@ class Ensemble(object):
               print('Poisson')
             po = Poisson(probableNumber)
             probability.append(po.poissonfunc(combination))
-        else: probability.append(np.zeros(len(self.__masspoints)))
+      while(len(probability) < largestCombination):
+        probability.append(np.zeros(probability[-1].shape))
         if debug:
-          print('probability:', probability[-1])
+          print(len(probability), probability[-1].shape)
           input()
-        if (np.array(probability[-1])==np.nan).any():
-          print('\nThere is an invalid probability:', probability[-1], '\n')
-          input()
-      self.__probability.append(probability)
+      print(len(probability))
+      #requiredLength = probability[0,:].size**2
+      #if probability[:,0].size!=requiredLength:     #This check will ensure the returned probability will have the correct size
+      #  probability = np.append(probability, np.zeros((requiredLength-probability[:,0].size, 2)))
+      if debug:
+        print('probability:', probability[-1])
+        input()
+      if (np.array(probability[-1])==np.nan).any():
+        print('\nThere is an invalid probability:', probability[-1], '\n')
+        input()
+      if debug:
+        for i in range(len(probability)): input(np.array(probability[i]).shape)
+      self.__probability.append(np.array(probability))
     self.__combinationIndeces = np.array(self.__combinationIndeces)
+    self.__probability = np.array(self.__probability)
+    input(self.__probability.shape)
+    if debug:
+      for i in range(len(probability)): input(np.array(probability[i]).shape)
     if verbose:
-      print('\nProbability ({}):\n{}\n'.format(len(self.__probability), self.__probability))
+      print('\nProbability ({}):\n{}\n'.format(np.shape(self.__probability), self.__probability))
+      for i in range(len(self.__probability)): print('Probability shapes:\n{}\n'.format(np.array(self.__probability[i].shape)))
+      if debug: input()
       print('Combination indeces:\n{}\n'.format(self.__combinationIndeces))
-      print('Combination sizes:\n{}\n'.format(np.array(list(self.__combinations[i].size for i in self.__combinationIndeces))))
-      input()
-    if (np.array(list(self.__combinations[i].size for i in self.__combinationIndeces))==self.__combinations[self.__combinationIndeces[0]].size).all():
-      self.__probability = np.array(self.__probability)
-      for combination in self.__combinations[self.__combinationIndeces[0]]:
-        self.__combinationObjects.append(Combination(self.__species, self.__interpolations, combination=combination.flatten(), masses=self.__masspoints, density=self.__masspointDensity, fuv=self.__FUV, probability=self.__probability.prod(1)))
-    else:
-      for i in self.__combinationIndeces:
-        idx = np.where(self.__combinationIndeces==i)[0][0]
-        self.__probability[idx] = np.array(self.__probability[idx])
-        for j,combination in enumerate(self.__combinations[i]):
-          if verbose:
-            print('Combination probability:\n', type((self.__probability[idx])[j]))
-            print('Combination probability shape: ', (self.__probability[idx]).shape)
-            if len((self.__probability[idx])[0])>1: print((self.__probability[idx]).prod(1))
-            else: print(self.__probability[idx].prod(1))
-          self.__combinationObjects.append(Combination(self.__species, self.__interpolations, combination=combination.flatten(), masses=self.__masspoints, density=self.__masspointDensity, fuv=self.__FUV, probability=(self.__probability[idx])[j].prod(1)))
+      for i in self.__combinationIndeces: print('Combination sizes:\n{}\n'.format(np.array(self.__combinations[i].size)))
+      if debug: input()
+    #if (np.array(list(self.__combinations[i].size for i in self.__combinationIndeces))==self.__combinations[self.__combinationIndeces[0]].size).all():
+    for combination in self.__combinations[largestCombinationIndex]:
+      self.__combinationObjects.append(Combination(self.__species, self.__interpolations, combination=combination.flatten(), masses=self.__masspoints, density=self.__masspointDensity, fuv=self.__FUV, probability=self.__probability.prod(2)))
+    #else:
+    #  for i in self.__combinationIndeces:
+    #    idx = np.where(self.__combinationIndeces==i)[0][0]
+    #    self.__probability[idx] = np.array(self.__probability[idx])
+    #    for j,combination in enumerate(self.__combinations[i]):
+    #      if verbose:
+    #        print('Combination probability:\n', type((self.__probability[idx])[j]))
+    #        print('Combination probability shape: ', (self.__probability[idx]).shape)
+    #        if len((self.__probability[idx])[0])>1: print((self.__probability[idx]).prod(1))
+    #        else: print(self.__probability[idx].prod(1))
+    #      self.__combinationObjects.append(Combination(self.__species, self.__interpolations, combination=combination.flatten(), masses=self.__masspoints, density=self.__masspointDensity, fuv=self.__FUV, probability=(self.__probability[idx])[j].prod(1)))
     #for i,combination in enumerate(self.__combinations): self.__probability[i] = self.__probability[i](combination)
     return
   def initialiseEnsemble(self):
