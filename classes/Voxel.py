@@ -108,7 +108,6 @@ class Voxel(object):
       print('\nClump and interclump optical depth:', tauClump, tauInterclump)
       input()
     # Sum over ensembles
-    input(iClump.sum(2))
     self.__intensity = (iClump+iInterclump)
     self.__opticalDepth = (tauClump+tauInterclump)
     if verbose: print('\nShape: ', self.__intensity.shape, '\n\n')
