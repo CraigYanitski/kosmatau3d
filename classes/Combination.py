@@ -83,13 +83,16 @@ class Combination(object):
         self.__intensity = (self.__probability*self.__intensityList.sum(0))
         self.__opticalDepth = (self.__probability*np.exp(-self.__opticalDepthList.sum(0)))
       else:
-        print('Probability: {}\n'.format(self.__probability.shape))
+        #print('Probability: {}\n'.format(self.__probability.shape))
+        #print('Intensity: {}\n'.format(self.__intensityList.shape))
         #self.__probability.resize(self.__probability.size, 1)
-        for element in range(len(self.__intensityList)):
-          self.__intensity.append((self.__probability*self.__intensityList[element].sum(0)).sum(0))
-          self.__opticalDepth.append((self.__probability*np.exp(-self.__opticalDepthList[element].sum(0))).sum(0))
+        for element in range(len(self.__species[0].getInterpolationIndeces()) + len(self.__species[1].getInterpolationIndeces())):
+          self.__intensity.append((self.__probability*self.__intensityList[:,element,:,:].sum(0)))
+          self.__opticalDepth.append((self.__probability*np.exp(-self.__opticalDepthList[:,element,:,:].sum(0))))
         self.__intensity = np.array(self.__intensity)
         self.__opticalDepth = np.array(self.__opticalDepth)
+        self.__intensity[self.__intensity==0] = 10**-100
+        self.__opticalDepth[self.__opticalDepth==0] = 10**-100
     # The next if statement is incorrect and will be removed soon
     elif emission=='all':
       self.__intensity = (self.__probability.T*self.__intensityList.sum(0)).sum(2)
