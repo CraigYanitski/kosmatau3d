@@ -33,12 +33,12 @@ class Masspoint(object):
     il.reload(Molecules)
     il.reload(Dust)
     return
-  def calculateEmission(self, velocity, vDispersion, verbose=False, debug=True, test=False):
+  def calculateEmission(self, velocity, vDispersion, verbose=False, debug=False, test=False):
     #velocity.resize((len(velocity), 1))
     velocityRange = self.__constants.velocityBins
     #velocityRange = np.linspace(velocity-3*vDispersion, velocity+3*vDispersion, num=7)      #a range of 7 is used to account for the observed velocity +/- 3 sigma
     velocityRange.resize(1, velocityRange.size)
-    print(velocity)
+    #print(velocity)
     if debug:
       print('Masspoint velocity argument:\n{}'.format(velocity))
       print('Masspoint velocity range variable:\n{}'.format(velocityRange))
@@ -46,8 +46,8 @@ class Masspoint(object):
       input()
     speciesNumber = len(self.__species[0].getInterpolationIndeces()) + len(self.__species[1].getInterpolationIndeces())
     if self.__number==0:
-      self.__intensity_xi = np.full((speciesNumber, velocityRange.size), 10**-100)
-      self.__opticalDepth_xi = np.full((speciesNumber, velocityRange.size), 10**-100)
+      self.__intensity_xi = np.full((speciesNumber, velocityRange.size, velocityRange.size), 10**-100)
+      self.__opticalDepth_xi = np.full((speciesNumber, velocityRange.size, velocityRange.size), 10**-100)
     else:
       interpolationPoint = [self.__density, self.__mass, np.log10(self.__FUV.getFUV())]
       if debug==False:
@@ -57,16 +57,16 @@ class Masspoint(object):
         if verbose: print(element)
         if isinstance(element, Molecules):
           for index in element.getInterpolationIndeces():
-            self.__intensity_xi.append((self.__interpolations.interpolateIntensity(interpolationPoint, [index])*self.__number*np.exp(-1/2.*((velocityRange-velocityRange.T)/(self.__constants.clumpDispersion))**2)).sum(0))
-            self.__opticalDepth_xi.append((self.__interpolations.interpolateTau(interpolationPoint, [index])*self.__number*np.exp(-1/2.*((velocityRange-velocityRange.T)/(self.__constants.clumpDispersion))**2)).sum(0))
+            self.__intensity_xi.append((self.__interpolations.interpolateIntensity(interpolationPoint, [index])*self.__number*np.exp(-1/2.*((velocityRange-velocityRange.T)/(self.__constants.clumpDispersion))**2)))
+            self.__opticalDepth_xi.append((self.__interpolations.interpolateTau(interpolationPoint, [index])*self.__number*np.exp(-1/2.*((velocityRange-velocityRange.T)/(self.__constants.clumpDispersion))**2)))
             #self.__intensity_xi[-1] = self.__intensity_xi[-1].sum(1)
             #self.__opticalDepth_xi[-1] = self.__opticalDepth_xi[-1].sum(1)
             if test: input('\n{}\n'.format(self.__intensity_xi[-1].max()))
           if debug: input('intensity_xi:\n{}\n'.format(self.__intensity_xi[-1]))
         elif isinstance(element, Dust):
           for index in element.getInterpolationIndeces():
-            self.__intensity_xi.append(np.full((velocityRange.size), self.__interpolations.interpolateIntensity(interpolationPoint, [index])*self.__number))
-            self.__opticalDepth_xi.append(np.full((velocityRange.size), self.__interpolations.interpolateTau(interpolationPoint, [index])*self.__number))
+            self.__intensity_xi.append(np.full((velocityRange.size, velocityRange.size), self.__interpolations.interpolateIntensity(interpolationPoint, [index])*self.__number))
+            self.__opticalDepth_xi.append(np.full((velocityRange.size, velocityRange.size), self.__interpolations.interpolateTau(interpolationPoint, [index])*self.__number))
       if speciesNumber>1:
         self.__intensity_xi = np.array(self.__intensity_xi)
         self.__opticalDepth_xi = np.array(self.__opticalDepth_xi)
@@ -76,7 +76,7 @@ class Masspoint(object):
     self.__intensity = (self.__intensity_xi).sum(0)
     self.__opticalDepth = (self.__opticalDepth_xi).sum(0)
     #self.__opticalDepth = -np.log((np.exp(-np.array(self.__opticalDepth_xi))).sum(0))
-    if debug==False:
+    if debug:
       np.set_printoptions(threshold=100000)
       print('\nIntensity xi, optical depth xi:\n{}\n{}\n{}\n{}\n'.format(self.__intensity_xi.shape, self.__intensity_xi[:3,:,:], self.__opticalDepth_xi.shape, self.__opticalDepth_xi[:3,:,:]))
       input()
