@@ -218,88 +218,84 @@ class Ensemble(object):
     self.__combinations = self.calculateCombinations()
     if verbose:
       input(self.__combinations)
+    #self.__deltaNji.resize(1,2,51)
+    #probableNumber.resize(1,2,51)
+    #standardDeviation.resize(1,2,51)
     #input(self.__velocity)
     #input(self.__velocityBins)
     #self.__probability = np.zeros((len(self.__combinations),2))
-    largestCombination = ((self.__masspointNumberRange[:,:,1]-self.__masspointNumberRange[:,:,0]).prod(1)).max()
+    largestCombination = int(((self.__masspointNumberRange[:,:,1]-self.__masspointNumberRange[:,:,0]).prod(1)).max())
     largestCombinationIndex = np.where((self.__masspointNumberRange[:,:,1]-self.__masspointNumberRange[:,:,0]).prod(1)==largestCombination)[0][0]
+    probabilityList = []
     if verbose:
-      input('\nCombinations:\n{}\n'.format(self.__combinations))
-    for i,combinations in enumerate(self.__combinations):   #loop over combinations of masspoints in each velocity
+      print('\nCombinations:\n{}'.format(self.__combinations))
+      input('\nLargest number of combinations: {}\n'.format(largestCombination))
+    for i,combinations in enumerate(self.__combinations):   #loop over combinations of masspoints in each velocity bin
       self.__combinations[i] = np.array(combinations).T
-      if not combinations.any(): continue   #skip this loop if there are no masspoints at this velocity
-      self.__combinationIndeces.append(i)
-      if verbose: print(combinations)
       probability = []
-      if verbose: print('\nEnsemble combinations:\n', combinations)
-      for combination in self.__combinations[i]:
-        combination = np.array([combination])
-        if verbose:
-          print('\nCombination:\n', combination)
-          input()
-        if self.__flagCombination=='binomial':
+      self.__combinationIndeces.append(i)
+      if verbose:
+        print(combinations)
+        print('\nEnsemble combinations:\n', combinations)
+      if combinations.any():    #calculate the probability if there are any masspoints in this velocity bin
+        for combination in self.__combinations[i]:
+          combination = np.array([combination])
           if verbose:
-            print(probableNumber.shape, combination.shape)
-          if np.any(probableNumber>self.__constants.pnGauss) and np.any(self.__deltaNji>self.__constants.nGauss):
-            # use gauss!
+            print('\nCombination:\n', combination)
+            input()
+          if self.__flagCombination=='binomial':
             if verbose:
-              print('Gauss')
-            g = Gauss(probableNumber, standardDeviation, debug=debug)
-            probability.append(g.gaussfunc(combination))
-            #print('gauss!!...')
-          else:
-            # use binomial
-            if verbose:
-              print('Binomial')
-            # <<This will likely print an error when there are more masspoints>>
-            b = Binomial(self.__deltaNji, surfaceProbability, debug=debug) # n and p for binominal 
-            probability.append(b.binomfunc(combination))
-        elif self.__flagCombination=='poisson':
-          if np.any(probableNumber>self.__constants.pnGauss) and np.any(self.__deltaNji>self.__constants.nGauss):
-            # use gauss
-            if verbose:
-              print('Gauss')
-            g = Gauss(probableNumber, standardDeviation)
-            probability.append(g.gaussfunc(combination))
-          else:
-            # use poisson
-            if verbose:
-              print('Poisson')
-            po = Poisson(probableNumber)
-            probability.append(po.poissonfunc(combination))
+              print(probableNumber.shape, combination.shape)
+            if np.any(probableNumber[:,i]>self.__constants.pnGauss) and np.any(self.__deltaNji[:,i]>self.__constants.nGauss):
+              # use gauss!
+              if verbose:
+                print('Gauss')
+              g = Gauss(probableNumber[:,i], standardDeviation[:,i], debug=debug)
+              probability.append(g.gaussfunc(combination))
+              #print('gauss!!...')
+            else:
+              # use binomial
+              if verbose:
+                print('Binomial')
+              # <<This will likely print an error when there are more masspoints>>
+              b = Binomial(self.__deltaNji[:,i], surfaceProbability, debug=debug) # n and p for binominal 
+              probability.append(b.binomfunc(combination))
+          elif self.__flagCombination=='poisson':
+            if np.any(probableNumber[:,i]>self.__constants.pnGauss) and np.any(self.__deltaNji[:,i]>self.__constants.nGauss):
+              # use gauss
+              if verbose:
+                print('Gauss')
+              g = Gauss(probableNumber[:,i], standardDeviation[:,i])
+              probability.append(g.gaussfunc(combination))
+            else:
+              # use poisson
+              if verbose:
+                print('Poisson')
+              po = Poisson(probableNumber[:,i])
+              probability.append(po.poissonfunc(combination))
       while(len(probability) < largestCombination):
-        probability.append(np.zeros(probability[-1].shape))
+        probability.append(np.zeros((self.__masspoints.size)))
         if debug:
-          print(len(probability), probability[-1].shape)
+          print('Probability length:', len(probability), ', last element shape:', probability[-1].shape)
           input()
-      #print(len(probability))
-      #requiredLength = probability[0,:].size**2
-      #if probability[:,0].size!=requiredLength:     #This check will ensure the returned probability will have the correct size
-      #  probability = np.append(probability, np.zeros((requiredLength-probability[:,0].size, 2)))
-      if debug:
-        print('probability:', probability[-1])
-        input()
       if (np.array(probability[-1])==np.nan).any():
         print('\nThere is an invalid probability:', probability[-1], '\n')
         input()
       if debug:
         for i in range(len(probability)): input(np.array(probability[i]).shape)
-      self.__probability.append(np.array(probability))
+      probabilityList.append(probability)
     self.__combinationIndeces = np.array(self.__combinationIndeces)
-    self.__probability = np.array(self.__probability)
-    #input(self.__probability.shape)
+    self.__probability = np.array(probabilityList)
     if debug:
       for i in range(len(probability)): input(np.array(probability[i]).shape)
     if verbose:
       print('\nProbability ({}):\n{}\n'.format(np.shape(self.__probability), self.__probability))
-      for i in range(len(self.__probability)): print('Probability shapes:\n{}\n'.format(np.array(self.__probability[i].shape)))
-      if debug: input()
-      print('Combination indeces:\n{}\n'.format(self.__combinationIndeces))
-      for i in self.__combinationIndeces: print('Combination sizes:\n{}\n'.format(np.array(self.__combinations[i].size)))
-      if debug: input()
-    #if (np.array(list(self.__combinations[i].size for i in self.__combinationIndeces))==self.__combinations[self.__combinationIndeces[0]].size).all():
-    for combination in self.__combinations[largestCombinationIndex]:
-      self.__combinationObjects.append(Combination(self.__species, self.__interpolations, combination=combination.flatten(), masses=self.__masspoints, density=self.__masspointDensity, fuv=self.__FUV, probability=self.__probability.prod(2)))
+      if debug:
+        for i in range(len(self.__probability)): print('Probability shapes:\n{}\n'.format(np.array(self.__probability[i].shape)))
+        for i in self.__combinationIndeces: print('Combination sizes:\n{}\n'.format(np.array(self.__combinations[i].size)))
+        input()
+    for i,combination in enumerate(self.__combinations[largestCombinationIndex]):
+      self.__combinationObjects.append(Combination(self.__species, self.__interpolations, combination=combination.flatten(), masses=self.__masspoints, density=self.__masspointDensity, fuv=self.__FUV, probability=self.__probability.prod(2)[:,i]))
     #else:
     #  for i in self.__combinationIndeces:
     #    idx = np.where(self.__combinationIndeces==i)[0][0]
