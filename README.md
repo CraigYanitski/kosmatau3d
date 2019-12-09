@@ -14,4 +14,5 @@ Among other things, I believe I have successfully taken out the incredibly time-
 of the scipy function griddata() for each species for each masspoint in each voxel. I have replaced
 it with an initial call to either the scipy function LinearNDInterpolation() or Rbf() to create
 a list of functions that will interpolate the grid of data. This has greatly reduced the execution
-time of large, high-resolution models.
+time of large, high-resolution models. Besides this, I have correctly implemented matrix calculations
+using numpy arrays.
