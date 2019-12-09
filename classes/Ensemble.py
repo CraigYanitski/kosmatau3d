@@ -344,8 +344,10 @@ class Ensemble(object):
       print(opticalDepthResult)
       input()
     # Average over combinations 
+    #print(len(self.__combinationObjects))
     self.__intensity = intensityResult.sum(0)
-    self.__opticalDepth = -np.log(opticalDepthResult.sum(0))
+    #print(self.__intensity.shape)
+    self.__opticalDepth = -np.log((opticalDepthResult.sum(0)).astype(np.float))
     if debug:
       print('\nIntensity\n{}\nOptical depth\n{}\n'.format(self.__intensity, self.__opticalDepth))
       input()
