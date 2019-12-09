@@ -621,7 +621,7 @@ def I_calc(idx, pix, debug=False):
         #input(inten_v_i)
         I_v_i_Av = sum(inten_v_i[i][0] * inten_v_i[i][1] for i in range(len(inten_v_i)))
         tau_v_i_Av = -np.log(sum(tau_v_i[i][0] * np.exp(-tau_v_i[i][1] ) for i in range(len(tau_v_i)))) 
-        if debug==False:
+        if debug:
           for tau in tau_v_i:
             print(tau[0])
           print(I_v_i_Av)
@@ -636,9 +636,21 @@ def I_calc(idx, pix, debug=False):
     tau   = sum(tau_v[i] for i in range(len(tau_v)))
     inten = sum(inten_v[i] for i in range(len(inten_v)))
     if debug==False:
-      print()
-      print(inten)
-      print(tau)
+      print('Emission x_i (single masspoint at one observing velocity)')
+      print(np.shape(inten_x_i))
+      print(np.shape(tau_x_i))
+      print('Emission v_i Av (ensemble-averaged at one observing velocity)')
+      print(np.shape(I_v_i_Av))
+      print(np.shape(tau_v_i_Av))
+      print('Emission v_i (number of combinations, masspoints)')
+      print(np.shape(inten_v_i))
+      print(np.shape(tau_v_i))
+      print('Emission v (ensemble-averaged in voxel at all contributing velocities)')
+      print(np.shape(inten_v))
+      print(np.shape(tau_v))
+      print('Emission (ensemble-averaged in voxel at one observing velocity, summed over contributions)')
+      print(np.shape(inten))
+      print(np.shape(tau))
       input()
     #gbl._globals['compound']['ens'][pix].tau = tau
     #gbl._globals['compound']['ens'][pix].inten = inten 
