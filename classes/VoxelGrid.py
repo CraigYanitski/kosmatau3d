@@ -83,6 +83,8 @@ class VoxelGrid(object):
         self.__voxelOpticalDepth.append(emission[1])
         self.__voxelFUV.append(emission[2])
       progress.close()
+      self.__voxelIntensity = np.array(self.__voxelIntensity)
+      self.__voxelOpticalDepth = np.array(self.__voxelOpticalDepth)
     print('\nCalculation complete.\n')
     return
   def getVoxelNumber(self):
