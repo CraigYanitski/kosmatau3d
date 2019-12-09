@@ -221,9 +221,10 @@ class Ensemble(object):
     #input(self.__velocity)
     #input(self.__velocityBins)
     #self.__probability = np.zeros((len(self.__combinations),2))
-    largestCombination = (self.__masspointNumberRange[:,:,1]-self.__masspointNumberRange[:,:,0]).max()
-    largestCombinationIndex = np.where(self.__masspointNumberRange==largestCombination)[0][0]
-    if verbose: input('\nCombinations:\n{}\n'.format(self.__combinations))
+    largestCombination = ((self.__masspointNumberRange[:,:,1]-self.__masspointNumberRange[:,:,0]).prod(1)).max()
+    largestCombinationIndex = np.where((self.__masspointNumberRange[:,:,1]-self.__masspointNumberRange[:,:,0]).prod(1)==largestCombination)[0][0]
+    if verbose:
+      input('\nCombinations:\n{}\n'.format(self.__combinations))
     for i,combinations in enumerate(self.__combinations):   #loop over combinations of masspoints in each velocity
       self.__combinations[i] = np.array(combinations).T
       if not combinations.any(): continue   #skip this loop if there are no masspoints at this velocity
@@ -271,7 +272,7 @@ class Ensemble(object):
         if debug:
           print(len(probability), probability[-1].shape)
           input()
-      print(len(probability))
+      #print(len(probability))
       #requiredLength = probability[0,:].size**2
       #if probability[:,0].size!=requiredLength:     #This check will ensure the returned probability will have the correct size
       #  probability = np.append(probability, np.zeros((requiredLength-probability[:,0].size, 2)))
@@ -286,7 +287,7 @@ class Ensemble(object):
       self.__probability.append(np.array(probability))
     self.__combinationIndeces = np.array(self.__combinationIndeces)
     self.__probability = np.array(self.__probability)
-    input(self.__probability.shape)
+    #input(self.__probability.shape)
     if debug:
       for i in range(len(probability)): input(np.array(probability[i]).shape)
     if verbose:
