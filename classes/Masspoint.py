@@ -46,8 +46,8 @@ class Masspoint(object):
       input()
     speciesNumber = len(self.__species[0].getInterpolationIndeces()) + len(self.__species[1].getInterpolationIndeces())
     if self.__number==0:
-      self.__intensity_xi = np.full((speciesNumber, velocityRange.size, velocityRange.size), 10**-100)
-      self.__opticalDepth_xi = np.full((speciesNumber, velocityRange.size, velocityRange.size), 10**-100)
+      self.__intensity_xi = np.full((speciesNumber, velocityRange.size), 10**-100)
+      self.__opticalDepth_xi = np.full((speciesNumber, velocityRange.size), 10**-100)
     else:
       interpolationPoint = [self.__density, self.__mass, np.log10(self.__FUV.getFUV())]
       if debug==False:
@@ -65,8 +65,8 @@ class Masspoint(object):
           if debug: input('intensity_xi:\n{}\n'.format(self.__intensity_xi[-1]))
         elif isinstance(element, Dust):
           for index in element.getInterpolationIndeces():
-            self.__intensity_xi.append(np.full((len(velocityRange), len(velocityRange)), self.__interpolations.interpolateIntensity(interpolationPoint, [index])*self.__number))
-            self.__opticalDepth_xi.append(np.full((len(velocityRange), len(velocityRange)), self.__interpolations.interpolateTau(interpolationPoint, [index])*self.__number))
+            self.__intensity_xi.append(np.full((velocityRange.size), self.__interpolations.interpolateIntensity(interpolationPoint, [index])*self.__number))
+            self.__opticalDepth_xi.append(np.full((velocityRange.size), self.__interpolations.interpolateTau(interpolationPoint, [index])*self.__number))
       if speciesNumber>1:
         self.__intensity_xi = np.array(self.__intensity_xi)
         self.__opticalDepth_xi = np.array(self.__opticalDepth_xi)
