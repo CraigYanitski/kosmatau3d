@@ -2,6 +2,7 @@ import importlib as il
 import pprint
 import numpy as np
 import sys
+import gc
 from Combination import *
 from Binomial import *
 from Gauss import *
@@ -348,9 +349,13 @@ class Ensemble(object):
     self.__intensity = intensityResult.sum(0)
     #print(self.__intensity.shape)
     self.__opticalDepth = -np.log((opticalDepthResult.sum(0)).astype(np.float))
+    gc.collect()
     if debug:
       print('\nIntensity\n{}\nOptical depth\n{}\n'.format(self.__intensity, self.__opticalDepth))
       input()
+    del intensityResult
+    del opticalDepthResult
+    del result
     return
   def getEnsembleEmission(self):
     '''This returns the ensemble emission...nothing more.'''
