@@ -2,6 +2,7 @@ import numpy as np
 from tqdm import tqdm
 #import progressbar as pb
 import importlib as il
+import gc
 from Voxel import *
 from Interpolate import *
 class VoxelGrid(object):
@@ -76,6 +77,7 @@ class VoxelGrid(object):
     with tqdm(total=len(self.__voxels), desc='Voxel emissions', miniters=1, dynamic_ncols=True) as progress:
       for i,voxel in enumerate(self.__voxels):
         voxel.calculateEmission()
+        gc.collect()
         emission = voxel.getEmission()
         if verbose: print(emission)
         progress.update()
@@ -86,6 +88,9 @@ class VoxelGrid(object):
       self.__voxelIntensity = np.array(self.__voxelIntensity)
       self.__voxelOpticalDepth = np.array(self.__voxelOpticalDepth)
     print('\nCalculation complete.\n')
+    del emission
+    del progress
+    del voxel
     return
   def getVoxelNumber(self):
     return self.__voxelNumber
