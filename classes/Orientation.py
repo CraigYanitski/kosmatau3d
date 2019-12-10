@@ -1,4 +1,5 @@
 import numpy as np
+import copy as c
 import cmath
 import scipy.interpolate as interpolate
 import importlib as il
@@ -61,20 +62,20 @@ class Orientation(object):
       return
     for voxel in grid.allVoxels():
       x,y,z = voxel.getPosition()
-      intensity,tau,fuv = voxel.getEmission()
       if ('x' in dim) and ('y' in dim):
         x1 = x
         x2 = y
-        z0 = z
+        z0 = c.copy(z)
       elif ('x' in dim) and ('z' in dim):
         x1 = x
         x2 = z
-        z0 = y
+        z0 = c.copy(y)
       elif ('z' in dim) and ('y' in dim):
         x1 = z
         x2 = y
-        z0 = x
+        z0 = c.copy(x)
       if (x1<(self.__x1LoS+self.__scale/2.)) and (x1>(self.__x1LoS-self.__scale/2.)) and (x2<(self.__x2LoS+self.__scale/2.)) and (x2>(self.__x2LoS-self.__scale/2.)):
+        intensity,tau,fuv = voxel.getEmission()
         voxels.append(voxel)
         zPosition.append(z0)
         #if z:
@@ -86,7 +87,7 @@ class Orientation(object):
         #  kappa.append(tau/(self.__scale))
         if verbose: print(tau, scale)
     i = np.argsort(zPosition)[::-1]
-    if verbose==False: print('voxels:', i)
+    if verbose: print('voxels:', i)
     self.__losVoxels = []
     for idx in i:
       self.__losVoxels.append(voxels[idx])
@@ -97,7 +98,7 @@ class Orientation(object):
     self.__kappaStep = (self.__kappa[1:]-self.__kappa[:-1])/(scale)
     return
   def calculateRadiativeTransfer(self, velocity, verbose=False, test=True):
-    intensity = np.full((10,7), self.__backgroundI)
+    intensity = np.full(self.__kappa[0].shape, self.__backgroundI)
     scale = self.__scale*3.086*10**18
     # Boolean indeces to separate how the intensity is calculated
     k0 = (self.__kappaStep==0)&(abs(self.__kappa[:-1]*self.__scale)<10**-10)
@@ -106,15 +107,15 @@ class Orientation(object):
     kEg = ~(k0|kg)&(self.__kappaStep>0)
     kEl = ~(k0|kg)&(self.__kappaStep<0)
     # Variables for utilising the E tilde tables
-    a = (self.__kappa[:-1]/np.sqrt(2*self.__kappaStep.astype(np.complex)))
-    b = ((self.__kappa[:-1]+self.__kappaStep*scale)/np.sqrt(2*self.__kappaStep.astype(np.complex)))
+    a = (self.__kappa[:-1,:,:]/np.sqrt(2*self.__kappaStep.astype(np.complex)))
+    b = ((self.__kappa[:-1,:,:]+self.__kappaStep*scale)/np.sqrt(2*self.__kappaStep.astype(np.complex)))
     if verbose: print(len(self.__losVoxels[:-1]))
     for i in range(len(self.__losVoxels[:-1])):
-      k0 = (self.__kappaStep[i]==0)&(abs(self.__kappa[:-1][i]*self.__scale)<10**-10)
-      kg = self.__kappa[:-1][i]>10**3*abs(self.__kappaStep[i])*self.__scale
+      k0 = (self.__kappaStep[i,:,:]==0)&(abs(self.__kappa[:-1,:,:][i,:,:]*self.__scale)<10**-10)
+      kg = self.__kappa[:-1,:,:][i,:,:]>10**3*abs(self.__kappaStep[i,:,:])*self.__scale
       kE = ~(k0|kg)
-      kEg = ~(k0|kg)&(self.__kappaStep[i]>0)
-      kEl = ~(k0|kg)&(self.__kappaStep[i]<0)
+      kEg = ~(k0|kg)&(self.__kappaStep[i,:,:]>0)
+      kEl = ~(k0|kg)&(self.__kappaStep[i,:,:]<0)
       if verbose:
         print('i_k0\n', k0)
         print('i_kg\n', kg)
@@ -126,31 +127,31 @@ class Orientation(object):
         print('\nepsilon, epsilon step, scale\n', self.__epsilon[i], self.__epsilonStep[i], scale)
       if test:
         if k0.any():
-          intensity[k0] += self.__epsilon[:-1][i][k0]*scale+0.5*self.__epsilonStep[i][k0]*scale**2
+          intensity[k0] += self.__epsilon[:-1,:,:][i,:,:][k0]*scale+0.5*self.__epsilonStep[i,:,:][k0]*scale**2
         if kg.any():
-          intensity[kg] = np.exp(-self.__kappa[i][kg]*scale) * (intensity[kg] + \
-                             ((self.__epsilon[i][kg]*self.__kappa[i][kg]+self.__epsilonStep[i][kg]*(self.__kappa[i][kg]*scale-1))/(self.__kappa[i][kg]**2.))*np.exp(self.__kappa[i][kg]*scale) - \
-                             ((self.__epsilon[i][kg]*self.__kappa[i][kg]-self.__epsilonStep[i][kg])/(self.__kappa[i][kg]**2.)))
+          intensity[kg] = np.exp(-self.__kappa[i,:,:][kg]*scale) * (intensity[kg] + \
+                             ((self.__epsilon[i,:,:][kg]*self.__kappa[i,:,:][kg]+self.__epsilonStep[i,:,:][kg]*(self.__kappa[i,:,:][kg]*scale-1))/(self.__kappa[i,:,:][kg]**2.))*np.exp(self.__kappa[i,:,:][kg]*scale) - \
+                             ((self.__epsilon[i,:,:][kg]*self.__kappa[i,:,:][kg]-self.__epsilonStep[i,:,:][kg])/(self.__kappa[i,:,:][kg]**2.)))
         if kEg.any():
-          if verbose: print('\na, b:\n', a[i], '\n', b[i])
-          aE = np.array(list(self.Ereal(a[i][kEg])))
-          bE = np.array(list(self.Ereal(b[i][kEg])))
-          intensity[kEg] = (self.__epsilonStep[i][kEg]/self.__kappaStep[i][kEg]*(1-np.exp(-self.__kappa[:-1][i][kEg]*scale-self.__kappaStep[i][kEg]/2.*scale**2.)) - \
-                            (self.__epsilon[:-1][i][kEg]*self.__kappaStep[i][kEg]-self.__epsilonStep[i][kEg]*self.__kappa[:-1][i][kEg])/self.__kappaStep[i][kEg] * \
+          if verbose: print('\na, b:\n', a[i,:,:], '\n', b[i,:,:])
+          aE = np.array(list(self.Ereal(a[i,:,:][kEg])))
+          bE = np.array(list(self.Ereal(b[i,:,:][kEg])))
+          intensity[kEg] = (self.__epsilonStep[i,:,:][kEg]/self.__kappaStep[i,:,:][kEg]*(1-np.exp(-self.__kappa[:-1,:,:][i,:,:][kEg]*scale-self.__kappaStep[i,:,:][kEg]/2.*scale**2.)) - \
+                            (self.__epsilon[:-1,:,:][i,:,:][kEg]*self.__kappaStep[i,:,:][kEg]-self.__epsilonStep[i,:,:][kEg]*self.__kappa[:-1,:,:][i,:,:][kEg])/self.__kappaStep[i,:,:][kEg] * \
                             np.sqrt(np.pi/(2.*abs(self.__kappaStep[i][kEg].astype(np.complex)))) * \
-                            (np.exp(a[i]**2.-b[i]**2.)*aE-bE) + \
-                            intensity[kEg]*np.exp(-self.__kappa[:-1][i][kEg]*scale-self.__kappaStep[i][kEg]/2.*scale**2.)).real 
+                            (np.exp(a[i,:,:]**2.-b[i,:,:]**2.)*aE-bE) + \
+                            intensity[kEg]*np.exp(-self.__kappa[:-1][i,:,:][kEg]*scale-self.__kappaStep[i,:,:][kEg]/2.*scale**2.)).real 
         if kEl.any():
-          if verbose: print('\na, b:\n', a[i], '\n', b[i])
-          aE = np.array(list(self.Eimag(a[i][kEl])))
-          bE = np.array(list(self.Eimag(b[i][kEl])))
-          intensity[kEl] = (self.__epsilonStep[i][kEl]/self.__kappaStep[i][kEl]*(1-np.exp(-self.__kappa[:-1][i][kEl]*scale-self.__kappaStep[i][kEl]/2.*scale**2.))\
-                            -(self.__epsilon[:-1][i][kEl]*self.__kappaStep[i][kEl]-self.__epsilonStep[i][kEl]*self.__kappa[:-1][i][kEl])/self.__kappaStep[i][kEl] * \
+          if verbose: print('\na, b:\n', a[i,:,:], '\n', b[i,:,:])
+          aE = np.array(list(self.Eimag(a[i,:,:][kEl])))
+          bE = np.array(list(self.Eimag(b[i,:,:][kEl])))
+          intensity[kEl] = (self.__epsilonStep[i,:,:][kEl]/self.__kappaStep[i,:,:][kEl]*(1-np.exp(-self.__kappa[:-1,:,:][i,:,:][kEl]*scale-self.__kappaStep[i,:,:][kEl]/2.*scale**2.))\
+                            -(self.__epsilon[:-1][i,:,:][kEl]*self.__kappaStep[i,:,:][kEl]-self.__epsilonStep[i,:,:][kEl]*self.__kappa[:-1,:,:][i,:,:][kEl])/self.__kappaStep[i,:,:][kEl] * \
                             np.sqrt(np.pi/(2.*abs(self.__kappaStep[i][kEl].astype(np.complex))))* \
-                            (np.exp(a[i]**2.-b[i]**2.)*aE-bE) + \
-                            intensity[kEl]*np.exp(-self.__kappa[:-1][i][kEl]*scale-self.__kappaStep[i][kEl]/2.*scale**2.)).real
+                            (np.exp(a[i,:,:]**2.-b[i,:,:]**2.)*aE-bE) + \
+                            intensity[kEl]*np.exp(-self.__kappa[:-1,:,:][i,:,:][kEl]*scale-self.__kappaStep[i,:,:][kEl]/2.*scale**2.)).real
       else:
-        if (self.__kappaStep[i]==0).any() & (abs(self.__kappa[i]*scale)<10**-10).any():
+        if (self.__kappaStep[i,:,:]==0).any() & (abs(self.__kappa[i]*scale)<10**-10).any():
           intensity += self.__epsilon[i]*scale+0.5*self.__epsilonStep[i]*scale**2
         elif (self.__kappa[i]>10**3*abs(self.__kappaStep[i])*scale).any():
           intensity = np.exp(-self.__kappa[i]*scale) * (intensity + \
