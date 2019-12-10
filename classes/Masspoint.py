@@ -67,6 +67,7 @@ class Masspoint(object):
           for index in element.getInterpolationIndeces():
             self.__intensity_xi.append(np.full((velocityRange.size, velocityRange.size), self.__interpolations.interpolateIntensity(interpolationPoint, [index])*self.__number))
             self.__opticalDepth_xi.append(np.full((velocityRange.size, velocityRange.size), self.__interpolations.interpolateTau(interpolationPoint, [index])*self.__number))
+      del interpolationPoint
       if speciesNumber>1:
         self.__intensity_xi = np.array(self.__intensity_xi)
         self.__opticalDepth_xi = np.array(self.__opticalDepth_xi)
