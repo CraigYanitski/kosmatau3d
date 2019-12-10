@@ -121,6 +121,31 @@ class Model(object):
   def setLOS(self, x=0, y=0, z=0, dim='xy'):
     self.__orientation.setLOS(self.__grid, x=x, y=y, z=z, dim=dim)
     return
-  def calculateObservation(self, velocity=[0]):
-    intensity = self.__orientation.calculateRadiativeTransfer(velocity)
-    return intensity
+  def calculateObservation(self, velocity=[0], dim='xy'):
+    xArray,yArray,zArray,scale = self.__shape.getDimensions().voxelCartesianPosition()
+    position = []
+    intensityMap = []
+    if dim=='xy':
+      for x in xArray:
+        for y in yArray:
+          self.__orientation.setLOS(self.__grid, x=x, y=y, dim=dim)
+          position.append([x,y])
+          intensity = self.__orientation.calculateRadiativeTransfer(velocity)
+          intensityMap.append(intensity)
+    if dim=='xz':
+      for x in xArray:
+        for z in zArray:
+          self.__orientation.setLOS(self.__grid, x=x, z=z, dim=dim)
+          position.append([x,z])
+          intensity = self.__orientation.calculateRadiativeTransfer(velocity)
+          intensityMap.append(intensity)
+    if dim=='yz':
+      for y in yArray:
+        for z in zArray:
+          self.__orientation.setLOS(self.__grid, y=y, z=z, dim=dim)
+          position.append([y,z])
+          intensity = self.__orientation.calculateRadiativeTransfer(velocity)
+          intensityMap.append(intensity)
+    position = np.array(position)
+    intensityMap = np.array(intensityMap)
+    return (position, intensityMap)
