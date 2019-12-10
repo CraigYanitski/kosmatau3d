@@ -72,8 +72,8 @@ class Combination(object):
       (intensity,opticalDepth) = masspoint.getSpeciesEmission()
       intensityList.append(intensity)
       opticalDepthList.append(opticalDepth)
-    self.__intensityList = np.array(intensityList)
-    self.__opticalDepthList = np.array(opticalDepthList)
+    intensityList = np.array(intensityList)
+    opticalDepthList = np.array(opticalDepthList)
     if debug:
       print('\nProbability:', self.__probability)
       print('\n', intensity, '\n\n', opticalDepth)
@@ -87,12 +87,13 @@ class Combination(object):
         #print('Intensity: {}\n'.format(self.__intensityList.shape))
         #self.__probability.resize(self.__probability.size, 1)
         for element in range(len(self.__species[0].getInterpolationIndeces()) + len(self.__species[1].getInterpolationIndeces())):
-          self.__intensity.append((self.__probability*self.__intensityList[:,element,:,:].sum(0)))
-          self.__opticalDepth.append((self.__probability*np.exp(-self.__opticalDepthList[:,element,:,:].sum(0))))
+          self.__intensity.append((self.__probability*intensityList[:,element,:,:].sum(0)))
+          self.__opticalDepth.append((self.__probability*np.exp(-opticalDepthList[:,element,:,:].sum(0))))
         self.__intensity = np.array(self.__intensity)
         self.__opticalDepth = np.array(self.__opticalDepth)
-        self.__intensity[self.__intensity==0] = 10**-100
-        self.__opticalDepth[self.__opticalDepth==0] = 10**-100
+        # These next lines are to give an emission of 0
+        self.__intensity[self.__intensity==0] = 0
+        self.__opticalDepth[self.__opticalDepth==0] = 1
     # The next if statement is incorrect and will be removed soon
     elif emission=='all':
       self.__intensity = (self.__probability.T*self.__intensityList.sum(0)).sum(2)
@@ -100,6 +101,8 @@ class Combination(object):
     if debug:
       print(self.__intensity, self.__opticalDepth)
       input()
+    del intensityList
+    del opticalDepthList
     return
   def getScaledCombinationEmission(self, verbose=False):
     emission = (self.__intensity,self.__opticalDepth,self.__FUV.getFUV())
