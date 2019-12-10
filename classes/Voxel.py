@@ -108,13 +108,19 @@ class Voxel(object):
       print('\nClump and interclump optical depth:', tauClump, tauInterclump)
       input()
     # Sum over ensembles
-    self.__intensity = (iClump+iInterclump)
-    self.__opticalDepth = (tauClump+tauInterclump)
+    self.__intensity = (iClump.sum(1)+iInterclump.sum(1))
+    self.__opticalDepth = (tauClump.sum(1)+tauInterclump.sum(1))
     if verbose: print('\nShape: ', self.__intensity.shape, '\n\n')
     if isinstance(FUVclump, FUVfield): self.__FUV = FUVfield(np.average(FUVclump.getFUV()+FUVinterclump.getFUV()))
+    del iClump
+    del tauClump
+    del FUVclump
+    del iInterclump
+    del tauInterclump
+    del FUVinterclump
     return
   def getEmission(self, verbose=False):
-    emission = ((self.__intensity.sum(2)), (self.__opticalDepth.sum(2)), self.__FUV)
+    emission = ((self.__intensity), (self.__opticalDepth), self.__FUV)
     if verbose: print(emission)
     return emission
   def printVoxel(self):
