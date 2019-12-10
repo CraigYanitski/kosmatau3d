@@ -10,7 +10,7 @@ kosma = Model(12, 12, 3,modelType='disk',resolution=1000)
 kosma.addSpecies(species)
 kosma.initialiseModel()
 kosma.calculateEmission()
-kosma.setLOS()
+#kosma.setLOS()
 print(kosma.calculateObservation())
 #kosma.getGrid().printVoxels()
 ##
