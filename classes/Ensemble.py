@@ -1,6 +1,7 @@
 import importlib as il
 import pprint
 import numpy as np
+from numba import jit
 import sys
 import gc
 from Combination import *
@@ -18,7 +19,7 @@ class Ensemble(object):
   It can be either a clump or an interclump ensemble.
   '''
   # PRIVATE
-  def __init__(self, clumpType, species, interpolations, vNumber=51, combination='binomial', verbose=False):
+  def __init__(self, clumpType, species, interpolations, vNumber=51, combination='binomial', verbose=False, debugging=False):
     self.__species = species     #list of both moleculular and dust species
     self.__interpolations = interpolations
     self.__clumpType = clumpType     #type of mass in ensemble (clump or interclump medium)
@@ -30,8 +31,10 @@ class Ensemble(object):
     self.__combinationIndeces = []
     self.__combinationObjects = []    #list of instances of Combination()
     self.__probability = []
-    self.__intensity = 0        #ensemble-averaged intensity for each velocity
-    self.__opticalDepth = 0     #ensemble-averaged optical depth for each velocity
+    self.__debugging = debugging
+    if debugging:
+      self.__intensity = 0        #ensemble-averaged intensity for each velocity
+      self.__opticalDepth = 0     #ensemble-averaged optical depth for each velocity
     self.__FUV = 0
     self.__massObserved = 0     #'observed' mass
     self.__massEnsemble = 0     #ensemble mass
@@ -296,7 +299,7 @@ class Ensemble(object):
         for i in self.__combinationIndeces: print('Combination sizes:\n{}\n'.format(np.array(self.__combinations[i].size)))
         input()
     for i,combination in enumerate(self.__combinations[largestCombinationIndex]):
-      self.__combinationObjects.append(Combination(self.__species, self.__interpolations, combination=combination.flatten(), masses=self.__masspoints, density=self.__masspointDensity, fuv=self.__FUV, probability=self.__probability.prod(2)[:,i]))
+      self.__combinationObjects.append(Combination(self.__species, self.__interpolations, combination=combination.flatten(), masses=self.__masspoints, density=self.__masspointDensity, fuv=self.__FUV, probability=self.__probability.prod(2)[:,i], debugging=self.__debugging))
     #else:
     #  for i in self.__combinationIndeces:
     #    idx = np.where(self.__combinationIndeces==i)[0][0]
@@ -317,6 +320,7 @@ class Ensemble(object):
     self.createCombinationObjects()
     if self.__verbose: print(self.__clumpType)
     return
+  @jit(nopython=False)
   def calculate(self, debug=False, test=False):
     '''Maybe <<PARALLELISE>> this??
 
@@ -330,9 +334,11 @@ class Ensemble(object):
       input()
     if test: print('\n', self.__clumpType, len(self.__combinationObjects))
     for combination in self.__combinationObjects:
-      if (combination in self.__combinationObjects[-50:]) and test: combination.calculateEmission(self.__velocityBins, self.__velocityDispersion, test=False)
-      else: combination.calculateEmission(self.__velocity, self.__velocityDispersion)
-      result = combination.getScaledCombinationEmission() #<<this needs to be altered>>
+      if (combination in self.__combinationObjects[-10:]) and test:
+        result = combination.calculateEmission(self.__velocityBins, self.__velocityDispersion, test=False)
+      else:
+        result = combination.calculateEmission(self.__velocity, self.__velocityDispersion)
+      #result = combination.getScaledCombinationEmission() #<<this needs to be altered>>
       intensityResult.append(result[0])
       opticalDepthResult.append(result[1])
       self.__FUV = result[2]
@@ -346,23 +352,23 @@ class Ensemble(object):
       input()
     # Average over combinations 
     #print(len(self.__combinationObjects))
-    self.__intensity = intensityResult.sum(0)
+    intensity = intensityResult.sum(0)
     #print(self.__intensity.shape)
-    self.__opticalDepth = -np.log((opticalDepthResult.sum(0)).astype(np.float))
+    opticalDepth = -np.log((opticalDepthResult.sum(0)).astype(np.float))
     gc.collect()
     if debug:
       print('\nIntensity\n{}\nOptical depth\n{}\n'.format(self.__intensity, self.__opticalDepth))
       input()
-    del intensityResult
-    del opticalDepthResult
-    del result
-    return
-  def getEnsembleEmission(self):
-    '''This returns the ensemble emission...nothing more.'''
-    if (self.__intensity==np.nan).any():
-      print('\nInvalid intensity:\n{}\n'.format(self.__intensity))
-      input()
-    return (self.__intensity,self.__opticalDepth,self.__FUV)
+    # del intensityResult
+    # del opticalDepthResult
+    # del result
+    return (intensity,opticalDepth,self.__FUV)
+  # def getEnsembleEmission(self):
+  #   '''This returns the ensemble emission...nothing more.'''
+  #   if (self.__intensity==np.nan).any():
+  #     print('\nInvalid intensity:\n{}\n'.format(self.__intensity))
+  #     input()
+  #   return (self.__intensity,self.__opticalDepth,self.__FUV)
   def getCombinations(self):
     return self.__combinations
   def getCombinationObjects(self):

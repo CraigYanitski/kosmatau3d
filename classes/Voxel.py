@@ -10,10 +10,11 @@ class Voxel(object):
   for the diffuse surroundings of a clump.
   '''
   # PRIVATE
-  def __init__(self, species, interpolations, index, vNumber=51):
+  def __init__(self, species, interpolations, index, vNumber=51, debugging=False):
     self.__species = species     #list of both moleculular and dust species
     self.__interpolations = interpolations
     self.__index = index    #index of voxel in VoxelGrid, sort of like its ID in the overall model
+    self.__debugging = debugging
     self.__constants = Constants()
     self.__velocity = 0     #velocity of mass at voxel point
     self.__velocityDispersion = 0   #dispersion of velocity at voxel point
@@ -22,8 +23,8 @@ class Voxel(object):
     self.__intensity = 0      #intensity of emissions at voxel point
     self.__opticalDepth = 0   #optical depth at voxel point
     self.__FUV = 0
-    self.__clump = Ensemble('clump', self.__species, self.__interpolations)    #clumpy ensemble at voxel point
-    self.__interclump = Ensemble('interclump', self.__species, self.__interpolations)    #diffuse interclump ensemble at voxel point
+    self.__clump = Ensemble('clump', self.__species, self.__interpolations, debugging=debugging)    #clumpy ensemble at voxel point
+    self.__interclump = Ensemble('interclump', self.__species, self.__interpolations, debugging=debugging)    #diffuse interclump ensemble at voxel point
     self.__x = 0
     self.__y = 0
     self.__z = 0
@@ -99,10 +100,8 @@ class Voxel(object):
   def calculateEmission(self, verbose=False):
     if verbose:
       print('\nCalculating voxel V{} emission'.format(self.__index))
-    self.__clump.calculate(test=False)
-    self.__interclump.calculate(test=False)
-    iClump,tauClump,FUVclump = self.__clump.getEnsembleEmission()
-    iInterclump,tauInterclump,FUVinterclump = self.__interclump.getEnsembleEmission()
+    iClump,tauClump,FUVclump = self.__clump.calculate(test=False)
+    iInterclump,tauInterclump,FUVinterclump = self.__interclump.calculate(test=False)
     if verbose:
       print('\nClump and interclump intensity:', iClump, iInterclump)
       print('\nClump and interclump optical depth:', tauClump, tauInterclump)
@@ -112,20 +111,21 @@ class Voxel(object):
     self.__opticalDepth = (tauClump.sum(1)+tauInterclump.sum(1))
     if verbose: print('\nShape: ', self.__intensity.shape, '\n\n')
     if isinstance(FUVclump, FUVfield): self.__FUV = FUVfield(np.average(FUVclump.getFUV()+FUVinterclump.getFUV()))
-    del iClump
-    del tauClump
-    del FUVclump
-    del iInterclump
-    del tauInterclump
-    del FUVinterclump
+    # del iClump
+    # del tauClump
+    # del FUVclump
+    # del iInterclump
+    # del tauInterclump
+    # del FUVinterclump
     return
   def getEmission(self, verbose=False):
     emission = ((self.__intensity), (self.__opticalDepth), self.__FUV)
     if verbose: print(emission)
     return emission
   def printVoxel(self):
-    iClump,tauClump,FUVclump = self.__clump.getEnsembleEmission()
-    iInterclump,tauInterclump,FUVinterclump = self.__interclump.getEnsembleEmission()
+    if self.__debugging:
+      iClump,tauClump,FUVclump = self.__clump.getEnsembleEmission()
+      iInterclump,tauInterclump,FUVinterclump = self.__interclump.getEnsembleEmission()
     names = self.__species[0].getMolecules() + self.__species[1].getDust()
     transitions = self.__species[0].getTransitions() + self.__species[1].getTransitions()
     totalIntensity = np.array([names, transitions, self.__intensity.sum(2).max(1)]).T
@@ -139,20 +139,22 @@ class Voxel(object):
     print('  ->intensity')
     for i in range(len(names)):
       print('    {} {}: {}'.format(totalIntensity[i][0],totalIntensity[i][1],totalIntensity[i][2]))
-    print('    -clump')
-    for i in range(len(names)):
-      print('      {} {}: {}'.format(clumpIntensity[i][0],clumpIntensity[i][1],clumpIntensity[i][2]))
-    print('    -interclump')
-    for i in range(len(names)):
-      print('      {} {}: {}'.format(interclumpIntensity[i][0],interclumpIntensity[i][1],interclumpIntensity[i][2]))
+    if self.__debugging:
+      print('    -clump')
+      for i in range(len(names)):
+        print('      {} {}: {}'.format(clumpIntensity[i][0],clumpIntensity[i][1],clumpIntensity[i][2]))
+      print('    -interclump')
+      for i in range(len(names)):
+        print('      {} {}: {}'.format(interclumpIntensity[i][0],interclumpIntensity[i][1],interclumpIntensity[i][2]))
     print('  ->optical depth')
     for i in range(len(names)):
       print('    {} {}: {}'.format(totalTau[i][0],totalTau[i][1],totalTau[i][2]))
-    print('    -clump')
-    for i in range(len(names)):
-      print('      {} {}: {}'.format(clumpTau[i][0],clumpTau[i][1],clumpTau[i][2]))
-    print('    -interclump')
-    for i in range(len(names)):
-      print('      {} {}: {}'.format(interclumpTau[i][0],interclumpTau[i][1],interclumpTau[i][2]))
+    if self.__debugging:
+      print('    -clump')
+      for i in range(len(names)):
+        print('      {} {}: {}'.format(clumpTau[i][0],clumpTau[i][1],clumpTau[i][2]))
+      print('    -interclump')
+      for i in range(len(names)):
+        print('      {} {}: {}'.format(interclumpTau[i][0],interclumpTau[i][1],interclumpTau[i][2]))
     print('  ->FUV field {}'.format(self.__FUV.getFUV()))
     return
