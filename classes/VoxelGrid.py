@@ -73,7 +73,6 @@ class VoxelGrid(object):
       self.__voxels.remove(self.__voxels[i])
     self.__voxelNumber = len(self.__voxels)
     return
-  # @jit(nopython=False)
   def calculateEmission(self, verbose=False):
     print('\nCalculating grid emission...')
     with tqdm(total=len(self.__voxels), desc='Voxel emissions', miniters=1, dynamic_ncols=True) as progress:
