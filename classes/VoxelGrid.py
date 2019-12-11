@@ -1,6 +1,7 @@
 import numpy as np
 from tqdm import tqdm
 #import progressbar as pb
+from numba import jit
 import importlib as il
 import gc
 from Voxel import *
@@ -72,6 +73,7 @@ class VoxelGrid(object):
       self.__voxels.remove(self.__voxels[i])
     self.__voxelNumber = len(self.__voxels)
     return
+  # @jit(nopython=False)
   def calculateEmission(self, verbose=False):
     print('\nCalculating grid emission...')
     with tqdm(total=len(self.__voxels), desc='Voxel emissions', miniters=1, dynamic_ncols=True) as progress:
@@ -88,9 +90,9 @@ class VoxelGrid(object):
       self.__voxelIntensity = np.array(self.__voxelIntensity)
       self.__voxelOpticalDepth = np.array(self.__voxelOpticalDepth)
     print('\nCalculation complete.\n')
-    del emission
-    del progress
-    del voxel
+    # del emission
+    # del progress
+    # del voxel
     return
   def getVoxelNumber(self):
     return self.__voxelNumber
