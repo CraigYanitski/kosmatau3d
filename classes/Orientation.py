@@ -87,6 +87,7 @@ class Orientation(object):
         #  kappa.append(tau/(self.__scale))
         if verbose: print(tau, scale)
     i = np.argsort(zPosition)[::-1]
+    if not i.size: print('WARNING: No LOS at position x={}, y={}, z={}.'.format(x,y,z))
     if verbose: print('voxels:', i)
     self.__losVoxels = []
     for idx in i:
