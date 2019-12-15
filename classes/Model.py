@@ -122,7 +122,7 @@ class Model(object):
     self.__orientation.setLOS(self.__grid, x=x, y=y, z=z, dim=dim)
     return
   def calculateObservation(self, velocity=[0], dim='xy'):
-    xArray,yArray,zArray,scale = self.__shape.getDimensions().voxelCartesianPosition()
+    xArray,yArray,zArray = self.__grid.getVoxelPositions()
     position = []
     intensityMap = []
     if dim=='xy':
