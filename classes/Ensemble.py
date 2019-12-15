@@ -320,7 +320,7 @@ class Ensemble(object):
     self.createCombinationObjects()
     if self.__verbose: print(self.__clumpType)
     return
-  @jit(nopython=False)
+  #@jit(nopython=False)
   def calculate(self, debug=False, test=False):
     '''Maybe <<PARALLELISE>> this??
 
