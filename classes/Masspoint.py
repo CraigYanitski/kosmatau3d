@@ -1,4 +1,5 @@
 import numpy as np
+from numba import jit
 import importlib as il
 from Constants import *
 from Molecules import *
@@ -35,6 +36,7 @@ class Masspoint(object):
     il.reload(Molecules)
     il.reload(Dust)
     return
+  @jit(forceobj=False)
   def calculateEmission(self, velocity, vDispersion, verbose=False, debug=False, test=False):
     #velocity.resize((len(velocity), 1))
     velocityRange = self.__constants.velocityBins
@@ -45,7 +47,7 @@ class Masspoint(object):
       print('Masspoint velocity argument:\n{}'.format(velocity))
       print('Masspoint velocity range variable:\n{}'.format(velocityRange))
       print('Masspoint velocity difference result:\n{}'.format(velocityRange-velocity))
-      input()
+      #input()
     speciesNumber = len(self.__species[0].getInterpolationIndeces()) + len(self.__species[1].getInterpolationIndeces())
     # if self.__number==0:
     #   intensity_xi = np.full((speciesNumber, velocityRange.size, velocityRange.size), 10**-100)
@@ -57,20 +59,22 @@ class Masspoint(object):
       #input()
     intensity_xi = []
     opticalDepth_xi = []
-    for i,element in enumerate(self.__species):
-      if verbose: print(element)
-      if isinstance(element, Molecules):
-        for index in element.getInterpolationIndeces():
-          intensity_xi.append((self.__interpolations.interpolateIntensity(interpolationPoint, [index])*np.exp(-1/2.*((velocityRange-velocityRange.T)/(self.__constants.clumpDispersion))**2)))
-          opticalDepth_xi.append((self.__interpolations.interpolateTau(interpolationPoint, [index])*np.exp(-1/2.*((velocityRange-velocityRange.T)/(self.__constants.clumpDispersion))**2)))
-          #self.__intensity_xi[-1] = self.__intensity_xi[-1].sum(1)
-          #self.__opticalDepth_xi[-1] = self.__opticalDepth_xi[-1].sum(1)
-          if test: input('\n{}\n'.format(self.__intensity_xi[-1].max()))
-        if debug: input('intensity_xi:\n{}\n'.format(self.__intensity_xi[-1]))
-      elif isinstance(element, Dust):
-        for index in element.getInterpolationIndeces():
-          intensity_xi.append(np.full((velocityRange.size, velocityRange.size), self.__interpolations.interpolateIntensity(interpolationPoint, [index])))
-          opticalDepth_xi.append(np.full((velocityRange.size, velocityRange.size), self.__interpolations.interpolateTau(interpolationPoint, [index])))
+    #for i,element in enumerate(self.__species):      #This is commented-out since numba cannot support the isinstance() function
+    #  if verbose: print(element)
+    #  if isinstance(element, Molecules):
+    for index in self.__species[0].getInterpolationIndeces():
+      intensity_xi.append((self.__interpolations.interpolateIntensity(interpolationPoint, [index])*np.exp(-1/2.*((velocityRange-velocityRange.T)/(self.__constants.clumpDispersion))**2)))
+      opticalDepth_xi.append((self.__interpolations.interpolateTau(interpolationPoint, [index])*np.exp(-1/2.*((velocityRange-velocityRange.T)/(self.__constants.clumpDispersion))**2)))
+      #self.__intensity_xi[-1] = self.__intensity_xi[-1].sum(1)
+      #self.__opticalDepth_xi[-1] = self.__opticalDepth_xi[-1].sum(1)
+      if test:
+        print('\n{}\n'.format(self.__intensity_xi[-1].max()))
+    if debug:
+      print('intensity_xi:\n{}\n'.format(self.__intensity_xi[-1]))
+    #  elif isinstance(element, Dust):
+    for index in self.__species[1].getInterpolationIndeces():
+      intensity_xi.append(np.full((velocityRange.size, velocityRange.size), self.__interpolations.interpolateIntensity(interpolationPoint, [index])))
+      opticalDepth_xi.append(np.full((velocityRange.size, velocityRange.size), self.__interpolations.interpolateTau(interpolationPoint, [index])))
     # del interpolationPoint
     if speciesNumber>1:
       if self.__debugging:
@@ -85,17 +89,17 @@ class Masspoint(object):
         self.opticalDepth_xi = np.array([opticalDepth_xi])
         if np.isnan(self.__intensity).any():
           print('\nThere is an invalid intensity:\n', interpolationPoint)
-          input()
+          #input()
       else:
         intensity_xi = np.array([intensity_xi])
         opticalDepth_xi = np.array([opticalDepth_xi])
         if np.isnan(intensity).any():
           print('\nThere is an invalid intensity:\n', interpolationPoint)
-          input()
+          #input()
     if debug:
       np.set_printoptions(threshold=100000)
       print('\nIntensity xi, optical depth xi:\n{}\n{}\n{}\n{}\n'.format(self.__intensity_xi.shape, self.__intensity_xi[:3,:,:], self.__opticalDepth_xi.shape, self.__opticalDepth_xi[:3,:,:]))
-      input()
+      #input()
     return (intensity_xi,opticalDepth_xi)
   # def getEmission(self, verbose=False):
   #  if verbose:
