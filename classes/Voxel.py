@@ -71,6 +71,8 @@ class Voxel(object):
   def setIndex(self, index):
     self.__index = index
     return
+  def getIndex(self):
+    return self.__index
   def setPosition(self, x, y, z, r, phi, scale):
     self.__x = x
     self.__y = y
