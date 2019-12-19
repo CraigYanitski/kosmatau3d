@@ -123,25 +123,26 @@ class Model(object):
     return
   def calculateObservation(self, velocity=[0], dim='xy'):
     xArray,yArray,zArray = self.__grid.getVoxelPositions()
+    print('\nx\n', np.unique(xArray), '\ny\n', np.unique(yArray), '\nz\n', np.unique(zArray))
     position = []
     intensityMap = []
     if dim=='xy':
-      for x in xArray:
-        for y in yArray:
+      for x in np.unique(xArray):
+        for y in np.unique(yArray):
           self.__orientation.setLOS(self.__grid, x=x, y=y, dim=dim)
           position.append([x,y])
           intensity = self.__orientation.calculateRadiativeTransfer(velocity)
           intensityMap.append(intensity)
     if dim=='xz':
-      for x in xArray:
-        for z in zArray:
+      for x in np.unique(xArray):
+        for z in np.unique(zArray):
           self.__orientation.setLOS(self.__grid, x=x, z=z, dim=dim)
           position.append([x,z])
           intensity = self.__orientation.calculateRadiativeTransfer(velocity)
           intensityMap.append(intensity)
     if dim=='yz':
-      for y in yArray:
-        for z in zArray:
+      for y in np.unique(yArray):
+        for z in np.unique(zArray):
           self.__orientation.setLOS(self.__grid, y=y, z=z, dim=dim)
           position.append([y,z])
           intensity = self.__orientation.calculateRadiativeTransfer(velocity)
