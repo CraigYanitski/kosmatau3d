@@ -48,51 +48,73 @@ class Orientation(object):
     epsilon = []
     kappa = []
     scale = self.__scale*3.086*10**18
+    xGrid,yGrid,zGrid = grid.getVoxelPositions()
+    if verbose==False:
+      print('Centered at x={}, y={}, z={}'.format(x,y,z))
     if ('x' in dim) and ('y' in dim):
       self.__x1LoS = x
       self.__x2LoS = y
+      iLOS = np.where((xGrid==x)&(yGrid==y))[0]
     elif ('x' in dim) and ('z' in dim):
       self.__x1LoS = x
       self.__x2LoS = z
+      iLOS = np.where((xGrid==x)&(zGrid==z))[0]
     elif ('z' in dim) and ('y' in dim):
       self.__x1LoS = z
       self.__x2LoS = y
+      iLOS = np.where((zGrid==z)&(yGrid==y))[0]
     else:
       print('\nPlease enter valid dimensions.\n')
       return
-    for voxel in grid.allVoxels():
-      x,y,z = voxel.getPosition()
-      if ('x' in dim) and ('y' in dim):
-        x1 = x
-        x2 = y
-        z0 = c.copy(z)
-      elif ('x' in dim) and ('z' in dim):
-        x1 = x
-        x2 = z
-        z0 = c.copy(y)
-      elif ('z' in dim) and ('y' in dim):
-        x1 = z
-        x2 = y
-        z0 = c.copy(x)
-      if (x1<(self.__x1LoS+self.__scale/2.)) and (x1>(self.__x1LoS-self.__scale/2.)) and (x2<(self.__x2LoS+self.__scale/2.)) and (x2>(self.__x2LoS-self.__scale/2.)):
-        intensity,tau,fuv = voxel.getEmission()
-        voxels.append(voxel)
-        zPosition.append(z0)
-        #if z:
-        factor = 1#np.exp(-z**2/500.**2)      #this is to make the disk more centrally-located
-        epsilon.append(factor*intensity/(scale))
-        kappa.append(factor*tau/(scale))
-        #else:
-        #  epsilon.append(intensity/(self.__scale))
-        #  kappa.append(tau/(self.__scale))
-        if verbose: print(tau, scale)
+    zPosition = zGrid[iLOS]
+    #self.__losVoxels = grid.allVoxels()[iLOS]
+    for i in iLOS:
+      voxels.append(grid.allVoxels()[i])
+      intensity,tau,fuv = voxels[-1].getEmission()
+      #if z:
+      factor = 1#np.exp(-z**2/500.**2)      #this is to make the disk more centrally-located
+      epsilon.append(factor*intensity/(scale))
+      kappa.append(factor*tau/(scale))
+      #else:
+      #  epsilon.append(intensity/(self.__scale))
+      #  kappa.append(tau/(self.__scale))
+      if verbose:
+        print('Intensity:', intensity, scale)
+        print('Optical depth:', tau, scale)
+    # for voxel in grid.allVoxels():
+    #   x,y,z = voxel.getPosition()
+    #   if ('x' in dim) and ('y' in dim):
+    #     x1 = x
+    #     x2 = y
+    #     z0 = c.copy(z)
+    #   elif ('x' in dim) and ('z' in dim):
+    #     x1 = x
+    #     x2 = z
+    #     z0 = c.copy(y)
+    #   elif ('z' in dim) and ('y' in dim):
+    #     x1 = z
+    #     x2 = y
+    #     z0 = c.copy(x)
+    #   if (x1<(self.__x1LoS+self.__scale/2.)) and (x1>(self.__x1LoS-self.__scale/2.)) and (x2<(self.__x2LoS+self.__scale/2.)) and (x2>(self.__x2LoS-self.__scale/2.)):
+    #     intensity,tau,fuv = voxel.getEmission()
+    #     voxels.append(voxel)
+    #     zPosition.append(z0)
+    #     #if z:
+    #     factor = 1#np.exp(-z**2/500.**2)      #this is to make the disk more centrally-located
+    #     epsilon.append(factor*intensity/(scale))
+    #     kappa.append(factor*tau/(scale))
+    #     #else:
+    #     #  epsilon.append(intensity/(self.__scale))
+    #     #  kappa.append(tau/(self.__scale))
+    #     if verbose: print(tau, scale)
     i = np.argsort(zPosition)[::-1]
     if not i.size: print('WARNING: No LOS at position x={}, y={}, z={}.'.format(x,y,z))
-    if verbose: print('voxels:', i)
-    self.__losVoxels = []
-    for idx in i:
-      self.__losVoxels.append(voxels[idx])
-    self.__losZ = np.array(zPosition)[i]
+    if verbose==False:
+      print('voxels:', i)
+    # self.__losVoxels = []
+    # for idx in i:
+    #   self.__losVoxels.append(voxels[idx])
+    # self.__losZ = np.array(zPosition)[i]
     self.__epsilon = np.array(epsilon, dtype=np.float)[i]
     self.__epsilonStep = (self.__epsilon[1:]-self.__epsilon[:-1])/(scale)
     self.__kappa = np.array(kappa, dtype=np.float)[i]
