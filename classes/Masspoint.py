@@ -36,7 +36,7 @@ class Masspoint(object):
     il.reload(Molecules)
     il.reload(Dust)
     return
-  @jit(forceobj=False)
+  #@jit(forceobj=False)
   def calculateEmission(self, velocity, vDispersion, verbose=False, debug=False, test=False):
     #velocity.resize((len(velocity), 1))
     velocityRange = self.__constants.velocityBins
