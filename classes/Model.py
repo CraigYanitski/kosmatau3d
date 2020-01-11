@@ -122,18 +122,21 @@ class Model(object):
     self.__orientation.setLOS(self.__grid, x=x, y=y, z=z, dim=dim)
     return
   def calculateObservation(self, velocity=[0], dim='xy'):
-    xArray,yArray,zArray = self.__grid.getVoxelPositions()
-    print('\nx\n', np.unique(xArray), '\ny\n', np.unique(yArray), '\nz\n', np.unique(zArray))
+    xPositions,yPositions,zPositions = self.__grid.getVoxelPositions()
+    #print('\nx\n', np.unique(xArray), '\ny\n', np.unique(yArray), '\nz\n', np.unique(zArray))
     position = []
     intensityMap = []
     if dim=='xy':
-      for x in np.unique(xArray):
-        for y in np.unique(yArray):
+      Array = np.unique([xPositions,yPositions], axis=1).T
+      print('\nx\n{}\n\ny\n{}\n'.format(Array[:,0],Array[:,1]))
+      for x,y in Array:
+        #for y in np.unique(yArray):
           self.__orientation.setLOS(self.__grid, x=x, y=y, dim=dim)
           position.append([x,y])
           intensity = self.__orientation.calculateRadiativeTransfer(velocity)
           intensityMap.append(intensity)
     if dim=='xz':
+      xArray,zArray = np.unique([xPositions,zPositions], axis=1)
       for x in np.unique(xArray):
         for z in np.unique(zArray):
           self.__orientation.setLOS(self.__grid, x=x, z=z, dim=dim)
@@ -141,6 +144,7 @@ class Model(object):
           intensity = self.__orientation.calculateRadiativeTransfer(velocity)
           intensityMap.append(intensity)
     if dim=='yz':
+      yArray,zArray = np.unique([yPositions,zPositions], axis=1)
       for y in np.unique(yArray):
         for z in np.unique(zArray):
           self.__orientation.setLOS(self.__grid, y=y, z=z, dim=dim)
