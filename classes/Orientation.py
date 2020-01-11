@@ -43,11 +43,12 @@ class Orientation(object):
     for voxel in self.__losVoxels: voxel.reloadModules()
     return
   def setLOS(self, grid, x=0, y=0, z=0, dim='xy', verbose=False):
-    voxels = []
+    LOSvoxels = []
     zPosition = []
     epsilon = []
     kappa = []
     scale = self.__scale*3.086*10**18
+    voxels = grid.allVoxels()
     xGrid,yGrid,zGrid = grid.getVoxelPositions()
     if verbose==False:
       print('Centered at x={}, y={}, z={}'.format(x,y,z))
@@ -69,8 +70,8 @@ class Orientation(object):
     zPosition = zGrid[iLOS]
     #self.__losVoxels = grid.allVoxels()[iLOS]
     for i in iLOS:
-      voxels.append(grid.allVoxels()[i])
-      intensity,tau,fuv = voxels[-1].getEmission()
+      LOSvoxels.append(voxels[i])
+      intensity,tau,fuv = LOSvoxels[-1].getEmission()
       #if z:
       factor = 1#np.exp(-z**2/500.**2)      #this is to make the disk more centrally-located
       epsilon.append(factor*intensity/(scale))
@@ -115,6 +116,7 @@ class Orientation(object):
     # for idx in i:
     #   self.__losVoxels.append(voxels[idx])
     # self.__losZ = np.array(zPosition)[i]
+    self.__losVoxels = LOSvoxels
     self.__epsilon = np.array(epsilon, dtype=np.float)[i]
     self.__epsilonStep = (self.__epsilon[1:]-self.__epsilon[:-1])/(scale)
     self.__kappa = np.array(kappa, dtype=np.float)[i]
