@@ -50,7 +50,7 @@ class Orientation(object):
     scale = self.__scale*3.086*10**18
     voxels = grid.allVoxels()
     xGrid,yGrid,zGrid = grid.getVoxelPositions()
-    if verbose==False:
+    if verbose:
       print('Centered at x={}, y={}, z={}'.format(x,y,z))
     if ('x' in dim) and ('y' in dim):
       self.__x1LoS = x
@@ -110,7 +110,7 @@ class Orientation(object):
     #     if verbose: print(tau, scale)
     i = np.argsort(zPosition)[::-1]
     if not i.size: print('WARNING: No LOS at position x={}, y={}, z={}.'.format(x,y,z))
-    if verbose==False:
+    if verbose:
       print('voxels:', i)
     # self.__losVoxels = []
     # for idx in i:
