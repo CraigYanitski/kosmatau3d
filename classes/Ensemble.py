@@ -23,7 +23,7 @@ class Ensemble(object):
     self.__species = species     #list of both moleculular and dust species
     self.__interpolations = interpolations
     self.__clumpType = clumpType     #type of mass in ensemble (clump or interclump medium)
-    self.__constants = Constants(velocityNumber=vNumber)
+    self.__constants = Constants()
     self.__velocityNumber = vNumber
     self.__flagCombination = combination
     self.__verbose = verbose
