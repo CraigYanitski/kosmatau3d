@@ -17,7 +17,7 @@ class Model(object):
     self.__scale = float(resolution)
     self.__constants = Constants()
     self.__shape = Shape(x, y, z, modelType=modelType, resolution=self.__scale)      #Shape() object to create the parameters for the grid of voxels
-    self.__grid = VoxelGrid(self.__shape.getDimensions())   #VoxelGrid() object to build the model and calculate the emission
+    self.__grid = VoxelGrid(self.__shape)   #VoxelGrid() object to build the model and calculate the emission
     self.__observations = Observations(self.__shape.getResolution())    #Observations() object to centralise the required data for the program
     self.__orientation = Orientation(self.__shape.getDimensions(), self.__observations)      #Orientation() object to change the viewing angle and expected spectra
     self.__molecules = Molecules()   #Molecules() object to centralise the molecules in model
