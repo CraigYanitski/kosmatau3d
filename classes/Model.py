@@ -15,15 +15,18 @@ class Model(object):
   def __init__(self, x, y, z, modelType='', resolution=1000, verbose=False):
     self.__type = modelType   #this just adds a label to the type of model being created. ie 'disk', 'bar', 'sphere', etc.
     self.__scale = float(resolution)
+    self.__constants = Constants()
     self.__shape = Shape(x, y, z, modelType=modelType, resolution=self.__scale)      #Shape() object to create the parameters for the grid of voxels
     self.__grid = VoxelGrid(self.__shape.getDimensions())   #VoxelGrid() object to build the model and calculate the emission
-    self.__observations = Observations(self.__shape.getDimensions().getResolution())    #Observations() object to centralise the required data for the program
+    self.__observations = Observations(self.__shape.getResolution())    #Observations() object to centralise the required data for the program
     self.__orientation = Orientation(self.__shape.getDimensions(), self.__observations)      #Orientation() object to change the viewing angle and expected spectra
     self.__molecules = Molecules()   #Molecules() object to centralise the molecules in model
     self.__dust = Dust()             #Dust() object to centralise the dust in the model
     self.__species = [self.__molecules, self.__dust]    #this is a list of the species objects being considered
     self.__speciesNames = []          #this is a list of the species names for easy printout
     self.__verbose = verbose
+    self.__intensityMap = []
+    self.__mapPositions = []
     return
   def __str__(self):
     printout = 'A {} model of {} voxels'.format(self.__type, self.getGrid().getVoxelNumber())
@@ -128,7 +131,8 @@ class Model(object):
     intensityMap = []
     if dim=='xy':
       Array = np.unique([xPositions,yPositions], axis=1).T
-      print('\nx\n{}\n\ny\n{}\n'.format(Array[:,0],Array[:,1]))
+      if self.__verbose:
+        print('\nx\n{}\n\ny\n{}\n'.format(Array[:,0],Array[:,1]))
       for x,y in Array:
         #for y in np.unique(yArray):
           self.__orientation.setLOS(self.__grid, x=x, y=y, dim=dim)
@@ -151,6 +155,26 @@ class Model(object):
           position.append([y,z])
           intensity = self.__orientation.calculateRadiativeTransfer(velocity)
           intensityMap.append(intensity)
-    position = np.array(position)
-    intensityMap = np.array(intensityMap)
-    return (position, intensityMap)
+    self.__mapPositions = np.array(position)
+    self.__intensityMap = np.array(intensityMap)
+    return
+  def printIntensityMap(self, index=None):
+    print(self.__species[0].getMolecules(), self.__species[1].getDust())
+    if not index==None:
+      position = self.__mapPositions[index]
+      intensity = self.__intensityMap[index]
+      print('At position x={} y={}, the intensity is'.format(position[0], position[1]))
+      for element in range(intensity.shape[0]):
+        i = intensity[element].argmax()
+        print('{}: {} centered at {} km/s'.format(self.__speciesNames[element], intensity[element][intensity[element].nonzero()], self.__constants.velocityBins[i]))
+      print()
+    else:
+      for index in range(len(self.__mapPositions)):
+        position = self.__mapPositions[index]
+        intensity = self.__intensityMap[index]
+        print('At position x={} y={}, the intensity is'.format(position[0], position[1]))
+        for element in range(intensity.shape[0]):
+          i = intensity[element].argmax()
+          print('{}: {} centered at {} km/s'.format(self.__speciesNames[element], intensity[element][intensity[element].nonzero()], self.__constants.velocityBins[i]))
+        print()
+    return
