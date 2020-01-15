@@ -13,9 +13,9 @@ class VoxelGrid(object):
   to make the Shape class functional.
   '''
   # PRIVATE
-  def __init__(self, dimensions):
-    self.__dimensions = dimensions
-    self.__voxelNumber = self.__dimensions.voxelNumber()
+  def __init__(self, shape):
+    self.__shape = shape
+    self.__voxelNumber = self.__shape.voxelNumber()
     self.__voxels = []
     self.__map = {}       #dictionary object to map the voxel indeces to the correct location
     self.__species = None
@@ -46,32 +46,31 @@ class VoxelGrid(object):
     self.__interpolations.reloadModules()
     return
   def getDimensions(self):
-    return self.__dimensions
+    return self.__shape.getDimensions()
   def getInterpolations(self):
     return self.__interpolations
   def initialiseVoxels(self, species, observations, verbose=False):
     self.__initialiseGrid(species, observations)
     print('\nInitialising Grid...')
-    x,y,z,scale = self.__dimensions.voxelCartesianPosition()
-    r,phi = self.__dimensions.voxelPolarPosition()
-    self.__unusedVoxels = []
+    x,y,z,scale = self.__shape.voxelCartesianPositions()
+    r,phi = self.__shape.voxelPolarPositions()
+    #self.__unusedVoxels = []
     with tqdm(total=len(self.__voxels), desc='Voxels initialised', miniters=1, dynamic_ncols=True) as progress:
       for i,voxel in enumerate(self.__voxels):
-        if r[i]<=max(x):
-          if verbose:
-              print('\nMax X, Radius:', max(x), r[i], '\n')
-          self.__x.append(x[i])
-          self.__y.append(y[i])
-          self.__z.append(z[i])
-          voxel.setIndex(i-len(self.__unusedVoxels))
-          voxel.setPosition(x[i], y[i], z[i], r[i], phi, scale)
-          voxel.setProperties()
-        else: self.__unusedVoxels.append(i)
+        if verbose:
+            print('\nMax X, Radius:', max(x), r[i], '\n')
+        self.__x.append(x[i])
+        self.__y.append(y[i])
+        self.__z.append(z[i])
+        voxel.setIndex(i)#-len(self.__unusedVoxels))
+        voxel.setPosition(x[i], y[i], z[i], r[i], phi, scale)
+        voxel.setProperties()
+        #else: self.__unusedVoxels.append(i)
         progress.update()
       progress.close()
-    for i in self.__unusedVoxels[::-1]:
-      self.__voxels.remove(self.__voxels[i])
-    self.__voxelNumber = len(self.__voxels)
+    #for i in self.__unusedVoxels[::-1]:
+    #  self.__voxels.remove(self.__voxels[i])
+    #self.__voxelNumber = len(self.__voxels)
     return
   def calculateEmission(self, verbose=False):
     print('\nCalculating grid emission...')
