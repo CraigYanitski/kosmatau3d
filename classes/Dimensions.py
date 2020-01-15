@@ -31,7 +31,7 @@ class Dimensions(object):
   def __convertToPolar(self):
     # This is a function that calculates the polar coordinates of each voxel
     r = ((self.__xPositions)**2 + (self.__yPositions)**2)**0.5
-    phi = 0#np.arcsin(self.__yPositions/self.__xPositions)
+    phi = np.zeros(r.size)#np.arcsin(self.__yPositions/self.__xPositions)
     return r, phi
   def __str__(self):
     return 'dimensions {}pc x {}pc x {}pc'.format(self.__x, self.__y, self.__z)
@@ -44,7 +44,7 @@ class Dimensions(object):
     return len(self.__xPositions)
   def voxelCartesianPosition(self):
     # Return the Cartesian coordinates of each voxel
-    return (self.__xPositions, self.__yPositions, self.__zPositions, self.__scale)
+    return (self.__xPositions, self.__yPositions, self.__zPositions)
   def voxelPolarPosition(self):
     # Return the polar coordinates of each voxel
     return (self.__r, self.__phi)
