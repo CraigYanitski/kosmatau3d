@@ -29,7 +29,7 @@ class Orientation(object):
     self.__losEpsilon = []
     self.__losEpsilonStep = []
     self.__backgroundI = backgroundI
-    self.__intensity = 0.
+    self.__intensity = np.array([0.])
     #observations = Observations()
     eTildeReal = observations.eTildeReal
     eTildeImaginary = observations.eTildeImaginary
@@ -47,6 +47,7 @@ class Orientation(object):
     zPosition = []
     epsilon = []
     kappa = []
+    factor = 1#np.exp(-z**2/500.**2)      #this is to make the disk more centrally-located
     scale = self.__scale*3.086*10**18
     voxels = grid.allVoxels()
     xGrid,yGrid,zGrid = grid.getVoxelPositions()
@@ -67,21 +68,39 @@ class Orientation(object):
     else:
       print('\nPlease enter valid dimensions.\n')
       return
-    zPosition = zGrid[iLOS]
+    if verbose:
+      print(iLOS)
     #self.__losVoxels = grid.allVoxels()[iLOS]
-    for i in iLOS:
-      LOSvoxels.append(voxels[i])
-      intensity,tau,fuv = LOSvoxels[-1].getEmission()
-      #if z:
-      factor = 1#np.exp(-z**2/500.**2)      #this is to make the disk more centrally-located
-      epsilon.append(factor*intensity/(scale))
-      kappa.append(factor*tau/(scale))
-      #else:
-      #  epsilon.append(intensity/(self.__scale))
-      #  kappa.append(tau/(self.__scale))
-      if verbose:
-        print('Intensity:', intensity, scale)
-        print('Optical depth:', tau, scale)
+    if iLOS.size==1:
+      LOSvoxels.append(voxels[iLOS[0]])
+      intensity,tau,fuv = LOSvoxels[0].getEmission()
+      # epsilon.append(factor*intensity/(scale))
+      # kappa.append(factor*tau/(scale))
+      # epsilonStep = [0]
+      # kappaStep = [0]
+      self.__intensity = intensity
+    elif iLOS.size>1:
+      for i in iLOS:
+        LOSvoxels.append(voxels[i])
+        intensity,tau,fuv = LOSvoxels[-1].getEmission()
+        #if z:
+        epsilon.append(factor*intensity/(scale))
+        kappa.append(factor*tau/(scale))
+        #else:
+        #  epsilon.append(intensity/(self.__scale))
+        #  kappa.append(tau/(self.__scale))
+        if verbose:
+          print('Intensity:', intensity, scale)
+          print('Optical depth:', tau, scale)
+      #epsilonStep = (epsilon[1:]-epsilon[:-1])/(scale)
+      #kappaStep = (kappa[1:]-kappa[:-1])/(scale)
+      self.__losVoxels = LOSvoxels
+      zPosition = zGrid[iLOS]
+      i = np.argsort(zPosition)[::-1]
+      self.__epsilon = np.array(epsilon, dtype=np.float)[i]
+      self.__epsilonStep = (self.__epsilon[1:]-self.__epsilon[:-1])/(scale)
+      self.__kappa = np.array(kappa, dtype=np.float)[i]
+      self.__kappaStep = (self.__kappa[1:]-self.__kappa[:-1])/(scale)
     # for voxel in grid.allVoxels():
     #   x,y,z = voxel.getPosition()
     #   if ('x' in dim) and ('y' in dim):
@@ -108,21 +127,12 @@ class Orientation(object):
     #     #  epsilon.append(intensity/(self.__scale))
     #     #  kappa.append(tau/(self.__scale))
     #     if verbose: print(tau, scale)
-    i = np.argsort(zPosition)[::-1]
-    if not i.size: print('WARNING: No LOS at position x={}, y={}, z={}.'.format(x,y,z))
+    else: print('WARNING: No LOS at position x={}, y={}, z={}.'.format(x,y,z))
     if verbose:
       print('voxels:', i)
-    # self.__losVoxels = []
-    # for idx in i:
-    #   self.__losVoxels.append(voxels[idx])
-    # self.__losZ = np.array(zPosition)[i]
-    self.__losVoxels = LOSvoxels
-    self.__epsilon = np.array(epsilon, dtype=np.float)[i]
-    self.__epsilonStep = (self.__epsilon[1:]-self.__epsilon[:-1])/(scale)
-    self.__kappa = np.array(kappa, dtype=np.float)[i]
-    self.__kappaStep = (self.__kappa[1:]-self.__kappa[:-1])/(scale)
     return
   def calculateRadiativeTransfer(self, velocity, verbose=False, test=True):
+    if self.__intensity.size>1: return self.__intensity
     intensity = np.full(self.__kappa[0].shape, self.__backgroundI)
     scale = self.__scale*3.086*10**18
     # Boolean indeces to separate how the intensity is calculated
