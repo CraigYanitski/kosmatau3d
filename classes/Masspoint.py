@@ -18,6 +18,7 @@ class Masspoint(object):
     self.__interpolations = interpolations
     self.__density = density
     self.__mass = mass 	#mass of this KOSMA-tau simulation
+    self.__Afuv = self.__interpolations.interpolateFUVextinction(density, mass)
     self.__FUV = fuv
     #input('{}: {}'.format(mass, number))
     #self.__FUV = FUVfield()     #the FUV field for this combination of mass points
