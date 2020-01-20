@@ -298,8 +298,10 @@ class Ensemble(object):
         for i in range(len(self.__probability)): print('Probability shapes:\n{}\n'.format(np.array(self.__probability[i].shape)))
         for i in self.__combinationIndeces: print('Combination sizes:\n{}\n'.format(np.array(self.__combinations[i].size)))
         input()
+    Afuv = 0
     for i,combination in enumerate(self.__combinations[largestCombinationIndex]):
       self.__combinationObjects.append(Combination(self.__species, self.__interpolations, combination=combination.flatten(), masses=self.__masspoints, density=self.__masspointDensity, fuv=self.__FUV, probability=self.__probability.prod(2)[:,i], debugging=self.__debugging))
+      Afuv += self.__combinationObjects[-1].getAfuv()
     #else:
     #  for i in self.__combinationIndeces:
     #    idx = np.where(self.__combinationIndeces==i)[0][0]
@@ -312,16 +314,16 @@ class Ensemble(object):
     #        else: print(self.__probability[idx].prod(1))
     #      self.__combinationObjects.append(Combination(self.__species, self.__interpolations, combination=combination.flatten(), masses=self.__masspoints, density=self.__masspointDensity, fuv=self.__FUV, probability=(self.__probability[idx])[j].prod(1)))
     #for i,combination in enumerate(self.__combinations): self.__probability[i] = self.__probability[i](combination)
-    return
+    return -np.log(Afuv)
   def initialiseEnsemble(self):
 
     self.calculateMasspoints()
     self.calculateRadii()
-    self.createCombinationObjects()
+    Afuv = self.createCombinationObjects()
     if self.__verbose: print(self.__clumpType)
-    return
+    return np.log(Afuv)
   #@jit(nopython=False)
-  def calculate(self, debug=False, test=False):
+  def calculate(self, Afuv, debug=False, test=False):
     '''Maybe <<PARALLELISE>> this??
 
        This is a function to cycle through the Combination instances to create a large numpy.ndarray,
@@ -335,9 +337,9 @@ class Ensemble(object):
     if test: print('\n', self.__clumpType, len(self.__combinationObjects))
     for combination in self.__combinationObjects:
       if (combination in self.__combinationObjects[-10:]) and test:
-        result = combination.calculateEmission(self.__velocityBins, self.__velocityDispersion, test=False)
+        result = combination.calculateEmission(self.__velocityBins, self.__velocityDispersion, Afuv, test=False)
       else:
-        result = combination.calculateEmission(self.__velocity, self.__velocityDispersion)
+        result = combination.calculateEmission(self.__velocity, self.__velocityDispersion, Afuv)
       #result = combination.getScaledCombinationEmission() #<<this needs to be altered>>
       intensityResult.append(result[0])
       opticalDepthResult.append(result[1])

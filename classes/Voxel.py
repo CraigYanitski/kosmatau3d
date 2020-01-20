@@ -23,6 +23,7 @@ class Voxel(object):
     self.__intensity = 0      #intensity of emissions at voxel point
     self.__opticalDepth = 0   #optical depth at voxel point
     self.__FUV = 0
+    self.__Afuv = 0.
     self.__clump = Ensemble('clump', self.__species, self.__interpolations, debugging=debugging)    #clumpy ensemble at voxel point
     self.__interclump = Ensemble('interclump', self.__species, self.__interpolations, debugging=debugging)    #diffuse interclump ensemble at voxel point
     self.__x = 0
@@ -36,11 +37,11 @@ class Voxel(object):
     self.__mass = self.__clumpMass+self.__interclumpMass
   def __setClumpMass(self):
     self.__clumpMass = self.__interpolations.interpolateClumpMass(self.__r)
-    self.__clump.setMass(self.__clumpMass)
+    self.__clump.setMass()
     return
   def __setInterclumpMass(self):
     self.__interclumpMass = self.__interpolations.interpolateInterclumpMass(self.__r)
-    self.__interclump.setMass(self.__interclumpMass)
+    self.__interclump.setMass()
     return
   def __setVelocity(self):
     self.__velocity = self.__interpolations.interpolateRotationalVelocity(self.__r)
@@ -90,8 +91,8 @@ class Voxel(object):
     self.__setDensity()
     self.__setExtinction()
     self.__setFUV()
-    self.__clump.initialise(mass=self.__clumpMass, density=self.__density, velocity=self.__velocity, velocityDispersion=self.__velocityDispersion, FUV=self.__FUV, extinction=self.__UVextinction)
-    self.__interclump.initialise(mass=self.__interclumpMass, density=1911, velocity=self.__velocity, velocityDispersion=self.__velocityDispersion, FUV=self.__FUV, extinction=self.__UVextinction)
+    self.__Afuv = self.__clump.initialise(mass=self.__clumpMass, density=self.__density, velocity=self.__velocity, velocityDispersion=self.__velocityDispersion, FUV=self.__FUV, extinction=self.__UVextinction)
+    self.__Afuv += self.__interclump.initialise(mass=self.__interclumpMass, density=1911, velocity=self.__velocity, velocityDispersion=self.__velocityDispersion, FUV=self.__FUV, extinction=self.__UVextinction)
     return
   def getPosition(self):
     return (self.__x, self.__y, self.__z)
@@ -102,8 +103,8 @@ class Voxel(object):
   def calculateEmission(self, verbose=False):
     if verbose:
       print('\nCalculating voxel V{} emission'.format(self.__index))
-    iClump,tauClump,FUVclump = self.__clump.calculate(test=False)
-    iInterclump,tauInterclump,FUVinterclump = self.__interclump.calculate(test=False)
+    iClump,tauClump,FUVclump = self.__clump.calculate(self.__Afuv, test=False)
+    iInterclump,tauInterclump,FUVinterclump = self.__interclump.calculate(self.__Afuv, test=False)
     if verbose:
       print('\nClump and interclump intensity:', iClump, iInterclump)
       print('\nClump and interclump optical depth:', tauClump, tauInterclump)

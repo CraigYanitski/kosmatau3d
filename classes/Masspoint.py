@@ -18,7 +18,7 @@ class Masspoint(object):
     self.__interpolations = interpolations
     self.__density = density
     self.__mass = mass 	#mass of this KOSMA-tau simulation
-    self.__Afuv = self.__interpolations.interpolateFUVextinction(density, mass)
+    #self.__Afuv = self.__interpolations.interpolateFUVextinction(density, mass)
     self.__FUV = fuv
     #input('{}: {}'.format(mass, number))
     #self.__FUV = FUVfield()     #the FUV field for this combination of mass points
@@ -37,8 +37,10 @@ class Masspoint(object):
     il.reload(Molecules)
     il.reload(Dust)
     return
+  def getAfuv(self):
+    return self.__interpolations.interpolateFUVextinction(self.__density, self.__mass)
   #@jit(forceobj=False)
-  def calculateEmission(self, velocity, vDispersion, verbose=False, debug=False, test=False):
+  def calculateEmission(self, velocity, vDispersion, Afuv, verbose=False, debug=False, test=False):
     #velocity.resize((len(velocity), 1))
     velocityRange = self.__constants.velocityBins
     #velocityRange = np.linspace(velocity-3*vDispersion, velocity+3*vDispersion, num=7)      #a range of 7 is used to account for the observed velocity +/- 3 sigma
@@ -54,7 +56,7 @@ class Masspoint(object):
     #   intensity_xi = np.full((speciesNumber, velocityRange.size, velocityRange.size), 10**-100)
     #   opticalDepth_xi = np.full((speciesNumber, velocityRange.size, velocityRange.size), 10**-100)
     # else:
-    interpolationPoint = [self.__density, self.__mass, np.log10(self.__FUV.getFUV())]
+    interpolationPoint = [self.__density, self.__mass, np.log10(self.__FUV.getFUV())+Afuv/2.5]
     if debug==False:
       if test: print('\n', interpolationPoint)
       #input()

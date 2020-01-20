@@ -51,11 +51,16 @@ class Combination(object):
   def addFUV(self, fuvField):
     self.__setFUV(fuvField)
     return
+  def getAfuv(self):
+    Afuv = 0.
+    for i in range(len(self.__masspoints)):
+      Afuv += masspoint.getAfuv()
+    return self.__probability*self.__combination*np.exp(-Afuv)
   def addMasspoint(self, mass, number):
     self.__masspoints.append(Masspoint(self.__species, self.__interpolations, mass, number))
     self.__combination.append(number)
     return
-  def calculateEmission(self, velocity, vDispersion, debug=False, test=False):
+  def calculateEmission(self, velocity, vDispersion, Afuv, debug=False, test=False):
     #print('Calculating combination emission')
     # if isinstance(self.__intensity,np.ndarray):
     #   print('\nThe emission has already been calculated for this combination.\n')
@@ -68,10 +73,10 @@ class Combination(object):
     for i,masspoint in enumerate(self.__masspoints):
       if test:
         print(masspoint)
-        (intensity,opticalDepth) = masspoint.calculateEmission(velocity, vDispersion, test=False)
+        (intensity,opticalDepth) = masspoint.calculateEmission(velocity, vDispersion, Afuv, test=False)
         input()
       else:
-        (intensity,opticalDepth) = masspoint.calculateEmission(velocity, vDispersion)
+        (intensity,opticalDepth) = masspoint.calculateEmission(velocity, vDispersion, Afuv)
       intensityList.append(self.__combination[i]*intensity)
       opticalDepthList.append(self.__combination[i]*opticalDepth)
     intensityList = np.array(intensityList)
