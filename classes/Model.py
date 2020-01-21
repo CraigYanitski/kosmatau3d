@@ -158,6 +158,8 @@ class Model(object):
     self.__mapPositions = np.array(position)
     self.__intensityMap = np.array(intensityMap)
     return
+  def getIntensityMap(self):
+    return (self.__mapPositions, self.__intensityMap)
   def printIntensityMap(self, index=None):
     print(self.__species[0].getMolecules(), self.__species[1].getDust())
     if not index==None:
