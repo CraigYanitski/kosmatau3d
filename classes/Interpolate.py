@@ -38,8 +38,8 @@ class Interpolate(object):
     nmuvTau,Tau = self.__observations.tauCenterline
     intensityInterpolation = []
     tauInterpolation = []
-    nmuvI /= 10     #begin 'decoding' the grid for the interpolation
-    nmuvTau /= 10
+    nmuvI /= 10.     #begin 'decoding' the grid for the interpolation
+    nmuvTau /= 10.
     logI = np.log10(I)    #'encode' the intensity of the grid for interpolation
     logTau = np.log10(Tau)
     if self.__interpolation=='linear':
@@ -104,10 +104,12 @@ class Interpolate(object):
   def __interpolateFUVextinction(self):
     if self.__verbose: print('Creating A_UV grid interpolation')
     rhomass,AUV = self.__observations.rhoMassAFUV
+    rhomass /= 10.
+    logAUV = np.log10(AUV)
     if self.__interpolation=='linear':
-      return interpolate.LinearNDInterpolator(rhomass/10, AUV/10)
+      return interpolate.LinearNDInterpolator(rhomass, logAUV)
     elif self.__interpolation=='cubic' or self.__interpolation=='radial':
-      return interpolate.Rbf(rhomass/10, AUV/10)
+      return interpolate.Rbf(rhomass, logAUV)
     else: sys.exit('<<ERROR>>: There is no such method as {} to interpolate the extinction in the KOSMA-tau grid.\n\nExitting...\n\n'.format(self.__interpolation))
   def __interpolateFUVfield(self):
     if self.__verbose: print('Creating FUV interpolation')
