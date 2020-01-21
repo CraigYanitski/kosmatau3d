@@ -98,8 +98,8 @@ class Ensemble(object):
     self.__setVelocityDispersion(velocityDispersion)
     self.__setExtinction(extinction)
     self.__setFUV(FUV)
-    self.initialiseEnsemble()
-    return
+    Afuv = self.initialiseEnsemble()
+    return Afuv
   def setMass(self, mass):
     '''Set the mass.'''
     self.__setMass(mass)
@@ -321,7 +321,7 @@ class Ensemble(object):
     self.calculateRadii()
     Afuv = self.createCombinationObjects()
     if self.__verbose: print(self.__clumpType)
-    return np.log(Afuv)
+    return Afuv
   #@jit(nopython=False)
   def calculate(self, Afuv, debug=False, test=False):
     '''Maybe <<PARALLELISE>> this??

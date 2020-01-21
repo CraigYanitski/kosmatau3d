@@ -54,8 +54,8 @@ class Combination(object):
   def getAfuv(self):
     Afuv = 0.
     for i in range(len(self.__masspoints)):
-      Afuv += masspoint.getAfuv()
-    return self.__probability*self.__combination*np.exp(-Afuv)
+      Afuv += self.__combination[i]*self.__masspoints[i].getAfuv()
+    return self.__probability.max()*np.exp(-Afuv)
   def addMasspoint(self, mass, number):
     self.__masspoints.append(Masspoint(self.__species, self.__interpolations, mass, number))
     self.__combination.append(number)

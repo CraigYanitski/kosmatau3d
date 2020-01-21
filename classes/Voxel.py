@@ -37,11 +37,11 @@ class Voxel(object):
     self.__mass = self.__clumpMass+self.__interclumpMass
   def __setClumpMass(self):
     self.__clumpMass = self.__interpolations.interpolateClumpMass(self.__r)
-    self.__clump.setMass()
+    self.__clump.setMass(self.__clumpMass)
     return
   def __setInterclumpMass(self):
     self.__interclumpMass = self.__interpolations.interpolateInterclumpMass(self.__r)
-    self.__interclump.setMass()
+    self.__interclump.setMass(self.__interclumpMass)
     return
   def __setVelocity(self):
     self.__velocity = self.__interpolations.interpolateRotationalVelocity(self.__r)
@@ -82,7 +82,7 @@ class Voxel(object):
     self.__phi = phi
     self.__scale = scale
     return
-  def setProperties(self):
+  def setProperties(self, debug=True):
     #print('Voxel instance initialised')
     self.__setClumpMass()
     self.__setInterclumpMass()
@@ -93,6 +93,7 @@ class Voxel(object):
     self.__setFUV()
     self.__Afuv = self.__clump.initialise(mass=self.__clumpMass, density=self.__density, velocity=self.__velocity, velocityDispersion=self.__velocityDispersion, FUV=self.__FUV, extinction=self.__UVextinction)
     self.__Afuv += self.__interclump.initialise(mass=self.__interclumpMass, density=1911, velocity=self.__velocity, velocityDispersion=self.__velocityDispersion, FUV=self.__FUV, extinction=self.__UVextinction)
+    if debug: self.__Afuv = 0
     return
   def getPosition(self):
     return (self.__x, self.__y, self.__z)
@@ -102,7 +103,7 @@ class Voxel(object):
     return (self.__velocity, self.__velocityDispersion, self.__velocityRange)
   def calculateEmission(self, verbose=False):
     if verbose:
-      print('\nCalculating voxel V{} emission'.format(self.__index))
+      print('\nCalculating voxel V{} emission\nFUV extinction: {}'.format(self.__index, self.__Afuv))
     iClump,tauClump,FUVclump = self.__clump.calculate(self.__Afuv, test=False)
     iInterclump,tauInterclump,FUVinterclump = self.__interclump.calculate(self.__Afuv, test=False)
     if verbose:
