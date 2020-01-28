@@ -35,7 +35,10 @@ class Observations(object):
        'radius', 'energy density 912', 'energy density 1350', 'energy density 1500', 'energy density 1650', 'energy density 2000', \
        'energy density 2200', 'energy density 2500', 'energy density 2800', 'energy density 3650'])'''
     fuv = np.loadtxt(self.__INPUTPATH+self.__directory+file)
+    #r = np.arange(0,20000,50)
+    #fuv = 50/4/np.pi/r**2
     return (fuv[:,0],fuv[:,1],fuv[:,2:])
+    #return (r,fuv)
   def __rotationProfile(self, file='rot_milki2018_14.dat'):
     # Open file for the rotation profile of the object
     rotation = np.genfromtxt(self.__INPUTPATH+self.__directory+file)
