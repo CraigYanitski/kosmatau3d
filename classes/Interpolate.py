@@ -40,8 +40,9 @@ class Interpolate(object):
     tauInterpolation = []
     nmuvI /= 10.     #begin 'decoding' the grid for the interpolation
     nmuvTau /= 10.
-    logI = np.log10(I)    #'encode' the intensity of the grid for interpolation
-    logTau = np.log10(Tau)
+    with np.errstate(divide='ignore', invalid='ignore'):
+      logI = np.log10(I)    #'encode' the intensity of the grid for interpolation
+      logTau = np.log10(Tau)
     if self.__interpolation=='linear':
       for index in self.__indeces:
         if self.__verbose: print('Creating intensity grid interpolation')
