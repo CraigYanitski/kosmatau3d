@@ -98,7 +98,11 @@ class Ensemble(object):
     self.__setVelocityDispersion(velocityDispersion)
     self.__setExtinction(extinction)
     self.__setFUV(FUV)
-    Afuv = self.initialiseEnsemble()
+    #Afuv = self.initialiseEnsemble()
+    self.calculateMasspoints()
+    self.calculateRadii()
+    Afuv = self.createCombinationObjects()
+    if self.__verbose: print(self.__clumpType)
     return Afuv
   def setMass(self, mass):
     '''Set the mass.'''
@@ -301,27 +305,9 @@ class Ensemble(object):
     Afuv = 0
     for i,combination in enumerate(self.__combinations[largestCombinationIndex]):
       self.__combinationObjects.append(Combination(self.__species, self.__interpolations, combination=combination.flatten(), masses=self.__masspoints, density=self.__masspointDensity, fuv=self.__FUV, probability=self.__probability.prod(2)[:,i], debugging=self.__debugging))
-      Afuv += self.__combinationObjects[-1].getAfuv()
-    #else:
-    #  for i in self.__combinationIndeces:
-    #    idx = np.where(self.__combinationIndeces==i)[0][0]
-    #    self.__probability[idx] = np.array(self.__probability[idx])
-    #    for j,combination in enumerate(self.__combinations[i]):
-    #      if verbose:
-    #        print('Combination probability:\n', type((self.__probability[idx])[j]))
-    #        print('Combination probability shape: ', (self.__probability[idx]).shape)
-    #        if len((self.__probability[idx])[0])>1: print((self.__probability[idx]).prod(1))
-    #        else: print(self.__probability[idx].prod(1))
-    #      self.__combinationObjects.append(Combination(self.__species, self.__interpolations, combination=combination.flatten(), masses=self.__masspoints, density=self.__masspointDensity, fuv=self.__FUV, probability=(self.__probability[idx])[j].prod(1)))
-    #for i,combination in enumerate(self.__combinations): self.__probability[i] = self.__probability[i](combination)
+      Afuv += self.__combinationObjects[-1].getAfuv().min()
+    #input('{}'.format(-np.log(Afuv)))
     return -np.log(Afuv)
-  def initialiseEnsemble(self):
-
-    self.calculateMasspoints()
-    self.calculateRadii()
-    Afuv = self.createCombinationObjects()
-    if self.__verbose: print(self.__clumpType)
-    return Afuv
   #@jit(nopython=False)
   def calculate(self, Afuv, debug=False, test=False):
     '''Maybe <<PARALLELISE>> this??

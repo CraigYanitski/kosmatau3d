@@ -82,7 +82,7 @@ class Voxel(object):
     self.__phi = phi
     self.__scale = scale
     return
-  def setProperties(self, debug=True):
+  def setProperties(self, debug=False):
     #print('Voxel instance initialised')
     self.__setClumpMass()
     self.__setInterclumpMass()
@@ -123,6 +123,8 @@ class Voxel(object):
     # del FUVinterclump
     return
   def getEmission(self, verbose=False):
+    print(self.__x, self.__y, self.__z)
+    print(self.__Afuv, '\n')
     emission = ((self.__intensity), (self.__opticalDepth), self.__FUV)
     if verbose: print(emission)
     return emission

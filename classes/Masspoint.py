@@ -56,7 +56,7 @@ class Masspoint(object):
     #   intensity_xi = np.full((speciesNumber, velocityRange.size, velocityRange.size), 10**-100)
     #   opticalDepth_xi = np.full((speciesNumber, velocityRange.size, velocityRange.size), 10**-100)
     # else:
-    interpolationPoint = [self.__density, self.__mass, np.log10(self.__FUV.getFUV())+Afuv/2.5]
+    interpolationPoint = [self.__density, self.__mass, max(np.log10(self.__FUV.getFUV())-Afuv/2.5, 0)]
     if debug==False:
       if test: print('\n', interpolationPoint)
       #input()
@@ -66,6 +66,7 @@ class Masspoint(object):
     #  if verbose: print(element)
     #  if isinstance(element, Molecules):
     for index in self.__species[0].getInterpolationIndeces():
+      # Intensity currently in K
       intensity_xi.append((self.__interpolations.interpolateIntensity(interpolationPoint, [index])*np.exp(-1/2.*((velocityRange-velocityRange.T)/(self.__constants.clumpDispersion))**2)))
       opticalDepth_xi.append((self.__interpolations.interpolateTau(interpolationPoint, [index])*np.exp(-1/2.*((velocityRange-velocityRange.T)/(self.__constants.clumpDispersion))**2)))
       #self.__intensity_xi[-1] = self.__intensity_xi[-1].sum(1)
@@ -75,8 +76,9 @@ class Masspoint(object):
     if debug:
       print('intensity_xi:\n{}\n'.format(self.__intensity_xi[-1]))
     #  elif isinstance(element, Dust):
-    for index in self.__species[1].getInterpolationIndeces():
-      intensity_xi.append(np.full((velocityRange.size, velocityRange.size), self.__interpolations.interpolateIntensity(interpolationPoint, [index])))
+    for i,index in enumerate(self.__species[1].getInterpolationIndeces()):
+      # Intensity currently in converted to K, to coinside with the molecule emission
+      intensity_xi.append(np.full((velocityRange.size, velocityRange.size), self.__interpolations.interpolateIntensity(interpolationPoint, [index]))/2/self.__constants.kB*self.__constants.c**2/(self.__species[1].getFrequencies()[i]*10**9)**2*10**-26)
       opticalDepth_xi.append(np.full((velocityRange.size, velocityRange.size), self.__interpolations.interpolateTau(interpolationPoint, [index])))
     # del interpolationPoint
     if speciesNumber>1:
