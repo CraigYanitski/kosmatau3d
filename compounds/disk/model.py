@@ -12,7 +12,7 @@ from scipy.interpolate import griddata
 import globals as gbl
 #end edit
 gbl._globals['compound'] = {}  #directory entries for compound
-r = 6*1000#18    #disk radius in pc
+r = 18*1000#18    #disk radius in pc
 #r = 18.1*1000
 factor = 1 #larger makes finer voxelgrid
 scale = gbl._globals['compound']['pixelsize'] = 1000.0 / factor #voxel size in pc
@@ -20,13 +20,13 @@ scale = gbl._globals['compound']['pixelsize'] = 1000.0 / factor #voxel size in p
 #print 'cells in one dimension', (36*factor+1)
 x_length = 36*factor+1#37  number of elements/voxels along x axis,r*2+1 # odd-number
 y_length = 36*factor+1#37 # edge length of map (projection) can be lower for think galactic disk in 90 degree ancle
-y_length = 4*factor+1#37 # edge length of map (projection - increases last parts speed radiative transfer
+y_length = 0*factor+1#37 # edge length of map (projection - increases last parts speed radiative transfer
 z_length = 36*factor+1#37 #
 x_offset = (x_length-1)/2 #  to zentralize around zero
 y_offset = (y_length-1)/2 #  (length-1)/2
 z_offset = (z_length-1)/2
 r_disk = r # radius disk
-z_disk = 0.1*1000 # thickness /  scaleheight of disk
+z_disk = 1*1000 # thickness /  scaleheight of disk
 inc_disk = 0.   /180.*np.pi # inclination of disk [rad] relative to y-axis
 #phi_disk = 0 # ancle of disk in x,y-plane
 # Naming and setting for testcases
@@ -168,7 +168,7 @@ gbl._globals['sigma']['sigma_ens_inter_j'] = np.array([10./2.3548, 10./2.3548, 1
 # and number of steps: nstep # km s^-1
 gbl._globals['compound']['vel'] = float(0.) # central v
 gbl._globals['compound']['d_vel'] = float(350) *np.cos(inc_disk) +10.# max v
-gbl._globals['compound']['nstep'] = int(51) #101 #number of v-baskets should be uneven
+gbl._globals['compound']['nstep'] = int(101) #101 #number of v-baskets should be uneven
 #gbl._globals['compound']['nstep'] = int(101) #101 #number of v-baskets should be uneven
 print('min Velocity Sampling [km/s]: ', -gbl._globals['compound']['d_vel'] + gbl._globals['compound']['vel'])
 print('max Velocity Sampling [km/s]: ', gbl._globals['compound']['d_vel'] + gbl._globals['compound']['vel'], '\n')

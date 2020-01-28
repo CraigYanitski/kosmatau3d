@@ -303,11 +303,14 @@ def runKOSMAt():
           gbl.plotFlags['FUV distribution'] = gbl.plotFlags['Z velocity'] = gbl.plotFlags['Total velocity'] = \
           gbl.plotFlags['Total dispersion'] = gbl.plotFlags['Total dispersion'] = gbl.plotFlags['FUV distribution'] = False
     elif INPUT=='7':
+      t = time.time()
       setupModel()
       initVelocities()
       calculateFUV()
       lineAE()
-      #radTransfer()
+      radTransfer()
+      #print(gbl._globals['compound']['abs_coordinates'])
+      print('\nTime for model execution: {} s'.format(time.time()-t))
       #showPlots()
     else: RUN = False
   print('\nAuf Wiedersehen !!\n')
@@ -450,13 +453,12 @@ def calculateFUV(timed=True):
                         gbl._globals['compound']['ens'][0].Afuv)
       emissivity_tot = []
       for i in npoints:
-        gbl._globals['compound']['ens'][i].Afuv_tot = \
-          gbl._globals['compound']['ens'][i].Afuv_tot + \
+        gbl._globals['compound']['ens'][i].Afuv_tot += \
           gbl._globals['compound']['ens'][i].Afuv
         gbl._globals['compound']['ens'][i].Afuv = None
       if gbl._globals['verbose']: print('total fuv ext. voxel 1: ', gbl._globals['compound']['ens'][0].Afuv_tot)
       # pause = input('calculation of pixel averaged fuv extinction by interclump medium finished')
-    __import__(gbl._globals['Files']['fuv_filename'])
+    #__import__(gbl._globals['Files']['fuv_filename'])
     # calculate fuv field strength for each pixel
     if gbl._globals['verbose']: print('FUV for first ensemble: ', gbl._globals['compound']['ens'][1].FUV)
     print('writing fuv field strength for each pixel to file ./temp/FUV.dat...')
@@ -544,9 +546,9 @@ def lineAE(timed=True):
         copy(gbl._globals['compound']['ens'][(i)].inten)
       gbl._globals['compound']['ens'][(i)].tau_tot = \
         copy(gbl._globals['compound']['ens'][(i)].tau)
-      print('Clump: {}\nMass: {}\nFUV: {}\nIntensity: {}\nOptical Depth: {}'.format(i, gbl._globals['compound']['ens'][(i)].Mens_cl_sum, gbl._globals['compound']['ens'][i].FUV, (gbl._globals['compound']['ens'][(i)].inten), (gbl._globals['compound']['ens'][(i)].tau)))
+      #print('Clump: {}\nMass: {}\nFUV: {}\nIntensity: {}\nOptical Depth: {}'.format(i, gbl._globals['compound']['ens'][(i)].Mens_cl_sum, gbl._globals['compound']['ens'][i].FUV, (gbl._globals['compound']['ens'][(i)].inten), (gbl._globals['compound']['ens'][(i)].tau)))
     # Write to data file (for dense clumps)
-    input()
+    #input()
     with open(gbl.KOSMAPATH+'temp/tau_line_clumps.dat', 'w') as t:
       # write tau_tot to file for dense clumps
       # textwrap ensures that the arrays are not wraped
@@ -591,7 +593,7 @@ def lineAE(timed=True):
       ##
       gbl._globals['constants']['alpha'] = None
       for i in npoints:
-        print('Interclump: {}\nMass: {}\nFUV: {}\nIntensity: {}\nOptical Depth: {}'.format(i, gbl._globals['compound']['ens'][(i)].Mens_cl_sum, gbl._globals['compound']['ens'][i].FUV, (gbl._globals['compound']['ens'][(i)].inten), (gbl._globals['compound']['ens'][(i)].tau)))
+        #print('Interclump: {}\nMass: {}\nFUV: {}\nIntensity: {}\nOptical Depth: {}'.format(i, gbl._globals['compound']['ens'][(i)].Mens_cl_sum, gbl._globals['compound']['ens'][i].FUV, (gbl._globals['compound']['ens'][(i)].inten), (gbl._globals['compound']['ens'][(i)].tau)))
         gbl._globals['compound']['ens'][(i)].Mens = None
         gbl._globals['compound']['ens'][(i)].rho_ens = None
         gbl._globals['compound']['ens'][(i)].Mu = None
@@ -618,6 +620,10 @@ def lineAE(timed=True):
           copy(gbl._globals['compound']['ens'][(i)].inten_tot + gbl._globals['compound']['ens'][(i)].inten)
         gbl._globals['compound']['ens'][(i)].tau_tot = \
           copy(gbl._globals['compound']['ens'][(i)].tau_tot + gbl._globals['compound']['ens'][(i)].tau)
+        print()
+        print(gbl._globals['compound']['abs_coordinates'][i])
+        print(gbl._globals['compound']['ens'][i].Afuv_tot)
+        print(gbl._globals['compound']['ens'][i].inten_tot.max(1))
       if gbl._globals['verbose']: print('tau.tot: ' , gbl._globals['compound']['ens'][0].tau_tot)
       # pause = input('...')
       for i in npoints:
@@ -712,7 +718,7 @@ def radTransfer(timed=True):
         for i in nstep:
           spec_cube[((i))][y][x] = yval[(i)]
     np.set_printoptions(threshold=100000)
-    print(spec_cube.max())
+    #print(spec_cube.max())
     run = (time.time()-gbl._globals['runtimes']['start_rad_transfer'])
     if gbl._globals['verbose']: print('running ', run, 's of total estimated ',  run/((sp+1.)/gbl._globals['compound']['nspe']), 's')
     spec_name = gbl._globals['compound']['species'][sp] + '_' + \

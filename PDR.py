@@ -57,7 +57,7 @@ gbl._globals['Flags']['reuse_clump'] = False
 gbl._globals['Flags']['reuse_inter'] = False
 gbl._globals['Flags']['reuse_vz'] = False
 gbl._globals['Flags']['reuse_density'] = False
-gbl._globals['Flags']['reuse_FUV'] = True
+gbl._globals['Flags']['reuse_FUV'] = False
 gbl._globals['Flags']['reuse_disp'] = False
 
 # read in fits files

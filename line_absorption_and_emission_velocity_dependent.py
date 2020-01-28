@@ -372,7 +372,7 @@ def I_calc(idx, pix, debug=False):
       if totalbinnedmass / number[ma] <= 0.95: #less than 95%
         print('Achtung! Anteil abgedeckter Masse [%] nur:', totalbinnedmass/number[ma]*100)
         print('increase v-range or reduce v-dispersion')
-        pause = input('Proceed?')  
+        #pause = input('Proceed?')  
     #print(DeltaN_ji)
         ############### dust with mass
         ## 2 dust difference
@@ -393,7 +393,7 @@ def I_calc(idx, pix, debug=False):
     tau_v = []
     inten_v = []       
     for v in gbl._globals['compound']['ranges']['number vbin']:
-      print('velocity bin', gbl._globals['compound']['ranges']['vbin'][v])
+      #print('velocity bin', gbl._globals['compound']['ranges']['vbin'][v])
       #print 'MA',ma
       #print 'V', v
       if DeltaN_ji[number_masspoints-1,v] == 0: #no masses at this velocity
@@ -597,6 +597,7 @@ def I_calc(idx, pix, debug=False):
           if len(probabilityTab)==1: ptot = float(probabilityTab[0](combis[c][0]))
           elif len(probabilityTab)==2: ptot = float(probabilityTab[0](int(combis[c][0]))*probabilityTab[1](int(combis[c][1])))
           elif len(probabilityTab)==3: ptot = float(probabilityTab[0](int(combis[c][0]))*probabilityTab[1](int(combis[c][1]))*probabilityTab[2](int(combis[c][2])))
+          #print(combis[c], ptot)
           if debug: print(ma, combis[c][ma], probabilityTab[ma](int(combis[c][ma])))
           inten_v_i.append([ptot, Itemp])
           tau_v_i.append([ptot, Ttemp])
@@ -635,7 +636,7 @@ def I_calc(idx, pix, debug=False):
         inten_v.append(I_v_i_Av)
     tau   = sum(tau_v[i] for i in range(len(tau_v)))
     inten = sum(inten_v[i] for i in range(len(inten_v)))
-    if debug==False:
+    if debug:
       print('Emission x_i (single masspoint at one observing velocity)')
       print(np.shape(inten_x_i))
       print(np.shape(tau_x_i))
