@@ -56,7 +56,8 @@ class Shape():
     self.__phi = np.array(PHI)
     return
   def __createSpheroid(self):
-    x,y,z = self.__dimensions.voxelCartesianPosition()
+    x,y,z = self.__createBlock(self.dimensions[0], self.dimensions[1], self.dimensions[2])
+    #x,y,z = self.__dimensions.voxelCartesianPosition()
     r,phi = self.__dimensions.voxelPolarPosition()
     X = []
     Y = []
