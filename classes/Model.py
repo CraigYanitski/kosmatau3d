@@ -1,5 +1,6 @@
 import importlib as il
 import numpy as np
+import matplotlib.pyplot as plt
 from Shape import *
 from VoxelGrid import *
 from Orientation import *
@@ -179,4 +180,22 @@ class Model(object):
           i = intensity[element].argmax()
           print('{}: {} centered at {} km/s'.format(self.__speciesNames[element], intensity[element][intensity[element].nonzero()], self.__constants.velocityBins[i]))
         print()
+    return
+  def plotModel(self, weights='emission'):
+    positions = self.__grid.getVoxelPositions()
+    limits = [positions.min(), positions.max()]
+    if weights=='emission':
+      weights = (self.__grid.totalEmission()[0]).max(2).sum(1)
+    fig = plt.figure()
+    ax = fig.add_subplot(111, projection='3d')
+    model = ax.scatter(positions[0], positions[1], positions[2], c=weights, cmap=plt.cm.jet)
+    ax.set_xlim(limits)
+    ax.set_ylim(limits)
+    ax.set_zlim(limits)
+    cbar = plt.colorbar(model)
+    ax.set_title('PDR Emission within the Milky Way')
+    ax.set_xlabel('X (pc)')
+    ax.set_ylabel('Y (pc)')
+    ax.set_zlabel('Z (pc)')
+    plt.show()
     return
