@@ -408,22 +408,30 @@ def calculateFUV(timed=True):
   else:
     # recalculate incident FUV flux for each voxel 
     for i in npoints:
+
       gbl._globals['compound']['ens'][i].Mens = \
         gbl._globals['compound']['ens'][i].Mens_clumps
+
       gbl._globals['compound']['ens'][i].rho_ens = \
         gbl._globals['compound']['ens'][i].rho_ens_clumps
+
       gbl._globals['compound']['ens'][i].Mu = \
         gbl._globals['compound']['ens'][i].Mu_cl
+
       gbl._globals['compound']['ens'][i].Ml = \
         gbl._globals['compound']['ens'][i].Ml_cl
+
     gbl._globals['statistic']['Nmin'] = gbl._globals['statistic']['Nmin_clumps']  
     gbl._globals['constants']['alpha'] = gbl._globals['constants']['alpha_cl']
     print('\nClump FUV calculation.')
     ##
     fuva.fuvAbsorption()
     ##
+    Afuv_cl = []
     for i in npoints:
-      gbl._globals['compound']['ens'][i].Afuv_tot = gbl._globals['compound']['ens'][i].Afuv
+      Afuv_cl.append(gbl._globals['compound']['ens'][i].Afuv)
+      gbl._globals['compound']['ens'][i].Afuv_tot = copy(gbl._globals['compound']['ens'][i].Afuv)
+
     if gbl._globals['verbose']: print('clump fuv ext. pixel 1: ', gbl._globals['compound']['ens'][1].Afuv_tot)
     # pause = input('calculation of pixel averaged fuv extinction by clumps finished')
     # SECOND: contibution of inter-clump medium
@@ -433,14 +441,19 @@ def calculateFUV(timed=True):
       # pause = input('ok?')
     else: 
       for i in npoints:
+
         gbl._globals['compound']['ens'][i].Mens = \
           copy(gbl._globals['compound']['ens'][i].Mens_inter)
+
         gbl._globals['compound']['ens'][i].rho_ens = \
           copy(gbl._globals['compound']['ens'][i].rho_ens_inter)
+
         gbl._globals['compound']['ens'][i].Mu = \
           copy(gbl._globals['compound']['ens'][i].Mu_inter)
+
         gbl._globals['compound']['ens'][i].Ml = \
           copy(gbl._globals['compound']['ens'][i].Ml_inter)
+
       gbl._globals['statistic']['Nmin'] = gbl._globals['statistic']['Nmin_inter']  
       gbl._globals['constants']['alpha'] = gbl._globals['constants']['alpha_intercl']
       print('\nInterclump FUV calculation.')
@@ -453,10 +466,13 @@ def calculateFUV(timed=True):
                         gbl._globals['compound']['ens'][0].Afuv)
       emissivity_tot = []
       for i in npoints:
+        Afuv_inter = copy(gbl._globals['compound']['ens'][i].Afuv)
+        if gbl._globals['verbose']==False:
+          print('total fuv ext. voxel {}: {}'.format(i,(Afuv_cl[i],Afuv_inter)))
+          print('  {}\n'.format(gbl._globals['compound']['abs_coordinates'][i]))
         gbl._globals['compound']['ens'][i].Afuv_tot += \
           gbl._globals['compound']['ens'][i].Afuv
         gbl._globals['compound']['ens'][i].Afuv = None
-      if gbl._globals['verbose']: print('total fuv ext. voxel 1: ', gbl._globals['compound']['ens'][0].Afuv_tot)
       # pause = input('calculation of pixel averaged fuv extinction by interclump medium finished')
     #__import__(gbl._globals['Files']['fuv_filename'])
     # calculate fuv field strength for each pixel

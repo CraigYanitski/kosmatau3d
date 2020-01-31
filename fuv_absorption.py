@@ -250,7 +250,9 @@ def fuvAbsorption():
             # pause = input()
           p = p + ptot
           if p>1: input('Error in probability')
-          AFUVNoBin.append([ptot, AFUVtot])
+          ptemp = copy(ptot)
+          Atemp = copy(AFUVtot)
+          AFUVNoBin.append([ptemp, Atemp])
           # pause = input()
         if gbl._globals['verbose']: print('p = ', p)
         # pause = input()
@@ -262,11 +264,12 @@ def fuvAbsorption():
         if gbl._globals['verbose']: print('AFUVEnsAv: ', AFUVEnsAv)
         # pause = input('A?')
     
-      gbl._globals['compound']['ens'][iunique].Afuv = AFUVEnsAv
+      gbl._globals['compound']['ens'][iunique].Afuv = copy(AFUVEnsAv)
+      print(interpolationPoints, '\n', p, AFUVEnsAv)
       # store ensemble averaged FUV extinction
       progress.update(1)
   
   with open(gbl.KOSMAPATH+'temp/fuvExtinction.dat', 'w') as t:
   # write ensemble averaged opacity (A)
       for i in range(number_ensembles):
-          t.write(str(gbl._globals['compound']['ens'][int(i)].Afuv) + '\n')
+          t.write(str(gbl._globals['compound']['abs_coordinates'][i]) + '    ' + str(gbl._globals['compound']['ens'][int(i)].Afuv) + '\n')

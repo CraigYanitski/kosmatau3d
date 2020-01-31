@@ -4,6 +4,7 @@
 import random as rand
 import numpy as np
 import time
+from copy import copy
 import PDRfunctions as pf
 #from PDR import gbl._globals
 from astropy.io import fits
@@ -345,7 +346,7 @@ for i in npoints:
   #print 'dispersion of voxel', end_disp
   end_dens = end_dens / bins**3 / gbl._globals['compound']['pixelsize'] #normalizing to binnumber and pix3D density
   #pause = input('pause')
-  ens[int(i)].v_dispersion = end_disp # dispersion by systematic speed which can't be resolved  
+  ens[int(i)].v_dispersion = copy(end_disp) # dispersion by systematic speed which can't be resolved  
   ens[int(i)].Mens_clumps = end_dens * gbl._globals['compound']['pixelsize']**3 # -> total voxel mass with additional interpol    
   ens[int(i)].Mens_clumps = ens[int(i)].Mens_clumps * global_massfactor #* 2
   #print "Voxel_mass:", ens[i].Mens_clumps ,"[Sm]" ,"at r", r      
@@ -355,7 +356,7 @@ for i in npoints:
   clump_rho = griddata(dens_profile[:,0], dens_profile[:,1], r, method='linear')
   if x == 0 and y == 0 and z == 0:
     clump_rho = 15000. # set centermass
-  ens[int(i)].rho_ens_clumps = clump_rho # N/cm^3
+  ens[int(i)].rho_ens_clumps = copy(clump_rho) # N/cm^3
   ens[int(i)].rho_ens_clumps = ens[int(i)].rho_ens_clumps * global_densityfactor  #densities for different test cases
   if ens[int(i)].rho_ens_clumps < minimum_roh: minimum_roh = ens[int(i)].rho_ens_clumps #memorises lowest roh
   if np.isnan(clump_rho) == True:
@@ -383,7 +384,7 @@ for i in npoints:
 print('Total clump-mass: ', total_clump_mass/10**9, ' in G M_sol')
 print('Total inter-mass: ', total_inter_mass/10**9, ' in G M_sol')
 print('Minimum ens-rho: ', minimum_roh)
-gbl._globals['compound']['ens'] = ens #save ensamble to globals
+gbl._globals['compound']['ens'] = copy(ens) #save ensamble to globals
 # END OF DEFINITIONS
 # set axis labels for 3D geometry plots. Do not need to be changed.
 gbl._globals['plots']['xlabel'] = 'X offset [' + str(gbl._globals['compound']['pixelsize']) + 'pc]'
