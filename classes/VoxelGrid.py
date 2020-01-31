@@ -22,6 +22,7 @@ class VoxelGrid(object):
     self.__voxelIntensity = []
     self.__voxelOpticalDepth = []
     self.__voxelFUV = []
+    self.__voxelAfuv = []
     self.__interpolations = None
     self.__x = []
     self.__y = []
@@ -65,6 +66,7 @@ class VoxelGrid(object):
         voxel.setIndex(i)#-len(self.__unusedVoxels))
         voxel.setPosition(x[i], y[i], z[i], r[i], phi, scale)
         voxel.setProperties()
+        self.__voxelAfuv.append(voxel.getAfuv())
         #else: self.__unusedVoxels.append(i)
         progress.update()
       progress.close()
@@ -101,7 +103,17 @@ class VoxelGrid(object):
     return self.__voxels
   def totalEmission(self):
     # Return the emission from all of the voxels, separated by observed velocity
-    return np.array([self.__voxelIntensity,self.__voxelOpticalDepth])
+    return np.array([self.__voxelIntensity.sum(1),self.__voxelOpticalDepth.sum(1)])
+  def clumpEmission(self):
+    # Return the emission from all of the voxels, separated by observed velocity
+    return np.array([self.__voxelIntensity[:,0],self.__voxelOpticalDepth[:,0]])
+  def interclumpEmission(self):
+    # Return the emission from all of the voxels, separated by observed velocity
+    return np.array([self.__voxelIntensity[:,1],self.__voxelOpticalDepth[:,1]])
+  def getFUV(self):
+    return self.__voxelFUV
+  def getAfuv(self):
+    return self.__voxelAfuv
   def printVoxels(self):
     for voxel in self.__voxels: voxel.printVoxel()
     return
