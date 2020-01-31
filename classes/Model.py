@@ -181,14 +181,40 @@ class Model(object):
           print('{}: {} centered at {} km/s'.format(self.__speciesNames[element], intensity[element][intensity[element].nonzero()], self.__constants.velocityBins[i]))
         print()
     return
-  def plotModel(self, weights='emission'):
+  def plotModel(self, plot='total intensity', debug=False):
     positions = self.__grid.getVoxelPositions()
     limits = [positions.min(), positions.max()]
-    if weights=='emission':
+    if plot=='total intensity':
+      if debug: print(self.__grid.totalEmission().shape)
       weights = (self.__grid.totalEmission()[0]).max(2).sum(1)
+      plot = r'$I \ (\chi)$'
+    elif plot=='total optical depth':
+      weights = (self.__grid.totalEmission()[1]).max(2).sum(1)
+      plot = r'$\tau$'
+    elif plot=='clump intensity':
+      weights = (self.__grid.clumpEmission()[0]).max(2).sum(1)
+      plot = r'$I \ (\chi)$'
+    elif plot=='clump optical depth':
+      weights = (self.__grid.clumpEmission()[1]).max(2).sum(1)
+      plot = r'$\tau$'
+    elif plot=='interclump intensity':
+      weights = (self.__grid.interclumpEmission()[0]).max(2).sum(1)
+      plot = r'$I \ (\chi)$'
+    elif plot=='interclump optical depth':
+      weights = (self.__grid.interclumpEmission()[1]).max(2).sum(1)
+      plot = r'$\tau$'
+    elif plot=='FUV':
+      weights = (self.__grid.getFUV())
+      plot = r'$FUV \ (\chi)$'
+    elif plot=='Afuv':
+      weights = (self.__grid.getAfuv())
+      plot = r'$\tau_{FUV}$'
+    elif plot=='velocity':
+      weights = (self.__grid.getVelocity())
+      plot = r'$v_{rot} \ (\frac{km}{s})$'
     fig = plt.figure()
     ax = fig.add_subplot(111, projection='3d')
-    model = ax.scatter(positions[0], positions[1], positions[2], c=weights, cmap=plt.cm.jet)
+    model = ax.scatter(positions[0], positions[1], positions[2], c=weights, cmap=plt.cm.hot, marker='s', s=27, alpha=1, linewidths=0)
     ax.set_xlim(limits)
     ax.set_ylim(limits)
     ax.set_zlim(limits)
@@ -197,5 +223,6 @@ class Model(object):
     ax.set_xlabel('X (pc)')
     ax.set_ylabel('Y (pc)')
     ax.set_zlabel('Z (pc)')
+    cbar.set_label(plot, rotation=0)
     plt.show()
     return
