@@ -170,20 +170,20 @@ class Interpolate(object):
   def interpolateVelocityDispersion(self, radius):
     return self.__dispersionInterpolation(radius)
   def interpolateDensity(self, radius):
-    density=self.__densityInterpolation(radius)
-    if density<0:
+    density = self.__densityInterpolation(radius)
+    if (density<0).any():
       input('<<ERROR>> density {} at radius {} pc!'.format(density, radius))
       sys.exit()
     return density
   def interpolateClumpMass(self, radius):
     mass=self.__clumpMassInterpolation(radius)
-    if mass<0:
+    if (mass<0).any():
       input('<<ERROR>> clump mass {} at radius {} pc!'.format(mass, radius))
       sys.exit()
     return mass
   def interpolateInterclumpMass(self, radius):
     mass=self.__interclumpMassInterpolation(radius)
-    if mass<0:
+    if (mass<0).any():
       input('<<ERROR>> interclump mass {} at radius {} pc!'.format(mass, radius))
       sys.exit()
     return mass
