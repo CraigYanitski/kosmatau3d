@@ -37,8 +37,11 @@ class Masspoint(object):
     il.reload(Molecules)
     il.reload(Dust)
     return
-  def getAfuv(self):
-    return self.__interpolations.interpolateFUVextinction(self.__density, self.__mass)
+  def getAfuv(self, debug=False):
+    Afuv = self.__interpolations.interpolateFUVextinction(self.__density, self.__mass)
+    if debug and self.__mass<0:
+      print('\n', self.__density, self.__mass, Afuv)
+    return Afuv
   #@jit(forceobj=False)
   def calculateEmission(self, velocity, vDispersion, Afuv, verbose=False, debug=False, test=False):
     #velocity.resize((len(velocity), 1))

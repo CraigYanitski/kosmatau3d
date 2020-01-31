@@ -9,12 +9,13 @@ class Combination(object):
   probability, intensity, optical depth, and FUV field.
   '''
   # PRIVATE
-  def __init__(self, species, interpolations, combination=[], masses=[], density=[], fuv=0, probability=0, debugging=False):
+  def __init__(self, species, interpolations, combination=[], masses=[], density=[], fuv=0, probability=0, maxProbability=1, debugging=False):
     self.__species = species     #list of both moleculular and dust species
     self.__interpolations = interpolations
     self.__combination = combination 	#list of the number of each masspoint
     self.__FUV = fuv                    #the FUV field for this combination of mass points
     self.__density = density
+    self.__maxProbability = maxProbability      #the maximum probability (over all velocities) of this combination of masspoints
     self.__probability = probability            #the probability of this combination of masspoints
     self.__masspoints = []
     for i,mass in enumerate(masses):
@@ -51,12 +52,13 @@ class Combination(object):
   def addFUV(self, fuvField):
     self.__setFUV(fuvField)
     return
-  def getAfuv(self):
+  def getAfuv(self, verbose=False):
     Afuv = 0.
     for i in range(len(self.__masspoints)):
       Afuv += self.__combination[i]*self.__masspoints[i].getAfuv()
-    #print('{}, {}'.format(self.__probability[self.__probability.nonzero()], Afuv))
-    return self.__probability[self.__probability.nonzero()]*np.exp(-Afuv)
+    if verbose:
+      print('{}, {}'.format(self.__maxProbability, Afuv))
+    return (self.__maxProbability, self.__maxProbability*np.exp(-Afuv))#(self.__probability[self.__probability.nonzero()].prod(),self.__probability[self.__probability.nonzero()].prod()*np.exp(-Afuv))
   def addMasspoint(self, mass, number):
     self.__masspoints.append(Masspoint(self.__species, self.__interpolations, mass, number))
     self.__combination.append(number)

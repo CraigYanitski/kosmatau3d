@@ -35,28 +35,33 @@ class Voxel(object):
     return
   def __setMass(self):
     self.__mass = self.__clumpMass+self.__interclumpMass
-  def __setClumpMass(self):
-    self.__clumpMass = self.__interpolations.interpolateClumpMass(self.__r)
+  def __setClumpMass(self, r):
+    mass = self.__interpolations.interpolateClumpMass(r)
+    self.__clumpMass = mass.mean()
     self.__clump.setMass(self.__clumpMass)
     return
-  def __setInterclumpMass(self):
-    self.__interclumpMass = self.__interpolations.interpolateInterclumpMass(self.__r)
+  def __setInterclumpMass(self, r):
+    mass = self.__interpolations.interpolateInterclumpMass(r)
+    self.__interclumpMass = mass.mean()
     self.__interclump.setMass(self.__interclumpMass)
     return
-  def __setVelocity(self):
-    self.__velocity = self.__interpolations.interpolateRotationalVelocity(self.__r)
-    self.__velocityDispersion = self.__interpolations.interpolateVelocityDispersion(self.__r)
+  def __setVelocity(self, r):
+    velocity = self.__interpolations.interpolateRotationalVelocity(r)
+    velocityDispersion = self.__interpolations.interpolateVelocityDispersion(r)
+    self.__velocity = velocity.mean()
+    self.__velocityDispersion = velocityDispersion.mean()
     self.__velocityRange = np.linspace(self.__velocity-self.__velocityDispersion/2., self.__velocity+self.__velocityDispersion/2, num=self.__velocityNumber)
     return
-  def __setDensity(self, densityFactor=2):
-    self.__density = densityFactor*self.__interpolations.interpolateDensity(self.__r)
+  def __setDensity(self, r, densityFactor=2):
+    density = self.__interpolations.interpolateDensity(r)
+    self.__density = densityFactor*density.mean()
     return
   def __setExtinction(self):
     self.__UVextinction = self.__interpolations.interpolateFUVextinction(self.__density, self.__clumpMass+self.__interclumpMass)
     return
-  def __setFUV(self):
-    fuv = self.__interpolations.interpolateFUVfield(self.__r)/self.__constants.normUV*self.__constants.globalUV
-    fuv = np.clip(fuv, 1, None)
+  def __setFUV(self, r):
+    fuv = self.__interpolations.interpolateFUVfield(r)/self.__constants.normUV*self.__constants.globalUV
+    fuv = np.clip(fuv.mean(), 1, None)
     self.__FUV = FUVfield(fuv)
     return
   def __str__(self):
@@ -82,17 +87,28 @@ class Voxel(object):
     self.__phi = phi
     self.__scale = scale
     return
+  def getFUV(self):
+    return self.__FUV.getFUV()
   def setProperties(self, debug=False):
+    ''' This method calculates the radii assuming an origin of (0,0). It then averages
+       over a subgrid of 3x3. It might be improved later by having functionality to
+       change the subgrid dimensions.'''
     #print('Voxel instance initialised')
-    self.__setClumpMass()
-    self.__setInterclumpMass()
+    x,y = np.meshgrid(np.linspace(self.__x-.5*self.__scale, self.__x+.5*self.__scale,3), \
+                      np.linspace(self.__y-.5*self.__scale, self.__y+.5*self.__scale,3))
+    r = np.array([x.flatten(), y.flatten()]).T
+    r = np.linalg.norm(r, axis=1)
+    self.__setClumpMass(r)
+    self.__setInterclumpMass(r)
     self.__setMass()
-    self.__setVelocity()
-    self.__setDensity()
-    self.__setExtinction()
-    self.__setFUV()
-    self.__Afuv = self.__clump.initialise(mass=self.__clumpMass, density=self.__density, velocity=self.__velocity, velocityDispersion=self.__velocityDispersion, FUV=self.__FUV, extinction=self.__UVextinction)
-    self.__Afuv += self.__interclump.initialise(mass=self.__interclumpMass, density=1911, velocity=self.__velocity, velocityDispersion=self.__velocityDispersion, FUV=self.__FUV, extinction=self.__UVextinction)
+    self.__setVelocity(r)
+    self.__setDensity(r)
+    #self.__setExtinction()
+    self.__setFUV(r)
+    self.__Afuv = self.__clump.initialise(mass=self.__clumpMass, density=self.__density, velocity=self.__velocity, velocityDispersion=self.__velocityDispersion, FUV=self.__FUV)
+    Afuv = self.__interclump.initialise(mass=self.__interclumpMass, density=1911, velocity=self.__velocity, velocityDispersion=self.__velocityDispersion, FUV=self.__FUV)
+    #print(self.getPosition(), '\n  ')
+    self.__Afuv += Afuv
     if debug: self.__Afuv = 0
     return
   def getPosition(self):
@@ -101,6 +117,8 @@ class Voxel(object):
     return (self.__clump, self.__interclump)
   def getVelocity(self):
     return (self.__velocity, self.__velocityDispersion, self.__velocityRange)
+  def getAfuv(self):
+    return self.__Afuv
   def calculateEmission(self, verbose=False):
     if verbose:
       print('\nCalculating voxel V{} emission\nFUV extinction: {}'.format(self.__index, self.__Afuv))
@@ -111,8 +129,8 @@ class Voxel(object):
       print('\nClump and interclump optical depth:', tauClump, tauInterclump)
       input()
     # Sum over ensembles
-    self.__intensity = (iClump.sum(1)+iInterclump.sum(1))
-    self.__opticalDepth = (tauClump.sum(1)+tauInterclump.sum(1))
+    self.__intensity = (iClump.sum(1),iInterclump.sum(1))
+    self.__opticalDepth = (tauClump.sum(1),tauInterclump.sum(1))
     if verbose: print('\nShape: ', self.__intensity.shape, '\n\n')
     if isinstance(FUVclump, FUVfield): self.__FUV = FUVfield(np.average(FUVclump.getFUV()+FUVinterclump.getFUV()))
     # del iClump
@@ -123,8 +141,9 @@ class Voxel(object):
     # del FUVinterclump
     return
   def getEmission(self, verbose=False):
-    print(self.__x, self.__y, self.__z)
-    print(self.__Afuv, '\n')
+    if verbose:
+      print(self.__x, self.__y, self.__z)
+      print(self.__Afuv, '\n')
     emission = ((self.__intensity), (self.__opticalDepth), self.__FUV)
     if verbose: print(emission)
     return emission

@@ -19,7 +19,7 @@ class Ensemble(object):
   It can be either a clump or an interclump ensemble.
   '''
   # PRIVATE
-  def __init__(self, clumpType, species, interpolations, vNumber=51, combination='binomial', verbose=False, debugging=False):
+  def __init__(self, clumpType, species, interpolations, vNumber=101, combination='binomial', verbose=False, debugging=False):
     self.__species = species     #list of both moleculular and dust species
     self.__interpolations = interpolations
     self.__clumpType = clumpType     #type of mass in ensemble (clump or interclump medium)
@@ -96,7 +96,7 @@ class Ensemble(object):
     self.__setDensity(density)
     self.__setVelocity(velocity)
     self.__setVelocityDispersion(velocityDispersion)
-    self.__setExtinction(extinction)
+    #self.__setExtinction(extinction)
     self.__setFUV(FUV)
     #Afuv = self.initialiseEnsemble()
     self.calculateMasspoints()
@@ -211,13 +211,21 @@ class Ensemble(object):
     try: standardDeviation = np.sqrt(self.__deltaNji*surfaceProbability.T*(1-surfaceProbability.T))    #this is 'standardDeriTab' in the original code
     except ValueError:
       input('\nObserved mass, sufaceProbability, standardDeviation**2:\n', self.__massObserved, surfaceProbability, '\n', self.__deltaNji*surfaceProbability.T*(1-surfaceProbability.T))
+    maxProbableNumber = (self.__Nj*surfaceProbability)
+    maxStandardDeviation = np.sqrt(self.__Nj*surfaceProbability*(1-surfaceProbability))
     if verbose:
+      print('\nNj\n', self.__Nj)
+      print('\nsurface probability {}, expected number {}, standard deviation {}\n'.format(surfaceProbability, maxProbableNumber, maxStandardDeviation))
       print('\nDelta Nji\n', self.__deltaNji)
-      print('\nsuface probability, expected number, standard deviation:\n', surfaceProbability, '\n', probableNumber, '\n', standardDeviation)
+      print('\nsurface probability, expected number, standard deviation:\n', surfaceProbability, '\n', probableNumber, '\n', standardDeviation)
       input()
     #print(surfaceProbability, probableNumber, standardDeviation)
-    lower = np.maximum(np.zeros([self.__masspoints.size, 1]), np.floor(probableNumber-self.__constants.nSigma*standardDeviation))
+    lower = np.zeros([self.__masspoints.size, 1])
+    #lower[0] = 1       #set the minimum number of the largest masspoint
+    lower = np.maximum(lower, np.floor(probableNumber-self.__constants.nSigma*standardDeviation))
     upper = np.minimum(self.__deltaNji, np.ceil(probableNumber+self.__constants.nSigma*standardDeviation))
+    maxLower = np.maximum(np.zeros([self.__masspoints.size, 1]), np.floor(maxProbableNumber-self.__constants.nSigma*maxStandardDeviation))
+    maxUpper = np.minimum(self.__Nj, np.ceil(maxProbableNumber+self.__constants.nSigma*maxStandardDeviation))
     if verbose:
       print('\nupper,lower:\n',upper,'\n',lower)
     self.__masspointNumberRange = np.array([lower, upper]).T
@@ -235,12 +243,14 @@ class Ensemble(object):
     largestCombination = int(((self.__masspointNumberRange[:,:,1]-self.__masspointNumberRange[:,:,0]).prod(1)).max())
     largestCombinationIndex = np.where((self.__masspointNumberRange[:,:,1]-self.__masspointNumberRange[:,:,0]).prod(1)==largestCombination)[0][0]
     probabilityList = []
+    maxProbabilityList = []
     if verbose:
       print('\nCombinations:\n{}'.format(self.__combinations))
       input('\nLargest number of combinations: {}\n'.format(largestCombination))
     for i,combinations in enumerate(self.__combinations):   #loop over combinations of masspoints in each velocity bin
       self.__combinations[i] = np.array(combinations).T
       probability = []
+      maxProbability = []
       self.__combinationIndeces.append(i)
       if verbose:
         print(combinations)
@@ -260,6 +270,8 @@ class Ensemble(object):
                 print('Gauss')
               g = Gauss(probableNumber[:,i], standardDeviation[:,i], debug=debug)
               probability.append(g.gaussfunc(combination))
+              g = Gauss(maxProbableNumber, maxStandardDeviation, debug=debug)
+              maxProbability.append(g.gaussfunc(combination))
               #print('gauss!!...')
             else:
               # use binomial
@@ -268,6 +280,8 @@ class Ensemble(object):
               # <<This will likely print an error when there are more masspoints>>
               b = Binomial(self.__deltaNji[:,i], surfaceProbability, debug=debug) # n and p for binominal 
               probability.append(b.binomfunc(combination))
+              b = Binomial(self.__Nj, surfaceProbability, debug=debug) # n and p for binominal 
+              maxProbability.append(b.binomfunc(combination))
           elif self.__flagCombination=='poisson':
             if np.any(probableNumber[:,i]>self.__constants.pnGauss) and np.any(self.__deltaNji[:,i]>self.__constants.nGauss):
               # use gauss
@@ -281,19 +295,27 @@ class Ensemble(object):
                 print('Poisson')
               po = Poisson(probableNumber[:,i])
               probability.append(po.poissonfunc(combination))
+      if np.shape(probability)!=np.shape(maxProbability):
+        for i in range(len(probability)):
+          print(np.array(probability[i]).shape)
+          print(np.array(maxProbability[i]).shape)
+        input()
       while(len(probability) < largestCombination):
         probability.append(np.zeros((self.__masspoints.size)))
+        maxProbability.append(np.zeros((self.__masspoints.size)))
         if debug:
           print('Probability length:', len(probability), ', last element shape:', probability[-1].shape)
           input()
       if (np.array(probability[-1])==np.nan).any():
         print('\nThere is an invalid probability:', probability[-1], '\n')
         input()
-      if debug:
-        for i in range(len(probability)): input(np.array(probability[i]).shape)
       probabilityList.append(probability)
+      maxProbabilityList.append(maxProbability)
     self.__combinationIndeces = np.array(self.__combinationIndeces)
     self.__probability = np.array(probabilityList)
+    self.__maxProbability = np.array(maxProbabilityList)
+    #print(self.__probability.prod(2)[:,2].shape, '\n', self.__maxProbability.max(0))
+    #input()
     if debug:
       for i in range(len(probability)): input(np.array(probability[i]).shape)
     if verbose:
@@ -301,12 +323,18 @@ class Ensemble(object):
       if debug:
         for i in range(len(self.__probability)): print('Probability shapes:\n{}\n'.format(np.array(self.__probability[i].shape)))
         for i in self.__combinationIndeces: print('Combination sizes:\n{}\n'.format(np.array(self.__combinations[i].size)))
-        input()
+      input()
+    prob = 0
     Afuv = 0
     for i,combination in enumerate(self.__combinations[largestCombinationIndex]):
-      self.__combinationObjects.append(Combination(self.__species, self.__interpolations, combination=combination.flatten(), masses=self.__masspoints, density=self.__masspointDensity, fuv=self.__FUV, probability=self.__probability.prod(2)[:,i], debugging=self.__debugging))
-      Afuv += self.__combinationObjects[-1].getAfuv().min()
-    #input('{}'.format(-np.log(Afuv)))
+      combinationObject = Combination(self.__species, self.__interpolations, combination=combination.flatten(), masses=self.__masspoints, density=self.__masspointDensity, fuv=self.__FUV, probability=self.__probability.prod(2)[:,i], maxProbability=self.__maxProbability.max(0).prod(-1)[i], debugging=self.__debugging)
+      self.__combinationObjects.append(combinationObject)
+      probtemp, Afuvtemp = combinationObject.getAfuv()
+      #print(probtemp, Afuvtemp)
+      prob += probtemp
+      Afuv += Afuvtemp
+    if verbose:
+      print(prob, '-->', -np.log(Afuv))
     return -np.log(Afuv)
   #@jit(nopython=False)
   def calculate(self, Afuv, debug=False, test=False):
