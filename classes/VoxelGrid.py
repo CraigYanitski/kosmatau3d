@@ -4,8 +4,10 @@ from tqdm import tqdm
 from numba import jit
 import importlib as il
 import gc
+
 from Voxel import *
-from Interpolate import *
+import interpolations
+
 class VoxelGrid(object):
   '''
   This is a class to handle all of the voxels in KOSMA-tau^3. It contains a
@@ -13,6 +15,7 @@ class VoxelGrid(object):
   to make the Shape class functional.
   '''
   # PRIVATE
+
   def __init__(self, shape):
     self.__shape = shape
     self.__voxelNumber = self.__shape.voxelNumber()
@@ -23,15 +26,16 @@ class VoxelGrid(object):
     self.__voxelOpticalDepth = []
     self.__voxelFUV = []
     self.__voxelAfuv = []
-    self.__interpolations = None
     self.__x = []
     self.__y = []
     self.__z = []
     return
-  def __initialiseGrid(self, species, observations):
+
+  def __initialiseGrid(self, species):
     self.__species = species
-    self.__interpolations = Interpolate(self.__species, observations)
-    for i in range(self.__voxelNumber): self.__voxels.append(Voxel(self.__species, self.__interpolations, i))
+    for i in range(self.__voxelNumber): self.__voxels.append(Voxel(self.__species, i))
+    return
+
   def __str__(self):
     return 'VoxelGrid\n  ->{} voxels\n  ->intensity {}\n  ->optical depth {}'.format(self.__voxelNumber, sum(self.__voxelIntensity), -np.log(np.exp(-self.__voxelOpticalDepth)))
 
@@ -39,21 +43,21 @@ class VoxelGrid(object):
   #def createGrid(self, indeces):
   #  for i in indeces: self.__voxels.append(Voxel(i))
   #  return
-  def reloadModules(self):
-    il.reload(Voxel)
-    il.reload(Interpolate)
-    for voxel in self.__grid:
-      voxel.reloadModules()
-    self.__interpolations.reloadModules()
-    return
+  # def reloadModules(self):
+  #   il.reload(Voxel)
+  #   il.reload(Interpolate)
+  #   for voxel in self.__grid:
+  #     voxel.reloadModules()
+  #   self.__interpolations.reloadModules()
+  #   return
+
   def getDimensions(self):
     return self.__shape.getDimensions()
-  def getInterpolations(self):
-    return self.__interpolations
-  def initialiseVoxels(self, species, observations, verbose=False):
-    self.__initialiseGrid(species, observations)
+
+  def initialiseVoxels(self, species, verbose=False):
+    self.__initialiseGrid(species)
     print('\nInitialising Grid...')
-    x,y,z,scale = self.__shape.voxelCartesianPositions()
+    x,y,z = self.__shape.voxelCartesianPositions()
     r,phi = self.__shape.voxelPolarPositions()
     #self.__unusedVoxels = []
     with tqdm(total=len(self.__voxels), desc='Voxels initialised', miniters=1, dynamic_ncols=True) as progress:
@@ -64,7 +68,7 @@ class VoxelGrid(object):
         self.__y.append(y[i])
         self.__z.append(z[i])
         voxel.setIndex(i)#-len(self.__unusedVoxels))
-        voxel.setPosition(x[i], y[i], z[i], r[i], phi, scale)
+        voxel.setPosition(x[i], y[i], z[i], r[i], phi)
         voxel.setProperties()
         self.__voxelAfuv.append(voxel.getAfuv())
         #else: self.__unusedVoxels.append(i)
@@ -74,6 +78,7 @@ class VoxelGrid(object):
     #  self.__voxels.remove(self.__voxels[i])
     #self.__voxelNumber = len(self.__voxels)
     return
+
   def calculateEmission(self, verbose=False):
     print('\nCalculating grid emission...')
     with tqdm(total=len(self.__voxels), desc='Voxel emissions', miniters=1, dynamic_ncols=True) as progress:
@@ -94,26 +99,35 @@ class VoxelGrid(object):
     # del progress
     # del voxel
     return
+
   def getVoxelNumber(self):
     return self.__voxelNumber
+
   def getVoxelPositions(self):
     return np.array([self.__x, self.__y, self.__z])
+
   def allVoxels(self):
     # Just in case all of the Voxel() instances need to be retrieved
     return self.__voxels
+
   def totalEmission(self):
     # Return the emission from all of the voxels, separated by observed velocity
     return np.array([self.__voxelIntensity.sum(1),self.__voxelOpticalDepth.sum(1)])
+
   def clumpEmission(self):
     # Return the emission from all of the voxels, separated by observed velocity
     return np.array([self.__voxelIntensity[:,0],self.__voxelOpticalDepth[:,0]])
+
   def interclumpEmission(self):
     # Return the emission from all of the voxels, separated by observed velocity
     return np.array([self.__voxelIntensity[:,1],self.__voxelOpticalDepth[:,1]])
+
   def getFUV(self):
     return self.__voxelFUV
+
   def getAfuv(self):
     return self.__voxelAfuv
+
   def printVoxels(self):
     for voxel in self.__voxels: voxel.printVoxel()
     return

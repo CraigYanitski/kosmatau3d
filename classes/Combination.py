@@ -9,9 +9,8 @@ class Combination(object):
   probability, intensity, optical depth, and FUV field.
   '''
   # PRIVATE
-  def __init__(self, species, interpolations, combination=[], masses=[], density=[], fuv=0, probability=0, maxProbability=1, debugging=False):
+  def __init__(self, species, combination=[], masses=[], density=[], fuv=0, probability=0, maxProbability=1, debugging=False):
     self.__species = species     #list of both moleculular and dust species
-    self.__interpolations = interpolations
     self.__combination = combination 	#list of the number of each masspoint
     self.__FUV = fuv                    #the FUV field for this combination of mass points
     self.__density = density
@@ -19,7 +18,7 @@ class Combination(object):
     self.__probability = probability            #the probability of this combination of masspoints
     self.__masspoints = []
     for i,mass in enumerate(masses):
-      masspoint = Masspoint(self.__species, self.__interpolations, density=self.__density[i], mass=mass, fuv=fuv, debugging=debugging)
+      masspoint = Masspoint(self.__species, density=self.__density[i], mass=mass, fuv=fuv, debugging=debugging)
       self.__masspoints.append(masspoint)    #list of masses in the combination
     self.__debugging = debugging
     if debugging:
@@ -28,30 +27,38 @@ class Combination(object):
       self.intensity = []             #velocity-averaged intensity of this combination of masspoints
       self.opticalDepth = []          #velocity-averaged optical depth of this combination of masspoints
     return
+
   def __setFUV(self, fuvField):
     self.__FUV = self.__probability*fuvField
     return
+
   def __str__(self):
     return 'Combination {}:\n  ->probability {}\n  ->intensity {}\n  ->optical depth {}\n  ->FUV field {}'\
             .format(self.__combination, self.__probability, sum(self.__intensity), sum(self.__opticalDepth), self.__FUV)
 
   # PUBLIC
+
   #def addMolecule(self, element):
   #  self.__listMolecules.append(MolecularEmission(element))
   #  return
   #def addDust(self, element):
   #  self.__listDust.append(DustEmission(element))
   #  return
+
   def reloadModules(self):
     il.reload(Masspoint)
     for masspoint in self.__masspoints: masspoint.reloadModules()
+
   def getMasspoints(self):
     return self.__masspoints
+
   def getProbability(self):
     return self.__probability
+
   def addFUV(self, fuvField):
     self.__setFUV(fuvField)
     return
+
   def getAfuv(self, verbose=False):
     Afuv = 0.
     for i in range(len(self.__masspoints)):
@@ -59,10 +66,12 @@ class Combination(object):
     if verbose:
       print('{}, {}'.format(self.__maxProbability, Afuv))
     return (self.__maxProbability, self.__maxProbability*np.exp(-Afuv))#(self.__probability[self.__probability.nonzero()].prod(),self.__probability[self.__probability.nonzero()].prod()*np.exp(-Afuv))
+  
   def addMasspoint(self, mass, number):
-    self.__masspoints.append(Masspoint(self.__species, self.__interpolations, mass, number))
+    self.__masspoints.append(Masspoint(self.__species, mass, number))
     self.__combination.append(number)
     return
+
   def calculateEmission(self, velocity, vDispersion, Afuv, debug=False, test=False):
     #print('Calculating combination emission')
     # if isinstance(self.__intensity,np.ndarray):
@@ -116,6 +125,7 @@ class Combination(object):
     # del intensityList
     # del opticalDepthList
     return (intensity,opticalDepth,self.__FUV.getFUV())
+
   def getScaledCombinationEmission(self, verbose=False):
     emission = (self.__intensity,self.__opticalDepth,self.__FUV.getFUV())
     if verbose:

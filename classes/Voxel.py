@@ -1,6 +1,10 @@
 import importlib as il
+
+import constants
+import interpolations
 from Ensemble import *
 from FUVfield import *
+
 class Voxel(object):
   '''
   This is a class to handle each voxel in KOSMA-tau^3. It contains ensembles
@@ -10,22 +14,18 @@ class Voxel(object):
   for the diffuse surroundings of a clump.
   '''
   # PRIVATE
-  def __init__(self, species, interpolations, index, vNumber=51, debugging=False):
+  def __init__(self, species, index, debugging=False):
     self.__species = species     #list of both moleculular and dust species
-    self.__interpolations = interpolations
-    self.__index = index    #index of voxel in VoxelGrid, sort of like its ID in the overall model
+    self.__index = index         #index of voxel in VoxelGrid, sort of like its ID in the overall model
     self.__debugging = debugging
-    self.__constants = Constants()
     self.__velocity = 0     #velocity of mass at voxel point
     self.__velocityDispersion = 0   #dispersion of velocity at voxel point
-    self.__velocityNumber = vNumber
-    self.__velocityRange = 0
     self.__intensity = 0      #intensity of emissions at voxel point
     self.__opticalDepth = 0   #optical depth at voxel point
     self.__FUV = 0
     self.__Afuv = 0.
-    self.__clump = Ensemble('clump', self.__species, self.__interpolations, debugging=debugging)    #clumpy ensemble at voxel point
-    self.__interclump = Ensemble('interclump', self.__species, self.__interpolations, debugging=debugging)    #diffuse interclump ensemble at voxel point
+    self.__clump = Ensemble('clump', self.__species, debugging=debugging)    #clumpy ensemble at voxel point
+    self.__interclump = Ensemble('interclump', self.__species, debugging=debugging)    #diffuse interclump ensemble at voxel point
     self.__x = 0
     self.__y = 0
     self.__z = 0
@@ -33,52 +33,64 @@ class Voxel(object):
     self.__phi = 0
     self.__scale = 0
     return
+
   def __setMass(self):
     self.__mass = self.__clumpMass+self.__interclumpMass
+
   def __setClumpMass(self, r):
-    mass = self.__interpolations.interpolateClumpMass(r)
+    mass = interpolations.interpolateClumpMass(r)
     self.__clumpMass = mass.mean()
     self.__clump.setMass(self.__clumpMass)
     return
+
   def __setInterclumpMass(self, r):
-    mass = self.__interpolations.interpolateInterclumpMass(r)
+    mass = interpolations.interpolateInterclumpMass(r)
     self.__interclumpMass = mass.mean()
     self.__interclump.setMass(self.__interclumpMass)
     return
+
   def __setVelocity(self, r):
-    velocity = self.__interpolations.interpolateRotationalVelocity(r)
-    velocityDispersion = self.__interpolations.interpolateVelocityDispersion(r)
+    velocity = interpolations.interpolateRotationalVelocity(r)
+    velocityDispersion = interpolations.interpolateVelocityDispersion(r)
     self.__velocity = velocity.mean()
     self.__velocityDispersion = velocityDispersion.mean()
-    self.__velocityRange = np.linspace(self.__velocity-self.__velocityDispersion/2., self.__velocity+self.__velocityDispersion/2, num=self.__velocityNumber)
+    #self.__velocityRange = np.linspace(self.__velocity-self.__velocityDispersion/2., self.__velocity+self.__velocityDispersion/2, num=self.__velocityNumber)
     return
+
   def __setDensity(self, r, densityFactor=2):
-    density = self.__interpolations.interpolateDensity(r)
+    density = interpolations.interpolateDensity(r)
     self.__density = densityFactor*density.mean()
     return
+
   def __setExtinction(self):
-    self.__UVextinction = self.__interpolations.interpolateFUVextinction(self.__density, self.__clumpMass+self.__interclumpMass)
+    self.__UVextinction = interpolations.interpolateFUVextinction(self.__density, self.__clumpMass+self.__interclumpMass)
     return
+
   def __setFUV(self, r):
-    fuv = self.__interpolations.interpolateFUVfield(r)/self.__constants.normUV*self.__constants.globalUV
+    fuv = interpolations.interpolateFUVfield(r)/constants.normUV*constants.globalUV
     fuv = np.clip(fuv.mean(), 1, None)
     self.__FUV = FUVfield(fuv)
     return
+
   def __str__(self):
     return 'Voxel {}'.format(self.__index)
 
   # PUBLIC
+
   def reloadModules(self):
     il.reload(Ensemble)
     il.reload(FUVfield)
     self.__clump.reloadModules()
     self.__interclump.reloadModules()
     return
+
   def setIndex(self, index):
     self.__index = index
     return
+
   def getIndex(self):
     return self.__index
+
   def setPosition(self, x, y, z, r, phi, scale):
     self.__x = x
     self.__y = y
@@ -87,15 +99,17 @@ class Voxel(object):
     self.__phi = phi
     self.__scale = scale
     return
+
   def getFUV(self):
     return self.__FUV.getFUV()
+
   def setProperties(self, debug=False):
     ''' This method calculates the radii assuming an origin of (0,0). It then averages
        over a subgrid of 3x3. It might be improved later by having functionality to
        change the subgrid dimensions.'''
     #print('Voxel instance initialised')
-    x,y = np.meshgrid(np.linspace(self.__x-.5*self.__scale, self.__x+.5*self.__scale,3), \
-                      np.linspace(self.__y-.5*self.__scale, self.__y+.5*self.__scale,3))
+    x,y = np.meshgrid(np.linspace(self.__x-.5*constants.resolution, self.__x+.5*constants.resolution,3), \
+                      np.linspace(self.__y-.5*constants.resolution, self.__y+.5*constants.resolution,3))
     r = np.array([x.flatten(), y.flatten()]).T
     r = np.linalg.norm(r, axis=1)
     self.__setClumpMass(r)
@@ -111,14 +125,19 @@ class Voxel(object):
     self.__Afuv += Afuv
     if debug: self.__Afuv = 0
     return
+
   def getPosition(self):
     return (self.__x, self.__y, self.__z)
+
   def getClumps(self):
     return (self.__clump, self.__interclump)
+
   def getVelocity(self):
     return (self.__velocity, self.__velocityDispersion, self.__velocityRange)
+
   def getAfuv(self):
     return self.__Afuv
+
   def calculateEmission(self, verbose=False):
     if verbose:
       print('\nCalculating voxel V{} emission\nFUV extinction: {}'.format(self.__index, self.__Afuv))
@@ -140,6 +159,7 @@ class Voxel(object):
     # del tauInterclump
     # del FUVinterclump
     return
+
   def getEmission(self, verbose=False):
     if verbose:
       print(self.__x, self.__y, self.__z)
@@ -147,6 +167,7 @@ class Voxel(object):
     emission = ((self.__intensity), (self.__opticalDepth), self.__FUV)
     if verbose: print(emission)
     return emission
+    
   def printVoxel(self):
     if self.__debugging:
       iClump,tauClump,FUVclump = self.__clump.getEnsembleEmission()
