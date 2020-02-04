@@ -4,8 +4,7 @@ import importlib as il
 
 import constants
 import interpolations
-from Molecules import *
-from Dust import *
+import species
 
 class Masspoint(object):
   '''
@@ -17,8 +16,8 @@ class Masspoint(object):
   '''
   # PRIVATE
 
-  def __init__(self, species, interpolations, density=0, mass=0, fuv=0, number=1, debugging=False):
-    self.__species = species     #list of both moleculular and dust species
+  def __init__(self, density=0, mass=0, fuv=0, number=1, debugging=False):
+    # self.__species = species     #list of both moleculular and dust species
     self.__density = density
     self.__mass = mass 	#mass of this KOSMA-tau simulation
     #self.__Afuv = self.__interpolations.interpolateFUVextinction(density, mass)
@@ -37,11 +36,6 @@ class Masspoint(object):
 
   # PUBLIC
 
-  def reloadModule(self):
-    il.reload(Molecules)
-    il.reload(Dust)
-    return
-
   def getAfuv(self, debug=False):
     Afuv = interpolations.interpolateFUVextinction(self.__density, self.__mass)
     if debug and self.__mass<0:
@@ -51,16 +45,16 @@ class Masspoint(object):
   #@jit(forceobj=False)
   def calculateEmission(self, velocity, vDispersion, Afuv, verbose=False, debug=False, test=False):
     #velocity.resize((len(velocity), 1))
-    velocityRange = constants.velocityBins
+    velocityRange = constants.velocityRange
     #velocityRange = np.linspace(velocity-3*vDispersion, velocity+3*vDispersion, num=7)      #a range of 7 is used to account for the observed velocity +/- 3 sigma
-    velocityRange.resize(1, velocityRange.size)
+    velocityRange = np.resize(velocityRange, (1, velocityRange.size))
     #print(velocity)
     if debug:
       print('Masspoint velocity argument:\n{}'.format(velocity))
       print('Masspoint velocity range variable:\n{}'.format(velocityRange))
       print('Masspoint velocity difference result:\n{}'.format(velocityRange-velocity))
       #input()
-    speciesNumber = len(self.__species[0].getInterpolationIndeces()) + len(self.__species[1].getInterpolationIndeces())
+    speciesNumber = len(species.molecules.getInterpolationIndeces()) + len(species.dust.getInterpolationIndeces())
     # if self.__number==0:
     #   intensity_xi = np.full((speciesNumber, velocityRange.size, velocityRange.size), 10**-100)
     #   opticalDepth_xi = np.full((speciesNumber, velocityRange.size, velocityRange.size), 10**-100)
@@ -74,7 +68,7 @@ class Masspoint(object):
     #for i,element in enumerate(self.__species):      #This is commented-out since numba cannot support the isinstance() function
     #  if verbose: print(element)
     #  if isinstance(element, Molecules):
-    for index in self.__species[0].getInterpolationIndeces():
+    for index in species.molecules.getInterpolationIndeces():
       # Intensity currently in K
       intensity_xi.append((interpolations.interpolateIntensity(interpolationPoint, [index])*np.exp(-1/2.*((velocityRange-velocityRange.T)/(constants.clumpDispersion))**2)))
       opticalDepth_xi.append((interpolations.interpolateTau(interpolationPoint, [index])*np.exp(-1/2.*((velocityRange-velocityRange.T)/(constants.clumpDispersion))**2)))
@@ -85,9 +79,9 @@ class Masspoint(object):
     if debug:
       print('intensity_xi:\n{}\n'.format(self.__intensity_xi[-1]))
     #  elif isinstance(element, Dust):
-    for i,index in enumerate(self.__species[1].getInterpolationIndeces()):
+    for i,index in enumerate(species.dust.getInterpolationIndeces()):
       # Intensity currently in converted to K, to coinside with the molecule emission
-      intensity_xi.append(np.full((velocityRange.size, velocityRange.size), interpolations.interpolateIntensity(interpolationPoint, [index]))/2/constants.kB*constants.c**2/(species[1].getFrequencies()[i]*10**9)**2*10**-26)
+      intensity_xi.append(np.full((velocityRange.size, velocityRange.size), interpolations.interpolateIntensity(interpolationPoint, [index]))/2/constants.kB*constants.c**2/(species.dust.getFrequencies()[i]*10**9)**2*10**-26)
       opticalDepth_xi.append(np.full((velocityRange.size, velocityRange.size), interpolations.interpolateTau(interpolationPoint, [index])))
     # del interpolationPoint
     if speciesNumber>1:

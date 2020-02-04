@@ -14,8 +14,8 @@ class Voxel(object):
   for the diffuse surroundings of a clump.
   '''
   # PRIVATE
-  def __init__(self, species, index, debugging=False):
-    self.__species = species     #list of both moleculular and dust species
+  def __init__(self, index, debugging=False):
+    #self.__species = species     #list of both moleculular and dust species
     self.__index = index         #index of voxel in VoxelGrid, sort of like its ID in the overall model
     self.__debugging = debugging
     self.__velocity = 0     #velocity of mass at voxel point
@@ -24,14 +24,13 @@ class Voxel(object):
     self.__opticalDepth = 0   #optical depth at voxel point
     self.__FUV = 0
     self.__Afuv = 0.
-    self.__clump = Ensemble('clump', self.__species, debugging=debugging)    #clumpy ensemble at voxel point
-    self.__interclump = Ensemble('interclump', self.__species, debugging=debugging)    #diffuse interclump ensemble at voxel point
+    self.__clump = Ensemble('clump', debugging=debugging)    #clumpy ensemble at voxel point
+    self.__interclump = Ensemble('interclump', debugging=debugging)    #diffuse interclump ensemble at voxel point
     self.__x = 0
     self.__y = 0
     self.__z = 0
     self.__r = 0
     self.__phi = 0
-    self.__scale = 0
     return
 
   def __setMass(self):
@@ -91,13 +90,12 @@ class Voxel(object):
   def getIndex(self):
     return self.__index
 
-  def setPosition(self, x, y, z, r, phi, scale):
+  def setPosition(self, x, y, z, r, phi):
     self.__x = x
     self.__y = y
     self.__z = z
     self.__r = r
     self.__phi = phi
-    self.__scale = scale
     return
 
   def getFUV(self):

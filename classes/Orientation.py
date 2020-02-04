@@ -3,6 +3,10 @@ import copy as c
 import cmath
 import scipy.interpolate as interpolate
 import importlib as il
+
+import constants
+import observations
+
 #from Dimensions import *
 #from Observations import *
 class Orientation(object):
@@ -16,9 +20,8 @@ class Orientation(object):
   '''
 
   # PRIVATE
-  def __init__(self, dimensions, observations, backgroundI=0., interpolation='linear'):
+  def __init__(self, dimensions, backgroundI=0., interpolation='linear'):
     #self.__dimensions = dimensions
-    self.__scale = dimensions.getResolution()
     self.__xLoS = self.__yLoS = 0
     zRange = np.unique(dimensions.voxelCartesianPosition()[2])
     #self.__zLoS = np.arange(min(zRange),max(zRange)+1)
@@ -39,7 +42,7 @@ class Orientation(object):
 
   #PUBLIC
   def reloadModules(self):
-    self.__scale.reloadModules()
+    constants.resolution.reloadModules()
     for voxel in self.__losVoxels: voxel.reloadModules()
     return
   def setLOS(self, grid, x=0, y=0, z=0, dim='xy', verbose=False):
@@ -48,7 +51,7 @@ class Orientation(object):
     epsilon = []
     kappa = []
     factor = 1#np.exp(-z**2/500.**2)      #this is to make the disk more centrally-located
-    scale = self.__scale*3.086*10**18
+    scale = constants.resolution*constants.pc
     voxels = grid.allVoxels()
     xGrid,yGrid,zGrid = grid.getVoxelPositions()
     if verbose:
@@ -87,8 +90,8 @@ class Orientation(object):
         epsilon.append(factor*intensity/(scale))
         kappa.append(factor*tau/(scale))
         #else:
-        #  epsilon.append(intensity/(self.__scale))
-        #  kappa.append(tau/(self.__scale))
+        #  epsilon.append(intensity/(constants.resolution))
+        #  kappa.append(tau/(constants.resolution))
         if verbose:
           print('Intensity:', intensity, scale)
           print('Optical depth:', tau, scale)
@@ -115,7 +118,7 @@ class Orientation(object):
     #     x1 = z
     #     x2 = y
     #     z0 = c.copy(x)
-    #   if (x1<(self.__x1LoS+self.__scale/2.)) and (x1>(self.__x1LoS-self.__scale/2.)) and (x2<(self.__x2LoS+self.__scale/2.)) and (x2>(self.__x2LoS-self.__scale/2.)):
+    #   if (x1<(self.__x1LoS+constants.resolution/2.)) and (x1>(self.__x1LoS-constants.resolution/2.)) and (x2<(self.__x2LoS+constants.resolution/2.)) and (x2>(self.__x2LoS-constants.resolution/2.)):
     #     intensity,tau,fuv = voxel.getEmission()
     #     voxels.append(voxel)
     #     zPosition.append(z0)
@@ -124,20 +127,20 @@ class Orientation(object):
     #     epsilon.append(factor*intensity/(scale))
     #     kappa.append(factor*tau/(scale))
     #     #else:
-    #     #  epsilon.append(intensity/(self.__scale))
-    #     #  kappa.append(tau/(self.__scale))
+    #     #  epsilon.append(intensity/(constants.resolution))
+    #     #  kappa.append(tau/(constants.resolution))
     #     if verbose: print(tau, scale)
     else: print('WARNING: No LOS at position x={}, y={}, z={}.'.format(x,y,z))
     if verbose:
       print('voxels:', i)
     return
   def calculateRadiativeTransfer(self, velocity, verbose=False, test=True):
-    if self.__intensity.size>1: return self.__intensity
+    if len(self.__losVoxels)>1: return self.__intensity
     intensity = np.full(self.__kappa[0].shape, self.__backgroundI)
-    scale = self.__scale*3.086*10**18
+    scale = constants.resolution*constants.pc
     # Boolean indeces to separate how the intensity is calculated
-    k0 = (self.__kappaStep==0)&(abs(self.__kappa[:-1]*self.__scale)<10**-10)
-    kg = self.__kappa[:-1]>10**3*abs(self.__kappaStep)*self.__scale
+    k0 = (self.__kappaStep==0)&(abs(self.__kappa[:-1]*constants.resolution)<10**-10)
+    kg = self.__kappa[:-1]>10**3*abs(self.__kappaStep)*constants.resolution
     kE = ~(k0|kg)
     kEg = ~(k0|kg)&(self.__kappaStep>0)
     kEl = ~(k0|kg)&(self.__kappaStep<0)
@@ -146,8 +149,8 @@ class Orientation(object):
     b = ((self.__kappa[:-1,:,:]+self.__kappaStep*scale)/np.sqrt(2*self.__kappaStep.astype(np.complex)))
     if verbose: print(len(self.__losVoxels[:-1]))
     for i in range(len(self.__losVoxels[:-1])):
-      k0 = (self.__kappaStep[i,:,:]==0)&(abs(self.__kappa[:-1,:,:][i,:,:]*self.__scale)<10**-10)
-      kg = self.__kappa[:-1,:,:][i,:,:]>10**3*abs(self.__kappaStep[i,:,:])*self.__scale
+      k0 = (self.__kappaStep[i,:,:]==0)&(abs(self.__kappa[:-1,:,:][i,:,:]*constants.resolution)<10**-10)
+      kg = self.__kappa[:-1,:,:][i,:,:]>10**3*abs(self.__kappaStep[i,:,:])*constants.resolution
       kE = ~(k0|kg)
       kEg = ~(k0|kg)&(self.__kappaStep[i,:,:]>0)
       kEl = ~(k0|kg)&(self.__kappaStep[i,:,:]<0)

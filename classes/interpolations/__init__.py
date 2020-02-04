@@ -1,6 +1,6 @@
 import constants
 import numpy as np
-import interpolate
+from interpolations import interpolate
 '''
 This is a module that can be used for the interpolation of the input data.
 It will contain functions to interpolate the intensity or optical depth
@@ -20,14 +20,15 @@ grids, 'cubic' and 'radial' are the same.
 #observations = observations
 #interpolation = interpolate
 #verbose = verbose
-intensityInterpolation,tauInterpolation = interpolate.calculateGridInterpolation()
-rotationInterpolation = interpolate.calculateRotationVelocity()
-dispersionInterpolation = interpolate.calculateVelocityDispersion()
-densityInterpolation = interpolate.calculateDensity()
-clumpMassInterpolation = interpolate.clumpMassProfile()
-interclumpMassInterpolation = interpolate.interclumpMassProfile()
-FUVextinctionInterpolation = interpolate.interpolateFUVextinction()
-FUVfieldInterpolation = interpolate.interpolateFUVfield()
+intensityInterpolation = None
+tauInterpolation = None
+rotationInterpolation = None
+dispersionInterpolation = None
+densityInterpolation = None
+clumpMassInterpolation = None
+interclumpMassInterpolation = None
+FUVextinctionInterpolation = None
+FUVfieldInterpolation = None
 
 # PUBLIC
 
@@ -37,8 +38,8 @@ def interpolateIntensity(points, speciesNumber, verbose=False):
   if len(speciesNumber):
     intensity = []
     for i in speciesNumber:
-      if interpolation=='linear': intensity.append(10**intensityInterpolation[i](points))
-      elif interpolation=='radial' or interpolation=='cubic': intensity.append(10**intensityInterpolation[i](points[0], points[1], points[2]))
+      if constants.interpolation=='linear': intensity.append(10**intensityInterpolation[i](points))
+      elif constants.interpolation=='radial' or interpolation=='cubic': intensity.append(10**intensityInterpolation[i](points[0], points[1], points[2]))
       if np.isnan(intensity[-1]) or intensity[-1]==0: intensity[-1] = 10**-100
     if verbose:
       print('Calculated the intensity for {} species.'.format(len(speciesNumber)))
@@ -54,8 +55,8 @@ def interpolateTau(points, speciesNumber, verbose=False):
   if len(speciesNumber):
     tau = []
     for i in speciesNumber:
-      if interpolation=='linear': tau.append(10**tauInterpolation[i](points))
-      elif interpolation=='radial' or interpolation=='cubic': tau.append(10**tauInterpolation[i](points[0], points[1], points[2]))
+      if constants.interpolation=='linear': tau.append(10**tauInterpolation[i](points))
+      elif constants.interpolation=='radial' or interpolation=='cubic': tau.append(10**tauInterpolation[i](points[0], points[1], points[2]))
       if np.isnan(tau[-1]): tau[-1] = 10**-100
       elif tau[-1]<=0:
         temp = tau[-1]
@@ -83,14 +84,14 @@ def interpolateDensity(radius):
   return density
 
 def interpolateClumpMass(radius):
-  mass=clumpMassInterpolation(radius)
+  mass = clumpMassInterpolation(radius)
   if (mass<0).any():
     input('<<ERROR>> clump mass {} at radius {} pc!'.format(mass, radius))
     sys.exit()
   return mass
 
 def interpolateInterclumpMass(radius):
-  mass=interclumpMassInterpolation(radius)
+  mass = interclumpMassInterpolation(radius)
   if (mass<0).any():
     input('<<ERROR>> interclump mass {} at radius {} pc!'.format(mass, radius))
     sys.exit()
@@ -101,3 +102,6 @@ def interpolateFUVextinction(density, mass):
 
 def interpolateFUVfield(radius):
   return FUVfieldInterpolation(radius)
+
+def __str__():
+  return 'Available Interpolations:\n -Clump intensity\n -Clump optical depth\n -Clump mass (galactic)\n -Clump density (galactic)\n -Voxel rotation (galactic)\n -UV extinction\n -FUV field (galactic)'

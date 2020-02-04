@@ -9,8 +9,8 @@ class Combination(object):
   probability, intensity, optical depth, and FUV field.
   '''
   # PRIVATE
-  def __init__(self, species, combination=[], masses=[], density=[], fuv=0, probability=0, maxProbability=1, debugging=False):
-    self.__species = species     #list of both moleculular and dust species
+  def __init__(self, combination=[], masses=[], density=[], fuv=0, probability=0, maxProbability=1, debugging=False):
+    # self.__species = species     #list of both moleculular and dust species
     self.__combination = combination 	#list of the number of each masspoint
     self.__FUV = fuv                    #the FUV field for this combination of mass points
     self.__density = density
@@ -18,7 +18,7 @@ class Combination(object):
     self.__probability = probability            #the probability of this combination of masspoints
     self.__masspoints = []
     for i,mass in enumerate(masses):
-      masspoint = Masspoint(self.__species, density=self.__density[i], mass=mass, fuv=fuv, debugging=debugging)
+      masspoint = Masspoint(density=self.__density[i], mass=mass, fuv=fuv, debugging=debugging)
       self.__masspoints.append(masspoint)    #list of masses in the combination
     self.__debugging = debugging
     if debugging:
@@ -68,7 +68,7 @@ class Combination(object):
     return (self.__maxProbability, self.__maxProbability*np.exp(-Afuv))#(self.__probability[self.__probability.nonzero()].prod(),self.__probability[self.__probability.nonzero()].prod()*np.exp(-Afuv))
   
   def addMasspoint(self, mass, number):
-    self.__masspoints.append(Masspoint(self.__species, mass, number))
+    self.__masspoints.append(Masspoint(mass, number))
     self.__combination.append(number)
     return
 
@@ -106,7 +106,7 @@ class Combination(object):
       #self.__probability.resize(self.__probability.size, 1)
       intensity = []
       opticalDepth = []
-      for element in range(len(self.__species[0].getInterpolationIndeces()) + len(self.__species[1].getInterpolationIndeces())):
+      for element in range(len(species.molecules.getInterpolationIndeces()) + len(species.dust.getInterpolationIndeces())):
         intensity.append((self.__probability*intensityList[:,element,:,:].sum(0)))
         opticalDepth.append((self.__probability*np.exp(-opticalDepthList[:,element,:,:].sum(0))))
       if self.__debugging:

@@ -7,8 +7,15 @@ import gc
 
 import constants
 from Combination import *
-from statistics import Binomial,Gauss,Poisson
-from FUVfield import *
+import ensembleStatistics as stat
+# from statistics import Binomial
+# from statistics import Gauss
+# from statistics import Poisson
+# from stat import *
+# from statistics.binomial import Binomial
+# from statistics.gauss import Gauss
+# from statistics.poisson import Poisson
+# from FUVfield import *
 class Ensemble(object):
   '''
   This class owes itself largely to the work  done by Silke Andree-Labsch and
@@ -19,8 +26,8 @@ class Ensemble(object):
   '''
   # PRIVATE
 
-  def __init__(self, clumpType, species, combination='binomial', verbose=False, debugging=False):
-    self.__species = species     #list of both moleculular and dust species
+  def __init__(self, clumpType, combination='binomial', verbose=False, debugging=False):
+    # self.__species = species     #list of both moleculular and dust species
     self.__clumpType = clumpType     #type of mass in ensemble (clump or interclump medium)
     self.__flagCombination = combination
     self.__verbose = verbose
@@ -96,7 +103,7 @@ class Ensemble(object):
       combination.reloadModules()
     return
 
-  def initialise(self, mass=0, density=0, velocity=0, FUV=0, extinction=0):
+  def initialise(self, mass=0, density=0, velocity=0, velocityDispersion=0, FUV=0, extinction=0):
     #print('Ensemble instance initialised\n')
     self.__setMass(mass)
     self.__setDensity(density)
@@ -222,7 +229,7 @@ class Ensemble(object):
     if verbose:
       print('velocity, mean, dispersion', self.__velocity, self.__velocity.mean(), self.__velocityDispersion)
     self.__deltaNji = (np.array([self.__Nj]).T/np.sqrt(2*np.pi)/self.__velocityDispersion*\
-                       (np.exp(-0.5*((constants.velocityBins-self.__velocity)/constants.ensembleDispersion)**2)).T*self.__velocityStep).round()
+                       (np.exp(-0.5*((constants.velocityRange-self.__velocity)/constants.ensembleDispersion)**2)).T*constants.velocityStep).round()
     #self.__deltaNji = np.array([self.__deltaNji]).T
     surfaceProbability = np.array(np.pi*self.__masspointRadii.T**2/constants.resolution**2)    #this is 'pTab' in the original code
     probableNumber = (self.__deltaNji*surfaceProbability.T)   #this is 'expectedValTab' in the original code
@@ -286,9 +293,9 @@ class Ensemble(object):
               # use gauss!
               if verbose:
                 print('Gauss')
-              g = Gauss(probableNumber[:,i], standardDeviation[:,i], debug=debug)
+              g = stat.Gauss(probableNumber[:,i], standardDeviation[:,i], debug=debug)
               probability.append(g.gaussfunc(combination))
-              g = Gauss(maxProbableNumber, maxStandardDeviation, debug=debug)
+              g = stat.Gauss(maxProbableNumber, maxStandardDeviation, debug=debug)
               maxProbability.append(g.gaussfunc(combination))
               #print('gauss!!...')
             else:
@@ -296,22 +303,22 @@ class Ensemble(object):
               if verbose:
                 print('Binomial')
               # <<This will likely print an error when there are more masspoints>>
-              b = Binomial(self.__deltaNji[:,i], surfaceProbability, debug=debug) # n and p for binominal 
+              b = stat.Binomial(self.__deltaNji[:,i], surfaceProbability, debug=debug) # n and p for binominal 
               probability.append(b.binomfunc(combination))
-              b = Binomial(self.__Nj, surfaceProbability, debug=debug) # n and p for binominal 
+              b = stat.Binomial(self.__Nj, surfaceProbability, debug=debug) # n and p for binominal 
               maxProbability.append(b.binomfunc(combination))
           elif self.__flagCombination=='poisson':
             if np.any(probableNumber[:,i]>constants.pnGauss) and np.any(self.__deltaNji[:,i]>constants.nGauss):
               # use gauss
               if verbose:
                 print('Gauss')
-              g = Gauss(probableNumber[:,i], standardDeviation[:,i])
+              g = stat.Gauss(probableNumber[:,i], standardDeviation[:,i])
               probability.append(g.gaussfunc(combination))
             else:
               # use poisson
               if verbose:
                 print('Poisson')
-              po = Poisson(probableNumber[:,i])
+              po = stat.Poisson(probableNumber[:,i])
               probability.append(po.poissonfunc(combination))
       if np.shape(probability)!=np.shape(maxProbability):
         for i in range(len(probability)):
@@ -345,7 +352,7 @@ class Ensemble(object):
     prob = 0
     Afuv = 0
     for i,combination in enumerate(self.__combinations[largestCombinationIndex]):
-      combinationObject = Combination(self.__species, combination=combination.flatten(), masses=self.__masspoints, density=self.__masspointDensity, fuv=self.__FUV, probability=self.__probability.prod(2)[:,i], maxProbability=self.__maxProbability.max(0).prod(-1)[i], debugging=self.__debugging)
+      combinationObject = Combination(combination=combination.flatten(), masses=self.__masspoints, density=self.__masspointDensity, fuv=self.__FUV, probability=self.__probability.prod(2)[:,i], maxProbability=self.__maxProbability.max(0).prod(-1)[i], debugging=self.__debugging)
       self.__combinationObjects.append(combinationObject)
       probtemp, Afuvtemp = combinationObject.getAfuv()
       #print(probtemp, Afuvtemp)

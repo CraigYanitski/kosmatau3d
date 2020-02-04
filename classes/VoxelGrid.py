@@ -7,6 +7,7 @@ import gc
 
 from Voxel import *
 import interpolations
+# import species
 
 class VoxelGrid(object):
   '''
@@ -21,7 +22,7 @@ class VoxelGrid(object):
     self.__voxelNumber = self.__shape.voxelNumber()
     self.__voxels = []
     self.__map = {}       #dictionary object to map the voxel indeces to the correct location
-    self.__species = None
+    #self.__species = None
     self.__voxelIntensity = []
     self.__voxelOpticalDepth = []
     self.__voxelFUV = []
@@ -31,9 +32,9 @@ class VoxelGrid(object):
     self.__z = []
     return
 
-  def __initialiseGrid(self, species):
-    self.__species = species
-    for i in range(self.__voxelNumber): self.__voxels.append(Voxel(self.__species, i))
+  def __initialiseGrid(self):
+    #self.__species = species
+    for i in range(self.__voxelNumber): self.__voxels.append(Voxel(i))
     return
 
   def __str__(self):
@@ -54,8 +55,10 @@ class VoxelGrid(object):
   def getDimensions(self):
     return self.__shape.getDimensions()
 
-  def initialiseVoxels(self, species, verbose=False):
-    self.__initialiseGrid(species)
+  def initialiseVoxels(self, verbose=False):
+    #print(observations.tauCenterline)
+    interpolations.interpolate.initialise()
+    self.__initialiseGrid()
     print('\nInitialising Grid...')
     x,y,z = self.__shape.voxelCartesianPositions()
     r,phi = self.__shape.voxelPolarPositions()

@@ -2,12 +2,13 @@ import importlib as il
 import numpy as np
 import matplotlib.pyplot as plt
 
-from shape import Shape
+import shape #import Shape
+import statistics
 from VoxelGrid import *
 from Orientation import *
 import observations
-from Molecules import *
-from Dust import *
+import species
+
 class Model(object):
   '''
   This is the highest class in the hierarchy of the KOSMA-tau^3 simulation.
@@ -15,15 +16,17 @@ class Model(object):
   '''
   # PRIVATE
 
-  def __init__(self, x, y, z, modelType='', resolution=1000, verbose=False):
+  def __init__(self, x, y, z, modelName='', modelType='', resolution=1000, verbose=False):
     constants.type = modelType   #this just adds a label to the type of model being created. ie 'disk', 'bar', 'sphere', etc.
-    constants.scale = float(resolution)
-    self.__shape = Shape(x, y, z, modelType=modelType, resolution=self.__scale)      #Shape() object to create the parameters for the grid of voxels
+    constants.resolution = float(resolution)
+    constants.change.changeDirectory(modelName)
+    observations.methods.initialise()
+    self.__shape = shape.Shape(x, y, z, modelType=modelType)      #Shape() object to create the parameters for the grid of voxels
     self.__grid = VoxelGrid(self.__shape)   #VoxelGrid() object to build the model and calculate the emission
-    self.__orientation = Orientation(self.__shape.getDimensions(), self.__observations)      #Orientation() object to change the viewing angle and expected spectra
-    self.__molecules = Molecules()   #Molecules() object to centralise the molecules in model
-    self.__dust = Dust()             #Dust() object to centralise the dust in the model
-    self.__species = [self.__molecules, self.__dust]    #this is a list of the species objects being considered
+    self.__orientation = Orientation(self.__shape.getDimensions())      #Orientation() object to change the viewing angle and expected spectra
+    # self.__molecules = Molecules()   #Molecules() object to centralise the molecules in model
+    # self.__dust = Dust()             #Dust() object to centralise the dust in the model
+    #self.__species = [self.__molecules, self.__dust]    #this is a list of the species objects being considered
     self.__speciesNames = []          #this is a list of the species names for easy printout
     self.__verbose = verbose
     self.__intensityMap = []
@@ -57,10 +60,10 @@ class Model(object):
   #   return self.__observations
 
   def getSpecies(self):
-    return self.__species
+    return species.speciesNames
 
   def getSpeciesNames(self):
-    return self.__molecules.getMolecules() + self.__dust.getDust()
+    return species.speciesNames
 
   # def reloadModules(self):
   #   il.reload(Shape)
@@ -78,43 +81,45 @@ class Model(object):
   #   return
 
   def initialiseModel(self):
-    self.__grid.initialiseVoxels(self.__species, self.__observations)
+    self.__grid.initialiseVoxels()
     return
 
   def addDust(self, dust, transition):
-    (numbers,species,transitions,frequencies) = self.__observations.speciesData
-    i = (species==dust)&(transitions==transition)
-    if transition in self.__dust.getTransitions():
-      self.__dust.addTransition(dust, transition, frequencies[i], numbers[i])
-      # self.__dustNumber.append(numbers[species=='dust' and transitions==transition])
-      # self.__dustTransitions['dust'].append(transition)
-      # self.__dustFrequencies['dust'].append(frequencies[species=='dust' and transitions==transition])
-    else:
-      self.__dust.addDust(dust, transition, frequencies[i], numbers[i])
-      # self.__dustNames.append('dust')
-      # self.__dustNumber.append(numbers[species=='dust' and transitions==transition])
-      # self.__dustTransitions['dust'].append(transition)
-      # self.__dustFrequencies['dust'].append(frequencies[species=='dust' and transitions==transition])
-    #self.__species = [self.__molecules, self.__dust]
-    self.__speciesNames = np.append(self.__molecules.getMolecules(), self.__dust.getDust())
+    # (numbers,species,transitions,frequencies) = observations.speciesData
+    # i = (species==dust)&(transitions==transition)
+    # if transition in self.__dust.getTransitions():
+    #   self.__dust.addTransition(dust, transition, frequencies[i], numbers[i])
+    #   # self.__dustNumber.append(numbers[species=='dust' and transitions==transition])
+    #   # self.__dustTransitions['dust'].append(transition)
+    #   # self.__dustFrequencies['dust'].append(frequencies[species=='dust' and transitions==transition])
+    # else:
+    #   self.__dust.addDust(dust, transition, frequencies[i], numbers[i])
+    #   # self.__dustNames.append('dust')
+    #   # self.__dustNumber.append(numbers[species=='dust' and transitions==transition])
+    #   # self.__dustTransitions['dust'].append(transition)
+    #   # self.__dustFrequencies['dust'].append(frequencies[species=='dust' and transitions==transition])
+    # #self.__species = [self.__molecules, self.__dust]
+    # self.__speciesNames = np.append(self.__molecules.getMolecules(), self.__dust.getDust())
+    species.addDust(dust, transition)
     return
 
   def addMolecule(self, molecule, transition):
-    (numbers,species,transitions,frequencies) = self.__observations.speciesData
-    i = (species==molecule)&(transitions==transition)
-    if molecule in self.__molecules.getMolecules():
-      self.__molecules.addTransition(molecule, transition, frequencies[i], numbers[i])
-      #self.__moleculeNumber.append(numbers[species==molecule and transitions==transition])
-      #self.__moleculeTransitions[molecule].append(transition)
-      #self.__moleculeFrequencies[molecule].append(frequencies[species=='dust' and transitions==transition])
-    else:
-      self.__molecules.addMolecule(molecule, transition, frequencies[i], numbers[i])
-      #self.__moleculeNames.append(molecule)
-      #self.__moleculeNumber.append(numbers[species==molecule and transitions==transition])
-      #self.__moleculeTransitions[molecule].append(transition)
-      #self.__moleculeFrequencies[molecule].append(frequencies[species==molecule and transitions==transition])
-    #self.__species = [self.__molecules, self.__dust]
-    self.__speciesNames = np.append(self.__molecules.getMolecules(), self.__dust.getDust())
+    # (numbers,species,transitions,frequencies) = observations.speciesData
+    # i = (species==molecule)&(transitions==transition)
+    # if molecule in self.__molecules.getMolecules():
+    #   self.__molecules.addTransition(molecule, transition, frequencies[i], numbers[i])
+    #   #self.__moleculeNumber.append(numbers[species==molecule and transitions==transition])
+    #   #self.__moleculeTransitions[molecule].append(transition)
+    #   #self.__moleculeFrequencies[molecule].append(frequencies[species=='dust' and transitions==transition])
+    # else:
+    #   self.__molecules.addMolecule(molecule, transition, frequencies[i], numbers[i])
+    #   #self.__moleculeNames.append(molecule)
+    #   #self.__moleculeNumber.append(numbers[species==molecule and transitions==transition])
+    #   #self.__moleculeTransitions[molecule].append(transition)
+    #   #self.__moleculeFrequencies[molecule].append(frequencies[species==molecule and transitions==transition])
+    # #self.__species = [self.__molecules, self.__dust]
+    # self.__speciesNames = np.append(self.__molecules.getMolecules(), self.__dust.getDust())
+    species.addMolecule(molecule, transition)
     return
 
   def addSpecies(self, speciesTransition):
@@ -127,7 +132,7 @@ class Model(object):
     for species in speciesTransition:
       element = species.split(' ')[0]
       transition = int(species.split(' ')[1])
-      if element=='Dust':
+      if element in constants.dust:
         self.addDust(element, transition)
       else:
         self.addMolecule(element, transition)

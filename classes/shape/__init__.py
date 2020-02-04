@@ -1,7 +1,7 @@
 import importlib as il
 
 import constants
-from shape import Dimensions
+from .Dimensions import *
 
 class Shape():
   '''
@@ -118,7 +118,7 @@ class Shape():
   #def setup(self, x=0, y=0, z=0, r=0, i=0, name='box'):
   def voxelCartesianPositions(self):
     # Return the Cartesian coordinates of each voxel
-    return (self.__x, self.__y, self.__z, self.__scale)
+    return (self.__x, self.__y, self.__z)
   def voxelPolarPositions(self):
     # Return the polar coordinates of each voxel
     return (self.__r, self.__phi)

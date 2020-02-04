@@ -6,11 +6,13 @@ This is a script to contain all of the methods needed to change the model parame
 def changeVelocityNumber(num):
   constants.velocityNumber = num
   constants.velocityRange = np.linspace(constants.velocityBin[0], constants.velocityBin[1], num=constants.velocityNumber)
+  velocityStep = velocityRange[1] - velocityRange[0]
   return
 
 def changeVelocityRange(range):
   constants.velocityBins = range
   constants.velocityRange = np.linspace(constants.velocityBin[0], constants.velocityBin[1], num=constants.velocityNumber)
+  velocityStep = velocityRange[1] - velocityRange[0]
   return
 
 def changeClumpMassNumber(num):
@@ -31,4 +33,9 @@ def changeInterclumpMassNumber(num):
 def changeInterclumpMassRange(range):
   constants.interclumpMassRange = range
   constants.interclumpMass = np.linspace(constants.interclumpMassRange[0], constants.interclumpMassRange[1], num=constants.interclumpMassNumber)
+  return
+
+def changeDirectory(direc):
+  constants.directory = direc
+  if constants.directory[-1]!='/': constants.directory = constants.directory + '/'
   return

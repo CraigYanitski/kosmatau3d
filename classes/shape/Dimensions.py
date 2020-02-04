@@ -1,4 +1,7 @@
 import numpy as np
+
+import constants
+
 class Dimensions(object):
   '''
   This is a class to contain the dimensions of VoxelGrid(). It will
@@ -8,19 +11,18 @@ class Dimensions(object):
   At the moment this will just work in the plane of a disk.
   '''
   # PRIVATE
-  def __init__(self, x, y, z, i=0, resolution=1000):
-    self.__scale = resolution
+  def __init__(self, x, y, z, i=0):
     self.__i = i
-    self.__x = np.floor_divide(x*1000, self.__scale)*self.__scale
-    self.__y = np.floor_divide(y*1000, self.__scale)*self.__scale
-    self.__z = np.floor_divide(z*1000, self.__scale)*self.__scale
+    self.__x = np.floor_divide(x*1000, constants.resolution)*constants.resolution
+    self.__y = np.floor_divide(y*1000, constants.resolution)*constants.resolution
+    self.__z = np.floor_divide(z*1000, constants.resolution)*constants.resolution
     self.dimensions = (self.__x, self.__y, self.__z)
     self.__xOffset = self.__x/2.
     self.__yOffset = self.__y/2.
     self.__zOffset = self.__z/2.
-    self.__xRange = np.arange(0, self.__x+self.__scale, self.__scale)
-    self.__yRange = np.arange(0, self.__y+self.__scale, self.__scale)
-    self.__zRange = np.arange(0, self.__z+self.__scale, self.__scale)
+    self.__xRange = np.arange(0, self.__x+constants.resolution, constants.resolution)
+    self.__yRange = np.arange(0, self.__y+constants.resolution, constants.resolution)
+    self.__zRange = np.arange(0, self.__z+constants.resolution, constants.resolution)
     grid = np.meshgrid(self.__xRange-self.__xOffset, self.__yRange-self.__yOffset, self.__zRange-self.__zOffset)
     self.__xPositions = grid[0].flatten()
     self.__yPositions = grid[1].flatten()
@@ -37,8 +39,6 @@ class Dimensions(object):
     return 'dimensions {}pc x {}pc x {}pc'.format(self.__x, self.__y, self.__z)
 
   # PUBLIC
-  def getResolution(self):
-    return self.__scale
   def voxelNumber(self):
     # Return the number of voxels required
     return len(self.__xPositions)

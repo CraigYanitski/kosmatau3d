@@ -1,8 +1,23 @@
 import numpy as np
+import inspect
+import os
+
+from constants import change
 '''
 This is a module to contain all of the constants and parameters used throughout the program. There are definitions
 to change the model parameters for when this is needed.
 '''
+
+# Directory information
+directory = ''
+filename = inspect.getframeinfo(inspect.currentframe()).filename
+KOSMAPATH = os.path.abspath(os.path.dirname(filename)+'/../../')
+INPUTPATH = KOSMAPATH + '/input/'#'/home/craig/Desktop/Köln/kosma-tau^3-develop/kosma-tau-3d/input/'#
+GRIDPATH = KOSMAPATH + '/grid/'#'/home/craig/Desktop/Köln/kosma-tau^3-develop/kosma-tau-3d/grid/'#
+HISTORYPATH = KOSMAPATH + '/history/'#'/home/craig/Desktop/Köln/kosma-tau^3-develop/kosma-tau-3d/history/'#
+
+# Interpolation style (it accepts 'linear' or 'cubic'/'radial')
+interpolation = 'linear'
 
 # Standard constants
 massH = 1.008*1.6605*10**-24  #in [g]
@@ -11,12 +26,17 @@ c = 2.998*10**10  #in [cm/s]
 kB = 1.3806*10**-16  #in [erg/K]
 pc = 3.0856776*10**18  #in [cm]
 
+# Model species
+molecules = ['C+', 'C', 'CO', '13CO', '13C+', '13C', 'HCO+', 'H13CO+', 'H13CO', 'H3O+', 'C18O']
+dust = ['Dust']
+
 # Model characteristics
-nsigma = 3
-pixelWidth = 1000
+nSigma = 3
+resolution = 1000
 velocityNumber = 101
 velocityBin = [-360, 360]
 velocityRange = np.linspace(velocityBin[0], velocityBin[1], num=velocityNumber)
+velocityStep = velocityRange[1] - velocityRange[0]
 
 # Clump characteristics
 clumpMassNumber=2

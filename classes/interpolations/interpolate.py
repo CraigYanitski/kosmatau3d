@@ -4,10 +4,23 @@ import scipy.interpolate as interpolate
 import importlib as il
 
 import constants
+import interpolations
 import observations
+import species
 
-def calculateGridInterpolation():
+def initialise():
+  interpolations.intensityInterpolation,interpolations.tauInterpolation = calculateGridInterpolation()
+  interpolations.rotationInterpolation = calculateRotationVelocity()
+  interpolations.dispersionInterpolation = calculateVelocityDispersion()
+  interpolations.densityInterpolation = calculateDensity()
+  interpolations.clumpMassInterpolation = clumpMassProfile()
+  interpolations.interclumpMassInterpolation = interclumpMassProfile()
+  interpolations.FUVextinctionInterpolation = interpolateFUVextinction()
+  interpolations.FUVfieldInterpolation = interpolateFUVfield()
+
+def calculateGridInterpolation(verbose=False):
   np.seterr(divide='ignore')
+  indeces = np.append(species.molecules.getFileIndeces(), species.dust.getFileIndeces())
   nmuvI,I = observations.tbCenterline
   nmuvTau,Tau = observations.tauCenterline
   intensityInterpolation = []
@@ -37,7 +50,7 @@ def calculateGridInterpolation():
     return intensityInterpolation,tauInterpolation
   else: sys.exit('<<ERROR>>: There is no such method as {} to interpolate the KOSMA-tau grid.\n\nExitting...\n\n'.format(interpolation))
 
-def calculateRotationVelocity():
+def calculateRotationVelocity(verbose=False):
   if verbose: print('Creating rotation velocity interpolation')
   rotation = observations.rotationProfile 
   if constants.interpolation=='linear':
@@ -46,7 +59,7 @@ def calculateRotationVelocity():
     return interpolate.interp1d(rotation[0], rotation[1][:,0], kind='cubic')    #rotation velocity interpolation
   else: sys.exit('<<ERROR>>: There is no such method as {} to interpolate the velocity profile.\n\nExitting...\n\n'.format(interpolation))
 
-def calculateVelocityDispersion():
+def calculateVelocityDispersion(verbose=False):
   if verbose: print('Creating velocity dispersion interpolation')
   rotation = observations.rotationProfile 
   if constants.interpolation=='linear':
@@ -55,7 +68,7 @@ def calculateVelocityDispersion():
     return interpolate.interp1d(rotation[0], rotation[1][:,1], kind='cubic')    #rotation velocity interpolation
   else: sys.exit('<<ERROR>>: There is no such method as {} to interpolate the velocity profile.\n\nExitting...\n\n'.format(interpolation))
 
-def calculateDensity():
+def calculateDensity(verbose=False):
   if verbose: print('Creating density interpolation')
   density = observations.densityProfile
   if constants.interpolation=='linear':
@@ -64,7 +77,7 @@ def calculateDensity():
     return interpolate.interp1d(density[0], density[1], kind='cubic')      #density interpolation
   else: sys.exit('<<ERROR>>: There is no such method as {} to interpolate the KOSMA-tau grid.\n\nExitting...\n\n'.format(interpolation))
 
-def clumpMassProfile():
+def clumpMassProfile(verbose=False):
   if verbose: print('Creating clump mass interpolation')
   clumpMass = observations.clumpMassProfile
   if constants.interpolation=='linear':
@@ -73,7 +86,7 @@ def clumpMassProfile():
     return interpolate.interp1d(clumpMass[0], clumpMass[1], kind='cubic')  #clump mass interpolation
   else: sys.exit('<<ERROR>>: There is no such method as {} to interpolate the KOSMA-tau grid.\n\nExitting...\n\n'.format(interpolation))
 
-def interclumpMassProfile():
+def interclumpMassProfile(verbose=False):
   if verbose: print('Creating interclump mass interpolation')
   interclumpMass = observations.clumpMassProfile
   if constants.interpolation=='linear':
@@ -82,7 +95,7 @@ def interclumpMassProfile():
     return interpolate.interp1d(interclumpMass[0], interclumpMass[1], kind='cubic')   #interclump mass interpolation
   else: sys.exit('<<ERROR>>: There is no such method as {} to interpolate the KOSMA-tau grid.\n\nExitting...\n\n'.format(interpolation))
 
-def interpolateFUVextinction():
+def interpolateFUVextinction(verbose=False):
   if verbose: print('Creating A_UV grid interpolation')
   rhomass,AUV = observations.rhoMassAFUV
   rhomass /= 10.
@@ -93,7 +106,7 @@ def interpolateFUVextinction():
     return interpolate.Rbf(rhomass, logAUV)
   else: sys.exit('<<ERROR>>: There is no such method as {} to interpolate the extinction in the KOSMA-tau grid.\n\nExitting...\n\n'.format(interpolation))
 
-def interpolateFUVfield():
+def interpolateFUVfield(verbose=False):
   if verbose: print('Creating FUV interpolation')
   fuv = observations.FUVfield
   if constants.interpolation=='linear':
@@ -101,7 +114,4 @@ def interpolateFUVfield():
   elif constants.interpolation=='cubic' or interpolation=='radial':
     return interpolate.interp1d(fuv[0], fuv[1], kind='cubic')
   else: sys.exit('<<ERROR>>: There is no such method as {} to interpolate the KOSMA-tau grid.\n\nExitting...\n\n'.format(interpolation))
-
-def __str__():
-  return 'Available Interpolations:\n -Clump intensity\n -Clump optical depth\n -Clump mass (galactic)\n -Clump density (galactic)\n -Voxel rotation (galactic)\n -UV extinction\n -FUV field (galactic)'
 
