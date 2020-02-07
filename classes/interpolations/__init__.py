@@ -1,5 +1,12 @@
-import constants
+from numba import jit_module
 import numpy as np
+
+from numba.errors import NumbaDeprecationWarning, NumbaPendingDeprecationWarning
+import warnings
+warnings.simplefilter('ignore', category=NumbaDeprecationWarning)
+warnings.simplefilter('ignore', category=NumbaPendingDeprecationWarning)
+
+import constants
 from interpolations import interpolate
 '''
 This is a module that can be used for the interpolation of the input data.
@@ -105,3 +112,5 @@ def interpolateFUVfield(radius):
 
 def __str__():
   return 'Available Interpolations:\n -Clump intensity\n -Clump optical depth\n -Clump mass (galactic)\n -Clump density (galactic)\n -Voxel rotation (galactic)\n -UV extinction\n -FUV field (galactic)'
+
+jit_module(nopython=False)

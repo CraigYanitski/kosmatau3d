@@ -1,4 +1,10 @@
+from numba import jit_module
 import numpy as np
+
+from numba.errors import NumbaDeprecationWarning, NumbaPendingDeprecationWarning
+import warnings
+warnings.simplefilter('ignore', category=NumbaDeprecationWarning)
+warnings.simplefilter('ignore', category=NumbaPendingDeprecationWarning)
 
 import constants
 import observations
@@ -13,8 +19,12 @@ def initialise():
   tbCenterline()
   rhoMassAFUV()
   speciesData()
+  return
+
+def initRadTransfer():
   eTildeReal()
   eTildeImaginary()
+  return
 
 def clumpMassProfile(file='mass_profile.dat'):
   # Open file for the mass profile (clump) of the object (Msol/pc**2)
@@ -85,3 +95,5 @@ def eTildeImaginary(file='Eimag.dat'):
   eImaginary = np.genfromtxt(constants.GRIDPATH+file, names=['x', 'Eimaginary'])
   observations.eTildeImaginary = (eImaginary['x'],eImaginary['Eimaginary'])
   return
+
+jit_module(nopython=False)

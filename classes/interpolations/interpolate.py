@@ -1,7 +1,14 @@
+from numba import jit_module
 import numpy as np
 import sys
 import scipy.interpolate as interpolate
 import importlib as il
+
+from numba.errors import NumbaWarning, NumbaDeprecationWarning, NumbaPendingDeprecationWarning
+import warnings
+warnings.simplefilter('ignore', category=NumbaWarning)
+warnings.simplefilter('ignore', category=NumbaDeprecationWarning)
+warnings.simplefilter('ignore', category=NumbaPendingDeprecationWarning)
 
 import constants
 import interpolations
@@ -19,7 +26,7 @@ def initialise():
   interpolations.FUVfieldInterpolation = interpolateFUVfield()
 
 def calculateGridInterpolation(verbose=False):
-  np.seterr(divide='ignore')
+  np.seterr(divide='ignore', invalid='ignore')
   indeces = np.append(species.molecules.getFileIndeces(), species.dust.getFileIndeces())
   nmuvI,I = observations.tbCenterline
   nmuvTau,Tau = observations.tauCenterline
@@ -27,9 +34,9 @@ def calculateGridInterpolation(verbose=False):
   tauInterpolation = []
   nmuvI /= 10.     #begin 'decoding' the grid for the interpolation
   nmuvTau /= 10.
-  with np.errstate(divide='ignore', invalid='ignore'):
-    logI = np.log10(I)    #'encode' the intensity of the grid for interpolation
-    logTau = np.log10(Tau)
+  #with np.errstate(divide='ignore', invalid='ignore'):
+  logI = np.log10(I)    #'encode' the intensity of the grid for interpolation
+  logTau = np.log10(Tau)
   if constants.interpolation=='linear':
     for index in indeces:
       if verbose: print('Creating intensity grid interpolation')
@@ -39,7 +46,7 @@ def calculateGridInterpolation(verbose=False):
       intensityInterpolation.append(rInterpI)
       tauInterpolation.append(rInterpTau)
     return intensityInterpolation,tauInterpolation
-  elif constants.interpolation=='radial' or interpolation=='cubic':
+  elif constants.interpolation=='radial' or constants.interpolation=='cubic':
     for index in indeces:
       if verbose: print('Creating intensity grid interpolation')
       rInterpI = interpolate.Rbf(nmuvI[:,0], nmuvI[:,1], nmuvI[:,2], logI[:,index-1])
@@ -55,7 +62,7 @@ def calculateRotationVelocity(verbose=False):
   rotation = observations.rotationProfile 
   if constants.interpolation=='linear':
     return interpolate.interp1d(rotation[0], rotation[1][:,0], kind='linear')    #rotation velocity interpolation
-  elif constants.interpolation=='cubic' or interpolation=='radial':
+  elif constants.interpolation=='cubic' or constants.interpolation=='radial':
     return interpolate.interp1d(rotation[0], rotation[1][:,0], kind='cubic')    #rotation velocity interpolation
   else: sys.exit('<<ERROR>>: There is no such method as {} to interpolate the velocity profile.\n\nExitting...\n\n'.format(interpolation))
 
@@ -64,7 +71,7 @@ def calculateVelocityDispersion(verbose=False):
   rotation = observations.rotationProfile 
   if constants.interpolation=='linear':
     return interpolate.interp1d(rotation[0], rotation[1][:,1], kind='linear')    #rotation velocity interpolation
-  elif constants.interpolation=='cubic' or interpolation=='radial':
+  elif constants.interpolation=='cubic' or constants.interpolation=='radial':
     return interpolate.interp1d(rotation[0], rotation[1][:,1], kind='cubic')    #rotation velocity interpolation
   else: sys.exit('<<ERROR>>: There is no such method as {} to interpolate the velocity profile.\n\nExitting...\n\n'.format(interpolation))
 
@@ -73,7 +80,7 @@ def calculateDensity(verbose=False):
   density = observations.densityProfile
   if constants.interpolation=='linear':
     return interpolate.interp1d(density[0], density[1], kind='linear')      #density interpolation
-  elif constants.interpolation=='cubic' or interpolation=='radial':
+  elif constants.interpolation=='cubic' or constants.interpolation=='radial':
     return interpolate.interp1d(density[0], density[1], kind='cubic')      #density interpolation
   else: sys.exit('<<ERROR>>: There is no such method as {} to interpolate the KOSMA-tau grid.\n\nExitting...\n\n'.format(interpolation))
 
@@ -82,7 +89,7 @@ def clumpMassProfile(verbose=False):
   clumpMass = observations.clumpMassProfile
   if constants.interpolation=='linear':
     return interpolate.interp1d(clumpMass[0], clumpMass[1], kind='linear')  #clump mass interpolation
-  elif constants.interpolation=='cubic' or interpolation=='radial':
+  elif constants.interpolation=='cubic' or constants.interpolation=='radial':
     return interpolate.interp1d(clumpMass[0], clumpMass[1], kind='cubic')  #clump mass interpolation
   else: sys.exit('<<ERROR>>: There is no such method as {} to interpolate the KOSMA-tau grid.\n\nExitting...\n\n'.format(interpolation))
 
@@ -91,7 +98,7 @@ def interclumpMassProfile(verbose=False):
   interclumpMass = observations.clumpMassProfile
   if constants.interpolation=='linear':
     return interpolate.interp1d(interclumpMass[0], interclumpMass[1], kind='linear')   #interclump mass interpolation
-  elif constants.interpolation=='cubic' or interpolation=='radial':
+  elif constants.interpolation=='cubic' or constants.interpolation=='radial':
     return interpolate.interp1d(interclumpMass[0], interclumpMass[1], kind='cubic')   #interclump mass interpolation
   else: sys.exit('<<ERROR>>: There is no such method as {} to interpolate the KOSMA-tau grid.\n\nExitting...\n\n'.format(interpolation))
 
@@ -102,7 +109,7 @@ def interpolateFUVextinction(verbose=False):
   logAUV = np.log10(AUV)
   if constants.interpolation=='linear':
     return interpolate.LinearNDInterpolator(rhomass, logAUV)
-  elif constants.interpolation=='cubic' or interpolation=='radial':
+  elif constants.interpolation=='cubic' or constants.interpolation=='radial':
     return interpolate.Rbf(rhomass, logAUV)
   else: sys.exit('<<ERROR>>: There is no such method as {} to interpolate the extinction in the KOSMA-tau grid.\n\nExitting...\n\n'.format(interpolation))
 
@@ -111,7 +118,8 @@ def interpolateFUVfield(verbose=False):
   fuv = observations.FUVfield
   if constants.interpolation=='linear':
     return interpolate.interp1d(fuv[0], fuv[1], kind='linear')
-  elif constants.interpolation=='cubic' or interpolation=='radial':
+  elif constants.interpolation=='cubic' or constants.interpolation=='radial':
     return interpolate.interp1d(fuv[0], fuv[1], kind='cubic')
   else: sys.exit('<<ERROR>>: There is no such method as {} to interpolate the KOSMA-tau grid.\n\nExitting...\n\n'.format(interpolation))
 
+jit_module(nopython=False)

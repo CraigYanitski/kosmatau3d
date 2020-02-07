@@ -1,6 +1,12 @@
+from numba import jit_module
 import numpy as np
 import inspect
 import os
+
+from numba.errors import NumbaDeprecationWarning, NumbaPendingDeprecationWarning
+import warnings
+warnings.simplefilter('ignore', category=NumbaDeprecationWarning)
+warnings.simplefilter('ignore', category=NumbaPendingDeprecationWarning)
 
 from constants import change
 '''
@@ -65,3 +71,5 @@ uvLimits = [0, 6]
 # UV adjustment
 normUV = 2.89433*10**39
 globalUV = 10
+
+jit_module(nopython=False)

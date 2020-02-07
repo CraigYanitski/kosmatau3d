@@ -1,4 +1,11 @@
+from numba import jit_module
 import numpy as np
+
+from numba.errors import NumbaDeprecationWarning, NumbaPendingDeprecationWarning
+import warnings
+warnings.simplefilter('ignore', category=NumbaDeprecationWarning)
+warnings.simplefilter('ignore', category=NumbaPendingDeprecationWarning)
+
 import constants
 '''
 This is a script to contain all of the methods needed to change the model parameters.
@@ -39,3 +46,5 @@ def changeDirectory(direc):
   constants.directory = direc
   if constants.directory[-1]!='/': constants.directory = constants.directory + '/'
   return
+
+jit_module(nopython=False)
