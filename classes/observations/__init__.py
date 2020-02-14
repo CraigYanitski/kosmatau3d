@@ -1,7 +1,7 @@
 import numpy as np
 
 import constants
-from observations import methods
+from .methods import *
 '''
 This module will contain the input data needed to properly simulate the PDR. All of the information specific
 to the object being simulated should be in their own folder in INPUTPATH. The KOSMA-tau grid data is located

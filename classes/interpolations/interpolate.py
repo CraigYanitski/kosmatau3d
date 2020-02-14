@@ -26,8 +26,18 @@ def initialise():
   interpolations.FUVfieldInterpolation = interpolateFUVfield()
 
 def calculateGridInterpolation(verbose=False):
+  '''
+  This interpolates the needed species from the KOSMA-tau emission grids. It automatically interpolates
+  the dust continuum as well, even if there are no molecules specified. This is kept as a separate interpolation
+  function than the molecular emissions since it is a continuum. The same grid files are used, however, so it is
+  necessary to note the order of the emissions in the grids.
+
+  There are 504 emission values for a given gridpoint, consisting of 171 molecular transitions and the emission
+  at 333 wavelengths for the dust continuum. the indeces used for the dust is therefore [170:503], to refer to
+  for the corresponding emission indeces.
+  '''
   np.seterr(divide='ignore', invalid='ignore')
-  indeces = np.append(species.molecules.getFileIndeces(), species.dust.getFileIndeces())
+  indeces = species.molecules.getFileIndeces()
   nmuvI,I = observations.tbCenterline
   nmuvTau,Tau = observations.tauCenterline
   intensityInterpolation = []
@@ -38,6 +48,9 @@ def calculateGridInterpolation(verbose=False):
   logI = np.log10(I)    #'encode' the intensity of the grid for interpolation
   logTau = np.log10(Tau)
   if constants.interpolation=='linear':
+    if constants.dust:
+      interpolations.dustIntensityInterpolation = interpolate.LinearNDInterpolator(nmuvI, logI[:,170:503])
+      interpolations.dustTauInterpolation = interpolate.LinearNDInterpolator(nmuvTau, logTau[:,170:503])
     for index in indeces:
       if verbose: print('Creating intensity grid interpolation')
       rInterpI = interpolate.LinearNDInterpolator(nmuvI, logI[:,index-1])
@@ -47,6 +60,9 @@ def calculateGridInterpolation(verbose=False):
       tauInterpolation.append(rInterpTau)
     return intensityInterpolation,tauInterpolation
   elif constants.interpolation=='radial' or constants.interpolation=='cubic':
+    if constants.dust:
+      interpolations.dustIntensityInterpolation = interpolate.Rbf(nmuvI[:,0], nmuvI[:,1], nmuvI[:,2], logI[:,170:503])
+      interpolations.dustTauInterpolation = interpolate.Rbf(nmuvTau[:,0], nmuvTau[:,1], nmuvTau[:,2], logTau[:,170:503])
     for index in indeces:
       if verbose: print('Creating intensity grid interpolation')
       rInterpI = interpolate.Rbf(nmuvI[:,0], nmuvI[:,1], nmuvI[:,2], logI[:,index-1])

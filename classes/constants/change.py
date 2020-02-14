@@ -7,6 +7,8 @@ warnings.simplefilter('ignore', category=NumbaDeprecationWarning)
 warnings.simplefilter('ignore', category=NumbaPendingDeprecationWarning)
 
 import constants
+
+import species
 '''
 This is a script to contain all of the methods needed to change the model parameters.
 '''
@@ -46,5 +48,10 @@ def changeDirectory(direc):
   constants.directory = direc
   if constants.directory[-1]!='/': constants.directory = constants.directory + '/'
   return
+
+def resortWavelengths():
+  allWavelengths = np.append(constants.wavelengths, species.moleculeWavelengths)
+  constants.sortedIndeces = allWavelengths.argsort()
+  constants.sortedWavelengths = allWavelengths[constants.sortedIndeces]
 
 jit_module(nopython=False)

@@ -7,7 +7,7 @@ warnings.simplefilter('ignore', category=NumbaDeprecationWarning)
 warnings.simplefilter('ignore', category=NumbaPendingDeprecationWarning)
 
 import constants
-from interpolations import interpolate
+from .interpolate import *
 '''
 This is a module that can be used for the interpolation of the input data.
 It will contain functions to interpolate the intensity or optical depth
@@ -29,6 +29,8 @@ grids, 'cubic' and 'radial' are the same.
 #verbose = verbose
 intensityInterpolation = None
 tauInterpolation = None
+dustIntensityInterpolation = None
+dustTauInterpolation = None
 rotationInterpolation = None
 dispersionInterpolation = None
 densityInterpolation = None
@@ -39,43 +41,98 @@ FUVfieldInterpolation = None
 
 # PUBLIC
 
+def reset():
+  intensityInterpolation = None
+  tauInterpolation = None
+  dustIntensityInterpolation = None
+  dustTauInterpolation = None
+  rotationInterpolation = None
+  dispersionInterpolation = None
+  densityInterpolation = None
+  clumpMassInterpolation = None
+  interclumpMassInterpolation = None
+  FUVextinctionInterpolation = None
+  FUVfieldInterpolation = None
+  return
+
 def interpolateIntensity(points, speciesNumber, verbose=False):
+  '''
+  This is converted from brightness temperature to Jansky units.
+  '''
   verbose = verbose or verbose
   #points = np.log10(points)
-  if len(speciesNumber):
-    intensity = []
-    for i in speciesNumber:
-      if constants.interpolation=='linear': intensity.append(10**intensityInterpolation[i](points))
-      elif constants.interpolation=='radial' or interpolation=='cubic': intensity.append(10**intensityInterpolation[i](points[0], points[1], points[2]))
-      if np.isnan(intensity[-1]) or intensity[-1]==0: intensity[-1] = 10**-100
+  if isinstance(speciesNumber,np.ndarray):
+    intensity = np.zeros(len(speciesNumber))
+    intensity_xi = 0
+    for i,index in enumerate(speciesNumber):
+      if constants.interpolation=='linear': intensity[i] = (10**intensityInterpolation[index](points))
+      elif constants.interpolation=='radial' or interpolation=='cubic': intensity[i] = (10**intensityInterpolation[index](points[0], points[1], points[2]))
+      if (np.isnan(intensity[i]) or intensity[i]==0):
+        intensity[i] = 10**-100
+      intensity[i] *= 2*constants.kB/4/np.pi/species.moleculeWavelengths[i]**2/10**-26
     if verbose:
       print('Calculated the intensity for {} species.'.format(len(speciesNumber)))
-  else:
-    if verbose:
-      print('There are no species of this type adding to the intensity.')
-    intensity = 0
-  return np.array(intensity)
+    return intensity
+  else: return
+  # else:
+  #   if verbose:
+  #     print('There are no species of this type adding to the intensity.')
+  #   intensity = 0
 
 def interpolateTau(points, speciesNumber, verbose=False):
   verbose = verbose or verbose
   #points = np.log10(points)
-  if len(speciesNumber):
-    tau = []
-    for i in speciesNumber:
-      if constants.interpolation=='linear': tau.append(10**tauInterpolation[i](points))
-      elif constants.interpolation=='radial' or interpolation=='cubic': tau.append(10**tauInterpolation[i](points[0], points[1], points[2]))
-      if np.isnan(tau[-1]): tau[-1] = 10**-100
-      elif tau[-1]<=0:
-        temp = tau[-1]
-        tau[-1] = 10**-100
+  if isinstance(speciesNumber, np.ndarray):
+    tau = np.zeros(len(speciesNumber))
+    for i,index in enumerate(speciesNumber):
+      if constants.interpolation=='linear': tau[i] = (10**tauInterpolation[index](points))
+      elif constants.interpolation=='radial' or interpolation=='cubic': tau[i] = (10**tauInterpolation[index](points[0], points[1], points[2]))
+      if np.isnan(tau[i]): tau[i] = 10**-100
+      elif (tau[i]<=0):
+        #temp = tau[-1]
+        tau[i] = 10**-100
         input('\n<<ERROR>> Negative opacity {} found.\n'.format(temp))
     if verbose:
       print('Calculated the optical depth for {} species.'.format(len(speciesNumber)))
-  else:
-    if verbose:
-      print('There are no species adding to the optical depth.')
-    tau = 0
-  return np.array(tau)
+    return np.array(tau)
+  else: return
+  # else:
+  #   if verbose:
+  #     print('There are no species adding to the optical depth.')
+  #   tau = 0
+
+def interpolateDustIntensity(points, verbose=False):
+  '''
+  This will calculate the intensity in Jansky units.
+  '''
+  #verbose = verbose or verbose
+  intensity = np.zeros(333, dtype=np.float64)
+  if constants.interpolation=='linear':
+    #print(intensity)
+    intensity = 10**dustIntensityInterpolation(points)[0]
+    #print(intensity)
+    # constants.hclambda/constants.kB / \
+    #             np.log(1+2*constants.hclambda/constants.wavelengths**2/(10**(dustIntensityInterpolation(points)[0])*10**-26))
+    #/2/constants.kB*(constants.wavelengths)**2*10**-26
+  elif constants.interpolation=='radial' or interpolation=='cubic': intensity = (10**dustIntensityInterpolation(points[0], points[1], points[2]))
+  #if np.isnan(intensity[-1]) or intensity[-1]==0: intensity[-1] = 10**-100
+  if verbose:
+    print('Calculated the dust intensity.')
+  return intensity
+
+def interpolateDustTau(points, verbose=False):
+  verbose = verbose or verbose
+  #tau = []
+  if constants.interpolation=='linear': tau = (10**dustTauInterpolation(points))[0]
+  elif constants.interpolation=='radial' or interpolation=='cubic': tau = (10**dustTauInterpolation(points[0], points[1], points[2]))
+  # if np.isnan(tau[-1]): tau[-1] = 10**-100
+  # elif tau[-1]<=0:
+  #   temp = tau[-1]
+  #   tau[-1] = 10**-100
+  #   input('\n<<ERROR>> Negative opacity {} found.\n'.format(temp))
+  if verbose:
+    print('Calculated the optical depth for {} species.'.format(len(speciesNumber)))
+  return tau
 
 def interpolateRotationalVelocity(radius):
   return rotationInterpolation(radius)
