@@ -15,7 +15,10 @@ class Gauss:
     #else:
     power = np.array(-.5*((v-self.v0)/self.sigma)**2)
     probability = self.area/(np.sqrt(2*np.pi)*self.sigma)*np.exp(power)
-    probability[self.sigmaIndeces] = 0
+    if self.sigmaIndeces.ndim==1:
+        probability.flatten()[self.sigmaIndeces] = 0
+    else:
+        probability[self.sigmaIndeces] = 0
     probability = probability.T
     if self.debug: input('\nProbability:\n{}'.format(probability))
     return probability
