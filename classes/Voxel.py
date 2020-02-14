@@ -1,9 +1,14 @@
 import importlib as il
+import numpy as np
 
 import constants
 import interpolations
-from Ensemble import *
-from FUVfield import *
+
+import ensemble
+import combinations
+import masspoints
+
+#from ensemble import Ensemble
 
 class Voxel(object):
   '''
@@ -24,8 +29,8 @@ class Voxel(object):
     self.__opticalDepth = 0   #optical depth at voxel point
     self.__FUV = 0
     self.__Afuv = 0.
-    self.__clump = Ensemble('clump', debugging=debugging)    #clumpy ensemble at voxel point
-    self.__interclump = Ensemble('interclump', debugging=debugging)    #diffuse interclump ensemble at voxel point
+    # self.__clump = Ensemble('clump', debugging=debugging)    #clumpy ensemble at voxel point
+    # self.__interclump = Ensemble('interclump', debugging=debugging)    #diffuse interclump ensemble at voxel point
     self.__x = 0
     self.__y = 0
     self.__z = 0
@@ -39,13 +44,13 @@ class Voxel(object):
   def __setClumpMass(self, r):
     mass = interpolations.interpolateClumpMass(r)
     self.__clumpMass = mass.mean()
-    self.__clump.setMass(self.__clumpMass)
+    #self.__clump.setMass(self.__clumpMass)
     return
 
   def __setInterclumpMass(self, r):
     mass = interpolations.interpolateInterclumpMass(r)
     self.__interclumpMass = mass.mean()
-    self.__interclump.setMass(self.__interclumpMass)
+    #self.__interclump.setMass(self.__interclumpMass)
     return
 
   def __setVelocity(self, r):
@@ -66,9 +71,10 @@ class Voxel(object):
     return
 
   def __setFUV(self, r):
+    # This is in units of the Draine field
     fuv = interpolations.interpolateFUVfield(r)/constants.normUV*constants.globalUV
-    fuv = np.clip(fuv.mean(), 1, None)
-    self.__FUV = FUVfield(fuv)
+    self.__FUV = np.clip(fuv.mean(), 1, None)
+    #self.__FUV = FUVfield(fuv)
     return
 
   def __str__(self):
@@ -76,12 +82,12 @@ class Voxel(object):
 
   # PUBLIC
 
-  def reloadModules(self):
-    il.reload(Ensemble)
-    il.reload(FUVfield)
-    self.__clump.reloadModules()
-    self.__interclump.reloadModules()
-    return
+  # def reloadModules(self):
+  #   il.reload(Ensemble)
+  #   il.reload(FUVfield)
+  #   self.__clump.reloadModules()
+  #   self.__interclump.reloadModules()
+  #   return
 
   def setIndex(self, index):
     self.__index = index
@@ -99,7 +105,7 @@ class Voxel(object):
     return
 
   def getFUV(self):
-    return self.__FUV.getFUV()
+    return self.__FUV
 
   def setProperties(self, debug=False):
     ''' This method calculates the radii assuming an origin of (0,0). It then averages
@@ -117,18 +123,20 @@ class Voxel(object):
     self.__setDensity(r)
     #self.__setExtinction()
     self.__setFUV(r)
-    self.__Afuv = self.__clump.initialise(mass=self.__clumpMass, density=self.__density, velocity=self.__velocity, velocityDispersion=self.__velocityDispersion, FUV=self.__FUV)
-    Afuv = self.__interclump.initialise(mass=self.__interclumpMass, density=1911, velocity=self.__velocity, velocityDispersion=self.__velocityDispersion, FUV=self.__FUV)
-    #print(self.getPosition(), '\n  ')
-    self.__Afuv += Afuv
-    if debug: self.__Afuv = 0
+    masspoints.setMasspointData(density=self.__density, FUV=self.__FUV)
+    ensemble.initialise(clumpMass=self.__clumpMass, interclumpMass=self.__interclumpMass)
+    combinations.initialise(clumpCombination=ensemble.clumpCombinations[ensemble.clumpLargestIndex], \
+                           interclumpCombination=ensemble.interclumpCombinations[ensemble.interclumpLargestIndex])
+    # Afuv = combinations.getAfuv()
+    # self.__Afuv = -(np.log10((ensemble.maxClumpProbability*Afuv[0]).sum()) + np.log10((ensemble.maxInterclumpProbability*Afuv[1]).sum()))
+    
     return
 
   def getPosition(self):
     return (self.__x, self.__y, self.__z)
 
-  def getClumps(self):
-    return (self.__clump, self.__interclump)
+  # def getClumps(self):
+  #   return (self.__clump, self.__interclump)
 
   def getVelocity(self):
     return (self.__velocity, self.__velocityDispersion, self.__velocityRange)
@@ -139,23 +147,38 @@ class Voxel(object):
   def calculateEmission(self, verbose=False):
     if verbose:
       print('\nCalculating voxel V{} emission\nFUV extinction: {}'.format(self.__index, self.__Afuv))
-    iClump,tauClump,FUVclump = self.__clump.calculate(self.__Afuv, test=False)
-    iInterclump,tauInterclump,FUVinterclump = self.__interclump.calculate(self.__Afuv, test=False)
+    # iClump,tauClump = self.__clump.calculate(self.__Afuv, test=False)
+    # iInterclump,tauInterclump = self.__interclump.calculate(self.__Afuv, test=False)
+    
+    masspoints.calculateEmission()#Afuv=self.__Afuv)
+    combinations.calculateEmission()#Afuv=self.__Afuv)
+
+    clumpIntensity = []
+    clumpOpticalDepth = []
+    interclumpIntensity = []
+    interclumpOpticalDepth = []
+
+    for probability in ensemble.clumpProbability:
+      clumpIntensity.append((probability.prod(1)*combinations.clumpIntensity.T).T)
+      clumpOpticalDepth.append((probability.prod(1)*np.exp(-combinations.clumpOpticalDepth.T)).T)
+    clumpIntensityAvg = np.array(clumpIntensity).sum(0)
+    clumpOpticalDepthAvg = -np.log(np.array(clumpOpticalDepth).sum(0))
+
+    for i,probability in enumerate(ensemble.interclumpProbability):
+      interclumpIntensity.append((probability.prod(1)*combinations.interclumpIntensity.T).T)
+      interclumpOpticalDepth.append((probability.prod(1)*np.exp(-combinations.interclumpOpticalDepth.T)).T)
+    interclumpIntensityAvg = np.array(interclumpIntensity).sum(0)
+    interclumpOpticalDepthAvg = -np.log(np.array(interclumpOpticalDepth).sum(0))
+    
     if verbose:
-      print('\nClump and interclump intensity:', iClump, iInterclump)
-      print('\nClump and interclump optical depth:', tauClump, tauInterclump)
+      print('\nClump and interclump intensity:\n', clumpIntensity, '\n', interclumpIntensity)
+      print('\nClump and interclump optical depth:\n', clumpOpticalDepth, '\n', interclumpOpticalDepth)
       input()
     # Sum over ensembles
-    self.__intensity = (iClump.sum(1),iInterclump.sum(1))
-    self.__opticalDepth = (tauClump.sum(1),tauInterclump.sum(1))
+    self.__intensity = (clumpIntensityAvg,interclumpIntensityAvg)
+    self.__opticalDepth = (clumpOpticalDepthAvg,interclumpOpticalDepthAvg)
     if verbose: print('\nShape: ', self.__intensity.shape, '\n\n')
-    if isinstance(FUVclump, FUVfield): self.__FUV = FUVfield(np.average(FUVclump.getFUV()+FUVinterclump.getFUV()))
-    # del iClump
-    # del tauClump
-    # del FUVclump
-    # del iInterclump
-    # del tauInterclump
-    # del FUVinterclump
+    #if isinstance(FUVclump, FUVfield): self.__FUV = FUVfield(np.average(FUVclump.getFUV()+FUVinterclump.getFUV()))
     return
 
   def getEmission(self, verbose=False):

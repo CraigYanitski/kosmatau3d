@@ -55,11 +55,11 @@ class VoxelGrid(object):
   def getDimensions(self):
     return self.__shape.getDimensions()
 
-  def initialiseVoxels(self, verbose=False):
+  def calculateVoxels(self, verbose=False):
     #print(observations.tauCenterline)
-    interpolations.interpolate.initialise()
+    interpolations.initialise()
     self.__initialiseGrid()
-    print('\nInitialising Grid...')
+    print('\nCalculating Grid Emission...')
     x,y,z = self.__shape.voxelCartesianPositions()
     r,phi = self.__shape.voxelPolarPositions()
     #self.__unusedVoxels = []
@@ -74,6 +74,7 @@ class VoxelGrid(object):
         voxel.setPosition(x[i], y[i], z[i], r[i], phi)
         voxel.setProperties()
         self.__voxelAfuv.append(voxel.getAfuv())
+        voxel.calculateEmission()
         #else: self.__unusedVoxels.append(i)
         progress.update()
       progress.close()
@@ -82,8 +83,8 @@ class VoxelGrid(object):
     #self.__voxelNumber = len(self.__voxels)
     return
 
-  def calculateEmission(self, verbose=False):
-    print('\nCalculating grid emission...')
+  def writeEmission(self, verbose=False):
+    print('\nStreaming to fits files...')
     with tqdm(total=len(self.__voxels), desc='Voxel emissions', miniters=1, dynamic_ncols=True) as progress:
       for i,voxel in enumerate(self.__voxels):
         voxel.calculateEmission()

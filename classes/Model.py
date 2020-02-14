@@ -1,13 +1,15 @@
 import importlib as il
 import numpy as np
 import matplotlib.pyplot as plt
+from mpl_toolkits.mplot3d import Axes3D
 
 import shape #import Shape
 import statistics
-from VoxelGrid import *
-from Orientation import *
 import observations
+import radiativeTransfer
 import species
+
+from VoxelGrid import *
 
 class Model(object):
   '''
@@ -23,7 +25,7 @@ class Model(object):
     observations.methods.initialise()
     self.__shape = shape.Shape(x, y, z, modelType=modelType)      #Shape() object to create the parameters for the grid of voxels
     self.__grid = VoxelGrid(self.__shape)   #VoxelGrid() object to build the model and calculate the emission
-    self.__orientation = Orientation(self.__shape.getDimensions())      #Orientation() object to change the viewing angle and expected spectra
+    #self.__orientation = Orientation(self.__shape.getDimensions())      #Orientation() object to change the viewing angle and expected spectra
     # self.__molecules = Molecules()   #Molecules() object to centralise the molecules in model
     # self.__dust = Dust()             #Dust() object to centralise the dust in the model
     #self.__species = [self.__molecules, self.__dust]    #this is a list of the species objects being considered
@@ -80,66 +82,22 @@ class Model(object):
   #   self.__dust.reloadModules()
   #   return
 
-  def initialiseModel(self):
-    self.__grid.initialiseVoxels()
-    return
-
-  def addDust(self, dust, transition):
-    # (numbers,species,transitions,frequencies) = observations.speciesData
-    # i = (species==dust)&(transitions==transition)
-    # if transition in self.__dust.getTransitions():
-    #   self.__dust.addTransition(dust, transition, frequencies[i], numbers[i])
-    #   # self.__dustNumber.append(numbers[species=='dust' and transitions==transition])
-    #   # self.__dustTransitions['dust'].append(transition)
-    #   # self.__dustFrequencies['dust'].append(frequencies[species=='dust' and transitions==transition])
-    # else:
-    #   self.__dust.addDust(dust, transition, frequencies[i], numbers[i])
-    #   # self.__dustNames.append('dust')
-    #   # self.__dustNumber.append(numbers[species=='dust' and transitions==transition])
-    #   # self.__dustTransitions['dust'].append(transition)
-    #   # self.__dustFrequencies['dust'].append(frequencies[species=='dust' and transitions==transition])
-    # #self.__species = [self.__molecules, self.__dust]
-    # self.__speciesNames = np.append(self.__molecules.getMolecules(), self.__dust.getDust())
-    species.addDust(dust, transition)
-    return
-
-  def addMolecule(self, molecule, transition):
-    # (numbers,species,transitions,frequencies) = observations.speciesData
-    # i = (species==molecule)&(transitions==transition)
-    # if molecule in self.__molecules.getMolecules():
-    #   self.__molecules.addTransition(molecule, transition, frequencies[i], numbers[i])
-    #   #self.__moleculeNumber.append(numbers[species==molecule and transitions==transition])
-    #   #self.__moleculeTransitions[molecule].append(transition)
-    #   #self.__moleculeFrequencies[molecule].append(frequencies[species=='dust' and transitions==transition])
-    # else:
-    #   self.__molecules.addMolecule(molecule, transition, frequencies[i], numbers[i])
-    #   #self.__moleculeNames.append(molecule)
-    #   #self.__moleculeNumber.append(numbers[species==molecule and transitions==transition])
-    #   #self.__moleculeTransitions[molecule].append(transition)
-    #   #self.__moleculeFrequencies[molecule].append(frequencies[species==molecule and transitions==transition])
-    # #self.__species = [self.__molecules, self.__dust]
-    # self.__speciesNames = np.append(self.__molecules.getMolecules(), self.__dust.getDust())
-    species.addMolecule(molecule, transition)
+  def calculateModel(self):
+    self.__grid.calculateVoxels()
     return
 
   def addSpecies(self, speciesTransition):
-    # find transition number as defined in
-    # SetUpOrionBarModelEnvironment.v.1.1.nb
-    #from PDR import _globals  
-    #(number,species,transition,frequency) = self.__observations.__speciesData
-    #gbl._globals['compound']['number'] = []
-    #gbl._globals['compound']['frequency'] = []
-    for species in speciesTransition:
-      element = species.split(' ')[0]
-      transition = int(species.split(' ')[1])
-      if element in constants.dust:
-        self.addDust(element, transition)
-      else:
-        self.addMolecule(element, transition)
+    for element in speciesTransition:
+      molecule = element.split(' ')[0]
+      transition = int(element.split(' ')[1])
+      species.addMolecule(molecule, transition)
+
+    species.moleculeWavelengths = species.molecules.getWavelengths()
+    constants.resortWavelengths()
     return
 
-  def calculateEmission(self):
-    self.__grid.calculateEmission()
+  def writeEmission(self):
+    self.__grid.writeEmission()
     return
 
   def setLOS(self, x=0, y=0, z=0, dim='xy'):
@@ -157,25 +115,25 @@ class Model(object):
         print('\nx\n{}\n\ny\n{}\n'.format(Array[:,0],Array[:,1]))
       for x,y in Array:
         #for y in np.unique(yArray):
-          self.__orientation.setLOS(self.__grid, x=x, y=y, dim=dim)
+          radiativeTransfer.orientation.setLOS(self.__grid, x=x, y=y, dim=dim)
           position.append([x,y])
-          intensity = self.__orientation.calculateRadiativeTransfer(velocity)
+          intensity = radiativeTransfer.orientation.calculateRadiativeTransfer(velocity)
           intensityMap.append(intensity)
     if dim=='xz':
       xArray,zArray = np.unique([xPositions,zPositions], axis=1)
       for x in np.unique(xArray):
         for z in np.unique(zArray):
-          self.__orientation.setLOS(self.__grid, x=x, z=z, dim=dim)
+          radiativeTransfer.orientation.setLOS(self.__grid, x=x, z=z, dim=dim)
           position.append([x,z])
-          intensity = self.__orientation.calculateRadiativeTransfer(velocity)
+          intensity = radiativeTransfer.orientation.calculateRadiativeTransfer(velocity)
           intensityMap.append(intensity)
     if dim=='yz':
       yArray,zArray = np.unique([yPositions,zPositions], axis=1)
       for y in np.unique(yArray):
         for z in np.unique(zArray):
-          self.__orientation.setLOS(self.__grid, y=y, z=z, dim=dim)
+          radiativeTransfer.orientation.setLOS(self.__grid, y=y, z=z, dim=dim)
           position.append([y,z])
-          intensity = self.__orientation.calculateRadiativeTransfer(velocity)
+          intensity = radiativeTransfer.orientation.calculateRadiativeTransfer(velocity)
           intensityMap.append(intensity)
     self.__mapPositions = np.array(position)
     self.__intensityMap = np.array(intensityMap)
