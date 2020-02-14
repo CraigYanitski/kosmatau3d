@@ -20,12 +20,12 @@ class Dust(object):
     return printout
 
   #PUBLIC
-  def addDust(self, dust, transition, frequency, index):
-    self.__fileIndex.append(index)
-    self.__interpolationIndex.append(len(self.__dust))
+  def addDust(self, dust):
+    self.__fileIndex = np.arange(171,504)
+    self.__interpolationIndex = []
     self.__dust.append(dust)
-    self.__transitions.append(transition)
-    self.__frequencies.append(frequency)
+    self.__transitions = 0
+    self.__frequencies = 0
     return
   def addTransition(self, dust, transition, frequency, index):
     '''This function might not be needed. Initially, I wanted to be able to add

@@ -1,4 +1,5 @@
 import numpy as np
+import constants
 class Molecules(object):
   '''
   This is a class to calculate and solve for the intensity emission by the
@@ -11,6 +12,7 @@ class Molecules(object):
     self.__molecules = []               #list for the name of the molecule
     self.__transitions = []             #list for the transitions being tracked
     self.__frequencies = []             #list for the frequencies being tracked
+    self.__wavelengths = []             #list for the wavelengths being tracked
     return
   def __str__(self):
     '''Overloaded print routine to print useful information.'''
@@ -20,12 +22,21 @@ class Molecules(object):
     return printout
 
   #PUBLIC
+  def reset(self):
+    self.__fileIndex = []
+    self.__interpolationIndex = []
+    self.__molecules = []
+    self.__transitions = []
+    self.__frequencies = []
+    self.__wavelengths = []
+
   def addMolecule(self, molecule, transition, frequency, index):
     self.__fileIndex.append(index)
     self.__interpolationIndex.append(len(self.__molecules))
     self.__molecules.append(molecule)
     self.__transitions.append(transition)
     self.__frequencies.append(frequency)
+    self.__wavelengths.append(constants.c/frequency/10**9)
     return
   def addTransition(self, molecule, transition, frequency, index):
     '''This function might not be needed. Initially, I wanted to be able to add
@@ -36,6 +47,7 @@ class Molecules(object):
     self.__molecules.append(molecule)
     self.__transitions.append(transition)
     self.__frequencies.append(frequency)
+    self.__wavelengths.append(constants.c/frequency/10**11)
     return
   def getFileIndeces(self):
     return np.array(self.__fileIndex, dtype=int)
@@ -45,5 +57,7 @@ class Molecules(object):
     return self.__molecules
   def getFrequencies(self):
     return self.__frequencies
+  def getWavelengths(self):
+    return self.__wavelengths
   def getTransitions(self):
     return self.__transitions

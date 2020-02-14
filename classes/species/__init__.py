@@ -7,7 +7,16 @@ from .Molecules import Molecules
 
 molecules = Molecules()
 dust = Dust()
+
+moleculeWavelengths = []
+
 speciesNames = None
+
+def reset():
+  molecules.reset()
+  moleculeWavelengths = []
+  speciesNames = None
+  return
 
 def addDust(dustElement, transition):
   (numbers,species,transitions,frequencies) = observations.speciesData
@@ -27,4 +36,5 @@ def addMolecule(molecule, transition):
   else:
     molecules.addMolecule(molecule, transition, frequencies[i], numbers[i])
   speciesNames = np.append(molecules.getMolecules(), dust.getDust())
+  moleculeWavelengths = molecules.getWavelengths()
   return
