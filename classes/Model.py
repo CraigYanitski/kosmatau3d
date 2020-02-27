@@ -21,7 +21,7 @@ class Model(object):
   def __init__(self, x, y, z, modelName='', modelType='', resolution=1000, verbose=False):
     constants.type = modelType   #this just adds a label to the type of model being created. ie 'disk', 'bar', 'sphere', etc.
     constants.resolution = float(resolution)
-    constants.change.changeDirectory(modelName)
+    constants.changeDirectory(modelName)
     observations.methods.initialise()
     self.__shape = shape.Shape(x, y, z, modelType=modelType)      #Shape() object to create the parameters for the grid of voxels
     self.__grid = VoxelGrid(self.__shape)   #VoxelGrid() object to build the model and calculate the emission
@@ -83,7 +83,7 @@ class Model(object):
   #   return
 
   def calculateModel(self):
-    self.__grid.calculateVoxels()
+    self.__grid.calculateEmission()
     return
 
   def addSpecies(self, speciesTransition):
@@ -105,62 +105,104 @@ class Model(object):
     return
 
   def calculateObservation(self, velocity=[0], dim='xy'):
+    
     xPositions,yPositions,zPositions = self.__grid.getVoxelPositions()
-    #print('\nx\n', np.unique(xArray), '\ny\n', np.unique(yArray), '\nz\n', np.unique(zArray))
+
+    r = np.sqrt(xPositions**2+yPositions**2)
+    
     position = []
     intensityMap = []
+    
     if dim=='xy':
+    
       Array = np.unique([xPositions,yPositions], axis=1).T
+    
       if self.__verbose:
         print('\nx\n{}\n\ny\n{}\n'.format(Array[:,0],Array[:,1]))
+      
       for x,y in Array:
-        #for y in np.unique(yArray):
-          radiativeTransfer.orientation.setLOS(self.__grid, x=x, y=y, dim=dim)
-          position.append([x,y])
-          intensity = radiativeTransfer.orientation.calculateRadiativeTransfer(velocity)
-          intensityMap.append(intensity)
+
+        radiativeTransfer.orientation.setLOS(self.__grid, x=x, y=y, dim=dim)
+        position.append([x,y])
+        intensity = radiativeTransfer.orientation.calculateRadiativeTransfer(velocity)
+        intensityMap.append(intensity)
+    
     if dim=='xz':
-      xArray,zArray = np.unique([xPositions,zPositions], axis=1)
-      for x in np.unique(xArray):
-        for z in np.unique(zArray):
-          radiativeTransfer.orientation.setLOS(self.__grid, x=x, z=z, dim=dim)
-          position.append([x,z])
-          intensity = radiativeTransfer.orientation.calculateRadiativeTransfer(velocity)
-          intensityMap.append(intensity)
+    
+      Array = np.unique([xPositions,zPositions], axis=1).T
+    
+      for x,z in Array:
+
+        radiativeTransfer.orientation.setLOS(self.__grid, x=x, z=z, dim=dim)
+        position.append([x,z])
+        intensity = radiativeTransfer.orientation.calculateRadiativeTransfer(velocity)
+        intensityMap.append(intensity)
+    
     if dim=='yz':
-      yArray,zArray = np.unique([yPositions,zPositions], axis=1)
-      for y in np.unique(yArray):
-        for z in np.unique(zArray):
-          radiativeTransfer.orientation.setLOS(self.__grid, y=y, z=z, dim=dim)
-          position.append([y,z])
-          intensity = radiativeTransfer.orientation.calculateRadiativeTransfer(velocity)
-          intensityMap.append(intensity)
+    
+      Array = np.unique([yPositions,zPositions], axis=1).T
+    
+      for y,z in Array:
+    
+        radiativeTransfer.orientation.setLOS(self.__grid, y=y, z=z, dim=dim)
+        position.append([y,z])
+        intensity = radiativeTransfer.orientation.calculateRadiativeTransfer(velocity)
+        intensityMap.append(intensity)
+    
     self.__mapPositions = np.array(position)
     self.__intensityMap = np.array(intensityMap)
+    
+    return
+
+  def saveData(self):
+    
+    hdu = fits.PrimaryHDU(self.__intensityMap)
+    hdu.header['Name'] = 'Voxel integrated emission (draine)'
+    hdu.writeto('/home/yanitski/projects/pdr/KOSMA-tau^3/history/MilkyWay/emission_integrated.fits', overwrite=True)
+    
+    hdu = fits.PrimaryHDU(self.__mapPositions)
+    hdu.header['Name'] = 'Voxel integrated position (pc)'
+    hdu.writeto('/home/yanitski/projects/pdr/KOSMA-tau^3/history/MilkyWay/map_integrated.fits', overwrite=True)
+
     return
 
   def getIntensityMap(self):
     return (self.__mapPositions, self.__intensityMap)
 
   def printIntensityMap(self, index=None):
+
     print(self.__species[0].getMolecules(), self.__species[1].getDust())
+
     if not index==None:
+
       position = self.__mapPositions[index]
       intensity = self.__intensityMap[index]
+
       print('At position x={} y={}, the intensity is'.format(position[0], position[1]))
+      
       for element in range(intensity.shape[0]):
+
         i = intensity[element].argmax()
         print('{}: {} centered at {} km/s'.format(self.__speciesNames[element], intensity[element][intensity[element].nonzero()], self.__constants.velocityBins[i]))
+      
       print()
+
     else:
+      
       for index in range(len(self.__mapPositions)):
+      
         position = self.__mapPositions[index]
         intensity = self.__intensityMap[index]
+      
         print('At position x={} y={}, the intensity is'.format(position[0], position[1]))
+      
         for element in range(intensity.shape[0]):
+      
           i = intensity[element].argmax()
           print('{}: {} centered at {} km/s'.format(self.__speciesNames[element], intensity[element][intensity[element].nonzero()], self.__constants.velocityBins[i]))
+      
         print()
+    
     return
     
   def plotModel(self, plot='total intensity', debug=False):
@@ -207,4 +249,35 @@ class Model(object):
     ax.set_zlabel('Z (pc)')
     cbar.set_label(plot, rotation=0)
     plt.show()
+    return
+
+  def hdu_header(self, name='', units='', filename=None, dim=None, data=None):
+    if filename==None: return
+
+    header = fits.Header()
+    
+    header['SIMPLE'] = (True, 'conforms to FITS standard')
+    header['BITPIX'] = (-64, 'element size')
+    header['NAXIS'] = (len(dim), 'number of axes')
+    header['EXTEND'] = True
+    
+    for i in range(len(dim)):
+      header['NAXIS{}'.format(i+1)] = dim[i]
+    
+    # header['NAXIS1'] = self.__constants.velocityBins.size#emission[0].data[0,0,0,:].size
+    # header['NAXIS2'] = len(self.__species[0].getMolecules())+len(self.__species[1].getDust())#emission[0].data[0,0,:,0].size
+    # header['NAXIS3'] = 2#emission[0].data[:,0,0,0].size
+    # header['NAXIS4'] = self.__voxelNumber#emission[0].data[0,:,0,0].size
+    
+    header['NAME'] = name
+    header['UNITS'] = units
+    
+    if not '.fits' in filename: filename = constants.HISTORYPATH + constants.directory + 'r{}_n{}/'.format(constants.resolution, self.__shape.voxelNumber()) + filename + '.fits'
+    else: filename = constants.HISTORYPATH + constants.directory + filename
+    
+    if os.path.exists(filename): os.remove(filename)
+    
+    hdu = fits.PrimaryHDU(data=data, header=header)
+    hdu.writeto(filename, overwrite=True)
+    
     return

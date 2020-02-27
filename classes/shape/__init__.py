@@ -1,4 +1,5 @@
 import importlib as il
+from numba import jit_module
 
 import constants
 from .Dimensions import *
@@ -122,3 +123,5 @@ class Shape():
   def voxelPolarPositions(self):
     # Return the polar coordinates of each voxel
     return (self.__r, self.__phi)
+
+jit_module(nopython=False)
