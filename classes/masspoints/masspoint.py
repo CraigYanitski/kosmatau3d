@@ -8,35 +8,14 @@ import constants
 import interpolations
 import species
 
-# class Masspoint(object):
-#   '''
-#   This is a class to handle one fractal mass in a combination.
-#   It will have the associated emission and extinction information from the KOSMA-tau simulations,
-#   which will be used to contribute to the Combination class' intrinsic intensity and optical depth.
-#   At the moment, the emission interpolation is performed for each individual species. It will be
-#   an future update to perform the interpolation for all species at the same time.
-#   '''
-#   # PRIVATE
+'''
+This is a class to handle one fractal mass in a combination.
+It will have the associated emission and extinction information from the KOSMA-tau simulations,
+which will be used to contribute to the Combination class' intrinsic intensity and optical depth.
+At the moment, the emission interpolation is performed for each individual species. It will be
+an future update to perform the interpolation for all species at the same time.
+'''
 
-#   def __init__(self, density=0, mass=0, fuv=0, number=1, debugging=False):
-#     # self.__species = species     #list of both moleculular and dust species
-#     self.__density = density
-#     self.__mass = mass 	#mass of this KOSMA-tau simulation
-#     #self.__Afuv = self.__interpolations.interpolateFUVextinction(density, mass)
-#     self.__FUV = fuv
-#     #input('{}: {}'.format(mass, number))
-#     #self.__FUV = FUVfield()     #the FUV field for this combination of mass points
-#     self.__debugging = debugging
-#     if debugging:
-#       self.number = number    #number of this KOSMA-tau model contributing to the combination (OBSOLETE)
-#       self.intensity_xi = []       #velocity-averaged intensity of this combination of masspoints
-#       self.opticalDepth_xi = []    #velocity-averaged optical depth of this combination of masspoints
-#     return
-
-#   def __str__(self):
-#     return 'Simulated KOSMA-tau clump of mass {}'.format(10**float(self.__mass))
-
-  # PUBLIC
 def setMasspointData(density=0, FUV=0):
   '''
   This sets the information for the masspoints used in a given voxel. The density should be in units of
@@ -54,8 +33,8 @@ def setMasspointData(density=0, FUV=0):
   return
 
 def getAfuv(debug=False):
-  clumpAfuv = interpolations.interpolateFUVextinction(masspoints.clumpLogDensity, constants.clumpLogMass)
-  interclumpAfuv = interpolations.interpolateFUVextinction(masspoints.interclumpLogDensity, constants.interclumpLogMass)
+  clumpAfuv = interpolations.interpolateFUVextinction(masspoints.clumpLogDensity, constants.clumpLogMass)[0]
+  interclumpAfuv = interpolations.interpolateFUVextinction(masspoints.interclumpLogDensity, constants.interclumpLogMass)[0]
   if debug and self.__mass<0:
     print('\n', masspoints.clumpLogDensity, constants.clumpLogMass, clumpAfuv)
     print('\n', masspoints.interclumpLogDensity, constants.interclumpLogMass, interclumpAfuv)
@@ -134,23 +113,12 @@ def masspointEmission(interpolationPoint, velocity=0, verbose=False, debug=False
     intensity = (interpolations.interpolateDustIntensity(interpolationPoint))#/2/constants.kB*(constants.wavelengths)**2*10**-26)
     tau = interpolations.interpolateDustTau(interpolationPoint)
 
-    intensity_xi.append(intensity)#/2/constants.kB*(constants.wavelengths)**2*10**-26)
+    intensity_xi.append(intensity)
     opticalDepth_xi.append(tau)
-  #intensity_xi.append(intensity)
-  #opticalDepth_xi.append(tau)
+
   intensity = np.append(intensity_xi[1], intensity_xi[0])
   opticalDepth = np.append(opticalDepth_xi[1], opticalDepth_xi[0])
 
   return (intensity,opticalDepth)
-    
-  # def getEmission(self, verbose=False):
-  #  if verbose:
-  #    print('\nMasspoint intensity, optical depth\n{}\n{}'.format(self.__intensity, self.__opticalDepth))
-  #    input()
-  #  return (self.__intensity,self.__opticalDepth)
-  # def getSpeciesEmission(self, number=-1, debug=False):
-  #  if debug:
-  #    print('\nMasspoint intensity, optical depth - xi:\n{}\n{}\n'.format(self.__intensity_xi, self.__opticalDepth_xi))
-  #    input()
-  #  if number==-1: return [self.__intensity_xi,self.__opticalDepth_xi]
-  #  else: return [self.__intensity_xi[number],self.__opticalDepth_xi[number]]
+
+jit_module(nopython=False)

@@ -44,14 +44,14 @@ def densityProfile(file='densities_clouds.dat'):
   observations.densityProfile = ((density['radius']*1000),density['h2_density'])
   return
 
-def FUVfield(file='galactic_FUV.dat'):
+def FUVfield(file='galactic_FUV_complete.dat'):
   '''Open file for the FUV profile of the object
      'radius', 'energy density 912', 'energy density 1350', 'energy density 1500', 'energy density 1650', 'energy density 2000', \
      'energy density 2200', 'energy density 2500', 'energy density 2800', 'energy density 3650'])'''
   fuv = np.loadtxt(constants.INPUTPATH+constants.directory+file)
   #r = np.arange(0,20000,50)
   #fuv = 50/4/np.pi/r**2
-  observations.FUVfield = (fuv[:,0],fuv[:,1],fuv[:,2:])
+  observations.FUVfield = (fuv[:,:2],fuv[:,2],fuv[:,3:])
   #return (r,fuv)
   return
 

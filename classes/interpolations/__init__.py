@@ -69,7 +69,7 @@ def interpolateIntensity(points, speciesNumber, verbose=False):
       elif constants.interpolation=='radial' or interpolation=='cubic': intensity[i] = (10**intensityInterpolation[index](points[0], points[1], points[2]))
       if (np.isnan(intensity[i]) or intensity[i]==0):
         intensity[i] = 10**-100
-      intensity[i] *= 2*constants.kB/4/np.pi/species.moleculeWavelengths[i]**2/10**-26
+      #intensity[i] *= 2*constants.kB/4/np.pi/species.moleculeWavelengths[i]**2/10**-26
     if verbose:
       print('Calculated the intensity for {} species.'.format(len(speciesNumber)))
     return intensity
@@ -114,6 +114,7 @@ def interpolateDustIntensity(points, verbose=False):
     # constants.hclambda/constants.kB / \
     #             np.log(1+2*constants.hclambda/constants.wavelengths**2/(10**(dustIntensityInterpolation(points)[0])*10**-26))
     #/2/constants.kB*(constants.wavelengths)**2*10**-26
+    intensity *= 4*np.pi*constants.wavelengths**2/2/constants.kB*10**-26
   elif constants.interpolation=='radial' or interpolation=='cubic': intensity = (10**dustIntensityInterpolation(points[0], points[1], points[2]))
   #if np.isnan(intensity[-1]) or intensity[-1]==0: intensity[-1] = 10**-100
   if verbose:
@@ -164,8 +165,8 @@ def interpolateInterclumpMass(radius):
 def interpolateFUVextinction(density, mass):
   return 10**FUVextinctionInterpolation(density, mass)
 
-def interpolateFUVfield(radius):
-  return FUVfieldInterpolation(radius)
+def interpolateFUVfield(radius, height):
+  return FUVfieldInterpolation(radius, abs(height))
 
 def __str__():
   return 'Available Interpolations:\n -Clump intensity\n -Clump optical depth\n -Clump mass (galactic)\n -Clump density (galactic)\n -Voxel rotation (galactic)\n -UV extinction\n -FUV field (galactic)'

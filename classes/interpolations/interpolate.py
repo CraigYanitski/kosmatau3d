@@ -133,9 +133,9 @@ def interpolateFUVfield(verbose=False):
   if verbose: print('Creating FUV interpolation')
   fuv = observations.FUVfield
   if constants.interpolation=='linear':
-    return interpolate.interp1d(fuv[0], fuv[1], kind='linear')
+    return interpolate.LinearNDInterpolator(fuv[0], fuv[1])
   elif constants.interpolation=='cubic' or constants.interpolation=='radial':
-    return interpolate.interp1d(fuv[0], fuv[1], kind='cubic')
+    return interpolate.Rbf(fuv[0], fuv[1])
   else: sys.exit('<<ERROR>>: There is no such method as {} to interpolate the KOSMA-tau grid.\n\nExitting...\n\n'.format(interpolation))
 
 jit_module(nopython=False)

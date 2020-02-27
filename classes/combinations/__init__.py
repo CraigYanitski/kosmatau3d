@@ -1,4 +1,5 @@
 import numpy as np
+from numba import jit_module
 
 from .combination import *
 
@@ -9,3 +10,5 @@ clumpIntensity = []
 clumpOpticalDepth = []
 interclumpIntensity = []
 interclumpOpticalDepth = []
+
+jit_module(nopython=False)

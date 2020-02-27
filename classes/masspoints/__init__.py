@@ -20,3 +20,5 @@ clumpOpticalDepth = []
 
 interclumpIntensity = []
 interclumpOpticalDepth = []
+
+jit_module(nopython=False)

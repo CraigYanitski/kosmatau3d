@@ -1,7 +1,7 @@
 import importlib as il
 import pprint
 import numpy as np
-from numba import jit
+from numba import jit_module
 import sys
 import gc
 
@@ -11,15 +11,7 @@ import combinations
 import masspoints
 
 import ensembleStatistics as stat
-# from statistics import Binomial
-# from statistics import Gauss
-# from statistics import Poisson
-# from stat import *
-# from statistics.binomial import Binomial
-# from statistics.gauss import Gauss
-# from statistics.poisson import Poisson
-# from FUVfield import *
-#class Ensemble(object):
+
 '''
 This class owes itself largely to the work  done by Silke Andree-Labsch and
 Christoph Bruckmann. It contains a number of combinations of fractal mass
@@ -27,84 +19,6 @@ configurations, and therefore contains the ensemble-averaged intensity and
 optical depth.
 It can be either a clump or an interclump ensemble.
 '''
-  # PRIVATE
-
-  # def __init__(self, clumpType, combination='binomial', verbose=False, debugging=False):
-  #   # self.__species = species     #list of both moleculular and dust species
-  #   self.__clumpType = clumpType     #type of mass in ensemble (clump or interclump medium)
-  #   self.__flagCombination = combination
-  #   self.__verbose = verbose
-  #   self.__combinations = []    #list of combinations
-  #   self.__combinationIndeces = []
-  #   self.__combinationObjects = []    #list of instances of Combination()
-  #   self.__probability = []
-  #   self.__debugging = debugging
-  #   if debugging:
-  #     self.__intensity = 0        #ensemble-averaged intensity for each velocity
-  #     self.__opticalDepth = 0     #ensemble-averaged optical depth for each velocity
-  #   self.__FUV = 0
-  #   self.__massObserved = 0     #'observed' mass
-  #   self.__massEnsemble = 0     #ensemble mass
-  #   self.__radiusEnsemble = 0   #ensemble radius
-  #   self.__volumeEnsemble = 0   #ensemble volume
-  #   self.__densityObserved = 0
-  #   self.__densityEnsemble = 0
-  #   if self.__clumpType=='clump':
-  #     self.__masspoints = constants.clumpMass   #maximum mass in ensemble
-  #   elif self.__clumpType=='interclump':
-  #     self.__masspoints = constants.interclumpMass   #maximum mass in ensemble
-  #   #self.__masspoints = []
-  #   self.__masspointNumberRange = []
-  #   self.__masspointRadii = []
-  #   self.__masspointDensity = []
-  #   self.__interpolationPoints = []
-  #   self.__Nj = []    #this is 'deltaNji' in the original code, and comepletely confusing regarding the inconsistency with Silke's thesis
-  #   return
-
-  # def __setMass(self, mass):
-  #   '''Set the mass.'''
-  #   self.__massObserved = mass
-  #   return
-
-  # def __setDensity(self, density):
-  #   '''Set the mass.'''
-  #   self.__densityObserved = density
-  #   return
-
-  # def __setFUV(self, fuv):
-  #   self.__FUV = fuv
-  #   return
-
-  # def __setExtinction(self, afuv):
-  #   self.__extinction = afuv
-  #   return
-
-  # def __setVelocity(self, velocity):
-  #   self.__velocity = velocity
-  #   # self.__velocityStep = abs(self.__constants.velocityBins[-1]-self.__constants.velocityBins[-2])
-  #   # self.__velocityBins = np.linspace(-360, 360, self.__velocityNumber)
-  #   return
-
-  # def __setVelocityDispersion(self, velocityDispersion):
-  #   self.__velocityDispersion = velocityDispersion
-  #   return
-
-  # def __str__(self):
-  #   return 'The {} ensemble to simulate the fractal structure with {} instances of KOSMA-tau giving\n  {} possible combinations in the line-of-sight of an observer:'\
-  #           .format(self.__clumpType, self.__masspoints.size, len(self.__combinations), self.__combinations)
-
-  # PUBLIC
-
-  # def reloadModules(self):
-  #   il.reload(Combination)
-  #   il.reload(Binomial)
-  #   il.reload(Gauss)
-  #   il.reload(Poisson)
-  #   il.reload(FUVfield)
-  #   il.reload(Constants)
-  #   for combination in self.__combinationObjects:
-  #     combination.reloadModules()
-  #   return
 
 def initialise(velocity=0, clumpMass=0, interclumpMass=0, verbose=False):
   if verbose:
@@ -114,61 +28,11 @@ def initialise(velocity=0, clumpMass=0, interclumpMass=0, verbose=False):
   createCombinationObjects(velocity)
   return
 
-  # def setMass(self, mass):
-  #   '''Set the mass.'''
-  #   self.__setMass(mass)
-  #   return
-
-  # def getMass(self):
-  #   return self.__massObserved
-  # #def initialiseEnsemble
-
-  # def calculateMasspoints(self, verbose=False):
-  #   '''This is a function to get the clump masses in this ensemble. It will soon be depreciated
-  #      as I will change the reading of the KOSMA-tau files to convert from the fortran 10*log(values).'''
-  #   self.__masspoints = np.arange(self.__massLimits[0], self.__massLimits[1])[::-1]
-  #   if verbose: input(self.__masspoints)
-  #   return
-
-  # def calculateMasspointDensity(self):
-  #   '''I am not entirely sure this is needed...'''
-  #   return np.log10(self.__masspointDensity)
-
-  # def getInterpolationPoints(self):
-  #   '''This might be removed. I'm not certain the interpolation points need to be accessed out-of-class.'''
-  #   return
-
-  # def getMasspoints(self):
-  #   '''This is pretty self-explanatory. Return the list of clump masses when called...'''
-  #   return self.__masspoints
-
-  # def getCombinations(self):
-  #   return self.__combinations
-
-  # def calculateRadii(self, verbose=False):
-  #   '''This function calculates the interpolation points necessary for reading the KOSMA-tau files.'''
-  #   self.__masspointDensity = np.log10(10.**(self.__masspoints*(1-3./constants.gamma))*sum(10.**(self.__masspoints*(1+3./constants.gamma-constants.alpha))) / \
-  #                                      sum(10.**(self.__masspoints*(2-constants.alpha)))*self.__densityObserved/1.91)
-  #   if verbose:
-  #     print(self.__masspointDensity)
-  #   #if (self.__masspointDensity>self.__constants.densityLimits[1]).any() or (self.__masspointDensity<self.__constants.densityLimits[0]).any(): sys.exit('WARNING: surface density {} outside of KOSMA-tau grid!\n\n'.format(self.__masspointDensity))
-  #   self.__interpolationPoints = np.stack((self.__masspointDensity, self.__masspoints, np.full(self.__masspoints.size, self.__FUV)))
-  #   self.__masspointRadii = ((3./(4.*np.pi)*(10.**self.__masspoints*constants.massSolar)/ \
-  #                             (10.**self.__masspointDensity*constants.massH*1.91))**(1./3.)/constants.pc)
-  #   self.__masspointRadii.resize(len(self.__masspoints),1)
-  #   if verbose:
-  #     input('\nRadii:\n{}\n'.format(self.__masspointRadii))
-  #   return
-
-  # def getRadii(self):
-  #   return self.__masspointRadii
-
-  # def getDensity(self):
-  #   return self.__masspointDensity
-
 def calculateCombinations(clumpN, verbose=False):
-  '''This function calculates all of the different combinations of clump masses that may be in a line-of-sight.
-    It is basically the essence of the probabilistic approach used to create the superposition of clumps.'''
+  '''
+  This function calculates all of the different combinations of clump masses that may be in a line-of-sight.
+  It is basically the essence of the probabilistic approach used to create the superposition of clumps.
+  '''
   dimension = len(clumpN[0])
   ranges = clumpN
   if verbose:
@@ -209,8 +73,10 @@ def calculateCombinations(clumpN, verbose=False):
   return combinations
 
 def createCombinationObjects(velocity, verbose=False, debug=False):
-  '''This function removes all of the unnecessary degenerate looping during this calculation.
-     Of course it is possible because of the wonders of numpy.ndarray(). . .'''
+  '''
+  This function removes all of the unnecessary degenerate looping during this calculation.
+  Of course it is possible because of the wonders of numpy.ndarray(). . .
+  '''
   #verbose = self.__verbose or verbose
   #if verbose: print(self.__clumpType)
   ensemble.clumpNj = (ensemble.clumpMass*10.**(constants.clumpLogMass*(1-constants.alpha))) / sum(10.**(constants.clumpLogMass*(2-constants.alpha)))
@@ -310,10 +176,10 @@ def createCombinationObjects(velocity, verbose=False, debug=False):
   #self.__probability = np.zeros((len(self.__combinations),2))
   largestCombination = ((ensemble.clumpNumberRange[:,:,1]-ensemble.clumpNumberRange[:,:,0]).prod(1))
   ensemble.clumpLargestIndex = largestCombination.argmax()#np.where((ensemble.clumpNumberRange[:,:,1]-ensemble.clumpNumberRange[:,:,0]).prod(1)==largestCombination)[0][0]
-  ensemble.clumpLargestCombination = largestCombination.max()
+  ensemble.clumpLargestCombination = int(largestCombination.max())
   largestCombination = ((ensemble.interclumpNumberRange[:,:,1]-ensemble.interclumpNumberRange[:,:,0]).prod(1))
   ensemble.interclumpLargestIndex = largestCombination.argmax()#np.where((ensemble.interclumpNumberRange[:,:,1]-ensemble.interclumpNumberRange[:,:,0]).prod(1)==largestCombination)[0][0]
-  ensemble.interclumpLargestCombination = largestCombination.max()
+  ensemble.interclumpLargestCombination = int(largestCombination.max())
   
   if verbose:
     print('\nCombinations:\n{}'.format(ensemble.clumpCombinations))
@@ -324,12 +190,12 @@ def createCombinationObjects(velocity, verbose=False, debug=False):
   # Probability (clean-up soon)
   # Clump
   probabilityList = []
-  maxProbabilityList = []
   combinationIndeces = []
+  clumpLargestCombination = ensemble.clumpCombinations[ensemble.clumpLargestIndex].T
   for i,combinations in enumerate(ensemble.clumpCombinations):   #loop over combinations of masspoints in each velocity bin
     ensemble.clumpCombinations[i] = np.array(combinations).T
-    probability = []
-    maxProbability = []
+    probability = np.zeros((ensemble.clumpLargestCombination, constants.clumpLogMass.size))
+    maxProbability = np.zeros((ensemble.clumpLargestCombination, constants.clumpLogMass.size))
     combinationIndeces.append(i)
     if verbose:
       print(combinations)
@@ -337,6 +203,7 @@ def createCombinationObjects(velocity, verbose=False, debug=False):
     if combinations.any():    #calculate the probability if there are any masspoints in this velocity bin
       for combination in ensemble.clumpCombinations[i]:
         combination = np.array([combination])
+        index = np.where((clumpLargestCombination==combination).all(1))[0][0]
         if verbose:
           print('\nCombination:\n', combination)
           input()
@@ -348,9 +215,9 @@ def createCombinationObjects(velocity, verbose=False, debug=False):
             if verbose:
               print('Gauss')
             g = stat.Gauss(clumpProbableNumber[:,i], clumpStandardDeviation[:,i], debug=debug)
-            probability.append(g.gaussfunc(combination))
+            probability[index,:] = (g.gaussfunc(combination))
             g = stat.Gauss(CLmaxProbableNumber, CLmaxStandardDeviation, debug=debug)
-            maxProbability.append(g.gaussfunc(combination))
+            maxProbability[index,:] = (g.gaussfunc(combination))
             #print('gauss!!...')
           else:
             # use binomial
@@ -358,9 +225,9 @@ def createCombinationObjects(velocity, verbose=False, debug=False):
               print('Binomial')
             # <<This will likely print an error when there are more masspoints>>
             b = stat.Binomial(ensemble.clumpDeltaNji[:,i], clumpSurfaceProbability, debug=debug) # n and p for binominal 
-            probability.append(b.binomfunc(combination))
+            probability[index,:] = (b.binomfunc(combination))
             b = stat.Binomial(ensemble.clumpNj, clumpSurfaceProbability, debug=debug) # n and p for binominal 
-            maxProbability.append(b.binomfunc(combination))
+            maxProbability[index,:] = (b.binomfunc(combination))
         elif constants.probability=='poisson':
           if np.any(clumpProbableNumber[:,i]>constants.pnGauss) and np.any(ensemble.clumpDeltaNji[:,i]>constants.nGauss):
             # use gauss
@@ -379,6 +246,7 @@ def createCombinationObjects(velocity, verbose=False, debug=False):
         print(np.array(probability[i]).shape)
         print(np.array(maxProbability[i]).shape)
       input()
+    #print((probability))
     while(len(probability) < ensemble.clumpLargestCombination):
       probability.append(np.zeros((constants.clumpLogMass.size)))
       maxProbability.append(np.zeros((constants.clumpLogMass.size)))
@@ -390,19 +258,20 @@ def createCombinationObjects(velocity, verbose=False, debug=False):
       input()
     #print(probabilityList, probability)
     probabilityList.append(np.array(probability))
-    maxProbabilityList.append(np.array(maxProbability))
+    if i==ensemble.clumpLargestIndex:
+      maxProbabilityList = np.array(maxProbability)
   clumpCombinationIndeces = np.array(combinationIndeces)
   ensemble.clumpProbability = np.array(probabilityList)
   ensemble.CLmaxProbability = np.array(maxProbabilityList)
 
   # Interclump
   probabilityList = []
-  maxProbabilityList = []
   combinationIndeces = []
+  interclumpLargestCombination = ensemble.interclumpCombinations[ensemble.interclumpLargestIndex].T
   for i,combinations in enumerate(ensemble.interclumpCombinations):   #loop over combinations of masspoints in each velocity bin
     ensemble.interclumpCombinations[i] = np.array(combinations).T
-    probability = []
-    maxProbability = []
+    probability = np.zeros((ensemble.interclumpLargestCombination, constants.interclumpLogMass.size))
+    maxProbability = np.zeros((ensemble.interclumpLargestCombination, constants.interclumpLogMass.size))
     combinationIndeces.append(i)
     if verbose:
       print(combinations)
@@ -410,6 +279,7 @@ def createCombinationObjects(velocity, verbose=False, debug=False):
     if combinations.any():    #calculate the probability if there are any masspoints in this velocity bin
       for combination in ensemble.interclumpCombinations[i]:
         combination = np.array([combination])
+        index = np.where((interclumpLargestCombination==combination).all(1))[0][0]
         if verbose:
           print('\nCombination:\n', combination)
           input()
@@ -421,9 +291,9 @@ def createCombinationObjects(velocity, verbose=False, debug=False):
             if verbose:
               print('Gauss')
             g = stat.Gauss(interclumpProbableNumber[:,i], interclumpStandardDeviation[:,i], debug=debug)
-            probability.append(g.gaussfunc(combination))
+            probability[index,:] = (g.gaussfunc(combination))
             g = stat.Gauss(ICmaxProbableNumber, ICmaxStandardDeviation, debug=debug)
-            maxProbability.append(g.gaussfunc(combination))
+            maxProbability[index,:] = (g.gaussfunc(combination))
             #print('gauss!!...')
           else:
             # use binomial
@@ -431,9 +301,9 @@ def createCombinationObjects(velocity, verbose=False, debug=False):
               print('Binomial')
             # <<This will likely print an error when there are more masspoints>>
             b = stat.Binomial(ensemble.interclumpDeltaNji[:,i], interclumpSurfaceProbability, debug=debug) # n and p for binominal 
-            probability.append(b.binomfunc(combination))
+            probability[index,:] = (b.binomfunc(combination))
             b = stat.Binomial(ensemble.interclumpNj, interclumpSurfaceProbability, debug=debug) # n and p for binominal 
-            maxProbability.append(b.binomfunc(combination))
+            maxProbability[index,:] = (b.binomfunc(combination))
         elif constants.probability=='poisson':
           if np.any(interclumpProbableNumber[:,i]>constants.pnGauss) and np.any(ensemble.interclumpDeltaNji[:,i]>constants.nGauss):
             # use gauss
@@ -462,7 +332,8 @@ def createCombinationObjects(velocity, verbose=False, debug=False):
       print('\nThere is an invalid probability:', probability[-1], '\n')
       input()
     probabilityList.append(np.array(probability))
-    maxProbabilityList.append(np.array(maxProbability))
+    if i==ensemble.interclumpLargestIndex:
+      maxProbabilityList = np.array(maxProbability)
   interclumpCombinationIndeces = np.array(combinationIndeces)
   ensemble.interclumpProbability = np.array(probabilityList)
   ensemble.ICmaxProbability = np.array(maxProbabilityList)
@@ -489,7 +360,9 @@ def createCombinationObjects(velocity, verbose=False, debug=False):
     input()
 
   ensemble.clumpIndeces = ensemble.clumpProbability.prod(2).sum(1).nonzero()[0]
+  if ensemble.clumpIndeces.size>constants.clumpMaxIndeces: constants.clumpMaxIndeces = ensemble.clumpIndeces.size
   ensemble.interclumpIndeces = ensemble.interclumpProbability.prod(2).sum(1).nonzero()[0]
+  if ensemble.interclumpIndeces.size>constants.interclumpMaxIndeces: constants.interclumpMaxIndeces = ensemble.interclumpIndeces.size
 
   ensemble.clumpCombinations = np.array(ensemble.clumpCombinations[ensemble.clumpIndeces[0]:(ensemble.clumpIndeces[-1]+1)])
   ensemble.interclumpCombinations = np.array(ensemble.interclumpCombinations[ensemble.interclumpIndeces[0]:(ensemble.interclumpIndeces[-1]+1)])
@@ -502,77 +375,44 @@ def createCombinationObjects(velocity, verbose=False, debug=False):
 
   return
 
-# def getAfuv(verbose=False):
-#   combination.setClumpCombination()
-#   combination.setInterclumpCombination()
-
-#   prob = 0
-#   Afuv = combination.getAfuv()
-
-#   for i,combination in enumerate(ensemble.clumpCombinations[ensemble.clumpLargestIndex]):
-#     combinationObject = Combination(combination=combination.flatten(), masses=self.__masspoints, density=self.__masspointDensity, fuv=self.__FUV, probability=self.__probability.prod(2)[:,i], maxProbability=self.__maxProbability.max(0).prod(-1)[i], debugging=self.__debugging)
-#     self.__combinationObjects.append(combinationObject)
-#     probtemp, Afuvtemp = combinationObject.getAfuv()
-#     #print(probtemp, Afuvtemp)
-#     prob += probtemp
-#     Afuv += Afuvtemp
-#   if verbose:
-#     print(prob, '-->', -np.log(Afuv))
-#   return -np.log(Afuv)
-
 #@jit(nopython=False)
 
 def calculate(Afuv, debug=False, test=False):
-  '''Maybe <<PARALLELISE>> this??
+  '''
+  Maybe <<PARALLELISE>> this??
 
-     This is a function to cycle through the Combination instances to create a large numpy.ndarray,
-     which is used to calculate the final sums needed for the voxel.'''
+  This is a function to cycle through the Combination instances to create a large numpy.ndarray,
+  which is used to calculate the final sums needed for the voxel.
+  '''
   intensityResult = []
   opticalDepthResult = []
-  # if debug:
-  #   print('Calculating {} ensemble emission'.format(self.__clumpType))
-  #   input()
-  # if test: print('\n', self.__clumpType, len(self.__combinationObjects))
   
   for combination in ensemble.clumpCombinationObjects:
     if (combination in ensemble.clumpCombinationObjects[-10:]) and test:
       result = combination.calculateEmission(Afuv=Afuv, test=True)
     else:
       result = combination.calculateEmission(Afuv=Afuv)
-    #result = combination.getScaledCombinationEmission() #<<this needs to be altered>>
+
     intensityResult.append(result[0])
     opticalDepthResult.append(result[1])
+
   intensityResult = np.array(intensityResult)
   opticalDepthResult = np.array(opticalDepthResult)
+
   if debug:
     print('\nIntensity\n{}\nOptical depth\n{}\n'.format(intensityResult, opticalDepthResult))
   if debug:
     print(intensityResult)
     print(opticalDepthResult)
     input()
-  # Average over combinations 
-  #print(len(self.__combinationObjects))
+
   intensity = intensityResult.sum(0)
-  #print(self.__intensity.shape)
   opticalDepth = -np.log((opticalDepthResult.sum(0)).astype(np.float))
   gc.collect()
   if debug:
     print('\nIntensity\n{}\nOptical depth\n{}\n'.format(self.__intensity, self.__opticalDepth))
     input()
-  # del intensityResult
-  # del opticalDepthResult
-  # del result
+
   return (intensity,opticalDepth)
 
-  # def getEnsembleEmission(self):
-  #   '''This returns the ensemble emission...nothing more.'''
-  #   if (self.__intensity==np.nan).any():
-  #     print('\nInvalid intensity:\n{}\n'.format(self.__intensity))
-  #     input()
-  #   return (self.__intensity,self.__opticalDepth,self.__FUV)
-
-  # def getCombinations(self):
-  #   return self.__combinations
-    
-  # def getCombinationObjects(self):
-  #   return self.__combinationObjects
+#jit_module(nopython=False)

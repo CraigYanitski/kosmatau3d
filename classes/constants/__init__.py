@@ -34,6 +34,10 @@ h = 6.62606957*10**-34 #in [J s]
 c = 2.99792458*10**8  #in [m/s]
 kB = 1.3806488*10**-23  #in [J/K]
 
+# For observing the Milky Way from Earth
+fromEarth = True
+rGalEarth = 8750
+
 # Model species
 molecules = ['C+', 'C', 'CO', '13CO', '13C+', '13C', 'HCO+', 'H13CO+', 'H13CO', 'H3O+', 'C18O']
 dust = True
@@ -42,7 +46,7 @@ dust = True
 nSigma = 3
 resolution = 1000
 velocityNumber = 101
-velocityBin = [-360, 360]
+velocityBin = [-100, 100]
 velocityRange = np.linspace(velocityBin[0], velocityBin[1], num=velocityNumber)
 velocityStep = velocityRange[1] - velocityRange[0]
 
@@ -53,11 +57,13 @@ clumpMassNumber=2
 clumpLogMassRange = [1,2]
 clumpLogMass = np.linspace(clumpLogMassRange[0], clumpLogMassRange[1], num=clumpMassNumber)
 clumpLogMass.resize(1,clumpMassNumber)
+clumpMaxIndeces = 0
 
 interclumpMassNumber = 1
 interclumpLogMassRange = [-2,-1]
 interclumpLogMass = np.linspace(interclumpLogMassRange[0], interclumpLogMassRange[1], num=interclumpMassNumber)
 interclumpLogMass.resize(1,interclumpMassNumber)
+interclumpMaxIndeces = 0
 
 ensembleDispersion = 10./2.3548
 
