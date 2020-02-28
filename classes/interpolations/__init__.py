@@ -38,6 +38,8 @@ clumpMassInterpolation = None
 interclumpMassInterpolation = None
 FUVextinctionInterpolation = None
 FUVfieldInterpolation = None
+eTildeReal = None
+eTildeImaginary = None
 
 # PUBLIC
 
@@ -53,6 +55,8 @@ def reset():
   interclumpMassInterpolation = None
   FUVextinctionInterpolation = None
   FUVfieldInterpolation = None
+  eTildeReal = None
+  eTildeImaginary = None
   return
 
 def interpolateIntensity(points, speciesNumber, verbose=False):

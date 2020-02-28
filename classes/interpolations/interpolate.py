@@ -24,6 +24,8 @@ def initialise():
   interpolations.interclumpMassInterpolation = interclumpMassProfile()
   interpolations.FUVextinctionInterpolation = interpolateFUVextinction()
   interpolations.FUVfieldInterpolation = interpolateFUVfield()
+  interpolations.eTildeReal = interpolateETildeReal()
+  interpolations.eTildeImaginary = interpolateETildeImaginary()
 
 def calculateGridInterpolation(verbose=False):
   '''
@@ -137,5 +139,11 @@ def interpolateFUVfield(verbose=False):
   elif constants.interpolation=='cubic' or constants.interpolation=='radial':
     return interpolate.Rbf(fuv[0], fuv[1])
   else: sys.exit('<<ERROR>>: There is no such method as {} to interpolate the KOSMA-tau grid.\n\nExitting...\n\n'.format(interpolation))
+
+def interpolateETildeReal():
+  return interpolate.interp1d(observations.eTildeReal[0], observations.eTildeReal[1], kind='linear')
+
+def interpolateETildeImaginary():
+  return interpolate.interp1d(observations.eTildeImaginary[0], observations.eTildeImaginary[1], kind='linear')
 
 jit_module(nopython=False)

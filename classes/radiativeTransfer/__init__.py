@@ -5,6 +5,8 @@ from mpl_toolkits.mplot3d import Axes3D
 
 from radiativeTransfer import orientation
 
+import constants
+
 import scipy.interpolate as interpolate
 from scipy.stats import norm
 
@@ -14,6 +16,13 @@ losVoxels = []
 x1LoS = 0
 x2LoS = 0
 x3LoS = []
+
+tempClumpVelocity = []
+tempClumpEmission = []
+tempClumpPosition = []
+tempInterclumpVelocity = []
+tempInterclumpEmission = []
+tempInterclumpPosition = []
 
 epsilon = []
 epsilonStep = 0
@@ -25,52 +34,11 @@ eTildeImaginaryObs = orientation.eTildeImaginary()
 eTildeReal = interpolate.interp1d(eTildeRealObs[0], eTildeRealObs[1], kind='linear')
 eTildeImaginary = interpolate.interp1d(eTildeImaginaryObs[0], eTildeImaginaryObs[1], kind='linear')
 
-def calculateObservation(directory='/home/craig/projects/pdr/', velocity=[0], dim='xy', verbose=False):
-  voxelPositions = fits.open(directory+'voxel_position.fits')[0].data
-  clumpEmission = fits.open(directory+'emission_clump.fits')[0].data
-  interclumpEmission = fits.open(directory+'emission_interclump.fits')[0].data
-  print(voxelPositions[:,0].shape, clumpEmission[:,0,:,:].shape)
-  xPositions,yPositions,zPositions = voxelPositions[:,0],voxelPositions[:,1],voxelPositions[:,2]
-  #print('\nx\n', np.unique(xArray), '\ny\n', np.unique(yArray), '\nz\n', np.unique(zArray))
-  position = []
-  intensityMap = []
-  if dim=='xy':
-    
-    Array = np.unique([xPositions,yPositions], axis=1).T
-
-    if verbose:
-      print('\nx\n{}\n\ny\n{}\n'.format(Array[:,0],Array[:,1]))
-
-    for x,y in Array:
-      #for y in np.unique(yArray):
-        result = orientation.setLOS(emission=clumpEmission+interclumpEmission, positions=voxelPositions, x=x, y=y, dim=dim)
-        if result:
-          position.append([x,y])
-          intensity = orientation.calculateRadiativeTransfer(velocity)
-          intensityMap.append(intensity)
-  if dim=='xz':
-    xArray,zArray = np.unique([xPositions,zPositions], axis=1)
-    for x in np.unique(xArray):
-      for z in np.unique(zArray):
-        orientation.setLOS(emission=clumpEmission+interclumpEmission, positions=voxelPositions, x=x, z=z, dim=dim)
-        position.append([x,z])
-        intensity = orientation.calculateRadiativeTransfer(velocity)
-        intensityMap.append(intensity)
-  if dim=='yz':
-    yArray,zArray = np.unique([yPositions,zPositions], axis=1)
-    for y in np.unique(yArray):
-      for z in np.unique(zArray):
-        orientation.setLOS(emission=clumpEmission+interclumpEmission, positions=voxelPositions, y=y, z=z, dim=dim)
-        position.append([y,z])
-        intensity = orientation.calculateRadiativeTransfer(velocity)
-        intensityMap.append(intensity)
-  mapPositions = np.array(position)
-  intensityMap = np.array(intensityMap)
-  return (mapPositions,intensityMap)  
-
 def plotModel(plot='total intensity', ce=[], ie=[], directory='/home/craig/projects/pdr/KOSMA-tau^3/history/MilkyWay/resolution500_size36000/', species='13C+ 1', debug=False):
   allSpecies = ['13C 1', '13C 2', '13C 3', '13C+ 1', 'C 1', 'C 2', 'C+ 1', 'CO 1', 'CO 2', 'CO 3', 'CO 4', 'CO 5', 'CO 6', 'CO 7', '13CO 1', '13CO 2', '13CO 3', '13CO 4', '13CO 5', '13CO 6', '13CO 7', 'O 2', 'Dust 1', 'Dust 2', 'Dust 3', 'Dust 4', 'Dust 5', 'Dust 6', 'Dust 7', 'Dust 8', 'Dust 9', 'Dust 10', 'Dust 11', 'Dust 12', 'Dust 13', 'Dust 14', 'Dust 15', 'Dust 16', 'Dust 17', 'Dust 18', 'Dust 19', 'Dust 20', 'Dust 21', 'Dust 22', 'Dust 23', 'Dust 24', 'Dust 25', 'Dust 26', 'Dust 27', 'Dust 28', 'Dust 29', 'Dust 30', 'Dust 31', 'Dust 32', 'Dust 33', 'Dust 34', 'Dust 35', 'Dust 36', 'Dust 37', 'Dust 38', 'Dust 39', 'Dust 40']
-  
+
+  directory = constants.HISTORYPATH + constants.directory
+
   voxelPositions = fits.open(directory+'voxel_position.fits')[0].data
   fuv = fits.open(directory+'voxel_fuv.fits')[0].data
   Afuv = fits.open(directory+'voxel_Afuv.fits')[0].data
