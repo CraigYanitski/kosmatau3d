@@ -24,8 +24,8 @@ def initialise():
   interpolations.interclumpMassInterpolation = interclumpMassProfile()
   interpolations.FUVextinctionInterpolation = interpolateFUVextinction()
   interpolations.FUVfieldInterpolation = interpolateFUVfield()
-  interpolations.eTildeReal = interpolateETildeReal()
-  interpolations.eTildeImaginary = interpolateETildeImaginary()
+  # interpolations.eTildeReal = interpolateETildeReal()
+  # interpolations.eTildeImaginary = interpolateETildeImaginary()
 
 def calculateGridInterpolation(verbose=False):
   '''

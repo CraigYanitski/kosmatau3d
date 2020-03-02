@@ -3,7 +3,7 @@ from astropy.io import fits
 import matplotlib.pyplot as plt
 from mpl_toolkits.mplot3d import Axes3D
 
-from radiativeTransfer import orientation
+from .orientation import *
 
 import constants
 

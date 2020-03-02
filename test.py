@@ -31,7 +31,7 @@ kosma = Model(x, y, z, modelName='MilkyWay', modelType=shape, resolution=resolut
 kosma.addSpecies(species)
 kosma.calculateModel()
 kosma.writeEmission()
-radiativeTransfer.calculateObservation(directory=constants.HISTORYPATH+constants.directory+modelFolder)
+radiativeTransfer.calculateObservation(directory=modelFolder)
 
 # if False:
 #   while(selection==0):
