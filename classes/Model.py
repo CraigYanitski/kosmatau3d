@@ -6,7 +6,6 @@ from mpl_toolkits.mplot3d import Axes3D
 import shape #import Shape
 import statistics
 import observations
-import radiativeTransfer
 import species
 
 from VoxelGrid import *
