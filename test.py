@@ -8,7 +8,7 @@ pathname = inspect.getframeinfo(inspect.currentframe()).filename
 sys.path.append(os.path.abspath(os.path.dirname(pathname))+'/classes/')
 
 from Model import *
-import radiativeTransfer
+import constants
 
 complete = False
 
@@ -20,17 +20,36 @@ shape = 'disk'
 
 resolution = 1000
 
+constants.changeDirectory('MilkyWay')
+
 modelFolder = 'r1000.0_n3015'
 
-selection = 0
+# Factors
+constants.clumpMassFactor = 1
+constants.interclumpMassFactor = 1
+constants.FUVFactor = 1
+constants.DensityFactor = 1
+
+# Constant
+constants.interclumpLogFUV = 1
+
+# Model masses
+constants.clumpLogMassNum = 4
+constants.clumpLogMassRange = [-1, 2]
+constants.interclumpLogMassNum = 2
+constants.interclumpLogMassRange = [-3, -2]
 
 print('KOSMA-tau^3')
 
 species = ['13CO 10', 'C+ 1', 'CO 1', 'CO 2', 'CO 3', 'CO 4', 'CO 5', 'CO 6', 'CO 7', 'CO 8', 'CO 9', 'CO 10', '13CO 1', '13CO 2', '13CO 3', '13CO 4', '13CO 5', '13CO 6', '13CO 7', '13CO 8', '13CO 9', '13CO 10', 'O 2']
-kosma = Model(x, y, z, modelName='MilkyWay', modelType=shape, resolution=resolution)
+kosma = Model(x, y, z, modelType=shape, resolution=resolution)
 kosma.addSpecies(species)
 kosma.calculateModel()
 kosma.writeEmission()
+
+# Calculate integrated intensity maps
+
+import radiativeTransfer
 
 radiativeTransfer.calculateObservation(directory=modelFolder)
 

@@ -61,7 +61,7 @@ def calculateEmission(Afuv=0):
   masspoints.clumpOpticalDepth = np.array(clumpOpticalDepth)
 
   for i in range(constants.interclumpLogMass.size):
-    gridpoint = [masspoints.interclumpLogDensity[0,i], constants.interclumpLogMass[0,i], masspoints.logFUV]
+    gridpoint = [masspoints.interclumpLogDensity[0,i], constants.interclumpLogMass[0,i], constants.interclumpLogFUV]
     emission = masspointEmission(gridpoint)
     interclumpIntensity.append(emission[0])
     interclumpOpticalDepth.append(emission[1])

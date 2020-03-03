@@ -25,6 +25,14 @@ HISTORYPATH = KOSMAPATH + '/history/'#'/home/craig/Desktop/Köln/kosma-tau^3-dev
 # Interpolation style (it accepts 'linear' or 'cubic'/'radial')
 interpolation = 'linear'
 
+# Factors (and constant) for fine-tuning the input data
+clumpMassFactor = 1
+interclumpMassFactor = 1
+densityFactor = 1
+FUVFactor = 1
+
+interclumpLogFUV = 1
+
 # Standard constants
 massH = 1.007276466812*1.6605*10**-27  #in [kg]
 massSolar = 1.98852*10**30  #in [kg]
@@ -36,7 +44,7 @@ kB = 1.3806488*10**-23  #in [J/K]
 
 # For observing the Milky Way from Earth
 fromEarth = True
-rGalEarth = 8750
+rGalEarth = 8500
 
 # Model species
 molecules = ['C+', 'C', 'CO', '13CO', '13C+', '13C', 'HCO+', 'H13CO+', 'H13CO', 'H3O+', 'C18O']
@@ -53,14 +61,14 @@ velocityStep = velocityRange[1] - velocityRange[0]
 # Clump characteristics
 clumpDispersion = 1.67/2.3548
 
-clumpMassNumber=2
-clumpLogMassRange = [1,2]
+clumpMassNumber=4
+clumpLogMassRange = [-1,2]
 clumpLogMass = np.linspace(clumpLogMassRange[0], clumpLogMassRange[1], num=clumpMassNumber)
 clumpLogMass.resize(1,clumpMassNumber)
 clumpMaxIndeces = 0
 
-interclumpMassNumber = 1
-interclumpLogMassRange = [-2,-1]
+interclumpMassNumber = 2
+interclumpLogMassRange = [-3,-2]
 interclumpLogMass = np.linspace(interclumpLogMassRange[0], interclumpLogMassRange[1], num=interclumpMassNumber)
 interclumpLogMass.resize(1,interclumpMassNumber)
 interclumpMaxIndeces = 0

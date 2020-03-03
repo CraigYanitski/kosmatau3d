@@ -20,7 +20,7 @@ class Model(object):
   def __init__(self, x, y, z, modelName='', modelType='', resolution=1000, verbose=False):
     constants.type = modelType   #this just adds a label to the type of model being created. ie 'disk', 'bar', 'sphere', etc.
     constants.resolution = float(resolution)
-    constants.changeDirectory(modelName)
+    # constants.changeDirectory(modelName)
     observations.methods.initialise()
     self.__shape = shape.Shape(x, y, z, modelType=modelType)      #Shape() object to create the parameters for the grid of voxels
     self.__grid = VoxelGrid(self.__shape)   #VoxelGrid() object to build the model and calculate the emission

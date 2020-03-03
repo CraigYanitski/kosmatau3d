@@ -57,8 +57,8 @@ def calculateEmission(probability=1, debug=False, test=False):
     CLintensityList.append((c*masspoints.clumpIntensity.T).T)
     CLopticalDepthList.append((c*masspoints.clumpOpticalDepth.T).T)
   for c in combinations.interclumpCombination:
-    ICintensityList.append(c*masspoints.interclumpIntensity)
-    ICopticalDepthList.append(c*masspoints.interclumpOpticalDepth)
+    ICintensityList.append((c*masspoints.interclumpIntensity.T).T)
+    ICopticalDepthList.append((c*masspoints.interclumpOpticalDepth.T).T)
   if debug:
     print('Combination emissions')
     print('\n', CLintensityList[0], '\n\n', CLopticalDepthList[1])
