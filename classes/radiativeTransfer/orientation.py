@@ -20,13 +20,13 @@ def eTildeImaginary(file='Eimag.dat'):
   return (eImaginary['x'],eImaginary['Eimaginary'])
 
 def calculateObservation(directory='', dim='xy', verbose=False):
-  voxelPositions = fits.open(constants.HISTORYPATH+directory+'/voxel_position.fits')[0].data
-  clumpIntensity = fits.open(constants.HISTORYPATH+directory+'/intensity_clump.fits')[0].data
-  clumpOpticalDepth = fits.open(constants.HISTORYPATH+directory+'/opticalDepth_clump.fits')[0].data
-  clumpVelocity = fits.open(constants.HISTORYPATH+directory+'/voxel_clump_velocity.fits')[0].data
-  interclumpIntensity = fits.open(constants.HISTORYPATH+directory+'/intensity_interclump.fits')[0].data
-  interclumpOpticalDepth = fits.open(constants.HISTORYPATH+directory+'/opticalDepth_interclump.fits')[0].data
-  interclumpVelocity = fits.open(constants.HISTORYPATH+directory+'/voxel_interclump_velocity.fits')[0].data
+  voxelPositions = fits.open(constants.HISTORYPATH+constants.directory+directory+'/voxel_position.fits')[0].data
+  clumpIntensity = fits.open(constants.HISTORYPATH+constants.directory+directory+'/intensity_clump.fits')[0].data
+  clumpOpticalDepth = fits.open(constants.HISTORYPATH+constants.directory+directory+'/opticalDepth_clump.fits')[0].data
+  clumpVelocity = fits.open(constants.HISTORYPATH+constants.directory+directory+'/voxel_clump_velocity.fits')[0].data
+  interclumpIntensity = fits.open(constants.HISTORYPATH+constants.directory+directory+'/intensity_interclump.fits')[0].data
+  interclumpOpticalDepth = fits.open(constants.HISTORYPATH+constants.directory+directory+'/opticalDepth_interclump.fits')[0].data
+  interclumpVelocity = fits.open(constants.HISTORYPATH+constants.directory+directory+'/voxel_interclump_velocity.fits')[0].data
 
   # Create emission arrays; the current shape is (emission type, voxel, wavelength, velocity)
   clumpEmission = np.array([clumpIntensity, clumpOpticalDepth])
@@ -89,6 +89,25 @@ def calculateObservation(directory='', dim='xy', verbose=False):
             position.append([y,z])
             calculateRadiativeTransfer()
             intensityMap.append(radiativeTransfer.intensity)
+    
+      # Convert to numpy arrays
+      mapPositions = np.array(position)
+      intensityMap = np.array(intensityMap)
+
+      # Create HDUs for the map position and intensity and add the velocity in the headers
+      PositionHDU = fits.ImageHDU(mapPositions)
+      IntensityHDU = fits.ImageHDU(intensityMap)
+      PositionHDU.header['Velocity'] = velocity
+      PositionHDU.header['Direction'] = 'Inner disk'
+      IntensityHDU.header['Velocity'] = velocity
+      IntensityHDU.header['Direction'] = 'Inner disk'
+
+      # Add the HDUs to the HDU list
+      hdul.append(PositionHDU)
+      hdul.append(IntensityHDU)
+
+      positions = []
+      intensityMap = []
 
       if len(iOuter):
         ArrayOuter = np.unique([yPositions[iOuter], zPositions[iOuter]], axis=1).T
@@ -112,23 +131,21 @@ def calculateObservation(directory='', dim='xy', verbose=False):
       mapPositions = np.array(position)
       intensityMap = np.array(intensityMap)
 
-      print('Writing {} km/s HDU'.format(velocity))
-      # if np.size(intensityMap)>1:
-      #   for i in range(intensityMap.shape[0]):
-      #     print('map size: {}\n'.format(intensityMap[i].shape))
-      # print('map size: {}\n'.format(mapPositions.shape))
-
       # Create HDUs for the map position and intensity and add the velocity in the headers
       PositionHDU = fits.ImageHDU(mapPositions)
       IntensityHDU = fits.ImageHDU(intensityMap)
       PositionHDU.header['Velocity'] = velocity
+      PositionHDU.header['Direction'] = 'Outer disk'
       IntensityHDU.header['Velocity'] = velocity
+      IntensityHDU.header['Direction'] = 'Outer disk'
 
       # Add the HDUs to the HDU list
       hdul.append(PositionHDU)
       hdul.append(IntensityHDU)
 
-    hdul.writeto(constants.HISTORYPATH+directory+'/integrated_intensity.fits')
+      print('Writing {} km/s HDU'.format(velocity))
+
+    hdul.writeto(constants.HISTORYPATH+constants.directory+directory+'/integrated_intensity.fits', overwrite=True)
   
   elif dim=='xy':
     # This is an observation from outside the galaxy, face-on
@@ -442,4 +459,4 @@ def Eimag(x, verbose=False):
     else:
       return np.array(list(map(radiativeTransfer.eTildeImaginary, x)))
 
-jit_module(nopython=False)
+# jit_module(nopython=False)
