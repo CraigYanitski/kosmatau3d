@@ -240,7 +240,7 @@ class VoxelGrid(object):
     header['NAME'] = name
     header['UNITS'] = units
 
-    directory = constants.HISTORYPATH + constants.directory +'r{}_n{}/'.format(constants.resolution, self.__voxelNumber)
+    directory = constants.HISTORYPATH + constants.directory +'r{}_n{}/'.format(int(constants.resolution), self.__voxelNumber)
     
     if not os.path.exists(directory): os.mkdir(directory)
     

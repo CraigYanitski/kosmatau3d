@@ -46,20 +46,19 @@ def calculateObservation(directory='', dim='xy', verbose=False):
 
     hdul = fits.HDUList()
 
+    # Define the boundaries separating the inner and outer disk
+    xBoundary = (xPositions>0)&(r>constants.rGalEarth)
+    yBoundary = (yPositions<constants.rGalEarth)&(yPositions>-constants.rGalEarth)
+
     for i,velocity in enumerate(constants.velocityRange):
 
-      # Initialise the intensities and map
-      position = []
-      intensityMap = []
-
       # Find the voxels that exist at the observing velocity
-      boundary = ((xPositions>0)&(r>constants.rGalEarth))|(yPositions>constants.rGalEarth)|(yPositions<-constants.rGalEarth)
       iCV = (clumpVelocity==velocity)
       iIV = (interclumpVelocity==velocity)
 
       # Separate the voxels in the direction of the Milky Way center (Inner) and the edge of the galaxy (Outer)
-      iInner = np.where((~boundary)&(iCV.any(1)&iIV.any(1)))[0]
-      iOuter = np.where(boundary&(iCV.any(1)&iIV.any(1)))[0]
+      iInner = np.where((~xBoundary)&yBoundary&(iCV.any(1)&iIV.any(1)))[0]
+      iOuter = np.where(xBoundary&yBoundary&(iCV.any(1)&iIV.any(1)))[0]
 
       # Define the indeces contributing to the integrated intensity at this velocity
       iInnerClump = np.where(iCV[iInner,:])
@@ -68,12 +67,17 @@ def calculateObservation(directory='', dim='xy', verbose=False):
       iOuterInterclump = np.where(iIV[iOuter,:])
 
       if not (len(iInner)+len(iOuter)): continue
+      print(len(iInner), len(iOuter))
 
       # print(iInnerClump)
       # print(iInnerInterclump)
 
       if len(iInner):
-        ArrayInner = np.unique([yPositions[~boundary], zPositions[~boundary]], axis=1).T
+        # Initialise the intensities and map
+        position = []
+        intensityMap = []
+
+        ArrayInner = np.unique([yPositions[iInner], zPositions[iInner]], axis=1).T
         radiativeTransfer.tempClumpEmission = clumpEmission[:,iInnerClump[0],:,iInnerClump[1]]
         radiativeTransfer.tempClumpPosition = voxelPositions[iInnerClump[0],:]
         radiativeTransfer.tempClumpVelocity = clumpVelocity[iInnerClump[0],:]
@@ -85,31 +89,34 @@ def calculateObservation(directory='', dim='xy', verbose=False):
 
         for y,z in ArrayInner:
           result = setLOS(y=y, z=z, dim='inner disk')
+          position.append([y,z])
           if result:
-            position.append([y,z])
             calculateRadiativeTransfer()
             intensityMap.append(radiativeTransfer.intensity)
+          else:
+            intensityMap.append(np.zeros(len(constants.sortedWavelengths)))
+
     
-      # Convert to numpy arrays
-      mapPositions = np.array(position)
-      intensityMap = np.array(intensityMap)
+        # Convert to numpy arrays
+        mapPositions = np.array(position)
+        intensityMap = np.array(intensityMap)
 
-      # Create HDUs for the map position and intensity and add the velocity in the headers
-      PositionHDU = fits.ImageHDU(mapPositions)
-      IntensityHDU = fits.ImageHDU(intensityMap)
-      PositionHDU.header['Velocity'] = velocity
-      PositionHDU.header['Direction'] = 'Inner disk'
-      IntensityHDU.header['Velocity'] = velocity
-      IntensityHDU.header['Direction'] = 'Inner disk'
+        # Create HDUs for the map position and intensity and add the velocity in the headers
+        PositionHDU = fits.ImageHDU(mapPositions)
+        IntensityHDU = fits.ImageHDU(intensityMap)
+        PositionHDU.header['VELOCITY'] = velocity
+        PositionHDU.header['DIREC'] = 'Inner disk'
+        IntensityHDU.header['VELOCITY'] = velocity
+        IntensityHDU.header['DIREC'] = 'Inner disk'
 
-      # Add the HDUs to the HDU list
-      hdul.append(PositionHDU)
-      hdul.append(IntensityHDU)
-
-      position = []
-      intensityMap = []
+        # Add the HDUs to the HDU list
+        hdul.append(PositionHDU)
+        hdul.append(IntensityHDU)
 
       if len(iOuter):
+        position = []
+        intensityMap = []
+
         ArrayOuter = np.unique([yPositions[iOuter], zPositions[iOuter]], axis=1).T
         radiativeTransfer.tempClumpEmission = clumpEmission[:,iOuterClump[0],:,iOuterClump[1]]
         radiativeTransfer.tempClumpPosition = voxelPositions[iOuterClump[0],:]
@@ -122,26 +129,28 @@ def calculateObservation(directory='', dim='xy', verbose=False):
 
         for y,z in ArrayOuter:
           result = setLOS(y=y, z=z, dim='outer disk', reverse=True)
+          position.append([y,z])
           if result:
-            position.append([y,z])
             calculateRadiativeTransfer()
             intensityMap.append(radiativeTransfer.intensity)
+          else:
+            intensityMap.append(np.zeros(len(constants.sortedWavelengths)))
     
-      # Convert to numpy arrays
-      mapPositions = np.array(position)
-      intensityMap = np.array(intensityMap)
+        # Convert to numpy arrays
+        mapPositions = np.array(position)
+        intensityMap = np.array(intensityMap)
 
-      # Create HDUs for the map position and intensity and add the velocity in the headers
-      PositionHDU = fits.ImageHDU(mapPositions)
-      IntensityHDU = fits.ImageHDU(intensityMap)
-      PositionHDU.header['Velocity'] = velocity
-      PositionHDU.header['Direction'] = 'Outer disk'
-      IntensityHDU.header['Velocity'] = velocity
-      IntensityHDU.header['Direction'] = 'Outer disk'
+        # Create HDUs for the map position and intensity and add the velocity in the headers
+        PositionHDU = fits.ImageHDU(mapPositions)
+        IntensityHDU = fits.ImageHDU(intensityMap)
+        PositionHDU.header['VELOCITY'] = velocity
+        PositionHDU.header['DIREC'] = 'Outer disk'
+        IntensityHDU.header['VELOCITY'] = velocity
+        IntensityHDU.header['DIREC'] = 'Outer disk'
 
-      # Add the HDUs to the HDU list
-      hdul.append(PositionHDU)
-      hdul.append(IntensityHDU)
+        # Add the HDUs to the HDU list
+        hdul.append(PositionHDU)
+        hdul.append(IntensityHDU)
 
       print('Writing {} km/s HDU'.format(velocity))
 

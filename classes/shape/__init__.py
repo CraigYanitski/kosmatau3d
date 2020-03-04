@@ -44,7 +44,6 @@ class Shape():
     Z = []
     R = []
     PHI = []
-    print(x.max)
     for i in range(len(r)):
       if np.sqrt(x[i]**2+y[i]**2)<x.max():
         X.append(x[i])
