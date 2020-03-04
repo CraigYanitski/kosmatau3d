@@ -12,11 +12,11 @@ import observations
 import radiativeTransfer
 
 def eTildeReal(file='Ereal.dat'):
-  eReal = np.genfromtxt('/home/craig/projects/pdr/KOSMA-tau^3/grid/'+file, names=['x', 'Ereal'])
+  eReal = np.genfromtxt(constants.GRIDPATH+file, names=['x', 'Ereal'])
   return (eReal['x'],eReal['Ereal'])
 
 def eTildeImaginary(file='Eimag.dat'):
-  eImaginary = np.genfromtxt('/home/craig/projects/pdr/KOSMA-tau^3/grid/'+file, names=['x', 'Eimaginary'])
+  eImaginary = np.genfromtxt(constants.GRIDPATH+file, names=['x', 'Eimaginary'])
   return (eImaginary['x'],eImaginary['Eimaginary'])
 
 def calculateObservation(directory='', dim='xy', verbose=False):
@@ -106,7 +106,7 @@ def calculateObservation(directory='', dim='xy', verbose=False):
       hdul.append(PositionHDU)
       hdul.append(IntensityHDU)
 
-      positions = []
+      position = []
       intensityMap = []
 
       if len(iOuter):
