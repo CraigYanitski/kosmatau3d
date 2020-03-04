@@ -34,10 +34,10 @@ eTildeImaginaryObs = orientation.eTildeImaginary()
 eTildeReal = interpolate.interp1d(eTildeRealObs[0], eTildeRealObs[1], kind='linear')
 eTildeImaginary = interpolate.interp1d(eTildeImaginaryObs[0], eTildeImaginaryObs[1], kind='linear')
 
-def plotModel(plot='total intensity', ce=[], ie=[], directory='/home/craig/projects/pdr/KOSMA-tau^3/history/MilkyWay/resolution500_size36000/', species='13C+ 1', debug=False):
+def plotModel(plot='total intensity', ce=[], ie=[], directory='/home/craig/projects/pdr/KOSMA-tau^3/history/MilkyWay/r1000.0_s3015/', species='13C+ 1', debug=False):
   allSpecies = ['13C 1', '13C 2', '13C 3', '13C+ 1', 'C 1', 'C 2', 'C+ 1', 'CO 1', 'CO 2', 'CO 3', 'CO 4', 'CO 5', 'CO 6', 'CO 7', '13CO 1', '13CO 2', '13CO 3', '13CO 4', '13CO 5', '13CO 6', '13CO 7', 'O 2', 'Dust 1', 'Dust 2', 'Dust 3', 'Dust 4', 'Dust 5', 'Dust 6', 'Dust 7', 'Dust 8', 'Dust 9', 'Dust 10', 'Dust 11', 'Dust 12', 'Dust 13', 'Dust 14', 'Dust 15', 'Dust 16', 'Dust 17', 'Dust 18', 'Dust 19', 'Dust 20', 'Dust 21', 'Dust 22', 'Dust 23', 'Dust 24', 'Dust 25', 'Dust 26', 'Dust 27', 'Dust 28', 'Dust 29', 'Dust 30', 'Dust 31', 'Dust 32', 'Dust 33', 'Dust 34', 'Dust 35', 'Dust 36', 'Dust 37', 'Dust 38', 'Dust 39', 'Dust 40']
 
-  directory = constants.HISTORYPATH + constants.directory
+  directory = constants.HISTORYPATH + constants.directory + directory
 
   voxelPositions = fits.open(directory+'voxel_position.fits')[0].data
   fuv = fits.open(directory+'voxel_fuv.fits')[0].data
@@ -111,7 +111,7 @@ def plotModel(plot='total intensity', ce=[], ie=[], directory='/home/craig/proje
     plotTitle = 'Rotational velocity within the Milky Way'
   fig = plt.figure()
   ax = fig.add_subplot(111, projection='3d')
-  model = ax.scatter(voxelPositions[:,0], voxelPositions[:,1], voxelPositions[:,2], c=weights, cmap=plt.cm.hot, marker='s', s=27, alpha=0.5, linewidths=0)
+  model = ax.scatter(voxelPositions[:,0], voxelPositions[:,1], voxelPositions[:,2], c=weights.flatten(), cmap=plt.cm.hot, marker='s', s=27, alpha=0.5, linewidths=0)
   ax.set_xlim(limits)
   ax.set_ylim(limits)
   ax.set_zlim(limits)
