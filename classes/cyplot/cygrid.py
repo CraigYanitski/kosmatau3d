@@ -7,17 +7,18 @@ import cyplot
 
 def convert2cygrid(positions, intensityMap, velocity=0):
 
-  nPositions = positions.shape[0]
-  nWavelengths = intensityMap.shape[1]
+  # Define the kernel properties
+  kernelsize_sigma = 1
+  kernel_type = 'gauss1d'
+  kernel_params = (kernelsize_sigma,)
+  kernel_support = 3*kernelsize_sigma
+  hpx_maxres = kernelsize_sigma/2
   
-  # create a header for the cygrid WCS grid
-  #it has dimension (lon, lat, emission)
-  cyplot.header['NAXIS1'] = nPositions
-  cyplot.header['NAXIS2'] = nPositions
-  cyplot.header['NAXIS3'] = nWavelengths
+  # Change the header for the cygrid WCS grid for the observing velocity
   cyplot.header['VELOCITY'] = velocity
 
-  grid = cg.WcsGrid(header)
+  # Set the kernel of the gridder
+  grid = cg.WcsGrid(cyplot.header)
   grid.set_kernel(
     kernel_type,
     kernel_params,
@@ -25,4 +26,10 @@ def convert2cygrid(positions, intensityMap, velocity=0):
     hpx_maxres
     )
 
-  grid.grid(positions[:,0], positions[:,1], np.reshape(sig, (-1, 1)))
+  # grid the positions using cygrid
+  grid.grid(positions[:,0], positions[:,1], intensityMap)
+
+  # Extract datacube of the required image
+  image = grid.get_datacube()
+
+  return image
