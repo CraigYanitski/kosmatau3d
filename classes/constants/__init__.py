@@ -44,7 +44,13 @@ kB = 1.3806488*10**-23  #in [J/K]
 
 # For observing the Milky Way from Earth
 fromEarth = True
-rGalEarth = 8500
+rGalEarth = 8178 #from Abuter and the GRAVITY collaboration (2019)
+rGal = 18000
+
+# Integrated map properties
+mapShape = (200, 200)   #shape in pixels of the desired map
+mapSize = (360, 15)   #size in degrees of the desired map
+mapCenter = (0,0)       #center of the desired map in degrees
 
 # Model species
 molecules = ['C+', 'C', 'CO', '13CO', '13C+', '13C', 'HCO+', 'H13CO+', 'H13CO', 'H3O+', 'C18O']
