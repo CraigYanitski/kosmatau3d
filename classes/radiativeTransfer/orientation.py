@@ -6,6 +6,8 @@ import scipy.interpolate as interpolate
 from astropy.io import fits
 import importlib as il
 
+import warnings
+
 import constants
 import interpolations
 import observations
@@ -50,29 +52,58 @@ def calculateObservation(directory='', dim='xy', verbose=False):
     xBoundary = (xPositions>0)&(r>constants.rGalEarth)
     yBoundary = (yPositions<constants.rGalEarth)&(yPositions>-constants.rGalEarth)
 
+    np.set_printoptions(threshold=1000000)
+
     for i,velocity in enumerate(constants.velocityRange):
 
       # Find the voxels that exist at the observing velocity
       iCV = (clumpVelocity==velocity)
       iIV = (interclumpVelocity==velocity)
+      #if np.any(iCV): input('{}'.format(iCV))
 
       # Separate the voxels in the direction of the Milky Way center (Inner) and the edge of the galaxy (Outer)
-      iInner = np.where((~xBoundary)&yBoundary&(iCV.any(1)&iIV.any(1)))[0]
-      iOuter = np.where(xBoundary&yBoundary&(iCV.any(1)&iIV.any(1)))[0]
+      iInner = (~xBoundary)&yBoundary&(iCV.any(1)&iIV.any(1))
+      iOuter = xBoundary&yBoundary&(iCV.any(1)&iIV.any(1))
+      # iInner = np.where((~xBoundary)&yBoundary&(iCV.any(1)&iIV.any(1)))[0]
+      # iOuter = np.where(xBoundary&yBoundary&(iCV.any(1)&iIV.any(1)))[0]
+      #if np.any(iCV): input('{}'.format(iInner))
 
       # Define the indeces contributing to the integrated intensity at this velocity
-      iInnerClump = np.where(iCV[iInner,:])
-      iInnerInterclump = np.where(iIV[iInner,:])
-      iOuterClump = np.where(iCV[iOuter,:])
-      iOuterInterclump = np.where(iIV[iOuter,:])
+      # iInnerClump =      iCV.any(1) & iInner
+      # iInnerInterclump = iIV.any(1) & iInner
+      # iOuterClump =      iCV.any(1) & iOuter
+      # iOuterInterclump = iIV.any(1) & iOuter
+      # iCV.mask = True
+      # iCV.T.mask = ~iInner
+      # iIV.mask = True
+      # iIV.T.mask = ~iInner
+      if iInner.size:
+        iInnerClump = np.where(iCV*iInner.reshape(-1, 1))
+        iInnerInterclump = np.where(iIV*iInner.reshape(-1, 1))
+      else:
+        iInnerClump = []
+        iInnerInterclump = []
+      # iCV.mask = True
+      # iCV.T.mask = ~iOuter
+      # iIV.mask = True
+      # iIV.T.mask = ~iOuter
+      if iOuter.size:
+        iOuterClump = np.where(iCV*iOuter.reshape(-1, 1))
+        iOuterInterclump = np.where(iIV*iOuter.reshape(-1, 1))
+      else:
+        iOuterClump = []
+        iOuterInterclump = []
+      # iCV.mask = False
+      #if np.any(iCV): input('{}'.format(iInnerClump))
 
       if not (len(iInner)+len(iOuter)): continue
-      print(len(iInner), len(iOuter))
+      print('\nObserving velocity:', velocity)
+      print('Inner disk voxels: {}, Outer Disk voxels: {}\n'.format(len(iInner[iInner]), len(iOuter[iOuter])))
 
       # print(iInnerClump)
       # print(iInnerInterclump)
 
-      if len(iInner):
+      if iInner.any():
         # Initialise the intensities and map
         position = []
         intensityMap = []
@@ -113,7 +144,7 @@ def calculateObservation(directory='', dim='xy', verbose=False):
         hdul.append(PositionHDU)
         hdul.append(IntensityHDU)
 
-      if len(iOuter):
+      if iOuter.any():
         position = []
         intensityMap = []
 
@@ -277,7 +308,7 @@ def setLOS(emission=0, positions=0, x=0, y=0, z=0, dim='xy', reverse=False, verb
   
   if iLOS.size==1:
     radiativeTransfer.intensity = gridIntensity[iLOS, :]
-    return True
+    print('Shape along LoS', radiativeTransfer.intensity.shape)
   
   elif iLOS.size>1:
     #for i in iLOS:
@@ -322,29 +353,43 @@ def setLOS(emission=0, positions=0, x=0, y=0, z=0, dim='xy', reverse=False, verb
   return True
 
 def calculateRadiativeTransfer(backgroundI=0., verbose=False, test=False):
-  
-  if np.size(radiativeTransfer.intensity)==1: return
+
+  if np.shape(radiativeTransfer.intensity)[0]==1: return
   
   intensity = np.full(radiativeTransfer.kappa[0].shape, backgroundI)
   scale = constants.resolution*constants.pc
   
-  # Boolean indeces to separate how the intensity is calculated
-  k0 = (radiativeTransfer.kappaStep==0)&(abs(radiativeTransfer.kappa[:-1]*constants.resolution)<10**-10)
-  kg = radiativeTransfer.kappa[:-1]>10**3*abs(radiativeTransfer.kappaStep)*constants.resolution
-  kE = ~(k0|kg)
-  kEg = ~(k0|kg)&(radiativeTransfer.kappaStep>0)
-  kEl = ~(k0|kg)&(radiativeTransfer.kappaStep<0)
+  np.set_printoptions(threshold=100000)
+  warnings.filterwarnings('error')
+  
+  # # Boolean indeces to separate how the intensity is calculated
+  # k0 = (radiativeTransfer.kappaStep==0)&(abs(radiativeTransfer.kappa[:-1]*constants.resolution)<10**-10)
+  # kg = radiativeTransfer.kappa[:-1]>10**3*abs(radiativeTransfer.kappaStep)*constants.resolution
+  # kE = ~(k0|kg)
+  # kEg = ~(k0|kg)&(radiativeTransfer.kappaStep>0)
+  # kEl = ~(k0|kg)&(radiativeTransfer.kappaStep<0)
   
   # Variables for utilising the E tilde tables
-  a = (radiativeTransfer.kappa[:-1,:]/np.sqrt(2*radiativeTransfer.kappaStep.astype(np.complex)))
-  b = ((radiativeTransfer.kappa[:-1,:]+radiativeTransfer.kappaStep*scale)/np.sqrt(2*radiativeTransfer.kappaStep.astype(np.complex)))
+  with warnings.catch_warnings():
+    warnings.simplefilter('ignore')
+    a = (radiativeTransfer.kappa[:-1,:]/np.sqrt(2*radiativeTransfer.kappaStep.astype(np.complex)))
+    b = ((radiativeTransfer.kappa[:-1,:]+radiativeTransfer.kappaStep*scale)/np.sqrt(2*radiativeTransfer.kappaStep.astype(np.complex)))
   
   if verbose: print(len(radiativeTransfer.losVoxels[:-1]))
   
   for i in range(len(radiativeTransfer.kappaStep)):
   
     k0 = (radiativeTransfer.kappaStep[i,:]==0)&(abs(radiativeTransfer.kappa[:-1,:][i,:]*constants.resolution)<10**-10)
-    kg = radiativeTransfer.kappa[:-1,:][i,:]>10**3*abs(radiativeTransfer.kappaStep[i,:])*constants.resolution
+    try:
+      kg = radiativeTransfer.kappa[:-1,:][i,:]>10**3*abs(radiativeTransfer.kappaStep[i,:])*constants.resolution
+    except RuntimeWarning:
+      print(radiativeTransfer.x1LoS, radiativeTransfer.x2LoS)
+      print(radiativeTransfer.x3LoS)
+      print(radiativeTransfer.kappaStep[i,:])
+      print(radiativeTransfer.kappa[i,:])
+      print(radiativeTransfer.tempInterclumpEmission[i:i+2,1,:])
+      input()
+      kg = radiativeTransfer.kappa[:-1,:][i,:]>10**3*abs(radiativeTransfer.kappaStep[i,:])*constants.resolution
     kE = ~(k0|kg)
     kEg = ~(k0|kg)&(radiativeTransfer.kappaStep[i,:]>0)
     kEl = ~(k0|kg)&(radiativeTransfer.kappaStep[i,:]<0)
@@ -365,12 +410,12 @@ def calculateRadiativeTransfer(backgroundI=0., verbose=False, test=False):
       if k0.any():
         intensity[k0] += radiativeTransfer.epsilon[:-1,:][i,:][k0]*scale+0.5*radiativeTransfer.epsilonStep[i,:][k0]*scale**2
   
-      if kg.any():
+      elif kg.any():
         intensity[kg] = np.exp(-radiativeTransfer.kappa[i,:][kg]*scale) * (intensity[kg] + \
                            ((radiativeTransfer.epsilon[i,:][kg]*radiativeTransfer.kappa[i,:][kg]+radiativeTransfer.epsilonStep[i,:][kg]*(radiativeTransfer.kappa[i,:][kg]*scale-1))/(radiativeTransfer.kappa[i,:][kg]**2.))*np.exp(radiativeTransfer.kappa[i,:][kg]*scale) - \
                            ((radiativeTransfer.epsilon[i,:][kg]*radiativeTransfer.kappa[i,:][kg]-radiativeTransfer.epsilonStep[i,:][kg])/(radiativeTransfer.kappa[i,:][kg]**2.)))
   
-      if kEg.any():
+      elif kEg.any():
         if verbose: print('\na, b:\n', a[i,:,:], '\n', b[i,:,:])
   
         aE = np.array(list(Ereal(a[i,:][kEg])))
@@ -381,7 +426,7 @@ def calculateRadiativeTransfer(backgroundI=0., verbose=False, test=False):
                           (np.exp(a[i,:]**2.-b[i,:]**2.)*aE-bE) + \
                           intensity[kEg]*np.exp(-radiativeTransfer.kappa[:-1][i,:][kEg]*scale-radiativeTransfer.kappaStep[i,:][kEg]/2.*scale**2.)).real 
   
-      if kEl.any():
+      elif kEl.any():
         if verbose: print('\na, b:\n', a[i,:,:], '\n', b[i,:])
   
         aE = np.array(list(Eimag(a[i,:][kEl])))
