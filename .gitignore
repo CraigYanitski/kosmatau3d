@@ -5,3 +5,4 @@ __pycache__/
 *.aux
 *.synctex.gz
 history/MilkyWay/*/
+.ipynb_checkpoints\
