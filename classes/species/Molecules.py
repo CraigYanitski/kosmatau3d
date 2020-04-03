@@ -47,7 +47,7 @@ class Molecules(object):
     self.__molecules.append(molecule)
     self.__transitions.append(transition)
     self.__frequencies.append(frequency)
-    self.__wavelengths.append(constants.c/frequency/10**11)
+    self.__wavelengths.append(constants.c/frequency/10**9)
     return
   def getFileIndeces(self):
     return np.array(self.__fileIndex, dtype=int)
