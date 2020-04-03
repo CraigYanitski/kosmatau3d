@@ -133,7 +133,7 @@ class Voxel(object):
   def getFUV(self):
     return self.__FUV
 
-  def setProperties(self, debug=False):
+  def setProperties(self, values='automatic', clumpMass=0, interclumpMass=0, mass=0, velocity=0, density=0, FUV=0, debug=False):
     ''' This method calculates the radii assuming an origin of (0,0). It then averages
        over a subgrid of 3x3. It might be improved later by having functionality to
        change the subgrid dimensions.'''
@@ -144,18 +144,45 @@ class Voxel(object):
     r = np.array([x.flatten(), y.flatten()]).T
     r = np.linalg.norm(r, axis=1)
 
-    self.__setClumpMass(r)
-    self.__setInterclumpMass(r)
-    self.__setMass()
-    self.__setVelocity(r)
-    self.__setDensity(r)
-    #self.__setExtinction()
-    self.__setFUV(self.__r, self.__z)
+    if values=='automatic':
 
-    if isinstance(self.__velocity, float):
+      self.__setClumpMass(r)
+      self.__setInterclumpMass(r)
+      self.__setMass()
+      self.__setVelocity(r)
+      self.__setDensity(r)
+      #self.__setExtinction()
+      self.__setFUV(self.__r, self.__z)
+
+      # This can convert the velocity from Cartesian to radial. It is assumed a scalar value is a radial velocity.
+      if isinstance(self.__velocity, float):
+        velocity = self.__velocity
+      else:
+        velocity = np.linalg.norm(self.__velocity)
+
+    elif values=='manual':
+      
+      self.__clumpMass = clumpMass
+      self.__interclumpMass = interclumpMass
+      self.__mass = mass
+      self.__velocity = velocity
+      self.__velocityDispersion = 5
+      self.__density = density
+      self.__FUV = FUV
+
       velocity = self.__velocity
-    else:
-      velocity = np.linalg.norm(self.__velocity)
+
+    elif values=='manual':
+      
+      self.__clumpMass = 0
+      self.__interclumpMass = 0
+      self.__mass = 0
+      self.__velocity = 0
+      self.__velocityDispersion = 0
+      self.__density = 0
+      self.__FUV = 0
+
+      velocity = self.__velocity
 
     masspoints.setMasspointData(density=self.__density, FUV=self.__FUV)
     ensemble.initialise(velocity=velocity, clumpMass=self.__clumpMass, interclumpMass=self.__interclumpMass)
