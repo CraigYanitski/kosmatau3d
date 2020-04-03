@@ -8,7 +8,7 @@ import constants
 
 import cyplot
 
-def convertMap(directory='', verbose=False):
+def convertMap(directory='', input_coord='spherical', verbose=False):
   
   # Retreive HDUs
   hdul = fits.open(constants.HISTORYPATH+constants.directory+directory+'integrated_intensity.fits')
@@ -43,25 +43,31 @@ def convertMap(directory='', verbose=False):
     elif velocity>cyplot.v_max or i==len(hdul)-1:
       cyplot.v_max = velocity
     
-    # Check if the data to be added contains the galactic center
-    if hdul[i].header['DIREC']=='Inner disk':
-      positions,intensityMap = convertData(hdul[i:i+2], direction='inner')
+    if input_coord=='spherical':
+      positions = hdul[i].data
+      positions *= cyplot.r2d #this could not be merged with the previous line due to a contiguous error??
+      intensityMap = hdul[i+1].data[:,0,:]
 
-      # Check if the following data has the same observing velocity
-      #a try-except routine is used in event i is pointing to the last HDU
-      try:
-        if hdul[i+2].header['VELOCITY']==velocity and hdul[i+2].header['DIREC']=='Outer disk':
-          tempPositions,tempIntensity = convertData(hdul[i+2:i+4], direction='outer')
-          positions = np.append(positions, tempPositions, axis=0)
-          intensityMap = np.append(intensityMap, tempIntensity, axis=0)
-      except: pass
+    elif input_coord=='Cartesian':
+      # Check if the data to be added contains the galactic center
+      if hdul[i].header['DIREC']=='Inner disk':
+        positions,intensityMap = convertData(hdul[i:i+2], direction='inner')
 
-    # Otherwise add the data for an observation towards the edge
-    else:
-      positions,intensityMap = convertData(hdul[i+2:i+4], direction='outer')
+        # Check if the following data has the same observing velocity
+        #a try-except routine is used in event i is pointing to the last HDU
+        try:
+          if hdul[i+2].header['VELOCITY']==velocity and hdul[i+2].header['DIREC']=='Outer disk':
+            tempPositions,tempIntensity = convertData(hdul[i+2:i+4], direction='outer')
+            positions = np.append(positions, tempPositions, axis=0)
+            intensityMap = np.append(intensityMap, tempIntensity, axis=0)
+        except: pass
+
+      # Otherwise add the data for an observation towards the edge
+      else:
+        positions,intensityMap = convertData(hdul[i+2:i+4], direction='outer')
 
     # Grid the model emissions using cygrid
-    cg = convert2cygrid(positions, intensityMap, velocity=hdul[i].header['VELOCITY'])
+    cg = convert2cygrid(positions, intensityMap, velocity=hdul[i].header['VELOCITY'], grid_type='wcs')
 
     # Add the image to the array
     grids.append(cg)
@@ -98,20 +104,37 @@ def convertData(hdul, direction='inner'):
   
   return galPosition,intensity[:,0,:]
 
-def convert2cygrid(positions, intensityMap, velocity=0):
+def convert2cygrid(positions, intensityMap, velocity=0, grid_type='wcs'):
 
-  # Define the kernel properties
-  kernelsize_sigma = 1
-  kernel_type = 'gauss1d'
-  kernel_params = (kernelsize_sigma,)
-  kernel_support = 3*kernelsize_sigma
-  hpx_maxres = kernelsize_sigma/2
-  
-  # Change the header for the cygrid WCS grid for the observing velocity
-  cyplot.header['VELOCITY'] = velocity
+  if grid_type=='wcs':
+    # Define the kernel properties
+    kernelsize_sigma = 1
+    kernel_type = 'gauss1d'
+    kernel_params = (kernelsize_sigma,)
+    kernel_support = 3*kernelsize_sigma
+    hpx_maxres = kernelsize_sigma/2
+    
+    # Change the header for the cygrid WCS grid for the observing velocity
+    cyplot.header['VELOCITY'] = velocity
 
-  # Set the kernel of the gridder
-  grid = cg.WcsGrid(cyplot.header)
+    # Set the kernel of the gridder
+    grid = cg.WcsGrid(cyplot.header)
+
+  elif grid_type=='sightline':
+    # Define the kernel properties
+    kernelsize_sigma = 1
+    kernel_type = 'gauss1d'
+    kernel_params = (kernelsize_sigma,)
+    kernel_support = 3*kernelsize_sigma
+    hpx_maxres = kernelsize_sigma/2
+    
+    # Change the header for the cygrid WCS grid for the observing velocity
+    cyplot.header['VELOCITY'] = velocity
+
+    # Set the kernel of the gridder
+    grid = cg.SlGrid(positions[:,0], positions[:])
+
+
   grid.set_kernel(
     kernel_type,
     kernel_params,
