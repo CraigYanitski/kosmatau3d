@@ -16,6 +16,7 @@ to change the model parameters for when this is needed.
 
 # Directory information
 directory = ''
+history = ''
 filename = inspect.getframeinfo(inspect.currentframe()).filename
 KOSMAPATH = os.path.abspath(os.path.dirname(filename)+'/../../')
 INPUTPATH = KOSMAPATH + '/input/'#'/home/craig/Desktop/Köln/kosma-tau^3-develop/kosma-tau-3d/input/'#
@@ -48,8 +49,8 @@ rGalEarth = 8178 #from Abuter and the GRAVITY collaboration (2019)
 rGal = 18000
 
 # Integrated map properties
-mapShape = (200, 200)   #shape in pixels of the desired map
-mapSize = (360, 15)   #size in degrees of the desired map
+mapShape = (150, 100)   #shape in pixels of the desired map
+mapSize = (360, 180)   #size in degrees of the desired map
 mapCenter = (0,0)       #center of the desired map in degrees
 
 # Model species
