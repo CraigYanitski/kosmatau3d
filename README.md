@@ -16,7 +16,7 @@ There are a few branches used for the development of this code. The ***master***
 
 ## Ongoing Development
 
-* Create a module to utilise ``healpy`` to analyse the integrated intensity fits file
+* Create a module to utilise ``cygrid`` to analyse the integrated intensity fits file
   * integrate the module into the radiative transfer calculation
 * Fix the probability calculations to use ``scipy``
 * Implement ``numba`` more fully to optimise the computation time
