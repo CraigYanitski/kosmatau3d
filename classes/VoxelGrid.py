@@ -1,6 +1,7 @@
 import os
 import numpy as np
 from astropy.io import fits
+import matplotlib.pyplot as plt
 from tqdm import tqdm
 #import progressbar as pb
 from numba import jit
@@ -42,6 +43,8 @@ class VoxelGrid(object):
     self.__x = []
     self.__y = []
     self.__z = []
+
+    constants.history = 'r{}_n{}/'.format(int(constants.resolution), self.__voxelNumber)
 
     return
 
@@ -103,7 +106,7 @@ class VoxelGrid(object):
     
     return
 
-  def writeEmission(self, verbose=False):
+  def writeEmission(self, verbose=False, debug=False):
     
     print('\nStreaming to fits files...')
 
@@ -126,13 +129,16 @@ class VoxelGrid(object):
     # The dimensions of the emissions are the expected velocity range (5 for clumps, 9 for interclumps),
     #the number of wavelengths at which the emission is calculated (#molecules + 333 dust wavelengths),
     #and finally the number of voxels.
-    dim = [constants.clumpMaxIndeces, len(species.moleculeWavelengths)+333, self.__voxelNumber]
+    dim = [len(species.moleculeWavelengths)+333, constants.clumpMaxIndeces, self.__voxelNumber]
     shdu_clump_intensity = self.shdu_header(name='Clump intensity', units='K', filename='intensity_clump', dim=dim)
     shdu_clump_tau = self.shdu_header(name='Clump optical depth', units='1/cm', filename='opticalDepth_clump', dim=dim)
     
-    dim = [constants.interclumpMaxIndeces, len(species.moleculeWavelengths)+333, self.__voxelNumber]
+    dim = [len(species.moleculeWavelengths)+333, constants.interclumpMaxIndeces, self.__voxelNumber]
     shdu_interclump_intensity = self.shdu_header(name='Clump intensity', units='K', filename='intensity_interclump', dim=dim)
     shdu_interclump_tau = self.shdu_header(name='Clump optical depth', units='1/cm', filename='opticalDepth_interclump', dim=dim)
+
+    # This is for a test of the voxel Emissions before streaming
+    wav = np.append(constants.wavelengths, species.moleculeWavelengths)
 
     with tqdm(total=len(self.__voxels), desc='Voxel emissions', miniters=1, dynamic_ncols=True) as progress:
       
@@ -143,23 +149,32 @@ class VoxelGrid(object):
         emission = voxel.getEmission()
 
         # Optain the voxel emission data
-        clumpIntensity = emission[0][0]
-        clumpTau = emission[1][0]
+        clumpIntensity = (emission[0])[0]
+
+        if debug:
+          print()
+          print(voxel.getPosition())
+          print()
+          plt.loglog(wav[333:], clumpIntensity[0,333:], marker='x', ms=2, ls='')
+          plt.loglog(wav[:333], clumpIntensity[0,:333], marker='', ls='-', lw=1)
+          plt.show()
+
+        clumpTau = (emission[1])[0]
         clumpVelocity = voxel.getClumpVelocity()
-        interclumpIntensity = emission[0][1]
-        interclumpTau = emission[1][1]
+        interclumpIntensity = (emission[0])[1]
+        interclumpTau = (emission[1])[1]
         interclumpVelocity = voxel.getInterclumpVelocity()
 
         # Transform the voxel emission data to the maximum size in the model (to deal with numpy nd arrays)
         while clumpIntensity[:,0].size<constants.clumpMaxIndeces:
           clumpIntensity = np.append(clumpIntensity, np.zeros((1,clumpIntensity[0,:].size)), axis=0)
           clumpTau = np.append(clumpTau, np.zeros((1,clumpTau[0,:].size)), axis=0)
-          clumpVelocity = np.append(clumpVelocity, [0], axis=0)
+          clumpVelocity = np.append(clumpVelocity, [np.nan], axis=0)
 
         while interclumpIntensity[:,0].size<constants.interclumpMaxIndeces:
           interclumpIntensity = np.append(interclumpIntensity, np.zeros((1,interclumpIntensity[0,:].size)), axis=0)
           interclumpTau = np.append(interclumpTau, np.zeros((1,interclumpTau[0,:].size)), axis=0)
-          interclumpVelocity = np.append(interclumpVelocity, [0], axis=0)
+          interclumpVelocity = np.append(interclumpVelocity, [np.nan], axis=0)
 
         shdu_position.write(voxel.getPosition())
         velocity = voxel.getVelocity()
@@ -240,7 +255,7 @@ class VoxelGrid(object):
     header['NAME'] = name
     header['UNITS'] = units
 
-    directory = constants.HISTORYPATH + constants.directory +'r{}_n{}/'.format(int(constants.resolution), self.__voxelNumber)
+    directory = constants.HISTORYPATH + constants.directory + constants.history
     
     if not os.path.exists(directory): os.mkdir(directory)
     
