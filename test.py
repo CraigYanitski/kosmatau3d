@@ -12,17 +12,21 @@ import constants
 
 complete = False
 
-x = 36
-y = 36
+modelFlag = False
+rtFlag = True
+cyplotFlag = False
+
+x = 6
+y = 6
 z = 2
 
 shape = 'disk'
 
-resolution = 1000
+resolution = 400
 
 constants.changeDirectory('MilkyWay')
 
-modelFolder = 'r1000.0_n3015'
+modelFolder = 'r400_n38094/'
 
 # Factors
 constants.clumpMassFactor = 1
@@ -44,14 +48,38 @@ print('KOSMA-tau^3')
 species = ['13CO 10', 'C+ 1', 'CO 1', 'CO 2', 'CO 3', 'CO 4', 'CO 5', 'CO 6', 'CO 7', 'CO 8', 'CO 9', 'CO 10', '13CO 1', '13CO 2', '13CO 3', '13CO 4', '13CO 5', '13CO 6', '13CO 7', '13CO 8', '13CO 9', '13CO 10', 'O 2']
 kosma = Model(x, y, z, modelType=shape, resolution=resolution)
 kosma.addSpecies(species)
-kosma.calculateModel()
-kosma.writeEmission()
+
+if modelFlag:
+
+  kosma.calculateModel()
+  kosma.writeEmission()
+  
+  modelFolder = constants.history
 
 # Calculate integrated intensity maps
 
-import radiativeTransfer
+if rtFlag:
 
-radiativeTransfer.calculateObservation(directory=modelFolder)
+  import radiativeTransfer
+
+  # radiativeTransfer.plotModel(plot='velocity', directory='r1000.0_n3015/')
+
+  radiativeTransfer.calculateObservation(directory=modelFolder, dim='spherical')
+
+# Create cygrid images
+
+if cyplotFlag:
+
+  import cyplot
+
+  images,wcs = cyplot.convertMap(modelFolder, input_coord='spherical')
+  print(images.shape)
+
+  np.nan_to_num(images)
+
+  for i in range(images[:,0,0,0].size):
+    plt.imshow(images[i,333,:,:])
+    plt.show()
 
 # if False:
 #   while(selection==0):
