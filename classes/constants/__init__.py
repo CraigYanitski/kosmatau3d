@@ -100,7 +100,7 @@ uvLimits = [0, 6]
 normUV = 2.89433*10**39
 globalUV = 10
 
-# Finally, these are the wavelengths at which the emission will be computed
+# Finally, these are the wavelengths at which the dust emission will be computed
 wavelengths = np.array([3100., 2400., 1800., 1300., 1000., 850., 700., 550., 420., 300., 240., 188.4, 177.8, 167.9, 158.5, 149.6, \
                        141.3, 133.4, 125.9, 118.9, 112.2, 105.9, 100., 94.41, 89.13, 84.14, 79.43, 74.99, 70.79, 66.83, 63.1, 59.57, \
                        56.23, 53.09, 50.12, 47.32, 44.67, 44.28, 42.75, 41.33, 39.99, 38.74, 37.57, 36.47, 35.42, 34.44, 33.51, \
@@ -123,6 +123,12 @@ wavelengths = np.array([3100., 2400., 1800., 1300., 1000., 850., 700., 550., 420
                        0.0631, 0.05957, 0.0584, 0.05623, 0.05309, 0.05012, 0.04732, 0.04467, 0.04217, 0.03981, 0.03758, 0.03548, \
                        0.0335, 0.03162, 0.0304, 0.02985, 0.02818, 0.02661, 0.02512, 0.02371, 0.02239, 0.01995, 0.01778, 0.01585, \
                        0.01413, 0.01259, 0.01122, 0.0106, 0.01, 0.009, 0.008, 0.007, 0.006, 0.005, 0.004, 0.003, 0.002, 0.001]) * 10**-6
+# These are the flag and indeces to limit how many dust emission lines are calculated
+dustWavelengths = ''
+limitMolecular = 10**-4
+limitPAH = 5*10**-6
+nDust = wavelengths>0
+# [DEACTIVATED] These are variables to sort the wavelengths
 sortedWavelengths = []
 sortedIndeces = wavelengths.argsort()
 

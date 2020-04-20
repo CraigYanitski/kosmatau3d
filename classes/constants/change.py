@@ -49,6 +49,14 @@ def changeDirectory(direc):
   if constants.directory[-1]!='/': constants.directory = constants.directory + '/'
   return
 
+def changeDustWavelengths(limit=''):
+  constants.dustWavelengths = limit
+  if limit=='PAH':
+    constants.nDust = constans.wavelengths>constants.limitPAH
+  elif limit=='molecular':
+    constants.nDust = constants.wavelengths>constants.limitMolecular
+  return
+
 def resortWavelengths():
   allWavelengths = np.append(constants.wavelengths, species.moleculeWavelengths)
   constants.sortedIndeces = allWavelengths.argsort()
