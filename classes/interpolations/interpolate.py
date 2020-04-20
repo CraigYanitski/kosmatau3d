@@ -51,8 +51,8 @@ def calculateGridInterpolation(verbose=False):
   logTau = np.log10(Tau)
   if constants.interpolation=='linear':
     if constants.dust:
-      interpolations.dustIntensityInterpolation = interpolate.LinearNDInterpolator(nmuvI, logI[:,171:])
-      interpolations.dustTauInterpolation = interpolate.LinearNDInterpolator(nmuvTau, logTau[:,171:])
+      interpolations.dustIntensityInterpolation = interpolate.LinearNDInterpolator(nmuvI, logI[:,171:][:,constants.nDust])
+      interpolations.dustTauInterpolation = interpolate.LinearNDInterpolator(nmuvTau, logTau[:,171:][:,constants.nDust])
     for index in indeces:
       if verbose: print('Creating intensity grid interpolation')
       rInterpI = interpolate.LinearNDInterpolator(nmuvI, logI[:,index-1])
@@ -63,8 +63,8 @@ def calculateGridInterpolation(verbose=False):
     return intensityInterpolation,tauInterpolation
   elif constants.interpolation=='radial' or constants.interpolation=='cubic':
     if constants.dust:
-      interpolations.dustIntensityInterpolation = interpolate.Rbf(nmuvI[:,0], nmuvI[:,1], nmuvI[:,2], logI[:,171:])
-      interpolations.dustTauInterpolation = interpolate.Rbf(nmuvTau[:,0], nmuvTau[:,1], nmuvTau[:,2], logTau[:,171:])
+      interpolations.dustIntensityInterpolation = interpolate.Rbf(nmuvI[:,0], nmuvI[:,1], nmuvI[:,2], logI[:,171:][:,constants.nDust])
+      interpolations.dustTauInterpolation = interpolate.Rbf(nmuvTau[:,0], nmuvTau[:,1], nmuvTau[:,2], logTau[:,171:][:,constants.nDust])
     for index in indeces:
       if verbose: print('Creating intensity grid interpolation')
       rInterpI = interpolate.Rbf(nmuvI[:,0], nmuvI[:,1], nmuvI[:,2], logI[:,index-1])

@@ -110,7 +110,7 @@ def interpolateDustIntensity(points, verbose=False):
   This will calculate the intensity in Jansky units.
   '''
   #verbose = verbose or verbose
-  intensity = np.zeros(333, dtype=np.float64)
+  # intensity = np.zeros(333, dtype=np.float64)
   if constants.interpolation=='linear':
     #print(intensity)
     intensity = 10**dustIntensityInterpolation(points)[0]
@@ -118,7 +118,7 @@ def interpolateDustIntensity(points, verbose=False):
     # constants.hclambda/constants.kB / \
     #             np.log(1+2*constants.hclambda/constants.wavelengths**2/(10**(dustIntensityInterpolation(points)[0])*10**-26))
     #/2/constants.kB*(constants.wavelengths)**2*10**-26
-    intensity *= 4*np.pi*constants.wavelengths**2/2/constants.kB*10**-26
+    intensity *= 4*np.pi*constants.wavelengths[constants.nDust]**2/2/constants.kB*10**-26
   elif constants.interpolation=='radial' or interpolation=='cubic': intensity = (10**dustIntensityInterpolation(points[0], points[1], points[2]))
   #if np.isnan(intensity[-1]) or intensity[-1]==0: intensity[-1] = 10**-100
   if verbose:
