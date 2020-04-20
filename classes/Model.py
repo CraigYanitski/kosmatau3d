@@ -17,9 +17,10 @@ class Model(object):
   '''
   # PRIVATE
 
-  def __init__(self, x, y, z, modelName='', modelType='', resolution=1000, verbose=False):
+  def __init__(self, x, y, z, modelName='', modelType='', resolution=1000, dustLim='', verbose=False):
     constants.type = modelType   #this just adds a label to the type of model being created. ie 'disk', 'bar', 'sphere', etc.
     constants.resolution = float(resolution)
+    constants.changeDustWavelengths(dustLim)
     # constants.changeDirectory(modelName)
     observations.methods.initialise()
     self.__shape = shape.Shape(x, y, z, modelType=modelType)      #Shape() object to create the parameters for the grid of voxels

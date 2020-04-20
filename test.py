@@ -1,3 +1,5 @@
+#!/use/bin python3
+
 import os
 import sys
 import inspect
@@ -16,17 +18,19 @@ modelFlag = False
 rtFlag = True
 cyplotFlag = False
 
-x = 6
-y = 6
+x = 36
+y = 36
 z = 2
 
 shape = 'disk'
 
-resolution = 400
+resolution = 1000
+
+focus = 'molecular'
 
 constants.changeDirectory('MilkyWay')
 
-modelFolder = 'r400_n38094/'
+modelFolder = 'r1000_n3015/'
 
 # Factors
 constants.clumpMassFactor = 1
@@ -43,10 +47,12 @@ constants.clumpLogMassRange = [-1, 2]
 constants.interclumpLogMassNum = 2
 constants.interclumpLogMassRange = [-3, -2]
 
+# Limit dust calculation
+
 print('KOSMA-tau^3')
 
 species = ['13CO 10', 'C+ 1', 'CO 1', 'CO 2', 'CO 3', 'CO 4', 'CO 5', 'CO 6', 'CO 7', 'CO 8', 'CO 9', 'CO 10', '13CO 1', '13CO 2', '13CO 3', '13CO 4', '13CO 5', '13CO 6', '13CO 7', '13CO 8', '13CO 9', '13CO 10', 'O 2']
-kosma = Model(x, y, z, modelType=shape, resolution=resolution)
+kosma = Model(x, y, z, modelType=shape, resolution=resolution, dustLim=focus)
 kosma.addSpecies(species)
 
 if modelFlag:
