@@ -126,19 +126,20 @@ class VoxelGrid(object):
     shdu_FUV = self.shdu_header(name='FUV', units='Draine', filename='voxel_fuv', dim=dim)
     shdu_Afuv = self.shdu_header(name='A_FUV', units='mag', filename='voxel_Afuv', dim=dim)
 
-    # The dimensions of the emissions are the expected velocity range (5 for clumps, 9 for interclumps),
+    # This is for a test of the voxel Emissions before streaming
+    wav = np.append(constants.wavelengths[constants.nDust], species.moleculeWavelengths)
+    nDust = constants.wavelengths[constants.nDust].size
+
+     # The dimensions of the emissions are the expected velocity range (5 for clumps, 9 for interclumps),
     #the number of wavelengths at which the emission is calculated (#molecules + 333 dust wavelengths),
     #and finally the number of voxels.
-    dim = [len(species.moleculeWavelengths)+333, constants.clumpMaxIndeces, self.__voxelNumber]
+    dim = [len(species.moleculeWavelengths)+nDust, constants.clumpMaxIndeces, self.__voxelNumber]
     shdu_clump_intensity = self.shdu_header(name='Clump intensity', units='K', filename='intensity_clump', dim=dim)
     shdu_clump_tau = self.shdu_header(name='Clump optical depth', units='1/cm', filename='opticalDepth_clump', dim=dim)
     
-    dim = [len(species.moleculeWavelengths)+333, constants.interclumpMaxIndeces, self.__voxelNumber]
+    dim = [len(species.moleculeWavelengths)+nDust, constants.interclumpMaxIndeces, self.__voxelNumber]
     shdu_interclump_intensity = self.shdu_header(name='Clump intensity', units='K', filename='intensity_interclump', dim=dim)
     shdu_interclump_tau = self.shdu_header(name='Clump optical depth', units='1/cm', filename='opticalDepth_interclump', dim=dim)
-
-    # This is for a test of the voxel Emissions before streaming
-    wav = np.append(constants.wavelengths, species.moleculeWavelengths)
 
     with tqdm(total=len(self.__voxels), desc='Voxel emissions', miniters=1, dynamic_ncols=True) as progress:
       
@@ -155,8 +156,8 @@ class VoxelGrid(object):
           print()
           print(voxel.getPosition())
           print()
-          plt.loglog(wav[333:], clumpIntensity[0,333:], marker='x', ms=2, ls='')
-          plt.loglog(wav[:333], clumpIntensity[0,:333], marker='', ls='-', lw=1)
+          plt.loglog(wav[nDust:], clumpIntensity[0,nDust:], marker='x', ms=2, ls='')
+          plt.loglog(wav[:nDust], clumpIntensity[0,:nDust], marker='', ls='-', lw=1)
           plt.show()
 
         clumpTau = (emission[1])[0]
