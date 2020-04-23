@@ -1,5 +1,8 @@
 import numpy as np
 from numba import jit_module
+import matplotlib as mpl
+mpl.use('Qt4Agg')
+import matplotlib.pyplot as plt
 import copy as c
 import cmath
 import scipy.interpolate as interpolate
@@ -24,6 +27,7 @@ def eTildeImaginary(file='Eimag.dat'):
 
 def calculateObservation(directory='', dim='xy', verbose=False):
   voxelPositions = fits.open(constants.HISTORYPATH+constants.directory+directory+'/voxel_position.fits')[0].data
+  radiativeTransfer.voxelVelocities = fits.open(constants.HISTORYPATH+constants.directory+directory+'/voxel_velocity.fits')[0].data #test
   clumpIntensity = fits.open(constants.HISTORYPATH+constants.directory+directory+'/intensity_clump.fits')[0].data
   clumpOpticalDepth = fits.open(constants.HISTORYPATH+constants.directory+directory+'/opticalDepth_clump.fits')[0].data
   clumpVelocity = fits.open(constants.HISTORYPATH+constants.directory+directory+'/voxel_clump_velocity.fits')[0].data
@@ -116,10 +120,13 @@ def calculateObservation(directory='', dim='xy', verbose=False):
         radiativeTransfer.tempInterclumpPosition = voxelPositions[iInterclumpV[0],:]
         radiativeTransfer.tempInterclumpVelocity = interclumpVelocity[iInterclumpV[0],:]
 
+        velTest = []
+
         for lat in latgrid:
           positionIntensity = []
           for lon in longrid:
-            result = setLOS(lon=lon, lat=lat, dim=dim)
+            result,vel = setLOS(lon=lon, lat=lat, dim=dim)
+            velTest.append(vel)
             position.append([lon,lat])
             if result:
               calculateRadiativeTransfer()
@@ -132,163 +139,19 @@ def calculateObservation(directory='', dim='xy', verbose=False):
         VintensityMap.append(intensityMap)
         Vpositions.append(position)
 
-        # # Convert to numpy arrays
-        # mapPositions = np.array(position)
-        # intensityMap = np.array(intensityMap)
-
-        # if verbose:
-        #   print('Map position shape:')
-        #   if mapPositions.ndim>1:
-        #     print(mapPositions.shape)
-        #   else:
-        #     for p in mapPositions: print(p.shape)
-
-        # if verbose:
-        #   print('Map intensity shape:')
-        #   if intensityMap.ndim>1:
-        #     print(intensityMap.shape)
-        #   else:
-        #     for intensity in intensityMap: print(intensity.shape)
-
-        # # Create HDUs for the map position and intensity and add the velocity in the headers
-        # PositionHDU = fits.ImageHDU(mapPositions)
-        # IntensityHDU = fits.ImageHDU(intensityMap)
-        # PositionHDU.header['VELOCITY'] = velocity
-        # PositionHDU.header['DIREC'] = 'Radial'
-
-        # IntensityHDU.header['VELOCITY'] = velocity
-        # IntensityHDU.header['DIREC'] = 'Radial'
-
-        # # Add the HDUs to the HDU list
-        # hdul.append(PositionHDU)
-        # hdul.append(IntensityHDU)
-
-      else: pass
-
-        # # Separate the voxels in the direction of the Milky Way center (Inner) and the edge of the galaxy (Outer)
-        # iInner = (~xBoundary)&yBoundary&(iCV.any(1)&iIV.any(1))
-        # iOuter = xBoundary&yBoundary&(iCV.any(1)&iIV.any(1))
-        # # iInner = np.where((~xBoundary)&yBoundary&(iCV.any(1)&iIV.any(1)))[0]
-        # # iOuter = np.where(xBoundary&yBoundary&(iCV.any(1)&iIV.any(1)))[0]
-        # #if np.any(iCV): input('{}'.format(iInner))
-
-        # # Define the indeces contributing to the integrated intensity at this velocity
-        # # iInnerClump =      iCV.any(1) & iInner
-        # # iInnerInterclump = iIV.any(1) & iInner
-        # # iOuterClump =      iCV.any(1) & iOuter
-        # # iOuterInterclump = iIV.any(1) & iOuter
-        # # iCV.mask = True
-        # # iCV.T.mask = ~iInner
-        # # iIV.mask = True
-        # # iIV.T.mask = ~iInner
-        # if iInner.size:
-        #   iInnerClump = np.where(iCV*iInner.reshape(-1, 1))
-        #   iInnerInterclump = np.where(iIV*iInner.reshape(-1, 1))
-        # else:
-        #   iInnerClump = []
-        #   iInnerInterclump = []
-        # # iCV.mask = True
-        # # iCV.T.mask = ~iOuter
-        # # iIV.mask = True
-        # # iIV.T.mask = ~iOuter
-        # if iOuter.size:
-        #   iOuterClump = np.where(iCV*iOuter.reshape(-1, 1))
-        #   iOuterInterclump = np.where(iIV*iOuter.reshape(-1, 1))
-        # else:
-        #   iOuterClump = []
-        #   iOuterInterclump = []
-        # # iCV.mask = False
-        # #if np.any(iCV): input('{}'.format(iInnerClump))
-
-        # if not (len(iInner)+len(iOuter)): continue
-        # print('\nObserving velocity:', velocity)
-        # print('Inner disk voxels: {}, Outer Disk voxels: {}\n'.format(len(iInner[iInner]), len(iOuter[iOuter])))
-
-        # # print(iInnerClump)
-        # # print(iInnerInterclump)
-
-        # if iInner.any():
-        #   # Initialise the intensities and map
-        #   position = []
-        #   intensityMap = []
-
-        #   ArrayInner = np.unique([yPositions[iInner], zPositions[iInner]], axis=1).T
-        #   radiativeTransfer.tempClumpEmission = clumpEmission[:,iInnerClump[0],iInnerClump[1],:]
-        #   radiativeTransfer.tempClumpPosition = voxelPositions[iInnerClump[0],:]
-        #   radiativeTransfer.tempClumpVelocity = clumpVelocity[iInnerClump[0],:]
-        #   radiativeTransfer.tempInterclumpEmission = interclumpEmission[:,iInnerInterclump[0],iInnerInterclump[1],:]
-        #   radiativeTransfer.tempInterclumpPosition = voxelPositions[iInnerInterclump[0],:]
-        #   radiativeTransfer.tempInterclumpVelocity = interclumpVelocity[iInnerInterclump[0],:]
-
-        #   # print(ArrayInner)
-
-        #   for y,z in ArrayInner:
-        #     result = setLOS(y=y, z=z, dim='inner disk')
-        #     position.append([y,z])
-        #     if result:
-        #       calculateRadiativeTransfer()
-        #       intensityMap.append(radiativeTransfer.intensity)
-        #     else:
-        #       intensityMap.append(np.zeros(len(constants.sortedWavelengths)))
-
-      
-        #   # Convert to numpy arrays
-        #   mapPositions = np.array(position)
-        #   intensityMap = np.array(intensityMap)
-
-        #   # Create HDUs for the map position and intensity and add the velocity in the headers
-        #   PositionHDU = fits.ImageHDU(mapPositions)
-        #   IntensityHDU = fits.ImageHDU(intensityMap)
-        #   PositionHDU.header['VELOCITY'] = velocity
-        #   PositionHDU.header['DIREC'] = 'Inner disk'
-        #   IntensityHDU.header['VELOCITY'] = velocity
-        #   IntensityHDU.header['DIREC'] = 'Inner disk'
-
-        #   # Add the HDUs to the HDU list
-        #   hdul.append(PositionHDU)
-        #   hdul.append(IntensityHDU)
-
-        # if iOuter.any():
-        #   position = []
-        #   intensityMap = []
-
-        #   ArrayOuter = np.unique([yPositions[iOuter], zPositions[iOuter]], axis=1).T
-        #   radiativeTransfer.tempClumpEmission = clumpEmission[:,iOuterClump[0],iOuterClump[1],:]
-        #   radiativeTransfer.tempClumpPosition = voxelPositions[iOuterClump[0],:]
-        #   radiativeTransfer.tempClumpVelocity = clumpVelocity[iOuterClump[0],:]
-        #   radiativeTransfer.tempInterclumpEmission = interclumpEmission[:,iOuterInterclump[0],iOuterInterclump[1],:]
-        #   radiativeTransfer.tempInterclumpPosition = voxelPositions[iOuterInterclump[0],:]
-        #   radiativeTransfer.tempInterclumpVelocity = interclumpVelocity[iOuterInterclump[0],:]
-
-        #   #print(ArrayInner)
-
-        #   for y,z in ArrayOuter:
-        #     result = setLOS(y=y, z=z, dim='outer disk', reverse=True)
-        #     position.append([y,z])
-        #     if result:
-        #       calculateRadiativeTransfer()
-        #       intensityMap.append(radiativeTransfer.intensity)
-        #     else:
-        #       intensityMap.append(np.zeros(len(constants.sortedWavelengths)))
-      
-        #   # Convert to numpy arrays
-        #   mapPositions = np.array(position)
-        #   intensityMap = np.array(intensityMap)
-
-        #   # Create HDUs for the map position and intensity and add the velocity in the headers
-        #   PositionHDU = fits.ImageHDU(mapPositions)
-        #   IntensityHDU = fits.ImageHDU(intensityMap)
-        #   PositionHDU.header['VELOCITY'] = velocity
-        #   PositionHDU.header['DIREC'] = 'Outer disk'
-        #   IntensityHDU.header['VELOCITY'] = velocity
-        #   IntensityHDU.header['DIREC'] = 'Outer disk'
-
-        #   # Add the HDUs to the HDU list
-        #   hdul.append(PositionHDU)
-        #   hdul.append(IntensityHDU)
-
       if verbose:
         print('Evaluating {} km/s HDU'.format(velocity))
+
+
+      fig = plt.figure()
+      ax = fig.add_subplot(111, projection='mollweide')
+      cb = ax.scatter(np.array(position)[:,0], np.array(position)[:,1], c=velTest, s=64, marker='s')
+      plt.ion()
+      fig.colorbar(cb)
+      ax.grid(True)
+      ax.set_xticklabels([])
+      ax.set_yticklabels([])
+      plt.show(block=True)
       
     # Convert to numpy arrays
     Vpositions = np.array(Vpositions[0])
@@ -327,17 +190,17 @@ def calculateObservation(directory='', dim='xy', verbose=False):
     IntensityHDU.header['CUNIT2'] = 'rad'
     IntensityHDU.header['CRVAL2'] = 0.
     IntensityHDU.header['CDELT2'] = 2*np.pi/IntensityHDU.header['NAXIS2']
-    IntensityHDU.header['CRPIX2'] = IntensityHDU.header['NAXIS2']/2.
+    IntensityHDU.header['CRPIX2'] = (IntensityHDU.header['NAXIS2']-1)/2.
     IntensityHDU.header['CTYPE3'] = 'GLAT'
     IntensityHDU.header['CUNIT3'] = 'rad'
     IntensityHDU.header['CRVAL3'] = 0.
     IntensityHDU.header['CDELT3'] = np.pi/IntensityHDU.header['NAXIS3']
-    IntensityHDU.header['CRPIX3'] = IntensityHDU.header['NAXIS3']/2.
+    IntensityHDU.header['CRPIX3'] = (IntensityHDU.header['NAXIS3']-1)/2.
     IntensityHDU.header['CTYPE4'] = 'Velocity'
     IntensityHDU.header['CUNIT4'] = 'km/s'
-    IntensityHDU.header['CRVAL4'] = (vmax-vmin)/2.
-    IntensityHDU.header['CDELT4'] = (vmax-vmin)/IntensityHDU.header['NAXIS4']
-    IntensityHDU.header['CRPIX4'] = IntensityHDU.header['NAXIS4']/2.
+    IntensityHDU.header['CRVAL4'] = (vmax+vmin)/2.
+    IntensityHDU.header['CDELT4'] = (vmax-vmin)/(IntensityHDU.header['NAXIS4']-1)
+    IntensityHDU.header['CRPIX4'] = (IntensityHDU.header['NAXIS4']-1)/2.
     IntensityHDU.header['DIREC'] = 'Radial'
 
     hdul.append(PositionHDU)
@@ -459,7 +322,7 @@ def setLOS(emission=0, positions=0, x=0, y=0, z=0, lon=0, lat=0, dim='xy', rever
     #angular size of voxels
     dLon = np.arctan(width/2/radGrid)
     dLat = np.arctan(height/2/radGrid)
-    iLOS = np.where(((lonGrid-radiativeTransfer.x1LoS)<dLon)&((latGrid-radiativeTransfer.x2LoS)<dLat))[0]
+    iLOS = np.where((abs(lonGrid-radiativeTransfer.x1LoS)<dLon)&(abs(latGrid-radiativeTransfer.x2LoS)<dLat))[0]
   
   elif 'disk' in dim:
     radiativeTransfer.x1LoS = y
@@ -531,12 +394,14 @@ def setLOS(emission=0, positions=0, x=0, y=0, z=0, lon=0, lat=0, dim='xy', rever
   
   else:
     #print('WARNING: No LOS at position x={}, y={}, z={}.'.format(x,y,z))
-    return False
+    return False,0
+
+  vel = radiativeTransfer.voxelVelocities[iLOS]
   
   if verbose:
     print('voxels:', i)
   
-  return True
+  return True,vel.size
 
 def calculateRadiativeTransfer(backgroundI=0., verbose=False, test=False):
 
