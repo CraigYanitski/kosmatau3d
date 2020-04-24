@@ -25,7 +25,7 @@ def eTildeImaginary(file='Eimag.dat'):
   eImaginary = np.genfromtxt(constants.GRIDPATH+file, names=['x', 'Eimaginary'])
   return (eImaginary['x'],eImaginary['Eimaginary'])
 
-def calculateObservation(directory='', dim='xy', verbose=False):
+def calculateObservation(directory='', dim='xy', sl=[50,50], terminal=True, plotV=False, verbose=False):
   voxelPositions = fits.open(constants.HISTORYPATH+constants.directory+directory+'/voxel_position.fits')[0].data
   radiativeTransfer.voxelVelocities = fits.open(constants.HISTORYPATH+constants.directory+directory+'/voxel_velocity.fits')[0].data #test
   clumpIntensity = fits.open(constants.HISTORYPATH+constants.directory+directory+'/intensity_clump.fits')[0].data
@@ -69,13 +69,13 @@ def calculateObservation(directory='', dim='xy', verbose=False):
     # np.set_printoptions(threshold=1000000)
 
     # Define sightlines calculated
-    latgrid = np.linspace(-np.pi/2, np.pi/2, num=20)
-    longrid = np.linspace(-np.pi, np.pi, num=20)
+    latgrid = np.linspace(-np.pi/2, np.pi/2, num=sl[0])
+    longrid = np.linspace(-np.pi, np.pi, num=sl[1])
     # grid = np.meshgrid(lon, lat)
     # grid = np.array([grid[0].flatten(), grid[1].flatten()])
 
     vTqdm = tqdm(total=constants.velocityRange.size, desc='Observing velocity', miniters=1, dynamic_ncols=True)
-    slTqdm = tqdm(total=longrid.size*latgrid.size, desc='Sightline', miniters=1, dynamic_ncols=True)
+    if terminal: slTqdm = tqdm(total=longrid.size*latgrid.size, desc='Sightline', miniters=1, dynamic_ncols=True)
 
     VintensityMap = []
     Vpositions    = []
@@ -97,7 +97,7 @@ def calculateObservation(directory='', dim='xy', verbose=False):
         #if not (np.any(iCV) or np.any(iIV)): continue
 
         # Reset sightline progress bar
-        slTqdm.reset()
+        if terminal: slTqdm.reset()
 
         # Initialise the intensities and map
         position = []
@@ -133,7 +133,7 @@ def calculateObservation(directory='', dim='xy', verbose=False):
               positionIntensity.append(radiativeTransfer.intensity)
             else:
               positionIntensity.append(np.zeros((1,clumpEmission[0,0,0,:].size)))
-            slTqdm.update()
+            if terminal: slTqdm.update()
           intensityMap.append(positionIntensity)
       
         VintensityMap.append(intensityMap)
@@ -143,15 +143,16 @@ def calculateObservation(directory='', dim='xy', verbose=False):
         print('Evaluating {} km/s HDU'.format(velocity))
 
 
-      fig = plt.figure()
-      ax = fig.add_subplot(111, projection='mollweide')
-      cb = ax.scatter(np.array(position)[:,0], np.array(position)[:,1], c=velTest, s=64, marker='s')
-      plt.ion()
-      fig.colorbar(cb)
-      ax.grid(True)
-      ax.set_xticklabels([])
-      ax.set_yticklabels([])
-      plt.show(block=True)
+      if plotV:
+        fig = plt.figure()
+        ax = fig.add_subplot(111, projection='mollweide')
+        cb = ax.scatter(np.array(position)[:,0], np.array(position)[:,1], c=velTest, s=64, marker='s')
+        plt.ion()
+        fig.colorbar(cb)
+        ax.grid(True)
+        ax.set_xticklabels([])
+        ax.set_yticklabels([])
+        plt.show(block=True)
       
     # Convert to numpy arrays
     Vpositions = np.array(Vpositions[0])
@@ -312,6 +313,8 @@ def setLOS(emission=0, positions=0, x=0, y=0, z=0, lon=0, lat=0, dim='xy', rever
     # Convert voxel positions to spherical
     radGrid = np.sqrt(xGrid**2 + yGrid**2 + zGrid**2)
     lonGrid = np.arctan2(yGrid, xGrid)
+    if lon<0: lonGrid[lonGrid>0] = lonGrid[lonGrid>0] + 2*np.pi
+    if lon>0: lonGrid[lonGrid<0] = lonGrid[lonGrid<0] - 2*np.pi
     rPolar  = np.sqrt(xGrid**2+yGrid**2)
     latGrid = np.arctan2(zGrid, rPolar)
 
