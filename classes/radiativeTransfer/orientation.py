@@ -146,7 +146,7 @@ def calculateObservation(directory='', dim='xy', sl=[50,50], terminal=True, plot
       if plotV:
         fig = plt.figure()
         ax = fig.add_subplot(111, projection='mollweide')
-        cb = ax.scatter(np.array(position)[:,0], np.array(position)[:,1], c=velTest, s=64, marker='s')
+        cb = ax.scatter(np.array(position)[:,0], np.array(position)[:,1], c=np.array(intensityMap)[:,:,0,23].flatten(), s=64, marker='s')
         plt.ion()
         fig.colorbar(cb)
         ax.grid(True)
@@ -201,7 +201,7 @@ def calculateObservation(directory='', dim='xy', sl=[50,50], terminal=True, plot
     IntensityHDU.header['CUNIT4'] = 'km/s'
     IntensityHDU.header['CRVAL4'] = (vmax+vmin)/2.
     IntensityHDU.header['CDELT4'] = (vmax-vmin)/(IntensityHDU.header['NAXIS4']-1)
-    IntensityHDU.header['CRPIX4'] = (IntensityHDU.header['NAXIS4']-1)/2.
+    IntensityHDU.header['CRPIX4'] = (IntensityHDU.header['NAXIS4'])/2.
     IntensityHDU.header['DIREC'] = 'Radial'
 
     hdul.append(PositionHDU)
