@@ -70,7 +70,7 @@ if rtFlag:
 
   # radiativeTransfer.plotModel(plot='velocity', directory='r1000.0_n3015/')
 
-  radiativeTransfer.calculateObservation(directory=modelFolder, dim='spherical')
+  radiativeTransfer.calculateObservation(directory=modelFolder, dim='spherical', plot=True)
 
 # Create cygrid images
 
