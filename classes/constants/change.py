@@ -52,7 +52,7 @@ def changeDirectory(direc):
 def changeDustWavelengths(limit=''):
   constants.dustWavelengths = limit
   if limit=='PAH':
-    constants.nDust = constans.wavelengths>constants.limitPAH
+    constants.nDust = constants.wavelengths>constants.limitPAH
   elif limit=='molecular':
     constants.nDust = constants.wavelengths>constants.limitMolecular
   return
