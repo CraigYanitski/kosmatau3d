@@ -22,18 +22,19 @@ class Shape():
     if self.__type=='disk': self.__createDisk()
     elif self.__type=='spheroid': self.__createSpheroid()
     elif self.__type=='shell': self.__createShell()
-    else: self.__createBlock(x, y, z)
+    else: self.__createBlock(x, y, z, shape=True)
     return
-  def __createBlock(self, x, y, z):
+  def __createBlock(self, x, y, z, shape=False):
     '''I would like to have this function absorb the responsibilities of the Dimensions() class soon.'''
     self.__dimensions = Dimensions(x, y, z)
     x,y,z = self.__dimensions.voxelCartesianPosition()
     r,phi = self.__dimensions.voxelPolarPosition()
-    # self.__x = x
-    # self.__y = y
-    # self.__z = z
-    # self.__r = r
-    # self.__phi = phi
+    if shape:
+        self.__x = x
+        self.__y = y
+        self.__z = z
+        self.__r = r
+        self.__phi = phi
     return (x,y,z)
   def __createDisk(self):
     x,y,z = self.__createBlock(self.dimensions[0], self.dimensions[1], self.dimensions[2])
