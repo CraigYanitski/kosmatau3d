@@ -72,8 +72,8 @@ class Voxel(object):
     if constants.fromEarth:
       velocityEarth = interpolations.interpolateRotationalVelocity(constants.rGalEarth)
       relativePhi = np.arctan2(self.__y-constants.rGalEarth, self.__x)
-      relativeVelocity = np.linalg.norm([velocity.mean()*np.cos(self.__phi), velocity.mean()*np.sin(self.__phi)-velocityEarth, 0])
-      self.__velocity = (velocity.mean()-velocityEarth) * np.sin(self.__phi)
+      relativeVelocity = np.linalg.norm([-velocity.mean()*np.sin(self.__phi), velocity.mean()*np.cos(self.__phi), 0])
+      self.__velocity = (velocity.mean()) * np.sin(self.__phi)
     
     else:
       self.__velocity = np.array(velocity)
