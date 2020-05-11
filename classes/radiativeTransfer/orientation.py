@@ -121,12 +121,13 @@ def calculateObservation(directory='', dim='xy', sl=[50,50], terminal=True, plot
         radiativeTransfer.tempInterclumpVelocity = interclumpVelocity[iInterclumpV[0],:]
 
         velTest = []
+        radiativeTransfer.sightlines = np.zeros((longrid.size, latgrid.size))
 
-        for lat in latgrid:
+        for lat,j in enumerate(latgrid):
           positionIntensity = []
-          for lon in longrid:
+          for lon,i in enumerate(longrid):
             result,vel = setLOS(lon=lon, lat=lat, dim=dim)
-            velTest.append(vel)
+            radiativeTransfer.sightlines[i,j] = vel
             position.append([lon,lat])
             if result:
               calculateRadiativeTransfer()
@@ -190,12 +191,12 @@ def calculateObservation(directory='', dim='xy', sl=[50,50], terminal=True, plot
     IntensityHDU.header['CTYPE2'] = 'GLON'
     IntensityHDU.header['CUNIT2'] = 'rad'
     IntensityHDU.header['CRVAL2'] = 0.
-    IntensityHDU.header['CDELT2'] = 2*np.pi/IntensityHDU.header['NAXIS2']
+    IntensityHDU.header['CDELT2'] = 2*np.pi/(IntensityHDU.header['NAXIS2']-1)
     IntensityHDU.header['CRPIX2'] = (IntensityHDU.header['NAXIS2']-1)/2.
     IntensityHDU.header['CTYPE3'] = 'GLAT'
     IntensityHDU.header['CUNIT3'] = 'rad'
     IntensityHDU.header['CRVAL3'] = 0.
-    IntensityHDU.header['CDELT3'] = np.pi/IntensityHDU.header['NAXIS3']
+    IntensityHDU.header['CDELT3'] = np.pi/(IntensityHDU.header['NAXIS3']-1)
     IntensityHDU.header['CRPIX3'] = (IntensityHDU.header['NAXIS3']-1)/2.
     IntensityHDU.header['CTYPE4'] = 'Velocity'
     IntensityHDU.header['CUNIT4'] = 'km/s'
@@ -307,12 +308,12 @@ def setLOS(emission=0, positions=0, x=0, y=0, z=0, lon=0, lat=0, dim='xy', rever
 
   if dim=='spherical':
     # Set sightline position
-    radiativeTransfer.x1LoS = lon
+    radiativeTransfer.x1LoS = lon + np.pi
     radiativeTransfer.x2LoS = lat
 
     # Convert voxel positions to spherical
     radGrid = np.sqrt(xGrid**2 + yGrid**2 + zGrid**2)
-    lonGrid = np.arctan2(yGrid, xGrid)
+    lonGrid = np.arctan2(yGrid, xGrid) + np.pi
     if lon<0: lonGrid[lonGrid>0] = lonGrid[lonGrid>0] + 2*np.pi
     if lon>0: lonGrid[lonGrid<0] = lonGrid[lonGrid<0] - 2*np.pi
     rPolar  = np.sqrt(xGrid**2+yGrid**2)
@@ -325,7 +326,7 @@ def setLOS(emission=0, positions=0, x=0, y=0, z=0, lon=0, lat=0, dim='xy', rever
     #angular size of voxels
     dLon = np.arctan(width/2/radGrid)
     dLat = np.arctan(height/2/radGrid)
-    iLOS = np.where((abs(lonGrid-radiativeTransfer.x1LoS)<dLon)&(abs(latGrid-radiativeTransfer.x2LoS)<dLat))[0]
+    iLOS = np.where((abs(lonGrid-radiativeTransfer.x1LoS)<=dLon)&(abs(latGrid-radiativeTransfer.x2LoS)<=dLat))[0]
   
   elif 'disk' in dim:
     radiativeTransfer.x1LoS = y
@@ -406,7 +407,7 @@ def setLOS(emission=0, positions=0, x=0, y=0, z=0, lon=0, lat=0, dim='xy', rever
   
   return True,vel.size
 
-def calculateRadiativeTransfer(backgroundI=0., verbose=False, test=False):
+def calculateRadiativeTransfer(backgroundI=0., verbose=False, test=True):
 
   if np.shape(radiativeTransfer.intensity)[0]==1: return
   

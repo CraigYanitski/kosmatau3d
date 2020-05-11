@@ -14,18 +14,15 @@ def convertMap(directory='', input_coord='spherical', integrate=True, verbose=Fa
   intensity = fits.open(constants.HISTORYPATH+constants.directory+directory+'integrated_intensity.fits')[1]
 
   # Re-adjust cygrid input header
-  cyplot.header['NAXIS3'] = intensity.shape[-1]
-
-  # List of image grids
-  grids = []
+  cyplot.header['NAXIS3'] = 1#intensity.shape[-1]
 
   if integrate:
 
     lon = np.linspace(intensity.header['CRVAL2']-intensity.header['CDELT2']*intensity.header['CRPIX2'], \
-                      intensity.header['CRVAL2']-intensity.header['CDELT2']*intensity.header['CRPIX2'], \
+                      intensity.header['CRVAL2']+intensity.header['CDELT2']*intensity.header['CRPIX2'], \
                       intensity.header['NAXIS2'])
     lat = np.linspace(intensity.header['CRVAL3']-intensity.header['CDELT3']*intensity.header['CRPIX3'], \
-                      intensity.header['CRVAL3']-intensity.header['CDELT3']*intensity.header['CRPIX3'], \
+                      intensity.header['CRVAL3']+intensity.header['CDELT3']*intensity.header['CRPIX3'], \
                       intensity.header['NAXIS3'])
     positions = np.meshgrid(lon, lat)
     lon = positions[0].flatten()
@@ -33,12 +30,20 @@ def convertMap(directory='', input_coord='spherical', integrate=True, verbose=Fa
     positions = np.array([lon, lat]).T
     
     intensity = integrateVelocity(intensity)
-    
-    cg = convert2cygrid(positions, intensity)
 
-    grids.append(cg)
+    print(intensity.data.shape)
+    
+    grid = convert2cygrid(positions, intensity)
+
+    # grids.append(cg)
+
+    # Convert the array to a numpy array with the zeroith dimension being the velocity
+    # grids = np.array(grids)
 
   else:
+
+    # List of image grids
+    grid = []
 
     # initialise the observing velocity
     velocity = None
@@ -94,15 +99,12 @@ def convertMap(directory='', input_coord='spherical', integrate=True, verbose=Fa
       cg = convert2cygrid(positions, intensityMap, velocity=hdul[i].header['VELOCITY'], grid_type='wcs')
 
       # Add the image to the array
-      grids.append(cg)
+      grid.append(cg)
 
-  # Convert the array to a numpy array with the zeroith dimension being the velocity
-  grids = np.array(grids)
+    # Convert the array to a numpy array with the zeroith dimension being the velocity
+    grid = np.array(grid)
 
-  # Define the target WCS object (used for all channels) to properly display the images
-  wcs = WCS(cyplot.header)
-
-  return grids,wcs
+  return grid
 
 def convertData(hdul, direction='inner'):
   
@@ -167,22 +169,30 @@ def convert2cygrid(positions, intensityMap, velocity=None, grid_type='wcs'):
     )
 
   # Flatten the positional axes in intensity map to grid with cygrid. Note that there needs to be three dimensions to the data.
-  lon = np.unique(positions[0])
-  lat = np.unique(positions[1])
+  lon = np.unique(positions[:,0])
+  lat = np.unique(positions[:,1])
+  # print(lon, lat)
+  # print(positions[:,0], positions[:,1])
   shape = intensityMap.shape
   flatMap = np.zeros((shape[0]*shape[1], shape[2]))
-  for j in range(lat.size):
-    for i in range(lon.size):
-      flatMap[j*lon.size+i,:] = intensityMap[j,i,:]
+  for j in range(shape[0]):
+    for i in range(shape[1]):
+      # print(j*shape[1]+i)
+      flatMap[j*shape[1]+i,:] = intensityMap[j,i,:]
 
   # Grid the positions using cygrid
-  print(positions.shape, intensityMap.shape, flatMap.shape)
-  grid.grid(positions[:,0], positions[:,1], flatMap)
+  positions[positions[:,0]<0,0] = positions[positions[:,0]<0,0] + np.pi
+  positions[positions[:,0]>=0,0] = positions[positions[:,0]>=0,0] - np.pi
+  print(positions, flatMap.shape)
+  # print(positions.shape, intensityMap.shape, flatMap.shape)
+  grid.grid(positions[:,0]*cyplot.r2d, positions[:,1]*cyplot.r2d, flatMap[:,23].reshape(-1,1))
 
   # Extract datacube of the required image
   image = grid.get_datacube()
 
-  return image
+  print(np.where(np.isnan(image[0,:,:]))[0].size)
+
+  return grid
 
 def integrateVelocity(grid, splitWavelengths=False, old=False):
 

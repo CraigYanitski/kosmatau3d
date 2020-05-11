@@ -60,8 +60,8 @@ dust = True
 # Model characteristics
 nSigma = 3
 resolution = 1000
-velocityNumber = 101
-velocityBin = [-100, 100]
+velocityNumber = 121
+velocityBin = [-300, 300]
 velocityRange = np.linspace(velocityBin[0], velocityBin[1], num=velocityNumber)
 velocityStep = velocityRange[1] - velocityRange[0]
 
