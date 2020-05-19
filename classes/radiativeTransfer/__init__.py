@@ -24,11 +24,24 @@ tempInterclumpVelocity = []
 tempInterclumpEmission = []
 tempInterclumpPosition = []
 
+# This is used for the integration of each individual sightline
 epsilon = []
 epsilonStep = 0
 kappa = []
 kappaStep = 0
 
+# These can be used for debugging the code. It will store the indeces, kappa, and epsilon values for 25 sightlines.
+allIndeces = []
+allK = []
+allE = []
+allKstep = []
+allEstep = []
+allAreal = []
+allBreal = []
+allAimag = []
+allBimag = []
+
+# Here are the values for interpolating the real and imaginary emission
 eTildeRealObs = orientation.eTildeReal()
 eTildeImaginaryObs = orientation.eTildeImaginary()
 eTildeReal = interpolate.interp1d(eTildeRealObs[0], eTildeRealObs[1], kind='linear')

@@ -25,7 +25,11 @@ def eTildeImaginary(file='Eimag.dat'):
   eImaginary = np.genfromtxt(constants.GRIDPATH+file, names=['x', 'Eimaginary'])
   return (eImaginary['x'],eImaginary['Eimaginary'])
 
-def calculateObservation(directory='', dim='xy', sl=[50,50], terminal=True, plotV=False, verbose=False):
+def calculateObservation(directory='', dim='xy', sl=[50,50], terminal=True, plotV=False, debug=False, verbose=False):
+
+  if debug:
+    sl = [5,5]
+
   voxelPositions = fits.open(constants.HISTORYPATH+constants.directory+directory+'/voxel_position.fits')[0].data
   radiativeTransfer.voxelVelocities = fits.open(constants.HISTORYPATH+constants.directory+directory+'/voxel_velocity.fits')[0].data #test
   clumpIntensity = fits.open(constants.HISTORYPATH+constants.directory+directory+'/intensity_clump.fits')[0].data
@@ -43,11 +47,11 @@ def calculateObservation(directory='', dim='xy', sl=[50,50], terminal=True, plot
     print(voxelPositions.shape, clumpEmission.shape, interclumpEmission.shape)
 
   xPositions,yPositions,zPositions = voxelPositions[:,0],voxelPositions[:,1],voxelPositions[:,2]
-  r = np.sqrt(xPositions**2 + yPositions**2)
+  r = np.sqrt((xPositions-constants.rGalEarth)**2 + yPositions**2)
 
-  radGrid = np.sqrt(xPositions**2 + yPositions**2 + zPositions**2)
-  lonGrid = np.arctan2(yPositions, xPositions)
-  rPolar  = np.sqrt(xPositions**2+yPositions**2)
+  radGrid = np.sqrt((xPositions-constants.rGalEarth)**2 + yPositions**2 + zPositions**2)
+  lonGrid = np.arctan2(yPositions, -(xPositions-constants.rGalEarth))
+  rPolar  = np.sqrt((xPositions-constants.rGalEarth)**2+yPositions**2)
   latGrid = np.arctan2(zPositions, rPolar)
 
   np.set_printoptions(threshold=100000)
@@ -69,8 +73,8 @@ def calculateObservation(directory='', dim='xy', sl=[50,50], terminal=True, plot
     # np.set_printoptions(threshold=1000000)
 
     # Define sightlines calculated
-    latgrid = np.linspace(-np.pi/2, np.pi/2, num=sl[0])
-    longrid = np.linspace(-np.pi, np.pi, num=sl[1])
+    longrid = np.linspace(-np.pi, np.pi, num=sl[0])
+    latgrid = np.linspace(-np.pi/2, np.pi/2, num=sl[1])
     # grid = np.meshgrid(lon, lat)
     # grid = np.array([grid[0].flatten(), grid[1].flatten()])
 
@@ -81,6 +85,13 @@ def calculateObservation(directory='', dim='xy', sl=[50,50], terminal=True, plot
     Vpositions    = []
     vmin = constants.velocityRange.max()
     vmax = constants.velocityRange.min()
+
+    radiativeTransfer.sightlines = np.zeros((longrid.size, latgrid.size))
+
+    if debug: velocityRange = [0]
+    else: velocityRange = constants.velocityRange
+
+    print(sl)
 
     for i,velocity in enumerate(constants.velocityRange):
 
@@ -121,20 +132,23 @@ def calculateObservation(directory='', dim='xy', sl=[50,50], terminal=True, plot
         radiativeTransfer.tempInterclumpVelocity = interclumpVelocity[iInterclumpV[0],:]
 
         velTest = []
-        radiativeTransfer.sightlines = np.zeros((longrid.size, latgrid.size))
 
-        for lat,j in enumerate(latgrid):
+        for j,lat in enumerate(latgrid):
           positionIntensity = []
-          for lon,i in enumerate(longrid):
-            result,vel = setLOS(lon=lon, lat=lat, dim=dim)
-            radiativeTransfer.sightlines[i,j] = vel
+          for i,lon in enumerate(longrid):
+            result,vel = setLOS(lon=lon, lat=lat, dim=dim, debug=debug)
+            if radiativeTransfer.sightlines[i,j]<vel: radiativeTransfer.sightlines[i,j] = vel
             position.append([lon,lat])
             if result:
               calculateRadiativeTransfer()
               positionIntensity.append(radiativeTransfer.intensity)
+              radiativeTransfer.intensity = []
             else:
-              positionIntensity.append(np.zeros((1,clumpEmission[0,0,0,:].size)))
+              positionIntensity.append(np.zeros(clumpEmission.shape[-1]))
             if terminal: slTqdm.update()
+            if len(np.shape(positionIntensity[-1]))>1:
+              print('Error', np.shape(positionIntensity[-1]))
+              input()
           intensityMap.append(positionIntensity)
       
         VintensityMap.append(intensityMap)
@@ -173,42 +187,45 @@ def calculateObservation(directory='', dim='xy', sl=[50,50], terminal=True, plot
       else:
         for Vintensity in intensityMap: print(intensity.shape)
 
-    # Create HDUs for the map position and intensity and add the velocity in the headers
-    PositionHDU = fits.ImageHDU(Vpositions)
-    IntensityHDU = fits.ImageHDU(VintensityMap[:,:,:,0,:])
-    # input('Integrated intensity shape: {}'.format(VintensityMap.shape))
+    if not debug:
+      # Create HDUs for the map position and intensity and add the velocity in the headers
+      PositionHDU = fits.ImageHDU(Vpositions)
+      print(VintensityMap.shape, np.shape(VintensityMap[0,0,0]))
+      radiativeTransfer.intensity = VintensityMap
+      IntensityHDU = fits.ImageHDU(VintensityMap)
+      # input('Integrated intensity shape: {}'.format(VintensityMap.shape))
 
-    PositionHDU.header['TYPE1'] = 'Angle'
-    PositionHDU.header['TYPE2'] = 'Position'
-    PositionHDU.header['DIREC'] = 'Radial'
+      PositionHDU.header['TYPE1'] = 'Angle'
+      PositionHDU.header['TYPE2'] = 'Position'
+      PositionHDU.header['DIREC'] = 'Radial'
 
-    IntensityHDU.header['BUNIT'] = 'K'
-    IntensityHDU.header['CTYPE1'] = 'Wavelength'
-    IntensityHDU.header['CUNIT1'] = 'm'
-    IntensityHDU.header['CRVAL1'] = 'N/A'
-    IntensityHDU.header['CDELT1'] = 'N/A'
-    IntensityHDU.header['CRPIX1'] = 'N/A'
-    IntensityHDU.header['CTYPE2'] = 'GLON'
-    IntensityHDU.header['CUNIT2'] = 'rad'
-    IntensityHDU.header['CRVAL2'] = 0.
-    IntensityHDU.header['CDELT2'] = 2*np.pi/(IntensityHDU.header['NAXIS2']-1)
-    IntensityHDU.header['CRPIX2'] = (IntensityHDU.header['NAXIS2']-1)/2.
-    IntensityHDU.header['CTYPE3'] = 'GLAT'
-    IntensityHDU.header['CUNIT3'] = 'rad'
-    IntensityHDU.header['CRVAL3'] = 0.
-    IntensityHDU.header['CDELT3'] = np.pi/(IntensityHDU.header['NAXIS3']-1)
-    IntensityHDU.header['CRPIX3'] = (IntensityHDU.header['NAXIS3']-1)/2.
-    IntensityHDU.header['CTYPE4'] = 'Velocity'
-    IntensityHDU.header['CUNIT4'] = 'km/s'
-    IntensityHDU.header['CRVAL4'] = (vmax+vmin)/2.
-    IntensityHDU.header['CDELT4'] = (vmax-vmin)/(IntensityHDU.header['NAXIS4']-1)
-    IntensityHDU.header['CRPIX4'] = (IntensityHDU.header['NAXIS4'])/2.
-    IntensityHDU.header['DIREC'] = 'Radial'
+      IntensityHDU.header['BUNIT'] = 'K'
+      IntensityHDU.header['CTYPE1'] = 'Wavelength'
+      IntensityHDU.header['CUNIT1'] = 'm'
+      IntensityHDU.header['CRVAL1'] = 'N/A'
+      IntensityHDU.header['CDELT1'] = 'N/A'
+      IntensityHDU.header['CRPIX1'] = 'N/A'
+      IntensityHDU.header['CTYPE2'] = 'GLON'
+      IntensityHDU.header['CUNIT2'] = 'rad'
+      IntensityHDU.header['CRVAL2'] = 0.
+      IntensityHDU.header['CDELT2'] = 2*np.pi/(IntensityHDU.header['NAXIS2']-1)
+      IntensityHDU.header['CRPIX2'] = (IntensityHDU.header['NAXIS2']-1)/2.
+      IntensityHDU.header['CTYPE3'] = 'GLAT'
+      IntensityHDU.header['CUNIT3'] = 'rad'
+      IntensityHDU.header['CRVAL3'] = 0.
+      IntensityHDU.header['CDELT3'] = np.pi/(IntensityHDU.header['NAXIS3']-1)
+      IntensityHDU.header['CRPIX3'] = (IntensityHDU.header['NAXIS3']-1)/2.
+      IntensityHDU.header['CTYPE4'] = 'Velocity'
+      IntensityHDU.header['CUNIT4'] = 'km/s'
+      IntensityHDU.header['CRVAL4'] = (vmax+vmin)/2.
+      IntensityHDU.header['CDELT4'] = (vmax-vmin)/(IntensityHDU.header['NAXIS4']-1)
+      IntensityHDU.header['CRPIX4'] = (IntensityHDU.header['NAXIS4'])/2.
+      IntensityHDU.header['DIREC'] = 'Radial'
 
-    hdul.append(PositionHDU)
-    hdul.append(IntensityHDU)
+      hdul.append(PositionHDU)
+      hdul.append(IntensityHDU)
 
-    hdul.writeto(constants.HISTORYPATH+constants.directory+directory+'/integrated_intensity.fits', overwrite=True)
+      hdul.writeto(constants.HISTORYPATH+constants.directory+directory+'/integrated_intensity.fits', overwrite=True)
   
   elif dim=='xy':
     # This is an observation from outside the galaxy, face-on
@@ -271,7 +288,7 @@ def calculateObservation(directory='', dim='xy', sl=[50,50], terminal=True, plot
   
   return
 
-def setLOS(emission=0, positions=0, x=0, y=0, z=0, lon=0, lat=0, dim='xy', reverse=False, verbose=False):
+def setLOS(emission=0, positions=0, x=0, y=0, z=0, lon=0, lat=0, dim='xy', reverse=False, debug=False, verbose=False):
   '''
   The emission dimensions should be velocity x species x 2 x voxels. Axis 1 should be split for intensity and optical depth.
   The positions dimensions should be 3 x voxels.
@@ -308,15 +325,15 @@ def setLOS(emission=0, positions=0, x=0, y=0, z=0, lon=0, lat=0, dim='xy', rever
 
   if dim=='spherical':
     # Set sightline position
-    radiativeTransfer.x1LoS = lon + np.pi
+    radiativeTransfer.x1LoS = lon
     radiativeTransfer.x2LoS = lat
 
     # Convert voxel positions to spherical
-    radGrid = np.sqrt(xGrid**2 + yGrid**2 + zGrid**2)
-    lonGrid = np.arctan2(yGrid, xGrid) + np.pi
+    radGrid = np.sqrt((xGrid-constants.rGalEarth)**2 + yGrid**2 + zGrid**2)
+    lonGrid = np.arctan2(yGrid, -(xGrid-constants.rGalEarth))
     if lon<0: lonGrid[lonGrid>0] = lonGrid[lonGrid>0] + 2*np.pi
     if lon>0: lonGrid[lonGrid<0] = lonGrid[lonGrid<0] - 2*np.pi
-    rPolar  = np.sqrt(xGrid**2+yGrid**2)
+    rPolar  = np.sqrt((xGrid-constants.rGalEarth)**2+yGrid**2)
     latGrid = np.arctan2(zGrid, rPolar)
 
     # Choose the voxels in the sightline
@@ -357,7 +374,8 @@ def setLOS(emission=0, positions=0, x=0, y=0, z=0, lon=0, lat=0, dim='xy', rever
   #self.__losVoxels = grid.allVoxels()[iLOS]
   
   if iLOS.size==1:
-    radiativeTransfer.intensity = gridIntensity[iLOS, :]
+
+    radiativeTransfer.intensity = gridIntensity[iLOS,:][0]
     # print('Shape along LoS', radiativeTransfer.intensity.shape)
   
   elif iLOS.size>1:
@@ -395,6 +413,35 @@ def setLOS(emission=0, positions=0, x=0, y=0, z=0, lon=0, lat=0, dim='xy', rever
     radiativeTransfer.epsilonStep = (radiativeTransfer.epsilon[1:]-radiativeTransfer.epsilon[:-1])/(scale)
     radiativeTransfer.kappa = np.array(kappa, dtype=np.float)[i]
     radiativeTransfer.kappaStep = (radiativeTransfer.kappa[1:]-radiativeTransfer.kappa[:-1])/(scale)
+
+    if debug:
+
+      radiativeTransfer.allIndeces.append(iLOS)
+      radiativeTransfer.allK.append(np.array(radiativeTransfer.kappa))
+      radiativeTransfer.allE.append(np.array(radiativeTransfer.epsilon))
+      radiativeTransfer.allKstep.append(np.array(radiativeTransfer.kappaStep))
+      radiativeTransfer.allEstep.append(np.array(radiativeTransfer.epsilonStep))
+
+      with warnings.catch_warnings():
+        warnings.simplefilter('ignore')
+        a = (radiativeTransfer.kappa[:-1,:]/np.sqrt(2*radiativeTransfer.kappaStep.astype(np.complex)))
+        b = ((radiativeTransfer.kappa[:-1,:]+radiativeTransfer.kappaStep*scale)/np.sqrt(2*radiativeTransfer.kappaStep.astype(np.complex)))
+
+      # ar = []
+      # br = []
+      # ai = []
+      # bi = []
+
+      # for idx in range(len(i)-1):
+      #   ar = np.append(ar, np.array(list(Ereal(a[idx,:]))))
+      #   br = np.append(br, np.array(list(Ereal(b[idx,:]))))
+      #   ai = np.append(ai, np.array(list(Eimag(a[idx,:]))))s
+      #   bi = np.append(bi, np.array(list(Eimag(b[idx,:]))))
+
+      radiativeTransfer.allAreal.append(a)
+      radiativeTransfer.allBreal.append(b)
+      # radiativeTransfer.allAimag.append(ai)
+      # radiativeTransfer.allBimag.append(bi)
   
   else:
     #print('WARNING: No LOS at position x={}, y={}, z={}.'.format(x,y,z))
@@ -409,9 +456,9 @@ def setLOS(emission=0, positions=0, x=0, y=0, z=0, lon=0, lat=0, dim='xy', rever
 
 def calculateRadiativeTransfer(backgroundI=0., verbose=False, test=True):
 
-  if np.shape(radiativeTransfer.intensity)[0]==1: return
+  if np.size(radiativeTransfer.intensity)>0: return
   
-  intensity = np.full(radiativeTransfer.kappa[0].shape, backgroundI)
+  intensity = np.full(radiativeTransfer.kappa.shape[1], backgroundI)
   scale = constants.resolution*constants.pc
   
   np.set_printoptions(threshold=100000)
@@ -430,13 +477,13 @@ def calculateRadiativeTransfer(backgroundI=0., verbose=False, test=True):
     a = (radiativeTransfer.kappa[:-1,:]/np.sqrt(2*radiativeTransfer.kappaStep.astype(np.complex)))
     b = ((radiativeTransfer.kappa[:-1,:]+radiativeTransfer.kappaStep*scale)/np.sqrt(2*radiativeTransfer.kappaStep.astype(np.complex)))
   
-  if verbose: print(len(radiativeTransfer.losVoxels[:-1]))
+  if verbose: print(radiativeTransfer.kappa.shape[0])
   
   for i in range(len(radiativeTransfer.kappaStep)):
   
-    k0 = (radiativeTransfer.kappaStep[i,:]==0)&(abs(radiativeTransfer.kappa[:-1,:][i,:]*constants.resolution)<10**-10)
+    k0 = (radiativeTransfer.kappaStep[i,:]==0)&(abs(radiativeTransfer.kappa[:-1,:][i,:]*scale)<10**-10)
     try:
-      kg = radiativeTransfer.kappa[:-1,:][i,:]>10**3*abs(radiativeTransfer.kappaStep[i,:])*constants.resolution
+      kg = radiativeTransfer.kappa[:-1,:][i,:]>10**3*abs(radiativeTransfer.kappaStep[i,:])*scale
     except RuntimeWarning:
       print(radiativeTransfer.x1LoS, radiativeTransfer.x2LoS)
       print(radiativeTransfer.x3LoS)
@@ -444,7 +491,7 @@ def calculateRadiativeTransfer(backgroundI=0., verbose=False, test=True):
       print(radiativeTransfer.kappa[i,:])
       print(radiativeTransfer.tempInterclumpEmission[i:i+2,1,:])
       input()
-      kg = radiativeTransfer.kappa[:-1,:][i,:]>10**3*abs(radiativeTransfer.kappaStep[i,:])*constants.resolution
+      kg = radiativeTransfer.kappa[:-1,:][i,:]>10**3*abs(radiativeTransfer.kappaStep[i,:])*scale
     kE = ~(k0|kg)
     kEg = ~(k0|kg)&(radiativeTransfer.kappaStep[i,:]>0)
     kEl = ~(k0|kg)&(radiativeTransfer.kappaStep[i,:]<0)
@@ -463,13 +510,19 @@ def calculateRadiativeTransfer(backgroundI=0., verbose=False, test=True):
     if test:
   
       if k0.any():
-        intensity[k0] += radiativeTransfer.epsilon[:-1,:][i,:][k0]*scale+0.5*radiativeTransfer.epsilonStep[i,:][k0]*scale**2
-  
+        intensity[k0] = intensity[k0] + radiativeTransfer.epsilon[:-1,:][i,:][k0]*scale+0.5*radiativeTransfer.epsilonStep[i,:][k0]*scale**2
+    
       elif kg.any():
-        intensity[kg] = np.exp(-radiativeTransfer.kappa[i,:][kg]*scale) * (intensity[kg] + \
-                           ((radiativeTransfer.epsilon[i,:][kg]*radiativeTransfer.kappa[i,:][kg]+radiativeTransfer.epsilonStep[i,:][kg]*(radiativeTransfer.kappa[i,:][kg]*scale-1))/(radiativeTransfer.kappa[i,:][kg]**2.))*np.exp(radiativeTransfer.kappa[i,:][kg]*scale) - \
-                           ((radiativeTransfer.epsilon[i,:][kg]*radiativeTransfer.kappa[i,:][kg]-radiativeTransfer.epsilonStep[i,:][kg])/(radiativeTransfer.kappa[i,:][kg]**2.)))
+        try:
+          intensity[kg] = np.exp(-radiativeTransfer.kappa[i,:][kg]*scale) * (intensity[kg] + \
+                             ((radiativeTransfer.epsilon[i,:][kg]*radiativeTransfer.kappa[i,:][kg]+radiativeTransfer.epsilonStep[i,:][kg]*(radiativeTransfer.kappa[i,:][kg]*scale-1))/(radiativeTransfer.kappa[i,:][kg]**2.))*np.exp(radiativeTransfer.kappa[i,:][kg]*scale) - \
+                             ((radiativeTransfer.epsilon[i,:][kg]*radiativeTransfer.kappa[i,:][kg]-radiativeTransfer.epsilonStep[i,:][kg])/(radiativeTransfer.kappa[i,:][kg]**2.)))
   
+        except RuntimeWarning:
+          intensity[kg] = np.exp(-radiativeTransfer.kappa[i,:][kg]*scale) * (intensity[kg] + \
+                             ((radiativeTransfer.epsilon[i,:][kg]*radiativeTransfer.kappa[i,:][kg]+radiativeTransfer.epsilonStep[i,:][kg]*(radiativeTransfer.kappa[i,:][kg]*scale-1))/(radiativeTransfer.kappa[i,:][kg]**2.)) - \
+                             ((radiativeTransfer.epsilon[i,:][kg]*radiativeTransfer.kappa[i,:][kg]-radiativeTransfer.epsilonStep[i,:][kg])/(radiativeTransfer.kappa[i,:][kg]**2.)))
+
       elif kEg.any():
         if verbose: print('\na, b:\n', a[i,:,:], '\n', b[i,:,:])
   
@@ -526,46 +579,70 @@ def calculateRadiativeTransfer(backgroundI=0., verbose=False, test=True):
                      (np.exp(a[i,:]**2.-b[i,:]**2.)*aE-bE) + \
                      intensity*np.exp(-radiativeTransfer.kappa[i,:]*scale-radiativeTransfer.kappaStep[i,:]/2.*scale**2.)).real
   
+  if verbose:
+    print(np.shape(intensity))
+
   radiativeTransfer.intensity = intensity
+
   return
 
 def Ereal(x, verbose=False):
   
   if verbose: print('E real input:', x)
+
+  '''
+  ## This is no longer needed if I have a complex matrix!
+  ir = (x.imag)
   
   if (x.imag==0).any(): x = x.real
   # x should be a real number. remove imaginary party '0j' which
   # prevents ordering
+  '''
+
+  Er = np.zeros_like(x)
+
+  il = x<0.01
+  ig = x>8.0
+  ib = ~(ig|il)
+
+  if il.any():
+    Er[il] = (2*x[il]/np.sqrt(np.pi)).astype(np.complex)
   
-  if (x<0.01).any():
-    return 2*x/np.sqrt(np.pi)
+  if ig.any():
+    Er[ig] = (1/(np.sqrt(np.pi) * x[ig])).astype(np.complex)
   
-  elif (x>8.0).any():
-    return 1/(np.sqrt(np.pi) * x)
-  
-  else:
-    return np.array(list(map(radiativeTransfer.eTildeReal, x)))
+  if ib.any():
+    Er[ib] = radiativeTransfer.eTildeReal(x[ib].real).astype(np.complex)
+
+  return Er
 
 def Eimag(x, verbose=False):
   
   if verbose: print('E imaginary input:', x)
+
+  Ei = np.zeros_like(x)
+
+  im = x==abs(x)*1j
+  il = (x<0.01)&~im
+  ig = (x>8.0)&~im
+  ib = ~(ig|il|im)
+
+  # Force x to be a positive real value
+  x = abs(x)
   
-  if (x==abs(x)*1j).any():
-    # maser case. treated in linear approximation
-    x = abs(x)
-    return 1 + 2*x/np.sqrt(np.pi)
-  
-  else:
-    x = abs(x)
-    # x needs to be real and positive, i.e. abs(a) or abs(b)
-  
-    if (x<0.01).any():
-      return 1 - 2*x/np.sqrt(np.pi)
-  
-    elif (x>8.0).any():
-      return 1/(np.sqrt(np.pi) * x)
-  
-    else:
-      return np.array(list(map(radiativeTransfer.eTildeImaginary, x)))
+  if im.any():
+    # MASER case: treat with linear approximation
+    Ei[im] = 1 + 2*x[im]/np.sqrt(np.pi)
+
+  if il.any():
+    Ei[il] = (1 - 2*x[il]/np.sqrt(np.pi)).astype(np.complex)
+
+  if ig.any():
+    Ei[ig] = (1/(np.sqrt(np.pi) * x[ig])).astype(np.complex)
+
+  if ib.any():
+    Ei[ib] = radiativeTransfer.eTildeImaginary(x[ib]).astype(np.complex)
+
+  return Ei
 
 # jit_module(nopython=False)
