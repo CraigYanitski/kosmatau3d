@@ -14,7 +14,7 @@ def convertMap(directory='', input_coord='spherical', integrate=True, verbose=Fa
   intensity = fits.open(constants.HISTORYPATH+constants.directory+directory+'integrated_intensity.fits')[1]
 
   # Re-adjust cygrid input header
-  cyplot.header['NAXIS3'] = 1#intensity.shape[-1]
+  cyplot.header['NAXIS3'] = intensity.shape[-1]
 
   if integrate:
 
@@ -181,11 +181,11 @@ def convert2cygrid(positions, intensityMap, velocity=None, grid_type='wcs'):
       flatMap[j*shape[1]+i,:] = intensityMap[j,i,:]
 
   # Grid the positions using cygrid
-  positions[positions[:,0]<0,0] = positions[positions[:,0]<0,0] + np.pi
-  positions[positions[:,0]>=0,0] = positions[positions[:,0]>=0,0] - np.pi
-  print(positions, flatMap.shape)
+  # positions[positions[:,0]<0,0] = positions[positions[:,0]<0,0] + np.pi
+  # positions[positions[:,0]>=0,0] = positions[positions[:,0]>=0,0] - np.pi
+  # print(positions, flatMap.shape)
   # print(positions.shape, intensityMap.shape, flatMap.shape)
-  grid.grid(positions[:,0]*cyplot.r2d, positions[:,1]*cyplot.r2d, flatMap[:,23].reshape(-1,1))
+  grid.grid(positions[:,0]*cyplot.r2d, positions[:,1]*cyplot.r2d, flatMap)
 
   # Extract datacube of the required image
   image = grid.get_datacube()
