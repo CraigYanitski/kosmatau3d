@@ -29,19 +29,19 @@ def initRadTransfer():
 def clumpMassProfile(file='mass_profile.dat'):
   # Open file for the mass profile (clump) of the object (Msol/pc**2)
   clumpMass = np.genfromtxt(constants.INPUTPATH+constants.directory+file, names=['radius', 'h2_mass'])
-  observations.clumpMassProfile = (clumpMass['radius']*1000,constants.clumpMassFactor*clumpMass['h2_mass']*constants.resolution**2)
+  observations.clumpMassProfile = (clumpMass['radius']*1000,clumpMass['h2_mass']*constants.resolution**2)
   return
 
 def interclumpMassProfile(file='mass_profile_inter.dat'):
   # Open file for the mass profile (interclump) of the object (Msol/pc**2)
   interclumpMass = np.genfromtxt(constants.INPUTPATH+constants.directory+file, names=['radius', 'h2_mass'])
-  observations.interclumpMassProfile = (interclumpMass['radius']*1000,constants.interclumpMassFactor*interclumpMass['h2_mass']*constants.resolution**2)
+  observations.interclumpMassProfile = (interclumpMass['radius']*1000,interclumpMass['h2_mass']*constants.resolution**2)
   return
 
 def densityProfile(file='densities_clouds.dat'):
   # Open file for the number density profile of the object (n/cm**3)
   density = np.genfromtxt(constants.INPUTPATH+constants.directory+file, names=['radius', 'h2_density'])
-  observations.densityProfile = ((density['radius']*1000),constants.densityFactor*density['h2_density'])
+  observations.densityProfile = ((density['radius']*1000),density['h2_density'])
   return
 
 def FUVfield(file='galactic_FUV_complete.dat'):
