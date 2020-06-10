@@ -1,7 +1,8 @@
 import numpy as np
 class Gauss:
   '''This is a classs taken directly from the work of Silke Andree-Labsch and Christoph Bruckmann.'''
-  def __init__(self, v0, sigma, area=1, debug=False):
+  def __init__(self, v0, sigma, area=1, debug=False, verbose=False):
+    if verbose: print(v0, sigma)
     self.debug = debug
     self.area = np.array(area) # area below the curve (integrated curve) 
     self.v0 = np.array(v0) # peak velocity
@@ -9,7 +10,7 @@ class Gauss:
     self.sigmaIndeces = self.sigma==0
     return
   
-  def gaussfunc(self, v):
+  def gaussfunc(self, v, verbose=False):
     #if np.any(np.array(self.sigma)==0):
     #  return 0
     #else:
@@ -21,4 +22,7 @@ class Gauss:
         probability[self.sigmaIndeces] = 0
     probability = probability.T
     if self.debug: input('\nProbability:\n{}'.format(probability))
-    return probability
+    if verbose:
+        print(v, probability)
+        input()
+    return probability.flatten()
