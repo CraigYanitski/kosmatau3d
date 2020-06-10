@@ -47,6 +47,7 @@ kB = 1.3806488*10**-23  #in [J/K]
 fromEarth = True
 rGalEarth = 8178 #from Abuter and the GRAVITY collaboration (2019)
 rGal = 18000
+hd = 1000
 
 # Integrated map properties
 mapShape = (150, 100)   #shape in pixels of the desired map
