@@ -20,12 +20,12 @@ optical depth.
 It can be either a clump or an interclump ensemble.
 '''
 
-def initialise(velocity=0, clumpMass=0, interclumpMass=0, verbose=False):
+def initialise(velocity=0, velocityDispersion=0, clumpMass=0, interclumpMass=0, verbose=False):
   if verbose:
     print('Ensemble instance initialised\n')
   ensemble.clumpMass = clumpMass
   ensemble.interclumpMass = interclumpMass
-  createCombinationObjects(velocity)
+  createCombinationObjects(velocity, velocityDispersion)
   return
 
 def calculateCombinations(clumpN, verbose=False):
@@ -72,7 +72,7 @@ def calculateCombinations(clumpN, verbose=False):
     print('\nCalculated combinations:\n', combinations)
   return combinations
 
-def createCombinationObjects(velocity, verbose=False, debug=False):
+def createCombinationObjects(velocity, velocityDispersion, verbose=False, debug=False):
   '''
   This function removes all of the unnecessary degenerate looping during this calculation.
   Of course it is possible because of the wonders of numpy.ndarray(). . .
@@ -104,11 +104,12 @@ def createCombinationObjects(velocity, verbose=False, debug=False):
   if verbose:
     print('velocity, mean, dispersion', self.__velocity, self.__velocity.mean(), self.__velocityDispersion)
   
-  ensemble.clumpDeltaNji = (np.array(ensemble.clumpNj).T/np.sqrt(2*np.pi)/constants.ensembleDispersion*\
-                            (np.exp(-0.5*((constants.velocityRange-velocity)/constants.ensembleDispersion)**2)).T*\
+  ensembleDispersion = np.sqrt(constants.ensembleDispersion**2+velocityDispersion**2)
+  ensemble.clumpDeltaNji = (np.array(ensemble.clumpNj).T/np.sqrt(2*np.pi)/ensembleDispersion*\
+                            (np.exp(-0.5*((constants.velocityRange-velocity)/ensembleDispersion)**2)).T*\
                             constants.velocityStep).round()
-  ensemble.interclumpDeltaNji = (np.array(ensemble.interclumpNj).T/np.sqrt(2*np.pi)/constants.ensembleDispersion*\
-                            (np.exp(-0.5*((constants.velocityRange-velocity)/constants.ensembleDispersion)**2)).T*\
+  ensemble.interclumpDeltaNji = (np.array(ensemble.interclumpNj).T/np.sqrt(2*np.pi)/ensembleDispersion*\
+                            (np.exp(-0.5*((constants.velocityRange-velocity)/ensembleDispersion)**2)).T*\
                             constants.velocityStep).round()
   
   #self.__deltaNji = np.array([self.__deltaNji]).T
@@ -124,11 +125,11 @@ def createCombinationObjects(velocity, verbose=False, debug=False):
   except ValueError:
     input('\nObserved mass, sufaceProbability, standardDeviation**2:\n', ensemble.interclumpMass, interclumpSurfaceProbability, '\n', ensemble.interclumpDeltaNji*interclumpSurfaceProbability*(1-interclumpSurfaceProbability))
   
-  CLmaxProbableNumber = (ensemble.clumpNj*clumpSurfaceProbability)
-  CLmaxStandardDeviation = np.sqrt(ensemble.clumpNj*clumpSurfaceProbability*(1-clumpSurfaceProbability))
+  CLmaxProbableNumber = (ensemble.clumpNj*clumpSurfaceProbability.flatten())
+  CLmaxStandardDeviation = np.sqrt(ensemble.clumpNj*(clumpSurfaceProbability*(1-clumpSurfaceProbability)).flatten())
 
-  ICmaxProbableNumber = (ensemble.interclumpNj*interclumpSurfaceProbability)
-  ICmaxStandardDeviation = np.sqrt(ensemble.interclumpNj*interclumpSurfaceProbability*(1-interclumpSurfaceProbability))
+  ICmaxProbableNumber = (ensemble.interclumpNj*interclumpSurfaceProbability.flatten())
+  ICmaxStandardDeviation = np.sqrt(ensemble.interclumpNj*(interclumpSurfaceProbability*(1-interclumpSurfaceProbability)).flatten())
   
   if verbose:
     print('\nNj\n', self.__Nj)
@@ -290,18 +291,24 @@ def createCombinationObjects(velocity, verbose=False, debug=False):
             # use gauss!
             if verbose:
               print('Gauss')
-            g = stat.Gauss(interclumpProbableNumber[:,i], interclumpStandardDeviation[:,i], debug=debug)
-            probability[index,:] = (g.gaussfunc(combination))
-            g = stat.Gauss(ICmaxProbableNumber, ICmaxStandardDeviation, debug=debug)
-            maxProbability[index,:] = (g.gaussfunc(combination))
+            # print(interclumpSurfaceProbability, i)
+            g = stat.Gauss(interclumpProbableNumber[:,i], interclumpStandardDeviation[:,i], debug=debug, verbose=False)
+            probability[index,:] = (g.gaussfunc(combination, verbose=False))
+            g = stat.Gauss(ICmaxProbableNumber, ICmaxStandardDeviation, debug=debug, verbose=False)
+            maxProbability[index,:] = (g.gaussfunc(combination, verbose=False))
             #print('gauss!!...')
           else:
             # use binomial
             if verbose:
               print('Binomial')
             # <<This will likely print an error when there are more masspoints>>
+            # print(interclumpProbableNumber[:,i])
+            # print(ensemble.interclumpDeltaNji[:,i], interclumpSurfaceProbability)
+            # print(ensemble.interclumpNj, interclumpSurfaceProbability)
             b = stat.Binomial(ensemble.interclumpDeltaNji[:,i], interclumpSurfaceProbability, debug=debug) # n and p for binominal 
             probability[index,:] = (b.binomfunc(combination))
+            # print(combination, b.binomfunc(combination))
+            # input()
             b = stat.Binomial(ensemble.interclumpNj, interclumpSurfaceProbability, debug=debug) # n and p for binominal 
             maxProbability[index,:] = (b.binomfunc(combination))
         elif constants.probability=='poisson':
