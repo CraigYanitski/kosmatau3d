@@ -21,10 +21,10 @@ def setMasspointData(density=0, FUV=0):
   This sets the information for the masspoints used in a given voxel. The density should be in units of
   cm^-3, and the FUV field should be in units of the Draine field (2.7 * 10^-3 erg cm^-2)
   '''
-  masspoints.clumpLogDensity = np.log10(10.**(constants.clumpLogMass*(1-3./constants.gamma))*sum(10.**(constants.clumpLogMass*(1+3./constants.gamma-constants.alpha))) / \
-                                    sum(10.**(constants.clumpLogMass*(2-constants.alpha)))*density/1.91)
-  masspoints.interclumpLogDensity = np.log10(10.**(constants.interclumpLogMass*(1-3./constants.gamma))*sum(10.**(constants.interclumpLogMass*(1+3./constants.gamma-constants.alpha))) / \
-                                        sum(10.**(constants.interclumpLogMass*(2-constants.alpha)))*density/1.91)
+  masspoints.clumpLogDensity = np.log10(10.**(constants.clumpLogMass*(1-3./constants.gamma))*(10.**(constants.clumpLogMass*(1+3./constants.gamma-constants.alpha))).sum() / \
+                                    (10.**(constants.clumpLogMass*(2-constants.alpha))).sum()*density/1.91)
+  masspoints.interclumpLogDensity = np.log10(10.**(constants.interclumpLogMass*(1-3./constants.gamma))*(10.**(constants.interclumpLogMass*(1+3./constants.gamma-constants.alpha))).sum() / \
+                                        (10.**(constants.interclumpLogMass*(2-constants.alpha))).sum()*density/1.91)
   masspoints.logFUV = np.log10(FUV)
   masspoints.clumpRadius = ((3./(4.*np.pi)*(10.**constants.clumpLogMass*constants.massSolar)/ \
                               (10.**masspoints.clumpLogDensity*constants.massH*1.91))**(1./3.)/constants.pc/100.)
