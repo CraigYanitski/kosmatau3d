@@ -90,7 +90,7 @@ gamma = 2.31
 # Statistics
 probability = 'binomial'
 nGauss = 1000
-pnGauss = 5
+pnGauss = 50
 
 # Grid boundaries
 densityLimits = [3, 7]
