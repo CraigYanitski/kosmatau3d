@@ -79,20 +79,20 @@ def createCombinationObjects(velocity, velocityDispersion, verbose=False, debug=
   '''
   #verbose = self.__verbose or verbose
   #if verbose: print(self.__clumpType)
-  ensemble.clumpNj = (ensemble.clumpMass*10.**(constants.clumpLogMass*(1-constants.alpha))) / sum(10.**(constants.clumpLogMass*(2-constants.alpha)))
-  ensemble.interclumpNj = (ensemble.interclumpMass*10.**(constants.interclumpLogMass*(1-constants.alpha))) / sum(10.**(constants.interclumpLogMass*(2-constants.alpha)))
+  ensemble.clumpNj = (ensemble.clumpMass*10.**(constants.clumpLogMass*(1-constants.alpha))) / (10.**(constants.clumpLogMass*(2-constants.alpha))).sum()
+  ensemble.interclumpNj = (ensemble.interclumpMass*10.**(constants.interclumpLogMass*(1-constants.alpha))) / (10.**(constants.interclumpLogMass*(2-constants.alpha))).sum()
   
   if verbose:
     print('\nClump Nj:\n', ensemble.clumpNj)
     print('\nInterclump Nj:\n', ensemble.interclumpNj)
 
-  clumpMassEnsemble = sum(ensemble.clumpNj*10.**constants.clumpLogMass)
-  clumpRadiusEnsemble = sum(ensemble.clumpNj*masspoints.clumpRadius)
-  clumpVolumeEnsemble = sum(ensemble.clumpNj*np.pi*4./3.*masspoints.clumpRadius.T**3)
+  clumpMassEnsemble = (ensemble.clumpNj*10.**constants.clumpLogMass).sum()
+  clumpRadiusEnsemble = (ensemble.clumpNj*masspoints.clumpRadius).sum()
+  clumpVolumeEnsemble = (ensemble.clumpNj*np.pi*4./3.*masspoints.clumpRadius.T**3).sum()
 
-  interclumpMassEnsemble = sum(ensemble.interclumpNj*10.**constants.interclumpLogMass)
-  interclumpRadiusEnsemble = sum(ensemble.interclumpNj*masspoints.interclumpRadius)
-  interclumpVolumeEnsemble = sum(ensemble.interclumpNj*np.pi*4./3.*masspoints.interclumpRadius.T**3)
+  interclumpMassEnsemble = (ensemble.interclumpNj*10.**constants.interclumpLogMass).sum()
+  interclumpRadiusEnsemble = (ensemble.interclumpNj*masspoints.interclumpRadius).sum()
+  interclumpVolumeEnsemble = (ensemble.interclumpNj*np.pi*4./3.*masspoints.interclumpRadius.T**3).sum()
   
   if verbose:
     print(clumpMassEnsemble, clumpVolumeEnsemble)
@@ -386,6 +386,9 @@ def createCombinationObjects(velocity, velocityDispersion, verbose=False, debug=
 
 def calculate(Afuv, debug=False, test=False):
   '''
+
+  !!!!  <<DEGENERATE>>
+
   Maybe <<PARALLELISE>> this??
 
   This is a function to cycle through the Combination instances to create a large numpy.ndarray,
