@@ -44,7 +44,7 @@ class VoxelGrid(object):
     self.__y = []
     self.__z = []
 
-    constants.history = 'r{}_n{}/'.format(int(constants.resolution), self.__voxelNumber)
+    constants.history = 'r{}_im{}_cm{}_d{}_uv{}/'.format(int(constants.resolution), constants.interclumpMassFactor, constants.clumpMassFactor, constants.densityFactor, constants.globalUV)
 
     return
 
@@ -71,7 +71,7 @@ class VoxelGrid(object):
   def getDimensions(self):
     return self.__shape.getDimensions()
 
-  def calculateEmission(self, index=0, verbose=False):
+  def calculateEmission(self, index=0, debug=False, verbose=False):
     #print(observations.tauCenterline)
     interpolations.initialise()
     self.__initialiseGrid()
@@ -93,7 +93,7 @@ class VoxelGrid(object):
 
         voxel.setIndex(i)#-len(self.__unusedVoxels))
         voxel.setPosition(x[i], y[i], z[i], r[i], phi[i])
-        voxel.setProperties()
+        voxel.setProperties(debug=debug)
 
         self.__voxelAfuv.append(voxel.getAfuv())
         voxel.calculateEmission()
@@ -110,6 +110,20 @@ class VoxelGrid(object):
     
     print('\nStreaming to fits files...')
 
+    if debug:
+
+      dim = [1, self.__voxelNumber]
+      shdu_mass = self.shdu_header(name='Mass', units='Msol', filename='voxel_mass', dim=dim)
+
+      dim = [1, self.__voxelNumber]
+      shdu_clump_mass = self.shdu_header(name='Clump Mass', units='Msol', filename='voxel_clump_mass', dim=dim)
+
+      dim = [1, self.__voxelNumber]
+      shdu_interclump_mass = self.shdu_header(name='Interclump Mass', units='Msol', filename='voxel_interclump_mass', dim=dim)
+
+      dim = [1, self.__voxelNumber]
+      shdu_density = self.shdu_header(name='Density', units='cm^-3', filename='voxel_density', dim=dim)
+
     dim = [3, self.__voxelNumber]
     shdu_position = self.shdu_header(name='Position', units='pc', filename='voxel_position', dim=dim)
 
@@ -122,7 +136,7 @@ class VoxelGrid(object):
     dim = [constants.interclumpMaxIndeces, self.__voxelNumber]
     shdu_interclump_velocity = self.shdu_header(name='Interclump Velocity', units='km/s', filename='voxel_interclump_velocity', dim=dim)
     
-    dim = [self.__voxelNumber]
+    dim = [1,self.__voxelNumber]
     shdu_FUV = self.shdu_header(name='FUV', units='Draine', filename='voxel_fuv', dim=dim)
     shdu_Afuv = self.shdu_header(name='A_FUV', units='mag', filename='voxel_Afuv', dim=dim)
 
@@ -152,7 +166,7 @@ class VoxelGrid(object):
         # Optain the voxel emission data
         clumpIntensity = (emission[0])[0]
 
-        if debug:
+        if False:
           print()
           print(voxel.getPosition())
           print()
@@ -180,13 +194,20 @@ class VoxelGrid(object):
         shdu_position.write(voxel.getPosition())
         velocity = voxel.getVelocity()
         if isinstance(velocity, float):
-          shdu_velocity.write(velocity)
+          shdu_velocity.write(np.array([velocity]))
         else:
           shdu_velocity.write(np.linalg.norm(velocity))
         shdu_clump_velocity.write(clumpVelocity)
         shdu_interclump_velocity.write(interclumpVelocity)
-        shdu_FUV.write(voxel.getFUV())
-        shdu_Afuv.write(voxel.getAfuv())
+        shdu_FUV.write(np.array([voxel.getFUV()]))
+        shdu_Afuv.write(np.array([voxel.getAfuv()]))
+
+        if debug:
+
+          shdu_mass.write(np.array([voxel.getMass()]))
+          shdu_clump_mass.write(np.array([voxel.getClumpMass()]))
+          shdu_interclump_mass.write(np.array([voxel.getInterclumpMass()]))
+          shdu_density.write(np.array([voxel.getDensity()]))
 
         shdu_clump_intensity.write(np.array(clumpIntensity))
         shdu_clump_tau.write(np.array(clumpTau))

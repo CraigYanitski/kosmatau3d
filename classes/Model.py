@@ -82,8 +82,8 @@ class Model(object):
   #   self.__dust.reloadModules()
   #   return
 
-  def calculateModel(self):
-    self.__grid.calculateEmission()
+  def calculateModel(self, debug=False):
+    self.__grid.calculateEmission(debug=debug)
     return
 
   def addSpecies(self, speciesTransition):
@@ -96,8 +96,8 @@ class Model(object):
     constants.resortWavelengths()
     return
 
-  def writeEmission(self):
-    self.__grid.writeEmission()
+  def writeEmission(self, debug=False):
+    self.__grid.writeEmission(debug=debug)
     return
 
   def setLOS(self, x=0, y=0, z=0, dim='xy'):

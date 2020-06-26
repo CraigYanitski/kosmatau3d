@@ -37,7 +37,7 @@ class Voxel(object):
     self.__opticalDepth = 0   #optical depth at voxel point
     
     self.__FUV = 0.
-    self.__Afuv = 0.1
+    self.__Afuv = 0.
     
     # self.__clump = Ensemble('clump', debugging=debugging)    #clumpy ensemble at voxel point
     # self.__interclump = Ensemble('interclump', debugging=debugging)    #diffuse interclump ensemble at voxel point
@@ -56,13 +56,13 @@ class Voxel(object):
 
   def __setClumpMass(self, r):
     mass = interpolations.interpolateClumpMass(r)
-    self.__clumpMass = mass.mean()
+    self.__clumpMass = constants.clumpMassFactor*mass.mean()
     #self.__clump.setMass(self.__clumpMass)
     return
 
   def __setInterclumpMass(self, r):
     mass = interpolations.interpolateInterclumpMass(r)
-    self.__interclumpMass = mass.mean()
+    self.__interclumpMass = constants.interclumpMassFactor*mass.mean()
     #self.__interclump.setMass(self.__interclumpMass)
     return
 
@@ -75,12 +75,13 @@ class Voxel(object):
       relativeRpol = np.sqrt((self.__x-constants.rGalEarth)**2+self.__y**2)
       relativePhi = np.arctan2(self.__y, self.__x-constants.rGalEarth)
       relativeSigma = np.arccos((self.__r**2+relativeRpol**2-constants.rGalEarth**2)/(2*self.__r*relativeRpol))
+      sigma = np.arctan2(self.__z, abs(self.__x-constants.rGalEarth))
 
       # Correct the relative velocity of the voxel
       velocityEarth = interpolations.interpolateRotationalVelocity(constants.rGalEarth)
       velocityCirc = velocity.mean() - velocityEarth*self.__r/constants.rGalEarth
 
-      self.__velocity = np.sign(relativePhi) * velocityCirc * np.sin(relativeSigma)
+      self.__velocity = np.sign(relativePhi) * velocityCirc * np.sin(relativeSigma) * np.cos(sigma)
 
       if self.__r==0: self.__velocity = 0
       #self.__velocity = (velocity.mean()) * np.sin(self.__phi)
@@ -97,9 +98,9 @@ class Voxel(object):
     
     return
 
-  def __setDensity(self, r, densityFactor=2):
+  def __setDensity(self, r):
     density = interpolations.interpolateDensity(r)
-    self.__density = densityFactor*density.mean()
+    self.__density = constants.densityFactor*density.mean()
     return
 
   def __setExtinction(self):
@@ -143,7 +144,7 @@ class Voxel(object):
   def getFUV(self):
     return self.__FUV
 
-  def setProperties(self, values='automatic', clumpMass=0, interclumpMass=0, mass=0, velocity=0, density=0, FUV=0, debug=False):
+  def setProperties(self, clumpMass=1.*10**6, interclumpMass=1.*10**6, mass=2.*10**6, velocity=0., density=1.*10**3.8, FUV=1.*10**3.5, debug=False):
     ''' This method calculates the radii assuming an origin of (0,0). It then averages
        over a subgrid of 3x3. It might be improved later by having functionality to
        change the subgrid dimensions.'''
@@ -154,7 +155,7 @@ class Voxel(object):
     r = np.array([x.flatten(), y.flatten()]).T
     r = np.linalg.norm(r, axis=1)
 
-    if values=='automatic':
+    if not debug:
 
       self.__setClumpMass(r)
       self.__setInterclumpMass(r)
@@ -170,7 +171,7 @@ class Voxel(object):
       else:
         velocity = np.linalg.norm(self.__velocity)
 
-    elif values=='manual':
+    else:
       
       self.__clumpMass = clumpMass
       self.__interclumpMass = interclumpMass
@@ -182,20 +183,8 @@ class Voxel(object):
 
       velocity = self.__velocity
 
-    elif values=='manual':
-      
-      self.__clumpMass = 0
-      self.__interclumpMass = 0
-      self.__mass = 0
-      self.__velocity = 0
-      self.__velocityDispersion = 0
-      self.__density = 0
-      self.__FUV = 0
-
-      velocity = self.__velocity
-
     masspoints.setMasspointData(density=self.__density, FUV=self.__FUV)
-    ensemble.initialise(velocity=velocity, clumpMass=self.__clumpMass, interclumpMass=self.__interclumpMass)
+    ensemble.initialise(velocity=velocity, velocityDispersion=self.__velocityDispersion, clumpMass=self.__clumpMass, interclumpMass=self.__interclumpMass)
     combinations.initialise(clumpCombination=ensemble.clumpCombinations[ensemble.clumpLargestIndex], \
                             interclumpCombination=ensemble.interclumpCombinations[ensemble.interclumpLargestIndex])
 
@@ -207,7 +196,7 @@ class Voxel(object):
     self.__interclumpVelocityIndeces = ensemble.interclumpIndeces
 
     Afuv = combinations.getAfuv()
-    self.__Afuv = -(np.log10((ensemble.CLmaxProbability.prod(1)*Afuv[0]).sum()) + np.log10((ensemble.ICmaxProbability.prod(1)*Afuv[1]).sum()))
+    self.__Afuv = 0#-(np.log10((ensemble.CLmaxProbability.prod(1)*Afuv[0]).sum()) + np.log10((ensemble.ICmaxProbability.prod(1)*Afuv[1]).sum()))
     
     return
 
@@ -216,6 +205,18 @@ class Voxel(object):
 
   # def getClumps(self):
   #   return (self.__clump, self.__interclump)
+
+  def getDensity(self):
+    return self.__density
+
+  def getMass(self):
+    return self.__mass
+
+  def getClumpMass(self):
+    return self.__clumpMass
+
+  def getInterclumpMass(self):
+    return self.__interclumpMass
 
   def getVelocity(self):
     return self.__velocity
