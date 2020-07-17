@@ -20,15 +20,15 @@ optical depth.
 It can be either a clump or an interclump ensemble.
 '''
 
-def initialise(velocity=0, velocityDispersion=0, clumpMass=0, interclumpMass=0, verbose=False):
+def initialise(velocity=0, ensembleDispersion=0, clumpMass=0, interclumpMass=0, verbose=False):
   if verbose:
     print('Ensemble instance initialised\n')
   ensemble.clumpMass = clumpMass
   ensemble.interclumpMass = interclumpMass
-  createCombinationObjects(velocity, velocityDispersion)
+  createCombinationObjects(velocity, ensembleDispersion)
   return
 
-def calculateCombinations(clumpN, verbose=False):
+def calculateCombinations(clumpN, test=True, verbose=False):
   '''
   This function calculates all of the different combinations of clump masses that may be in a line-of-sight.
   It is basically the essence of the probabilistic approach used to create the superposition of clumps.
@@ -41,38 +41,46 @@ def calculateCombinations(clumpN, verbose=False):
   ranges[:,:,1] += 1
   combinations = []
   for i in range(len(ranges)):
-    if dimension==1:
-      grid = np.arange(ranges[i,0,0], ranges[i,0,1])
-      combinations.append(np.array([grid.flatten()], dtype=np.int))
-    elif dimension==2:
-      grid = np.mgrid[ranges[i,0,0]:ranges[i,0,1], ranges[i,1,0]:ranges[i,1,1]]
-      combinations.append(np.array([grid[0].flatten(), grid[1].flatten()], dtype=np.int))
-    elif dimension==3:
-      grid = np.mgrid[ranges[i,0,0]:ranges[i,0,1], ranges[i,1,0]:ranges[i,1,1], ranges[i,2,0]:ranges[i,2,1]]
-      combinations.append(np.array([grid[0].flatten(), grid[1].flatten(), grid[2].flatten()], dtype=np.int))
-    elif dimension==4:
-      grid = np.mgrid[ranges[i,0,0]:ranges[i,0,1], ranges[i,1,0]:ranges[i,1,1], ranges[i,2,0]:ranges[i,2,1], ranges[i,3,0]:ranges[i,3,1]]
-      combinations.append(np.array([grid[0].flatten(), grid[1].flatten(), grid[2].flatten(), grid[3].flatten()], dtype=np.int))
-    elif dimension==5:
-      grid = np.mgrid[ranges[i,0,0]:ranges[i,0,1], ranges[i,1,0]:ranges[i,1,1], ranges[i,2,0]:ranges[i,2,1], ranges[i,3,0]:ranges[i,3,1], \
-                      ranges[i,4,0]:ranges[i,4,1]]
-      combinations.append(np.array([grid[0].flatten(), grid[1].flatten(), grid[2].flatten(), grid[3].flatten(), grid[4].flatten()], dtype=np.int))
-    elif dimension==6:
-      grid = np.mgrid[ranges[i,0,0]:ranges[i,0,1], ranges[i,1,0]:ranges[i,1,1], ranges[i,2,0]:ranges[i,2,1], ranges[i,3,0]:ranges[i,3,1], \
-                      ranges[i,4,0]:ranges[i,4,1], ranges[i,5,0]:ranges[i,5,1]]
-      combinations.append(np.array([grid[0].flatten(), grid[1].flatten(), grid[2].flatten(), grid[3].flatten(), grid[4].flatten(), grid[5].flatten()], dtype=np.int))
-    elif dimension==7:
-      grid = np.mgrid[ranges[i,0,0]:ranges[i,0,1], ranges[i,1,0]:ranges[i,1,1], ranges[i,2,0]:ranges[i,2,1], ranges[i,3,0]:ranges[i,3,1], \
-                      ranges[i,4,0]:ranges[i,4,1], ranges[i,5,0]:ranges[i,5,1], ranges[i,6,0]:ranges[i,6,1]]
-      combinations.append(np.array([grid[0].flatten(), grid[1].flatten(), grid[2].flatten(), grid[3].flatten(), grid[4].flatten(), grid[5].flatten(), grid[6].flatten()], dtype=np.int))
+
+    if test:
+      # grid = np.meshgrid(*[np.arange(ranges[i,j,0],ranges[i,j,1]) for j in range(dimension)])
+      grid = np.meshgrid(*[np.arange(0,ranges[i,j,1]) for j in range(dimension)])
+      combinations.append(np.array([grid[j].flatten() for j in range(len(grid))]))
+    
     else:
-      sys.exit('\nThere are too many masses for the current grid ({}).\nExitting. . .\n\n'.format(dimension))
+      if dimension==1:
+        grid = np.arange(ranges[i,0,0], ranges[i,0,1])
+        combinations.append(np.array([grid.flatten()], dtype=np.int))
+      elif dimension==2:
+        grid = np.mgrid[ranges[i,0,0]:ranges[i,0,1], ranges[i,1,0]:ranges[i,1,1]]
+        combinations.append(np.array([grid[0].flatten(), grid[1].flatten()], dtype=np.int))
+      elif dimension==3:
+        grid = np.mgrid[ranges[i,0,0]:ranges[i,0,1], ranges[i,1,0]:ranges[i,1,1], ranges[i,2,0]:ranges[i,2,1]]
+        combinations.append(np.array([grid[0].flatten(), grid[1].flatten(), grid[2].flatten()], dtype=np.int))
+      elif dimension==4:
+        grid = np.mgrid[ranges[i,0,0]:ranges[i,0,1], ranges[i,1,0]:ranges[i,1,1], ranges[i,2,0]:ranges[i,2,1], ranges[i,3,0]:ranges[i,3,1]]
+        combinations.append(np.array([grid[0].flatten(), grid[1].flatten(), grid[2].flatten(), grid[3].flatten()], dtype=np.int))
+      elif dimension==5:
+        grid = np.mgrid[ranges[i,0,0]:ranges[i,0,1], ranges[i,1,0]:ranges[i,1,1], ranges[i,2,0]:ranges[i,2,1], ranges[i,3,0]:ranges[i,3,1], \
+                        ranges[i,4,0]:ranges[i,4,1]]
+        combinations.append(np.array([grid[0].flatten(), grid[1].flatten(), grid[2].flatten(), grid[3].flatten(), grid[4].flatten()], dtype=np.int))
+      elif dimension==6:
+        grid = np.mgrid[ranges[i,0,0]:ranges[i,0,1], ranges[i,1,0]:ranges[i,1,1], ranges[i,2,0]:ranges[i,2,1], ranges[i,3,0]:ranges[i,3,1], \
+                        ranges[i,4,0]:ranges[i,4,1], ranges[i,5,0]:ranges[i,5,1]]
+        combinations.append(np.array([grid[0].flatten(), grid[1].flatten(), grid[2].flatten(), grid[3].flatten(), grid[4].flatten(), grid[5].flatten()], dtype=np.int))
+      elif dimension==7:
+        grid = np.mgrid[ranges[i,0,0]:ranges[i,0,1], ranges[i,1,0]:ranges[i,1,1], ranges[i,2,0]:ranges[i,2,1], ranges[i,3,0]:ranges[i,3,1], \
+                        ranges[i,4,0]:ranges[i,4,1], ranges[i,5,0]:ranges[i,5,1], ranges[i,6,0]:ranges[i,6,1]]
+        combinations.append(np.array([grid[0].flatten(), grid[1].flatten(), grid[2].flatten(), grid[3].flatten(), grid[4].flatten(), grid[5].flatten(), grid[6].flatten()], dtype=np.int))
+      else:
+        sys.exit('\nThere are too many masses for the current grid ({}).\nExitting. . .\n\n'.format(dimension))
+  
   #combinations = np.array(combinations)
   if verbose:
     print('\nCalculated combinations:\n', combinations)
   return combinations
 
-def createCombinationObjects(velocity, velocityDispersion, verbose=False, debug=False):
+def createCombinationObjects(velocity, ensembleDispersion, verbose=False, debug=False):
   '''
   This function removes all of the unnecessary degenerate looping during this calculation.
   Of course it is possible because of the wonders of numpy.ndarray(). . .
@@ -104,30 +112,40 @@ def createCombinationObjects(velocity, velocityDispersion, verbose=False, debug=
   if verbose:
     print('velocity, mean, dispersion', self.__velocity, self.__velocity.mean(), self.__velocityDispersion)
   
-  ensembleDispersion = np.sqrt(constants.ensembleDispersion**2+velocityDispersion**2)
+  ensembleDispersion = np.sqrt(constants.ensembleDispersion**2+ensembleDispersion**2)
   ensemble.clumpDeltaNji = (np.array(ensemble.clumpNj).T/np.sqrt(2*np.pi)/ensembleDispersion*\
-                            (np.exp(-0.5*((constants.velocityRange-velocity)/ensembleDispersion)**2)).T*\
-                            constants.velocityStep).round()
+                           (np.exp(-0.5*((constants.velocityRange-velocity)/ensembleDispersion)**2)).T*\
+                           constants.velocityStep).round()
   ensemble.interclumpDeltaNji = (np.array(ensemble.interclumpNj).T/np.sqrt(2*np.pi)/ensembleDispersion*\
-                            (np.exp(-0.5*((constants.velocityRange-velocity)/ensembleDispersion)**2)).T*\
-                            constants.velocityStep).round()
+                                (np.exp(-0.5*((constants.velocityRange-velocity)/ensembleDispersion)**2)).T*\
+                                constants.velocityStep).round()
   
   #self.__deltaNji = np.array([self.__deltaNji]).T
-  clumpSurfaceProbability = np.array(np.pi*masspoints.clumpRadius.T**2/constants.resolution**2)    #this is 'pTab' in the original code
+  resize = 1#constants.clumpNmax/ensemble.clumpDeltaNji[-1,:]   #scaling factor to set the maximum number of the largest clump
+  ensemble.clumpDeltaNji *= resize
+  clumpSurfaceProbability = np.array(np.pi*masspoints.clumpRadius.T**2/(constants.resolution*np.sqrt(resize))**2)    #this is 'pTab' in the original code
+  if (clumpSurfaceProbability>=1).any():    #increase voxel size if the clumps are too large
+    supersize = np.sqrt(np.pi*masspoints.clumpRadius.max()**2/0.95)/np.sqrt(resize)
+    clumpSurfaceProbability = np.array(np.pi*masspoints.clumpRadius.T**2/supersize**2)
   clumpProbableNumber = (ensemble.clumpDeltaNji*clumpSurfaceProbability)   #this is 'expectedValTab' in the original code
-  try: clumpStandardDeviation = np.sqrt(ensemble.clumpDeltaNji*clumpSurfaceProbability*(1-clumpSurfaceProbability))    #this is 'standardDeriTab' in the original code
-  except ValueError:
-    input('\nObserved mass, sufaceProbability, standardDeviation**2:\n', ensemble.clumpMass, clumpSurfaceProbability, '\n', ensemble.clumpDeltaNji*clumpSurfaceProbability*(1-clumpSurfaceProbability))
-  
-  interclumpSurfaceProbability = np.array(np.pi*masspoints.interclumpRadius.T**2/constants.resolution**2)    #this is 'pTab' in the original code
-  interclumpProbableNumber = (ensemble.interclumpDeltaNji*interclumpSurfaceProbability)   #this is 'expectedValTab' in the original code
-  try: interclumpStandardDeviation = np.sqrt(ensemble.interclumpDeltaNji*interclumpSurfaceProbability*(1-interclumpSurfaceProbability))    #this is 'standardDeriTab' in the original code
-  except ValueError:
-    input('\nObserved mass, sufaceProbability, standardDeviation**2:\n', ensemble.interclumpMass, interclumpSurfaceProbability, '\n', ensemble.interclumpDeltaNji*interclumpSurfaceProbability*(1-interclumpSurfaceProbability))
+  clumpStandardDeviation = np.sqrt(ensemble.clumpDeltaNji*clumpSurfaceProbability*(1-clumpSurfaceProbability))    #this is 'standardDeriTab' in the original code
+  # except ValueError:
+  #   input('\nObserved mass, sufaceProbability, standardDeviation**2:\n', ensemble.clumpMass, clumpSurfaceProbability, '\n', ensemble.clumpDeltaNji*clumpSurfaceProbability*(1-clumpSurfaceProbability))
   
   CLmaxProbableNumber = (ensemble.clumpNj*clumpSurfaceProbability.flatten())
   CLmaxStandardDeviation = np.sqrt(ensemble.clumpNj*(clumpSurfaceProbability*(1-clumpSurfaceProbability)).flatten())
 
+  resize = 1#constants.interclumpNmax/ensemble.interclumpDeltaNji[-1,:]   #scaling factor to set the maximum number of the largestclump
+  ensemble.interclumpDeltaNji *= resize
+  interclumpSurfaceProbability = np.array(np.pi*masspoints.interclumpRadius.T**2/(constants.resolution*np.sqrt(resize))**2)    #this is 'pTab' in the original code
+  if (interclumpSurfaceProbability>=1).any():    #increase voxel size if the interclumps are too large
+    supersize = np.sqrt(np.pi*masspoints.interclumpRadius.max()**2/0.95)/np.sqrt(resize)
+    interclumpSurfaceProbability = np.array(np.pi*masspoints.interclumpRadius.T**2/supersize**2)
+  interclumpProbableNumber = (ensemble.interclumpDeltaNji*interclumpSurfaceProbability)   #this is 'expectedValTab' in the original code
+  interclumpStandardDeviation = np.sqrt(ensemble.interclumpDeltaNji*interclumpSurfaceProbability*(1-interclumpSurfaceProbability))    #this is 'standardDeriTab' in the original code
+  # except ValueError:
+  #   input('\nObserved mass, sufaceProbability, standardDeviation**2:\n', ensemble.interclumpMass, interclumpSurfaceProbability, '\n', ensemble.interclumpDeltaNji*interclumpSurfaceProbability*(1-interclumpSurfaceProbability))
+  
   ICmaxProbableNumber = (ensemble.interclumpNj*interclumpSurfaceProbability.flatten())
   ICmaxStandardDeviation = np.sqrt(ensemble.interclumpNj*(interclumpSurfaceProbability*(1-interclumpSurfaceProbability)).flatten())
   
@@ -154,8 +172,8 @@ def createCombinationObjects(velocity, velocityDispersion, verbose=False, debug=
   if verbose:
     print('\nupper,lower:\n',interclumpUpper,'\n',interclumpLower)
   
-  ensemble.clumpNumberRange = np.array([clumpLower, clumpUpper]).T
-  ensemble.interclumpNumberRange = np.array([interclumpLower, interclumpUpper]).T
+  ensemble.clumpNumberRange = np.array([clumpLower, clumpUpper], dtype=np.int).T
+  ensemble.interclumpNumberRange = np.array([interclumpLower, interclumpUpper], dtype=np.int).T
   
   if verbose:
     print('\nMasspoint number range:\n', ensemble.clumpNumberRange.round())
@@ -175,10 +193,12 @@ def createCombinationObjects(velocity, velocityDispersion, verbose=False, debug=
   #input(self.__velocity)
   #input(self.__velocityBins)
   #self.__probability = np.zeros((len(self.__combinations),2))
-  largestCombination = ((ensemble.clumpNumberRange[:,:,1]-ensemble.clumpNumberRange[:,:,0]).prod(1))
+  largestCombination = ((ensemble.clumpNumberRange[:,:,1]-0).prod(1))
+  # largestCombination = ((ensemble.clumpNumberRange[:,:,1]-ensemble.clumpNumberRange[:,:,0]).prod(1))
   ensemble.clumpLargestIndex = largestCombination.argmax()#np.where((ensemble.clumpNumberRange[:,:,1]-ensemble.clumpNumberRange[:,:,0]).prod(1)==largestCombination)[0][0]
   ensemble.clumpLargestCombination = int(largestCombination.max())
-  largestCombination = ((ensemble.interclumpNumberRange[:,:,1]-ensemble.interclumpNumberRange[:,:,0]).prod(1))
+  largestCombination = ((ensemble.interclumpNumberRange[:,:,1]-0).prod(1))
+  # largestCombination = ((ensemble.interclumpNumberRange[:,:,1]-ensemble.interclumpNumberRange[:,:,0]).prod(1))
   ensemble.interclumpLargestIndex = largestCombination.argmax()#np.where((ensemble.interclumpNumberRange[:,:,1]-ensemble.interclumpNumberRange[:,:,0]).prod(1)==largestCombination)[0][0]
   ensemble.interclumpLargestCombination = int(largestCombination.max())
   
@@ -193,6 +213,7 @@ def createCombinationObjects(velocity, velocityDispersion, verbose=False, debug=
   probabilityList = []
   combinationIndeces = []
   clumpLargestCombination = ensemble.clumpCombinations[ensemble.clumpLargestIndex].T
+  # print(clumpLargestCombination)
   for i,combinations in enumerate(ensemble.clumpCombinations):   #loop over combinations of masspoints in each velocity bin
     ensemble.clumpCombinations[i] = np.array(combinations).T
     probability = np.zeros((ensemble.clumpLargestCombination, constants.clumpLogMass.size))
@@ -205,6 +226,7 @@ def createCombinationObjects(velocity, velocityDispersion, verbose=False, debug=
       for combination in ensemble.clumpCombinations[i]:
         combination = np.array([combination])
         index = np.where((clumpLargestCombination==combination).all(1))[0][0]
+        # print(index)
         if verbose:
           print('\nCombination:\n', combination)
           input()
@@ -269,6 +291,7 @@ def createCombinationObjects(velocity, velocityDispersion, verbose=False, debug=
   probabilityList = []
   combinationIndeces = []
   interclumpLargestCombination = ensemble.interclumpCombinations[ensemble.interclumpLargestIndex].T
+  # print(interclumpLargestCombination)
   for i,combinations in enumerate(ensemble.interclumpCombinations):   #loop over combinations of masspoints in each velocity bin
     ensemble.interclumpCombinations[i] = np.array(combinations).T
     probability = np.zeros((ensemble.interclumpLargestCombination, constants.interclumpLogMass.size))
@@ -281,6 +304,7 @@ def createCombinationObjects(velocity, velocityDispersion, verbose=False, debug=
       for combination in ensemble.interclumpCombinations[i]:
         combination = np.array([combination])
         index = np.where((interclumpLargestCombination==combination).all(1))[0][0]
+        # print(combination)
         if verbose:
           print('\nCombination:\n', combination)
           input()
