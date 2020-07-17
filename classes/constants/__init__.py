@@ -63,7 +63,7 @@ nSigma = 3
 resolution = 1000
 velocityNumber = 121
 velocityBin = [-300, 300]
-velocityRange = np.linspace(velocityBin[0], velocityBin[1], num=velocityNumber)
+velocityRange = np.linspace(velocityBin[0], velocityBin[-1], num=velocityNumber)
 velocityStep = velocityRange[1] - velocityRange[0]
 
 # Clump characteristics
@@ -71,17 +71,19 @@ clumpDispersion = 1.67/2.3548
 
 clumpMassNumber=4
 clumpLogMassRange = [-1,2]
-clumpLogMass = np.linspace(clumpLogMassRange[0], clumpLogMassRange[1], num=clumpMassNumber)
+clumpLogMass = np.linspace(clumpLogMassRange[0], clumpLogMassRange[-1], num=clumpMassNumber)
 clumpLogMass.resize(1,clumpMassNumber)
 clumpMaxIndeces = 0
+clumpNmax = 1
 
 interclumpMassNumber = 2
 interclumpLogMassRange = [-3,-2]
-interclumpLogMass = np.linspace(interclumpLogMassRange[0], interclumpLogMassRange[1], num=interclumpMassNumber)
+interclumpLogMass = np.linspace(interclumpLogMassRange[0], interclumpLogMassRange[-1], num=interclumpMassNumber)
 interclumpLogMass.resize(1,interclumpMassNumber)
 interclumpMaxIndeces = 0
+interclumpNmax = 100
 
-ensembleDispersion = 10./2.3548
+ensembleDispersion = 0#10./2.3548
 
 # Initial mass function parameters
 alpha = 1.84

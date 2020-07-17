@@ -14,34 +14,38 @@ This is a script to contain all of the methods needed to change the model parame
 '''
 def changeVelocityNumber(num):
   constants.velocityNumber = num
-  constants.velocityRange = np.linspace(constants.velocityBin[0], constants.velocityBin[1], num=constants.velocityNumber)
-  velocityStep = velocityRange[1] - velocityRange[0]
+  constants.velocityRange = np.linspace(constants.velocityBin[0], constants.velocityBin[-1], num=constants.velocityNumber)
+  constants.velocityStep = constants.velocityRange[1] - constants.velocityRange[0]
   return
 
 def changeVelocityRange(range):
-  constants.velocityBins = range
-  constants.velocityRange = np.linspace(constants.velocityBin[0], constants.velocityBin[1], num=constants.velocityNumber)
-  velocityStep = velocityRange[1] - velocityRange[0]
+  constants.velocityBin = range
+  constants.velocityRange = np.linspace(constants.velocityBin[0], constants.velocityBin[-1], num=constants.velocityNumber)
+  constants.velocityStep = constants.velocityRange[1] - constants.velocityRange[0]
   return
 
 def changeClumpMassNumber(num):
-  constants.clumpmassNumber = num
-  constants.clumpMass = np.linspace(constants.clumpMassRange[0], constants.clumpMassRange[1], num=constants.clumpMassNumber)
+  constants.clumpMassNumber = num
+  constants.clumpLogMass = np.linspace(constants.clumpLogMassRange[0], constants.clumpLogMassRange[-1], num=constants.clumpMassNumber)
+  constants.clumpLogMass.resize(1,constants.clumpMassNumber)
   return
 
-def changeClumpMassRange(range):
-  constants.clumpMassRange = range
-  constants.clumpMass = np.linspace(constants.clumpMassRange[0], constants.clumpMassRange[1], num=constants.clumpMassNumber)
+def changeClumpMassRange(massRange):
+  constants.clumpLogMassRange = massRange
+  constants.clumpLogMass = np.linspace(constants.clumpLogMassRange[0], constants.clumpLogMassRange[-1], num=constants.clumpMassNumber)
+  constants.clumpLogMass.resize(1,constants.clumpMassNumber)
   return
 
 def changeInterclumpMassNumber(num):
   constants.interclumpMassNumber = num
-  constants.interclumpMassRange = np.linspace(constants.interclumpMassRange[0], constants.interclumpMassRange[1], num=constants.interclumpMassNumber)
+  constants.interclumpLogMass = np.linspace(constants.interclumpLogMassRange[0], constants.interclumpLogMassRange[-1], num=constants.interclumpMassNumber)
+  constants.interclumpLogMass.resize(1,constants.interclumpMassNumber)
   return
 
-def changeInterclumpMassRange(range):
-  constants.interclumpMassRange = range
-  constants.interclumpMass = np.linspace(constants.interclumpMassRange[0], constants.interclumpMassRange[1], num=constants.interclumpMassNumber)
+def changeInterclumpMassRange(massRange):
+  constants.interclumpLogMassRange = massRange
+  constants.interclumpLogMass = np.linspace(constants.interclumpLogMassRange[0], constants.interclumpLogMassRange[-1], num=constants.interclumpMassNumber)
+  constants.interclumpLogMass.resize(1,constants.interclumpMassNumber)
   return
 
 def changeDirectory(direc):
@@ -58,7 +62,7 @@ def changeDustWavelengths(limit=''):
   return
 
 def resortWavelengths():
-  allWavelengths = np.append(constants.wavelengths, species.moleculeWavelengths)
+  allWavelengths = np.append(constants.wavelengths[constants.nDust], species.moleculeWavelengths)
   constants.sortedIndeces = allWavelengths.argsort()
   constants.sortedWavelengths = allWavelengths[constants.sortedIndeces]
 
