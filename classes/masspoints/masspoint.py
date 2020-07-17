@@ -53,7 +53,7 @@ def calculateEmission(Afuv=0):
 
   for i in range(constants.clumpLogMass.size):
     gridpoint = [masspoints.clumpLogDensity[0,i], constants.clumpLogMass[0,i], masspoints.logFUV] #include Afuv
-    emission = masspointEmission(gridpoint)
+    emission = masspointEmission(gridpoint, masspoints.clumpRadius[0,i])
     clumpIntensity.append(emission[0])
     clumpOpticalDepth.append(emission[1])
 
@@ -62,7 +62,7 @@ def calculateEmission(Afuv=0):
 
   for i in range(constants.interclumpLogMass.size):
     gridpoint = [masspoints.interclumpLogDensity[0,i], constants.interclumpLogMass[0,i], constants.interclumpLogFUV]
-    emission = masspointEmission(gridpoint)
+    emission = masspointEmission(gridpoint, masspoints.interclumpRadius[0,i])
     interclumpIntensity.append(emission[0])
     interclumpOpticalDepth.append(emission[1])
 
@@ -72,9 +72,9 @@ def calculateEmission(Afuv=0):
   return
 
 #@jit(forceobj=False)
-def masspointEmission(interpolationPoint, velocity=0, verbose=False, debug=False, test=False):
+def masspointEmission(interpolationPoint, radius, velocity=0, verbose=False, debug=False, test=False):
   '''
-  This function calculates the emission of the given clump of the given mass.
+  This function calculates the emission of a single clump of the given mass.
   '''
   if debug:
     print('\n', interpolationPoint)
@@ -113,7 +113,7 @@ def masspointEmission(interpolationPoint, velocity=0, verbose=False, debug=False
     intensity = (interpolations.interpolateDustIntensity(interpolationPoint))#/2/constants.kB*(constants.wavelengths)**2*10**-26)
     tau = interpolations.interpolateDustTau(interpolationPoint)
 
-    intensity_xi.append(intensity)
+    intensity_xi.append(intensity/np.pi/np.arcsin(radius/10.)**2)
     opticalDepth_xi.append(tau)
 
   intensity = np.append(intensity_xi[1], intensity_xi[0])
@@ -121,4 +121,4 @@ def masspointEmission(interpolationPoint, velocity=0, verbose=False, debug=False
 
   return (intensity,opticalDepth)
 
-jit_module(nopython=False)
+# jit_module(nopython=False)
