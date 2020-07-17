@@ -118,7 +118,7 @@ def interpolateDustIntensity(points, verbose=False):
     # constants.hclambda/constants.kB / \
     #             np.log(1+2*constants.hclambda/constants.wavelengths**2/(10**(dustIntensityInterpolation(points)[0])*10**-26))
     #/2/constants.kB*(constants.wavelengths)**2*10**-26
-    intensity *= 4*np.pi*constants.wavelengths[constants.nDust]**2/2/constants.kB*10**-26
+    intensity *= 10**-26*constants.wavelengths[constants.nDust]**2/2/constants.kB
   elif constants.interpolation=='radial' or interpolation=='cubic': intensity = (10**dustIntensityInterpolation(points[0], points[1], points[2]))
   #if np.isnan(intensity[-1]) or intensity[-1]==0: intensity[-1] = 10**-100
   if verbose:
