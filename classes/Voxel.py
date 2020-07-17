@@ -19,7 +19,7 @@ class Voxel(object):
   for the diffuse surroundings of a clump.
   '''
   # PRIVATE
-  def __init__(self, index, debugging=False):
+  def __init__(self, index=0, debugging=False):
     
     #self.__species = species     #list of both moleculular and dust species
     
@@ -28,7 +28,7 @@ class Voxel(object):
     self.__debugging = debugging
     
     self.__velocity = 0     #velocity of mass at voxel point
-    self.__velocityDispersion = 0   #dispersion of velocity at voxel point
+    self.__ensembleDispersion = 0   #dispersion of velocity at voxel point
     
     self.__clumpVelocityIndeces = []
     self.__interclumpVelocityIndeces = []
@@ -92,9 +92,9 @@ class Voxel(object):
     # Use this to check the evaluation of the velocity field. It is still not working correctly...
     #print(self.__velocity)
 
-    velocityDispersion = interpolations.interpolateVelocityDispersion(r)
+    ensembleDispersion = interpolations.interpolateVelocityDispersion(r)
     
-    self.__velocityDispersion = velocityDispersion.mean()
+    self.__ensembleDispersion = ensembleDispersion.mean()
     
     return
 
@@ -144,7 +144,7 @@ class Voxel(object):
   def getFUV(self):
     return self.__FUV
 
-  def setProperties(self, clumpMass=1.*10**6, interclumpMass=1.*10**6, mass=2.*10**6, velocity=0., density=1.*10**3.8, FUV=1.*10**3.5, debug=False):
+  def setProperties(self, clumpMass=1387835, interclumpMass=1387835, mass=2775651, velocity=0., ensembleDispersion=1, density=14885, FUV=21591, debug=False):
     ''' This method calculates the radii assuming an origin of (0,0). It then averages
        over a subgrid of 3x3. It might be improved later by having functionality to
        change the subgrid dimensions.'''
@@ -177,14 +177,14 @@ class Voxel(object):
       self.__interclumpMass = interclumpMass
       self.__mass = mass
       self.__velocity = velocity
-      self.__velocityDispersion = 5
+      self.__ensembleDispersion = ensembleDispersion
       self.__density = density
       self.__FUV = FUV
 
       velocity = self.__velocity
 
     masspoints.setMasspointData(density=self.__density, FUV=self.__FUV)
-    ensemble.initialise(velocity=velocity, velocityDispersion=self.__velocityDispersion, clumpMass=self.__clumpMass, interclumpMass=self.__interclumpMass)
+    ensemble.initialise(velocity=velocity, ensembleDispersion=self.__ensembleDispersion, clumpMass=self.__clumpMass, interclumpMass=self.__interclumpMass)
     combinations.initialise(clumpCombination=ensemble.clumpCombinations[ensemble.clumpLargestIndex], \
                             interclumpCombination=ensemble.interclumpCombinations[ensemble.interclumpLargestIndex])
 
@@ -196,7 +196,7 @@ class Voxel(object):
     self.__interclumpVelocityIndeces = ensemble.interclumpIndeces
 
     Afuv = combinations.getAfuv()
-    self.__Afuv = 0#-(np.log10((ensemble.CLmaxProbability.prod(1)*Afuv[0]).sum()) + np.log10((ensemble.ICmaxProbability.prod(1)*Afuv[1]).sum()))
+    self.__Afuv = -(np.log10((ensemble.CLmaxProbability.prod(1)*Afuv[0]).sum()) + np.log10((ensemble.ICmaxProbability.prod(1)*Afuv[1]).sum()))
     
     return
 
@@ -219,7 +219,7 @@ class Voxel(object):
     return self.__interclumpMass
 
   def getVelocity(self):
-    return self.__velocity
+    return self.__velocity,self.ensembleDispersion
 
   def getClumpVelocity(self):
     return constants.velocityRange[self.__clumpVelocityIndeces]
@@ -249,16 +249,20 @@ class Voxel(object):
       clumpIntensity.append((probability.prod(1)*combinations.clumpIntensity.T).T)
       clumpOpticalDepth.append((probability.prod(1)*np.exp(-combinations.clumpOpticalDepth.T)).T)
 
-    clumpIntensityAvg = np.array(clumpIntensity).sum(1)
-    clumpOpticalDepthAvg = -np.log(np.array(clumpOpticalDepth).sum(1))
+    vel = constants.velocityRange[ensemble.clumpIndeces]
+    factor = np.exp(-(vel.reshape(1,-1)-vel.reshape(-1,1))**2/2/constants.clumpDispersion**2).sum(1)
+    clumpIntensityAvg = factor.reshape(-1,1)*np.array(clumpIntensity).sum(1)
+    clumpOpticalDepthAvg = -np.log(factor.reshape(-1,1)*np.array(clumpOpticalDepth).sum(1))
 
     # Interclump
-    for i,probability in enumerate(ensemble.interclumpProbability):
+    for probability in ensemble.interclumpProbability:
       interclumpIntensity.append((probability.prod(1)*combinations.interclumpIntensity.T).T)
       interclumpOpticalDepth.append((probability.prod(1)*np.exp(-combinations.interclumpOpticalDepth.T)).T)
 
-    interclumpIntensityAvg = np.array(interclumpIntensity).sum(1)
-    interclumpOpticalDepthAvg = -np.log(np.array(interclumpOpticalDepth).sum(1))
+    vel = constants.velocityRange[ensemble.interclumpIndeces]
+    factor = np.exp(-(vel.reshape(1,-1)-vel.reshape(-1,1))**2/2/constants.clumpDispersion**2).sum(1)
+    interclumpIntensityAvg = factor.reshape(-1,1)*np.array(interclumpIntensity).sum(1)
+    interclumpOpticalDepthAvg = -np.log(factor.reshape(-1,1)*np.array(interclumpOpticalDepth).sum(1))
     
     if verbose:
       print('\nClump and interclump intensity:\n', clumpIntensity, '\n', interclumpIntensity)
@@ -282,6 +286,7 @@ class Voxel(object):
     return emission
     
   def printVoxel(self):
+    # OUTDATED
     if self.__debugging:
       iClump,tauClump,FUVclump = self.__clump.getEnsembleEmission()
       iInterclump,tauInterclump,FUVinterclump = self.__interclump.getEnsembleEmission()
