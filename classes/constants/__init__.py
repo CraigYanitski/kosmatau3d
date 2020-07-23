@@ -76,6 +76,7 @@ clumpLogMass.resize(1,clumpMassNumber)
 clumpMaxIndeces = 0
 clumpNmax = 1
 
+interclumpDensity = 1911  #as defined in the old version of this code
 interclumpMassNumber = 2
 interclumpLogMassRange = [-3,-2]
 interclumpLogMass = np.linspace(interclumpLogMassRange[0], interclumpLogMassRange[-1], num=interclumpMassNumber)
@@ -92,7 +93,7 @@ gamma = 2.31
 # Statistics
 probability = 'binomial'
 nGauss = 1000
-pnGauss = 50
+pnGauss = 5
 
 # Grid boundaries
 densityLimits = [3, 7]
