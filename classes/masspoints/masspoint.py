@@ -24,7 +24,7 @@ def setMasspointData(density=0, FUV=0):
   masspoints.clumpLogDensity = np.log10(10.**(constants.clumpLogMass*(1-3./constants.gamma))*(10.**(constants.clumpLogMass*(1+3./constants.gamma-constants.alpha))).sum() / \
                                     (10.**(constants.clumpLogMass*(2-constants.alpha))).sum()*density/1.91)
   masspoints.interclumpLogDensity = np.log10(10.**(constants.interclumpLogMass*(1-3./constants.gamma))*(10.**(constants.interclumpLogMass*(1+3./constants.gamma-constants.alpha))).sum() / \
-                                        (10.**(constants.interclumpLogMass*(2-constants.alpha))).sum()*density/1.91)
+                                        (10.**(constants.interclumpLogMass*(2-constants.alpha))).sum()*constants.interclumpDensity/1.91)
   masspoints.logFUV = np.log10(FUV)
   masspoints.clumpRadius = ((3./(4.*np.pi)*(10.**constants.clumpLogMass*constants.massSolar)/ \
                               (10.**masspoints.clumpLogDensity*constants.massH*1.91))**(1./3.)/constants.pc/100.)
