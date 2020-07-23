@@ -6,7 +6,7 @@ from .ensemble import *
 clumpMass = 0
 
 clumpNj = []
-clumpDeltaNij = []
+clumpDeltaNji = []
 
 clumpNumberRange = []
 
@@ -24,7 +24,7 @@ clumpIndeces = []
 interclumpMass = 0
 
 interclumpNj = []
-interclumpDeltaNij = []
+interclumpDeltaNji = []
 
 interclumpNumberRange = []
 
