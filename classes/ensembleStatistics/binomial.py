@@ -64,7 +64,11 @@ class Binomial():
           print('\nRanges:\n1:  {}\n2:  {}\n'.format(range1, range2))
         if self.debug:
           print('\nRanges:\n{}\n{}\n'.format(range1, range2))
-        comb[i] = np.array([ft.reduce(mul, range1, 1)/ft.reduce(mul, range2, 1)], dtype=np.float)
+        try:
+          comb[i] = np.array([ft.reduce(mul, range1, 1)/ft.reduce(mul, range2, 1)], dtype=np.float)
+        except OverflowError:
+          print('range', range1, range2)
+          input()
       elif self.n[0,:].size==2:
         if self.debug:
           print('\n({}, {})\n'.format(int(self.n[:,1][i]-k[:,1][i]+1),int(self.n[:,1][i]+1)))
@@ -173,7 +177,7 @@ class Binomial():
     # print 'comb', self.comb(k)
     k = np.array(k, dtype=np.int)
     #print (float(self.comb(k)) * self.p**k * (1-self.p)**(self.n-k))
-    probability = self.comb(k) * self.p**k * (1-self.p)**(self.n-k)
+    probability = self.comb(k) * self.p.T**k * (1-self.p.T)**(self.n-k)
     probability[probability==1] = 0
     if self.debug: print('\nProbability\n{}'.format(probability))
     return probability[0]
