@@ -70,10 +70,10 @@ def calculateEmission(probability=1, debug=False, test=False):
   combinations.interclumpIntensity = np.array(ICintensityList).sum(1)
   combinations.interclumpOpticalDepth = np.array(ICopticalDepthList).sum(1)
 
-  combinations.clumpIntensity[combinations.clumpIntensity<=0] = 1e-100
-  combinations.clumpOpticalDepth[combinations.clumpOpticalDepth<=0] = 1e-100
-  combinations.interclumpIntensity[combinations.interclumpIntensity<=0] = 1e-100
-  combinations.interclumpOpticalDepth[combinations.interclumpOpticalDepth<=0] = 1e-100
+  # combinations.clumpIntensity[combinations.clumpIntensity<=0] = 1e-100
+  # combinations.clumpOpticalDepth[combinations.clumpOpticalDepth<=0] = 1e-100
+  # combinations.interclumpIntensity[combinations.interclumpIntensity<=0] = 1e-100
+  # combinations.interclumpOpticalDepth[combinations.interclumpOpticalDepth<=0] = 1e-100
 
   return
 
