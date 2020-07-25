@@ -8,6 +8,7 @@ class Gauss:
     self.v0 = np.array(v0) # peak velocity
     self.sigma = np.array(sigma) # standard deviation
     self.sigmaIndeces = self.sigma==0
+    # print(self.v0,self.sigma,self.sigmaIndeces)
     return
   
   def gaussfunc(self, v, verbose=False):
@@ -16,6 +17,7 @@ class Gauss:
     #else:
     power = np.array(-.5*((v-self.v0)/self.sigma)**2)
     probability = self.area/(np.sqrt(2*np.pi)*self.sigma)*np.exp(power)
+    # print(power,probability,self.sigmaIndeces)
     if self.sigmaIndeces.ndim==1:
         probability.flatten()[self.sigmaIndeces] = 0
     else:
