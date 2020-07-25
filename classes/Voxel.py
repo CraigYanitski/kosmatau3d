@@ -243,6 +243,7 @@ class Voxel(object):
     clumpOpticalDepth = []
     interclumpIntensity = []
     interclumpOpticalDepth = []
+    iDust = constants.wavelengths[constants.nDust].size
 
     # Clump
     for probability in ensemble.clumpProbability:
@@ -251,8 +252,14 @@ class Voxel(object):
 
     vel = constants.velocityRange[ensemble.clumpIndeces]
     factor = np.exp(-(vel.reshape(1,-1)-vel.reshape(-1,1))**2/2/constants.clumpDispersion**2).sum(1)
-    clumpIntensityAvg = factor.reshape(-1,1)*np.array(clumpIntensity).sum(1)
-    clumpOpticalDepthAvg = -np.log(factor.reshape(-1,1)*np.array(clumpOpticalDepth).sum(1))
+    # print('clump factor:', factor)
+    shape = np.array(clumpIntensity).shape
+    clumpIntensityAvg = np.zeros((shape[0],shape[2]))
+    clumpIntensityAvg[:,:iDust] = np.array(clumpIntensity)[:,:,:iDust].sum(1)
+    clumpIntensityAvg[:,iDust:] = factor.reshape(-1,1)*np.array(clumpIntensity)[:,:,iDust:].sum(1)
+    clumpOpticalDepthAvg = np.zeros((shape[0],shape[2]))
+    clumpOpticalDepthAvg[:,:iDust] = -np.log(np.array(clumpOpticalDepth)[:,:,:iDust].sum(1))
+    clumpOpticalDepthAvg[:,iDust:] = -np.log(factor.reshape(-1,1)*np.array(clumpOpticalDepth)[:,:,iDust:].sum(1))
 
     # Interclump
     for probability in ensemble.interclumpProbability:
@@ -261,8 +268,14 @@ class Voxel(object):
 
     vel = constants.velocityRange[ensemble.interclumpIndeces]
     factor = np.exp(-(vel.reshape(1,-1)-vel.reshape(-1,1))**2/2/constants.clumpDispersion**2).sum(1)
-    interclumpIntensityAvg = factor.reshape(-1,1)*np.array(interclumpIntensity).sum(1)
-    interclumpOpticalDepthAvg = -np.log(factor.reshape(-1,1)*np.array(interclumpOpticalDepth).sum(1))
+    # print('interclump factor:', factor)
+    shape = np.array(interclumpIntensity).shape
+    interclumpIntensityAvg = np.zeros((shape[0],shape[2]))
+    interclumpIntensityAvg[:,:iDust] = np.array(interclumpIntensity)[:,:,:iDust].sum(1)
+    interclumpIntensityAvg[:,iDust:] = factor.reshape(-1,1)*np.array(interclumpIntensity)[:,:,iDust:].sum(1)
+    interclumpOpticalDepthAvg = np.zeros((shape[0],shape[2]))
+    interclumpOpticalDepthAvg[:,:iDust] = -np.log(np.array(interclumpOpticalDepth)[:,:,:iDust].sum(1))
+    interclumpOpticalDepthAvg[:,iDust:] = -np.log(factor.reshape(-1,1)*np.array(interclumpOpticalDepth)[:,:,iDust:].sum(1))
     
     if verbose:
       print('\nClump and interclump intensity:\n', clumpIntensity, '\n', interclumpIntensity)
