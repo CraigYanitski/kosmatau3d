@@ -121,4 +121,4 @@ def masspointEmission(interpolationPoint, radius, velocity=0, verbose=False, deb
 
   return (intensity,opticalDepth)
 
-# jit_module(nopython=False)
+jit_module(nopython=False)
