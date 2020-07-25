@@ -71,8 +71,8 @@ def interpolateIntensity(points, speciesNumber, verbose=False):
     for i,index in enumerate(speciesNumber):
       if constants.interpolation=='linear': intensity[i] = (10**intensityInterpolation[index](points))
       elif constants.interpolation=='radial' or interpolation=='cubic': intensity[i] = (10**intensityInterpolation[index](points[0], points[1], points[2]))
-      if (np.isnan(intensity[i]) or intensity[i]==0):
-        intensity[i] = 10**-100
+      # if (np.isnan(intensity[i]) or intensity[i]==0):
+      #   intensity[i] = 10**-100
       #intensity[i] *= 2*constants.kB/4/np.pi/species.moleculeWavelengths[i]**2/10**-26
     if verbose:
       print('Calculated the intensity for {} species.'.format(len(speciesNumber)))
@@ -91,10 +91,10 @@ def interpolateTau(points, speciesNumber, verbose=False):
     for i,index in enumerate(speciesNumber):
       if constants.interpolation=='linear': tau[i] = (10**tauInterpolation[index](points))
       elif constants.interpolation=='radial' or interpolation=='cubic': tau[i] = (10**tauInterpolation[index](points[0], points[1], points[2]))
-      if np.isnan(tau[i]): tau[i] = 10**-100
+      # if np.isnan(tau[i]): tau[i] = 10**-100
       elif (tau[i]<=0):
         #temp = tau[-1]
-        tau[i] = 10**-100
+        # tau[i] = 10**-100
         input('\n<<ERROR>> Negative opacity {} found.\n'.format(temp))
     if verbose:
       print('Calculated the optical depth for {} species.'.format(len(speciesNumber)))

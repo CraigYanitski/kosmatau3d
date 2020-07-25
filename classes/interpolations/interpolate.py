@@ -44,9 +44,14 @@ def calculateGridInterpolation(verbose=False):
   nmuvTau,Tau = observations.tauCenterline
   intensityInterpolation = []
   tauInterpolation = []
-  nmuvI /= 10.     #begin 'decoding' the grid for the interpolation
+  
+  # Begin 'decoding' the grid for the interpolation
+  nmuvI /= 10.
   nmuvTau /= 10.
-  #with np.errstate(divide='ignore', invalid='ignore'):
+  
+  # Correct for the negative emission values (from Silke's code)
+  I[I<=0] = 1e-100
+  Tau[Tau<=0] = 1e-100
   logI = np.log10(I)    #'encode' the intensity of the grid for interpolation
   logTau = np.log10(Tau)
 
