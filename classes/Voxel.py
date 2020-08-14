@@ -144,7 +144,7 @@ class Voxel(object):
   def getFUV(self):
     return self.__FUV
 
-  def setProperties(self, clumpMass=1387835, interclumpMass=1387835, mass=2775651, velocity=0., ensembleDispersion=1, density=14885, FUV=21591, debug=False):
+  def setProperties(self, clumpMass=100, interclumpMass=100, mass=200, velocity=0., ensembleDispersion=1, density=15000, FUV=20000, fromFile=False):
     ''' This method calculates the radii assuming an origin of (0,0). It then averages
        over a subgrid of 3x3. It might be improved later by having functionality to
        change the subgrid dimensions.'''
@@ -155,7 +155,7 @@ class Voxel(object):
     r = np.array([x.flatten(), y.flatten()]).T
     r = np.linalg.norm(r, axis=1)
 
-    if not debug:
+    if fromFile:
 
       self.__setClumpMass(r)
       self.__setInterclumpMass(r)
@@ -196,7 +196,7 @@ class Voxel(object):
     self.__interclumpVelocityIndeces = ensemble.interclumpIndeces
 
     Afuv = combinations.getAfuv()
-    self.__Afuv = -(np.log10((ensemble.CLmaxProbability.prod(1)*Afuv[0]).sum()) + np.log10((ensemble.ICmaxProbability.prod(1)*Afuv[1]).sum()))
+    # self.__Afuv = -(np.log10((ensemble.CLmaxProbability.prod(1)*Afuv[0]).sum()) + np.log10((ensemble.ICmaxProbability.prod(1)*Afuv[1]).sum()))
     
     return
 
@@ -219,7 +219,7 @@ class Voxel(object):
     return self.__interclumpMass
 
   def getVelocity(self):
-    return self.__velocity,self.ensembleDispersion
+    return self.__velocity,self.__ensembleDispersion
 
   def getClumpVelocity(self):
     return constants.velocityRange[self.__clumpVelocityIndeces]
