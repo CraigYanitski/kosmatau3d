@@ -2,39 +2,27 @@ import numpy as np
 
 import observations
 
-from .Dust import Dust
-from .Molecules import Molecules
+from .molecules import *
 
-molecules = Molecules()
-dust = Dust()
-
+molecules = []
+moleculeIndeces = []
+moleculeFrequencies = []
 moleculeWavelengths = []
 
-speciesNames = None
+def addMoleculeOld(molecule):
+  # This is currently setup to accept an acsii input only, in the format:
+  # '{molecule} {transition}'. This will be cross-referenced with the molecules in
+  # the model to determine what needs to be interpolated, and an error will
+  # be raised if the molecular transition is not available in the model.
 
-def reset():
-  molecules.reset()
-  moleculeWavelengths = []
-  speciesNames = None
-  return
+  if molecule in molecules:
+    pass
 
-def addDust(dustElement, transition):
-  (numbers,species,transitions,frequencies) = observations.speciesData
-  i = (species==dustElement)&(transitions==transition)
-  if transition in dust.getTransitions():
-    dust.addTransition(dustElement, transition, frequencies[i], numbers[i])
+  elif molecule in constants.molecules:
+    molecules.append(molecule)
+    moleculeIndeces.append(np.where(constants.molecules==molecule)[0][0])
+
   else:
-    dust.addDust(dustElement, transition, frequencies[i], numbers[i])
-  speciesNames = np.append(molecules.getMolecules(), dust.getDust())
-  return
+    print('Molecular transition {} not available. Please use a different grid or select a different molecule.')
 
-def addMolecule(molecule, transition):
-  (numbers,species,transitions,frequencies) = observations.speciesData
-  i = (species==molecule)&(transitions==transition)
-  if molecule in molecules.getMolecules():
-    molecules.addTransition(molecule, transition, frequencies[i], numbers[i])
-  else:
-    molecules.addMolecule(molecule, transition, frequencies[i], numbers[i])
-  speciesNames = np.append(molecules.getMolecules(), dust.getDust())
-  moleculeWavelengths = molecules.getWavelengths()
   return
