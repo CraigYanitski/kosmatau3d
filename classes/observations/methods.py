@@ -76,6 +76,16 @@ def tauCenterline(file='tau_linecentre.dat'):
 def tbCenterline(file='Tb_linecentre.dat'):
   # Open file for KOSMA-tau simulations of line intensities
   # FORMAT: n, M, UV, intensity[molecules then dust]
+  header = []
+  with open(constants.GRIDPATH+file) as tb:
+    header.append(tb.readline())
+    header.append(tb.readline())
+  molecules = header[1].split(': ')[1]
+  species = []
+  for molecule in molecules.split(', '):
+    for transition in np.arange(1, int(molecule.split(' ')[1])+1):
+      species.append('{} {}'.format(molecule.split(' ')[0], transition))
+  constants.setupMolecules(np.array(species))
   tb = np.genfromtxt(constants.GRIDPATH+file)
   observations.tbCenterline = (tb[:,:3],tb[:,3:])
   return
@@ -101,4 +111,4 @@ def eTildeImaginary(file='Eimag.dat'):
   observations.eTildeImaginary = (eImaginary['x'],eImaginary['Eimaginary'])
   return
 
-jit_module(nopython=False)
+# jit_module(nopython=False)
