@@ -1,0 +1,13 @@
+data = np.genfromtxt(constants.MOLECULARPATH+'{}.cat'.format(molecule.split(' ')[0]))
+
+if data.shape[1]==10:
+  index = (data[:,8]==int(molecule.split(' ')[1])) & (data[:,9]==(int(molecule.split(' ')[1])-1))
+
+elif data.shape[1]==12:
+  index = (data[:,8]==int(molecule.split(' ')[1])) & (data[:,10]==(int(molecule.split(' ')[1])-1))# & data[:,7]==
+
+elif data.shape[1]==14:
+  index = (data[:,8]==int(molecule.split(' ')[1])) & (data[:,11]==(int(molecule.split(' ')[1])-1))# & data[:,7]==
+
+else:
+  print('INDEX ERROR: Molecule {} transitions cannot be determined.'.format(molecule.split(' ')[0]))
