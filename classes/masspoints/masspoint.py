@@ -79,15 +79,15 @@ def masspointEmission(interpolationPoint, radius, velocity=0, verbose=False, deb
   if debug:
     print('\n', interpolationPoint)
 
-  indeces = species.molecules.getInterpolationIndeces()
+  # indeces = species.molecules.getInterpolationIndeces()
 
   intensity_xi = []
   opticalDepth_xi = []
 
-  if len(indeces):
+  if len(species.molecules):
     # Intensity currently in converted to Jansky, to coinside with the dust continuum
-    intensity = interpolations.interpolateIntensity(interpolationPoint, indeces)
-    tau = interpolations.interpolateTau(interpolationPoint, indeces)
+    intensity = interpolations.interpolateIntensity(interpolationPoint)
+    tau = interpolations.interpolateTau(interpolationPoint)
 
     intensity_xi.append(intensity)
     opticalDepth_xi.append(tau)
@@ -121,4 +121,4 @@ def masspointEmission(interpolationPoint, radius, velocity=0, verbose=False, deb
 
   return (intensity,opticalDepth)
 
-jit_module(nopython=False)
+# jit_module(nopython=False)

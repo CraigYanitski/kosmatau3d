@@ -61,6 +61,11 @@ def changeDustWavelengths(limit=''):
     constants.nDust = constants.wavelengths>constants.limitMolecular
   return
 
+def setupMolecules(species):
+  constants.molecules = species
+  constants.moleculeNumber = len(species)
+  return
+
 def resortWavelengths():
   allWavelengths = np.append(constants.wavelengths[constants.nDust], species.moleculeWavelengths)
   constants.sortedIndeces = allWavelengths.argsort()

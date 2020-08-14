@@ -59,18 +59,18 @@ def reset():
   eTildeImaginary = None
   return
 
-def interpolateIntensity(points, speciesNumber, verbose=False):
+def interpolateIntensity(points, verbose=False):
   '''
   This is converted from brightness temperature to Jansky units.
   '''
   verbose = verbose or verbose
   #points = np.log10(points)
-  if isinstance(speciesNumber,np.ndarray):
-    intensity = np.zeros(len(speciesNumber))
+  if len(species.molecules):
+    intensity = np.zeros(len(species.molecules))
     intensity_xi = 0
-    for i,index in enumerate(speciesNumber):
-      if constants.interpolation=='linear': intensity[i] = (10**intensityInterpolation[index](points))
-      elif constants.interpolation=='radial' or interpolation=='cubic': intensity[i] = (10**intensityInterpolation[index](points[0], points[1], points[2]))
+    for i,index in enumerate(species.moleculeIndeces):
+      if constants.interpolation=='linear': intensity[i] = (10**intensityInterpolation[i](points))
+      elif constants.interpolation=='radial' or interpolation=='cubic': intensity[i] = (10**intensityInterpolation[i](points[0], points[1], points[2]))
       # if (np.isnan(intensity[i]) or intensity[i]==0):
       #   intensity[i] = 10**-100
       #intensity[i] *= 2*constants.kB/4/np.pi/species.moleculeWavelengths[i]**2/10**-26
@@ -83,14 +83,14 @@ def interpolateIntensity(points, speciesNumber, verbose=False):
   #     print('There are no species of this type adding to the intensity.')
   #   intensity = 0
 
-def interpolateTau(points, speciesNumber, verbose=False):
+def interpolateTau(points, verbose=False):
   verbose = verbose or verbose
   #points = np.log10(points)
-  if isinstance(speciesNumber, np.ndarray):
-    tau = np.zeros(len(speciesNumber))
-    for i,index in enumerate(speciesNumber):
-      if constants.interpolation=='linear': tau[i] = (10**tauInterpolation[index](points))
-      elif constants.interpolation=='radial' or interpolation=='cubic': tau[i] = (10**tauInterpolation[index](points[0], points[1], points[2]))
+  if len(species.molecules):
+    tau = np.zeros(len(species.molecules))
+    for i,index in enumerate(species.moleculeIndeces):
+      if constants.interpolation=='linear': tau[i] = (10**tauInterpolation[i](points))
+      elif constants.interpolation=='radial' or interpolation=='cubic': tau[i] = (10**tauInterpolation[i](points[0], points[1], points[2]))
       # if np.isnan(tau[i]): tau[i] = 10**-100
       elif (tau[i]<=0):
         #temp = tau[-1]
@@ -175,4 +175,4 @@ def interpolateFUVfield(radius, height):
 def __str__():
   return 'Available Interpolations:\n -Clump intensity\n -Clump optical depth\n -Clump mass (galactic)\n -Clump density (galactic)\n -Voxel rotation (galactic)\n -UV extinction\n -FUV field (galactic)'
 
-jit_module(nopython=False)
+# jit_module(nopython=False)

@@ -21,6 +21,7 @@ filename = inspect.getframeinfo(inspect.currentframe()).filename
 KOSMAPATH = os.path.abspath(os.path.dirname(filename)+'/../../')
 INPUTPATH = KOSMAPATH + '/input/'#'/home/craig/Desktop/Köln/kosma-tau^3-develop/kosma-tau-3d/input/'#
 GRIDPATH = KOSMAPATH + '/grid/'#'/home/craig/Desktop/Köln/kosma-tau^3-develop/kosma-tau-3d/grid/'#
+MOLECULARPATH = KOSMAPATH + '/molecular_data/'#'/home/craig/Desktop/Köln/kosma-tau^3-develop/kosma-tau-3d/molecular_data/'#
 HISTORYPATH = KOSMAPATH + '/history/'#'/home/craig/Desktop/Köln/kosma-tau^3-develop/kosma-tau-3d/history/'#
 
 # Interpolation style (it accepts 'linear' or 'cubic'/'radial')
@@ -55,7 +56,8 @@ mapSize = (360, 180)   #size in degrees of the desired map
 mapCenter = (0,0)       #center of the desired map in degrees
 
 # Model species
-molecules = ['C+', 'C', 'CO', '13CO', '13C+', '13C', 'HCO+', 'H13CO+', 'H13CO', 'H3O+', 'C18O']
+molecules = []
+moleculeNumber = 0
 dust = True
 
 # Model characteristics
@@ -86,11 +88,13 @@ interclumpNmax = 100
 
 ensembleDispersion = 0#10./2.3548
 
-# Initial mass function parameters
+# Initial mass function parameters (Heithausen et al. (1998))
 alpha = 1.84
 gamma = 2.31
 
 # Statistics
+scipyProbability = True
+gauss = False
 probability = 'binomial'
 nGauss = 1000
 pnGauss = 5
