@@ -33,8 +33,6 @@ interclumpMassFactor = 1
 densityFactor = 1
 FUVFactor = 1
 
-interclumpLogFUV = 1
-
 # Standard constants
 massH = 1.007276466812*1.6605*10**-27  #in [kg]
 massSolar = 1.98852*10**30  #in [kg]
@@ -71,16 +69,19 @@ velocityStep = velocityRange[1] - velocityRange[0]
 # Clump characteristics
 clumpDispersion = 1.67/2.3548
 
-clumpMassNumber=4
-clumpLogMassRange = [-1,2]
-clumpLogMass = np.linspace(clumpLogMassRange[0], clumpLogMassRange[-1], num=clumpMassNumber)
-clumpLogMass.resize(1,clumpMassNumber)
-clumpMaxIndeces = 0
-clumpNmax = 1
+clumpMassNumber = [3, 1]
+clumpLogMassRange = [[0,2], [-2]]
+clumpLogMass = [np.resize(np.linspace(clumpLogMassRange[i][0], clumpLogMassRange[i][-1], num=clumpMassNumber[i]), (1,clumpMassNumber[i])) for i in range(len(clumpMassNumber))]
+# clumpLogMass[0].resize(1,clumpMassNumber[0])
+clumpMaxIndeces = [0, 0]
+clumpNmax = [1, 100]
+clumpDensity = [None, 1911]  #use None to take the voxel density
+clumpFUV = [None, 10]  #use None to take the voxel FUV field
 
 interclumpDensity = 1911  #as defined in the old version of this code
-interclumpMassNumber = 2
-interclumpLogMassRange = [-3,-2]
+interclumpLogFUV = 1
+interclumpMassNumber = 1
+interclumpLogMassRange = [-2]
 interclumpLogMass = np.linspace(interclumpLogMassRange[0], interclumpLogMassRange[-1], num=interclumpMassNumber)
 interclumpLogMass.resize(1,interclumpMassNumber)
 interclumpMaxIndeces = 0
@@ -107,6 +108,9 @@ uvLimits = [0, 6]
 # UV adjustment
 normUV = 2.89433*10**39
 globalUV = 10
+
+# Interpolation
+fortranEncoded = True
 
 # Finally, these are the wavelengths at which the dust emission will be computed
 wavelengths = np.array([3100., 2400., 1800., 1300., 1000., 850., 700., 550., 420., 300., 240., 188.4, 177.8, 167.9, 158.5, 149.6, \
