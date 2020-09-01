@@ -1,15 +1,16 @@
 import numpy as np
 
 import constants
+import interpolations
 import species
 
-def addMolecule(molecules):
+def addMolecules(molecules):
   # This is currently setup to accept an acsii input only, in the format:
   # '{molecule} {transition}'. This will be cross-referenced with the molecules in
   # the model to determine what needs to be interpolated, and an error will
   # be raised if the molecular transition is not available in the model.
 
-  if not isinstance(molecules, list) or not isinstance(molecules, np.ndarray):
+  if not isinstance(molecules, list) and not isinstance(molecules, np.ndarray):
     molecules = [molecules]
 
   for molecule in molecules:
@@ -43,6 +44,8 @@ def addMolecule(molecules):
       nFIN = levels==transition[1]
       species.moleculeFrequencies.append(2.99792458*10**10*(energies[nINI]-energies[nFIN]))
       species.moleculeWavelengths.append(1./100/(energies[nINI]-energies[nFIN]))
+
+      # interpolations.initialise()
 
     else:
       print('MODEL ERROR: Molecular transition {} not available. Please use a different grid or select a different molecule.')
