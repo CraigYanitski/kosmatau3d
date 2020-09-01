@@ -87,13 +87,7 @@ class Model(object):
     return
 
   def addSpecies(self, speciesTransition):
-    for element in speciesTransition:
-      molecule = element.split(' ')[0]
-      transition = int(element.split(' ')[1])
-      species.addMolecule(molecule, transition)
-
-    species.moleculeWavelengths = species.molecules.getWavelengths()
-    constants.resortWavelengths()
+    species.addMolecules(speciesTransition)
     return
 
   def writeEmission(self, debug=False):
