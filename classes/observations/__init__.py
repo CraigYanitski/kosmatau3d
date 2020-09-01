@@ -20,15 +20,17 @@ in the folder 'grid'.
 #       printout += '\n  ->{} {}'.format(element[i], transitions[i])
 #     return printout
 
-# PUBLIC
+# Grid
+tbCenterline = None
+tauCenterline = None
+rhoMassAFUV = None
+speciesData = None
+eTildeReal = None
+eTildeImaginary = None
+
+# Model
 clumpMassProfile = None
 interclumpMassProfile = None
 densityProfile =  None
 FUVfield = None
 rotationProfile = None
-tauCenterline = None
-tbCenterline = None
-rhoMassAFUV = None
-speciesData = None
-eTildeReal = None
-eTildeImaginary = None

@@ -10,21 +10,74 @@ import constants
 import observations
 
 def initialise():
+  # Grid
+  tauCenterline()
+  tbCenterline()
+  rhoMassAFUV()
+  speciesData()
+
+  # Model
   clumpMassProfile()
   interclumpMassProfile()
   densityProfile()
   FUVfield()
   rotationProfile()
-  tauCenterline()
-  tbCenterline()
-  rhoMassAFUV()
-  speciesData()
+  
+  return
+
+# G R I D
+
+def tbCenterline(file='Tb_linecentre.dat'):
+  # Open file for KOSMA-tau simulations of line intensities
+  # FORMAT: n, M, UV, intensity[molecules then dust]
+  header = []
+  with open(constants.GRIDPATH+file) as tb:
+    header.append(tb.readline())
+    header.append(tb.readline())
+  molecules = header[1].split(': ')[1]
+  species = []
+  for molecule in molecules.split(', '):
+    for transition in np.arange(1, int(molecule.split(' ')[1])+1):
+      species.append('{} {}'.format(molecule.split(' ')[0], transition))
+  constants.setupMolecules(np.array(species))
+  tb = np.genfromtxt(constants.GRIDPATH+file)
+  observations.tbCenterline = (tb[:,:3],tb[:,3:])
+  return
+
+def tauCenterline(file='tau_linecentre.dat'):
+  # Open file for KOSMA-tau simulations of optical depths
+  # FORMAT: n, M, UV, tau[molecules then dust]
+  tau = np.genfromtxt(constants.GRIDPATH+file)
+  observations.tauCenterline = (tau[:,:3],tau[:,3:])
+  return
+
+def rhoMassAFUV(file='RhoMassAFUV.dat'):
+  pma = np.genfromtxt(constants.GRIDPATH+file)
+  observations.rhoMassAFUV = (pma[:,:2],pma[:,2])
+  return
+
+def speciesData(file='frequencies.dat'):
+  # Open file containing the transition frequencies of various elements
+  frequencies = np.genfromtxt(constants.GRIDPATH+file, names=['number', 'species', 'transition', 'frequency'], dtype="i8,U8,i8,f8", delimiter=',')
+  observations.speciesData = (frequencies['number'],frequencies['species'],frequencies['transition'],frequencies['frequency'])
   return
 
 def initRadTransfer():
   eTildeReal()
   eTildeImaginary()
   return
+
+def eTildeReal(file='Ereal.dat'):
+  eReal = np.genfromtxt(constants.GRIDPATH+file, names=['x', 'Ereal'])
+  observations.eTildeReal = (eReal['x'],eReal['Ereal'])
+  return
+
+def eTildeImaginary(file='Eimag.dat'):
+  eImaginary = np.genfromtxt(constants.GRIDPATH+file, names=['x', 'Eimaginary'])
+  observations.eTildeImaginary = (eImaginary['x'],eImaginary['Eimaginary'])
+  return
+
+# M O D E L
 
 def clumpMassProfile(file='mass_profile.dat'):
   # Open file for the mass profile (clump) of the object (Msol/pc**2)
@@ -64,51 +117,6 @@ def rotationProfile(file='rot_milki2018_14.dat'):
   if constants.directory!='':
     rotation = np.genfromtxt(constants.INPUTPATH+constants.directory+file)
     observations.rotationProfile = (rotation[:,0]*1000., rotation[:,1:])
-  return
-
-def tauCenterline(file='tau_linecentre.dat'):
-  # Open file for KOSMA-tau simulations of optical depths
-  # FORMAT: n, M, UV, tau[molecules then dust]
-  tau = np.genfromtxt(constants.GRIDPATH+file)
-  observations.tauCenterline = (tau[:,:3],tau[:,3:])
-  return
-
-def tbCenterline(file='Tb_linecentre.dat'):
-  # Open file for KOSMA-tau simulations of line intensities
-  # FORMAT: n, M, UV, intensity[molecules then dust]
-  header = []
-  with open(constants.GRIDPATH+file) as tb:
-    header.append(tb.readline())
-    header.append(tb.readline())
-  molecules = header[1].split(': ')[1]
-  species = []
-  for molecule in molecules.split(', '):
-    for transition in np.arange(1, int(molecule.split(' ')[1])+1):
-      species.append('{} {}'.format(molecule.split(' ')[0], transition))
-  constants.setupMolecules(np.array(species))
-  tb = np.genfromtxt(constants.GRIDPATH+file)
-  observations.tbCenterline = (tb[:,:3],tb[:,3:])
-  return
-
-def rhoMassAFUV(file='RhoMassAFUV.dat'):
-  pma = np.genfromtxt(constants.GRIDPATH+file)
-  observations.rhoMassAFUV = (pma[:,:2],pma[:,2])
-  return
-
-def speciesData(file='frequencies.dat'):
-  # Open file containing the transition frequencies of various elements
-  frequencies = np.genfromtxt(constants.GRIDPATH+file, names=['number', 'species', 'transition', 'frequency'], dtype="i8,U8,i8,f8", delimiter=',')
-  observations.speciesData = (frequencies['number'],frequencies['species'],frequencies['transition'],frequencies['frequency'])
-  return
-
-def eTildeReal(file='Ereal.dat'):
-  eReal = np.genfromtxt(constants.GRIDPATH+file, names=['x', 'Ereal'])
-  observations.eTildeReal = (eReal['x'],eReal['Ereal'])
-  return
-
-def eTildeImaginary(file='Eimag.dat'):
-  eImaginary = np.genfromtxt(constants.GRIDPATH+file, names=['x', 'Eimaginary'])
-  observations.eTildeImaginary = (eImaginary['x'],eImaginary['Eimaginary'])
   return
 
 # jit_module(nopython=False)
