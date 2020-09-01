@@ -49,7 +49,7 @@ class VoxelGrid(object):
     return
 
   def __initialiseGrid(self):
-    #self.__species = species
+    self.__voxels = []
     for i in range(self.__voxelNumber): self.__voxels.append(Voxel(i))
     return
 
@@ -72,6 +72,11 @@ class VoxelGrid(object):
     return self.__shape.getDimensions()
 
   def calculateEmission(self, index=0, debug=False, verbose=False):
+    # This will initialise the grid of voxels and calculate their emission. This has to be
+    #done in succession for each voxel since the calculations are modular (the temporary
+    #voxel terms are changed when calculating different voxels). This can be rerun and it
+    #will reinitialise the grid.
+
     #print(observations.tauCenterline)
     interpolations.initialise()
     self.__initialiseGrid()
@@ -93,7 +98,7 @@ class VoxelGrid(object):
 
         voxel.setIndex(i)#-len(self.__unusedVoxels))
         voxel.setPosition(x[i], y[i], z[i], r[i], phi[i])
-        voxel.setProperties(debug=debug)
+        voxel.setProperties(fromFile=True)
 
         self.__voxelAfuv.append(voxel.getAfuv())
         voxel.calculateEmission()
@@ -107,6 +112,8 @@ class VoxelGrid(object):
     return
 
   def writeEmission(self, verbose=False, debug=False):
+    # This will stream the model parameters and emission to FITS files in the corresponding
+    #directory for the model.
     
     print('\nStreaming to fits files...')
 
@@ -130,11 +137,11 @@ class VoxelGrid(object):
     dim = [1, self.__voxelNumber]
     shdu_velocity = self.shdu_header(name='Velocity', units='km/s', filename='voxel_velocity', dim=dim)
     
-    dim = [constants.clumpMaxIndeces, self.__voxelNumber]
+    dim = [constants.clumpMaxIndeces[0], self.__voxelNumber]
     shdu_clump_velocity = self.shdu_header(name='Clump velocity', units='km/s', filename='voxel_clump_velocity', dim=dim)
     
-    dim = [constants.interclumpMaxIndeces, self.__voxelNumber]
-    shdu_interclump_velocity = self.shdu_header(name='Interclump Velocity', units='km/s', filename='voxel_interclump_velocity', dim=dim)
+    # dim = [constants.clumpMaxIndeces[1], self.__voxelNumber]
+    # shdu_interclump_velocity = self.shdu_header(name='Interclump Velocity', units='km/s', filename='voxel_interclump_velocity', dim=dim)
     
     dim = [1,self.__voxelNumber]
     shdu_FUV = self.shdu_header(name='FUV', units='Draine', filename='voxel_fuv', dim=dim)
@@ -147,11 +154,11 @@ class VoxelGrid(object):
      # The dimensions of the emissions are the expected velocity range (5 for clumps, 9 for interclumps),
     #the number of wavelengths at which the emission is calculated (#molecules + 333 dust wavelengths),
     #and finally the number of voxels.
-    dim = [len(species.moleculeWavelengths)+nDust, constants.clumpMaxIndeces, self.__voxelNumber]
+    dim = [len(species.moleculeWavelengths)+nDust, constants.clumpMaxIndeces[0], self.__voxelNumber]
     shdu_clump_intensity = self.shdu_header(name='Clump intensity', units='K', filename='intensity_clump', dim=dim)
     shdu_clump_tau = self.shdu_header(name='Clump optical depth', units='1/cm', filename='opticalDepth_clump', dim=dim)
     
-    dim = [len(species.moleculeWavelengths)+nDust, constants.interclumpMaxIndeces, self.__voxelNumber]
+    dim = [len(species.moleculeWavelengths)+nDust, constants.clumpMaxIndeces[1], self.__voxelNumber]
     shdu_interclump_intensity = self.shdu_header(name='Clump intensity', units='K', filename='intensity_interclump', dim=dim)
     shdu_interclump_tau = self.shdu_header(name='Clump optical depth', units='1/cm', filename='opticalDepth_interclump', dim=dim)
 
@@ -165,6 +172,11 @@ class VoxelGrid(object):
 
         # Optain the voxel emission data
         clumpIntensity = (emission[0])[0]
+        clumpTau = (emission[1])[0]
+        clumpVelocity = voxel.getClumpVelocity()
+        interclumpIntensity = (emission[0])[1]
+        interclumpTau = (emission[1])[1]
+        # interclumpVelocity = voxel.getInterclumpVelocity()
 
         if False:
           print()
@@ -174,31 +186,25 @@ class VoxelGrid(object):
           plt.loglog(wav[:nDust], clumpIntensity[0,:nDust], marker='', ls='-', lw=1)
           plt.show()
 
-        clumpTau = (emission[1])[0]
-        clumpVelocity = voxel.getClumpVelocity()
-        interclumpIntensity = (emission[0])[1]
-        interclumpTau = (emission[1])[1]
-        interclumpVelocity = voxel.getInterclumpVelocity()
-
         # Transform the voxel emission data to the maximum size in the model (to deal with numpy nd arrays)
-        while clumpIntensity[:,0].size<constants.clumpMaxIndeces:
+        while clumpIntensity[:,0].size<constants.clumpMaxIndeces[0]:
           clumpIntensity = np.append(clumpIntensity, np.zeros((1,clumpIntensity[0,:].size)), axis=0)
           clumpTau = np.append(clumpTau, np.zeros((1,clumpTau[0,:].size)), axis=0)
           clumpVelocity = np.append(clumpVelocity, [np.nan], axis=0)
 
-        while interclumpIntensity[:,0].size<constants.interclumpMaxIndeces:
+        while interclumpIntensity[:,0].size<constants.clumpMaxIndeces[1]:
           interclumpIntensity = np.append(interclumpIntensity, np.zeros((1,interclumpIntensity[0,:].size)), axis=0)
           interclumpTau = np.append(interclumpTau, np.zeros((1,interclumpTau[0,:].size)), axis=0)
-          interclumpVelocity = np.append(interclumpVelocity, [np.nan], axis=0)
+          # interclumpVelocity = np.append(interclumpVelocity, [np.nan], axis=0)
 
         shdu_position.write(voxel.getPosition())
-        velocity = voxel.getVelocity()
+        velocity = voxel.getVelocity()[0]
         if isinstance(velocity, float):
           shdu_velocity.write(np.array([velocity]))
         else:
           shdu_velocity.write(np.linalg.norm(velocity))
         shdu_clump_velocity.write(clumpVelocity)
-        shdu_interclump_velocity.write(interclumpVelocity)
+        # shdu_interclump_velocity.write(interclumpVelocity)
         shdu_FUV.write(np.array([voxel.getFUV()]))
         shdu_Afuv.write(np.array([voxel.getAfuv()]))
 
