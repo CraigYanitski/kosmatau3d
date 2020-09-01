@@ -63,14 +63,21 @@ def interpolateIntensity(points, verbose=False):
   '''
   This is converted from brightness temperature to Jansky units.
   '''
+  # Fully 'encode' the interpolation points to the fortran standard
+  if constants.fortranEncoded:
+    points = np.asarray(points)*10
   verbose = verbose or verbose
-  #points = np.log10(points)
   if len(species.molecules):
     intensity = np.zeros(len(species.molecules))
     intensity_xi = 0
     for i,index in enumerate(species.moleculeIndeces):
-      if constants.interpolation=='linear': intensity[i] = (10**intensityInterpolation[i](points))
-      elif constants.interpolation=='radial' or interpolation=='cubic': intensity[i] = (10**intensityInterpolation[i](points[0], points[1], points[2]))
+      if constants.fortranEncoded:
+        if constants.interpolation=='linear': intensity[i] = (10**(intensityInterpolation[i](points)/10))
+        elif constants.interpolation=='radial' or interpolation=='cubic': intensity[i] = (10**(intensityInterpolation[i](points[0], points[1], points[2])/10))
+      
+      else:
+        if constants.interpolation=='linear': intensity[i] = (10**intensityInterpolation[i](points))
+        elif constants.interpolation=='radial' or interpolation=='cubic': intensity[i] = (10**intensityInterpolation[i](points[0], points[1], points[2]))
       # if (np.isnan(intensity[i]) or intensity[i]==0):
       #   intensity[i] = 10**-100
       #intensity[i] *= 2*constants.kB/4/np.pi/species.moleculeWavelengths[i]**2/10**-26
@@ -84,15 +91,23 @@ def interpolateIntensity(points, verbose=False):
   #   intensity = 0
 
 def interpolateTau(points, verbose=False):
+  # Fully 'encode' the interpolation points to the fortran standard
+  if constants.fortranEncoded:
+    points = np.asarray(points)*10
   verbose = verbose or verbose
   #points = np.log10(points)
   if len(species.molecules):
     tau = np.zeros(len(species.molecules))
     for i,index in enumerate(species.moleculeIndeces):
-      if constants.interpolation=='linear': tau[i] = (10**tauInterpolation[i](points))
-      elif constants.interpolation=='radial' or interpolation=='cubic': tau[i] = (10**tauInterpolation[i](points[0], points[1], points[2]))
+      if constants.fortranEncoded:
+        if constants.interpolation=='linear': tau[i] = (10**(tauInterpolation[i](points)/10))
+        elif constants.interpolation=='radial' or interpolation=='cubic': tau[i] = (10**(tauInterpolation[i](points[0], points[1], points[2])/10))
+      
+      else:
+        if constants.interpolation=='linear': tau[i] = (10**tauInterpolation[i](points))
+        elif constants.interpolation=='radial' or interpolation=='cubic': tau[i] = (10**tauInterpolation[i](points[0], points[1], points[2]))
       # if np.isnan(tau[i]): tau[i] = 10**-100
-      elif (tau[i]<=0):
+      if (tau[i]<=0):
         #temp = tau[-1]
         # tau[i] = 10**-100
         input('\n<<ERROR>> Negative opacity {} found.\n'.format(temp))
@@ -109,32 +124,58 @@ def interpolateDustIntensity(points, verbose=False):
   '''
   This will calculate the intensity in Jansky units.
   '''
-  #verbose = verbose or verbose
-  # intensity = np.zeros(333, dtype=np.float64)
-  if constants.interpolation=='linear':
-    #print(intensity)
-    intensity = 10**dustIntensityInterpolation(points)[0]
-    #print(intensity)
-    # constants.hclambda/constants.kB / \
-    #             np.log(1+2*constants.hclambda/constants.wavelengths**2/(10**(dustIntensityInterpolation(points)[0])*10**-26))
-    #/2/constants.kB*(constants.wavelengths)**2*10**-26
-    intensity *= 10**-26*constants.wavelengths[constants.nDust]**2/2/constants.kB
-  elif constants.interpolation=='radial' or interpolation=='cubic': intensity = (10**dustIntensityInterpolation(points[0], points[1], points[2]))
-  #if np.isnan(intensity[-1]) or intensity[-1]==0: intensity[-1] = 10**-100
-  if verbose:
-    print('Calculated the dust intensity.')
+  # Fully 'encode' the interpolation points to the fortran standard
+  if constants.fortranEncoded:
+    points = np.asarray(points)*10
+
+  # if fortranEncoded:
+    if constants.interpolation=='linear':
+      intensity = []
+      for dust in dustIntensityInterpolation:
+        intensity.append(10**(dust(points)[0]/10))
+    
+    elif constants.interpolation=='radial' or interpolation=='cubic': intensity = (10**(dustIntensityInterpolation(points[0], points[1], points[2])/10))
+  
+  else:
+    if constants.interpolation=='linear':
+      intensity = []
+      for dust in dustIntensityInterpolation:
+        intensity.append(10**(dust(points)[0]))
+
+    elif constants.interpolation=='radial' or interpolation=='cubic': intensity = (10**dustIntensityInterpolation(points[0], points[1], points[2]))
+  
+  intensity = np.asarray(intensity) * 10**-26 * constants.wavelengths[constants.nDust]**2/2/constants.kB
+
   return intensity
 
 def interpolateDustTau(points, verbose=False):
-  verbose = verbose or verbose
+  # Fully 'encode' the interpolation points to the fortran standard
+  if constants.fortranEncoded:
+    points = np.asarray(points)*10
+  # verbose = verbose or verbose
   #tau = []
-  if constants.interpolation=='linear': tau = (10**dustTauInterpolation(points))[0]
-  elif constants.interpolation=='radial' or interpolation=='cubic': tau = (10**dustTauInterpolation(points[0], points[1], points[2]))
+  # if constants.fortranEncoded:
+    if constants.interpolation=='linear':
+      tau = []
+      for dust in dustTauInterpolation:
+        tau.append(10**(dust(points)[0]/10))
+
+    elif constants.interpolation=='radial' or interpolation=='cubic': tau = (10**(dustTauInterpolation(points[0], points[1], points[2])/10))
+  
+  else:
+    if constants.interpolation=='linear':
+      tau = []
+      for dust in dustTauInterpolation:
+        tau.append(10**(dust(points)[0]))
+
+    elif constants.interpolation=='radial' or interpolation=='cubic': tau = (10**dustTauInterpolation(points[0], points[1], points[2]))
   # if np.isnan(tau[-1]): tau[-1] = 10**-100
   # elif tau[-1]<=0:
   #   temp = tau[-1]
   #   tau[-1] = 10**-100
   #   input('\n<<ERROR>> Negative opacity {} found.\n'.format(temp))
+  tau = np.asarray(tau)
+
   if verbose:
     print('Calculated the optical depth for {} species.'.format(len(speciesNumber)))
   return tau

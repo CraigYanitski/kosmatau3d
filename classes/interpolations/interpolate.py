@@ -45,20 +45,31 @@ def calculateGridInterpolation(verbose=False):
   intensityInterpolation = []
   tauInterpolation = []
   
-  # Begin 'decoding' the grid for the interpolation
-  nmuvI /= 10.
-  nmuvTau /= 10.
-  
   # Correct for the negative emission values (from Silke's code)
   I[I<=0] = 1e-100
   Tau[Tau<=0] = 1e-100
-  logI = np.log10(I)    #'encode' the intensity of the grid for interpolation
+  
+  # Begin 'encoding' the intensity of the grid for interpolation
+  logI = np.log10(I)
   logTau = np.log10(Tau)
+
+  if constants.fortranEncoded:
+    # Fully 'encode' the emission grid for interpolation
+    logI *= 10
+    logTau *= 10
+  
+  else:
+    # Begin 'decoding' the grid for interpolation
+    nmuvI /= 10.
+    nmuvTau /= 10.
 
   if constants.interpolation=='linear':
     if constants.dust:
-      interpolations.dustIntensityInterpolation = interpolate.LinearNDInterpolator(nmuvI, logI[:,constants.moleculeNumber:][:,constants.nDust])
-      interpolations.dustTauInterpolation = interpolate.LinearNDInterpolator(nmuvTau, logTau[:,constants.moleculeNumber:][:,constants.nDust])
+      interpolations.dustIntensityInterpolation = []
+      interpolations.dustTauInterpolation = []
+      for i in np.where(constants.nDust)[0]:
+        interpolations.dustIntensityInterpolation.append(interpolate.LinearNDInterpolator(nmuvI, logI[:,constants.moleculeNumber+i]))
+        interpolations.dustTauInterpolation.append(interpolate.LinearNDInterpolator(nmuvTau, logTau[:,constants.moleculeNumber+i]))
     for index in species.moleculeIndeces:
       if verbose: print('Creating intensity grid interpolation')
       rInterpI = interpolate.LinearNDInterpolator(nmuvI, logI[:,index])
