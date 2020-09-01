@@ -2,23 +2,18 @@ from numba import jit_module
 import numpy as np
 
 from .masspoint import *
+import constants
 
 # Properties
 
-logFUV = 0
+logFUV = [0 for _ in range(len(constants.clumpMassNumber))]
 
-clumpLogDensity = []
-clumpRadius = []
-
-interclumpLogDensity = []
-interclumpRadius = []
+clumpLogDensity = [[] for _ in range(len(constants.clumpMassNumber))]
+clumpRadius = [[] for _ in range(len(constants.clumpMassNumber))]
 
 # Emission
 
-clumpIntensity = []
-clumpOpticalDepth = []
-
-interclumpIntensity = []
-interclumpOpticalDepth = []
+clumpIntensity = [[] for _ in range(len(constants.clumpMassNumber))]
+clumpOpticalDepth = [[] for _ in range(len(constants.clumpMassNumber))]
 
 jit_module(nopython=False)
