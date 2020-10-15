@@ -1,0 +1,32 @@
+# Copy-paste this section. It needs about two minutes to execute.
+SELECT dr2gd.source_id, dr2.ra, dr2.dec, dr2gd.r_est, dr2gd.r_lo, dr2gd.r_hi, dr2gd.r_len, dr2gd.result_flag
+FROM gdr2_contrib.geometric_distance AS dr2gd, gdr2.gaia_source as dr2
+WHERE (dr2gd.source_id = 3209572233592263424 OR
+       dr2gd.source_id = 3209572852067563392 OR
+       dr2gd.source_id = 3209572405390979840 OR
+       dr2gd.source_id = 3209559584909834752 OR
+       dr2gd.source_id = 3209577692491953024 OR
+       dr2gd.source_id = 3209576940876434176 OR
+       dr2gd.source_id = 3209580101972304256 OR
+       dr2gd.source_id = 3209627243533356288) 
+      AND
+      (dr2.source_id = 3209572233592263424 OR
+       dr2.source_id = 3209572852067563392 OR
+       dr2.source_id = 3209572405390979840 OR
+       dr2.source_id = 3209559584909834752 OR
+       dr2.source_id = 3209577692491953024 OR
+       dr2.source_id = 3209576940876434176 OR
+       dr2.source_id = 3209580101972304256 OR
+       dr2.source_id = 3209627243533356288);
+
+# Test
+FROM gdr2_contrib.geometric_distance AS dr2gd
+SELECT dr2gd.source_id, dr2gd.r_est, dr2gd.r_lo, dr2gd.r_hi, dr2gd.r_len, dr2gd.result_flag
+WHERE dr2gd.source_id = 3209572233592263424 OR
+      dr2gd.source_id = 3209572852067563392 OR
+      dr2gd.source_id = 3209572405390979840 OR
+      dr2gd.source_id = 3209559584909834752 OR
+      dr2gd.source_id = 3209577692491953024 OR
+      dr2gd.source_id = 3209576940876434176 OR
+      dr2gd.source_id = 3209580101972304256 OR
+      dr2gd.source_id = 3209627243533356288;

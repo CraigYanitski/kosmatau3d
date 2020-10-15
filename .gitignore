@@ -1,0 +1,10 @@
+history/
+build/
+kosmatau3d.egg-info/
+*.pyc
+*/__pycache__/
+*.py[cod]
+*.aux
+*.log
+*.synctex.gz
+*.ipynb_checkpoints/
