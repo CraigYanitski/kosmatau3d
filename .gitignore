@@ -1,8 +1,0 @@
-*.pyc
-__pycache__/
-*.py[cod]
-*.log
-*.aux
-*.synctex.gz
-history/MilkyWay/*/
-*.ipynb_checkpoints\
