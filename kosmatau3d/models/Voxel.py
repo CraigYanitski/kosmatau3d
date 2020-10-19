@@ -90,13 +90,13 @@ class Voxel(object):
     
     return
 
-  def __setDensity(self, r):
+  def __setEnsembleDensity(self, r):
     density = interpolations.interpolateDensity(r)
-    self.__density = constants.densityFactor*density.mean()
+    self.__ensembleDensity = constants.densityFactor*density.mean()
     return
 
   def __setExtinction(self):
-    self.__UVextinction = interpolations.interpolateFUVextinction(self.__density, self.__clumpMass+self.__interclumpMass)
+    self.__UVextinction = interpolations.interpolateFUVextinction(self.__ensembleDensity, self.__clumpMass+self.__interclumpMass)
     return
 
   def __setFUV(self, r, z):
@@ -136,11 +136,11 @@ class Voxel(object):
   def getFUV(self):
     return self.__FUV
 
-  def setProperties(self, velocityRange=[-10,10], velocityNumber=51, \
+  def setProperties(self, velocityRange=[-10,10], velocityNumber=51, alpha=1.84, gamma=2.31, \
                     clumpMassNumber=[3,1], clumpMassRange=[[0,2],[-2]], clumpDensity=[None, 1911], clumpFUV=[None, 1], \
                     clumpNmax=[1, 100], resolution=1, molecules=['C+ 1', 'C 1', 'CO 1'], dust='molecular', \
                     clumpMass=100, interclumpMass=100, mass=200, velocity=0., \
-                    ensembleDispersion=1, density=15000, FUV=20000, fromFile=False):
+                    ensembleDispersion=1, ensembleDensity=15000, FUV=20000, fromFile=False):
     '''
       This method calculates the radii assuming an origin of (0,0). It then averages
      over a subgrid of 3x3. It might be improved later by having functionality to
@@ -197,7 +197,7 @@ class Voxel(object):
      ensembleDispersion: The velocity dispersion of the ensemble. This is used with the
                          model velocities to determine the number of clumps at a given
                          velocity. The default is 1 km/s.
-     density: The observed density in the voxel. This is different from and overridden by
+     ensembleDensity: The observed hydrogen density in the voxel. This is different from and overridden by
               any default density specified in the constants module. the default is
               15000 cm^-3.
      FUV: The FUV field of the voxel. All clumps are isotropically radiated with this
@@ -224,7 +224,7 @@ class Voxel(object):
       self.__setClumpMass(r)
       self.__setMass()
       self.__setVelocity(r)
-      self.__setDensity(r)
+      self.__setEnsembleDensity(r)
       #self.__setExtinction()
       self.__setFUV(self.__r, self.__z)
 
@@ -237,6 +237,7 @@ class Voxel(object):
     else:
 
       constants.resolution = resolution
+      constants.changeMassFunctionParameters(alpha=alpha, gamma=gamma)
       constants.changeVelocityRange(velocityRange)
       constants.changeVelocityNumber(velocityNumber)
       constants.addClumps(massRange=clumpMassRange, num=clumpMassNumber, density=clumpDensity, fuv=clumpFUV, Nmax=clumpNmax, reset=True)
@@ -254,7 +255,7 @@ class Voxel(object):
       self.__mass = mass
       self.__velocity = velocity
       self.__ensembleDispersion = ensembleDispersion
-      self.__density = density
+      self.__ensembleDensity = ensembleDensity
       self.__FUV = FUV
 
       velocity = self.__velocity
@@ -263,7 +264,7 @@ class Voxel(object):
     density = copy(constants.clumpDensity)
     fuv = copy(constants.clumpFUV)
     for i in range(len(density)):
-      if density[i]==None: density[i] = self.__density
+      if density[i]==None: density[i] = self.__ensembleDensity
       if fuv[i]==None: fuv[i] = self.__FUV
 
     masspoints.setMasspointData(density=density, FUV=fuv)
@@ -292,7 +293,7 @@ class Voxel(object):
     return np.array([self.__x, self.__y, self.__z])
 
   def getDensity(self):
-    return self.__density
+    return self.__ensembleDensity
 
   def getMass(self):
     return self.__mass

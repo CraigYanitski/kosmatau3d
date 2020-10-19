@@ -84,6 +84,14 @@ def resetClumps():
     constants.clumpLogMass[i].resize(1,constants.clumpMassNumber[i])
   return
 
+def changeMassFunctionParameters(alpha=1.84, gamma=2.31):
+  # Use this to change the parameters of power-law distribution used
+  #to calculate the clump properties. The default are those from
+  #Heithausen et al. (1998).
+  constants.alpha = alpha
+  constants.gamma = gamma
+  return
+
 def changeDirectory(direc):
   constants.directory = direc
   if constants.directory[-1]!='/': constants.directory = constants.directory + '/'
