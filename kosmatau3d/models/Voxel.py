@@ -137,10 +137,10 @@ class Voxel(object):
     return self.__FUV
 
   def setProperties(self, velocityRange=[-10,10], velocityNumber=51, alpha=1.84, gamma=2.31, \
-                    clumpMassNumber=[3,1], clumpMassRange=[[0,2],[-2]], clumpDensity=[None, 1911], clumpFUV=[None, 1], \
-                    clumpNmax=[1, 100], resolution=1, molecules=['C+ 1', 'C 1', 'CO 1'], dust='molecular', \
+                    clumpMassNumber=[3,1], clumpMassRange=[[0,2],[-2]], \
+                    clumpNmax=[1, 100], resolution=1, molecules=['C+ 1', 'C 1', 'CO 1'], dust='PAH', \
                     clumpMass=100, interclumpMass=100, mass=200, velocity=0., \
-                    ensembleDispersion=1, ensembleDensity=15000, FUV=20000, fromFile=False):
+                    ensembleDispersion=1, volumeFactor=None, ensembleDensity=[15000, 1911], FUV=[20000, 1], fromFile=False):
     '''
       This method calculates the radii assuming an origin of (0,0). It then averages
      over a subgrid of 3x3. It might be improved later by having functionality to
@@ -150,6 +150,10 @@ class Voxel(object):
 
      MODEL PARAMETERS
 
+     alpha: The power law distribution required for initial mass function dN(M)/dM = M^-alpha.
+            The default is 1.84 as determined in Heithausen et al. (1998).
+     gamma: The power law mass-size relation satisfying M = C R^gamma. The default is 2.31 as
+            determined in Heithausen et al. (1998).
      velocityRange: The range (list) of the observed radial velocities. By default it
                     is [-10, 10].
      velocityNumber: The number of observed velocities in the specified range (including
@@ -251,23 +255,40 @@ class Voxel(object):
       combinations.reinitialise()
       ensemble.reinitialise()
       
-      self.__clumpMass = [clumpMass]*len(constants.clumpMassNumber)
       self.__mass = mass
       self.__velocity = velocity
-      self.__ensembleDispersion = ensembleDispersion
-      self.__ensembleDensity = ensembleDensity
-      self.__FUV = FUV
+
+      if isinstance(list, clumpMass) or isinstance(np.array, clumpMass):
+        self.__clumpMass = clumpMass
+      else:
+        self.__clumpMass = [clumpMass] * len(constants.clumpMassNumber)
+      
+      if isinstance(list, ensembleDispersion) or isinstance(np.array, ensembleDispersion):
+        self.__ensembleDispersion = ensembleDispersion
+      else:
+        self.__ensembleDispersion = [ensembleDispersion] * len(constants.clumpMassNumber)
+
+      if volumeFactor:
+        ensembleDensity = clumpMass/constants.massH/volumeFactor/constants.resolution**3/constants.pc**3
+        self.__ensembleDensity = ensembleDensity
+      else:
+        self.__ensembleDensity = ensembleDensity
+
+      if isinstance(list, FUV) or isinstance(np.array, FUV):
+        self.__FUV = FUV
+      else:
+        self.__FUV = [FUV] * len(clumpMassNumber)
 
       velocity = self.__velocity
 
     # This will allow the code to reuse the standard clump density constants for voxel sets (ie. do not alter the model constants)
-    density = copy(constants.clumpDensity)
-    fuv = copy(constants.clumpFUV)
-    for i in range(len(density)):
-      if density[i]==None: density[i] = self.__ensembleDensity
-      if fuv[i]==None: fuv[i] = self.__FUV
+    # density = copy(constants.clumpDensity)
+    # fuv = copy(constants.clumpFUV)
+    # for i in range(len(density)):
+      # if density[i]=='auto': density[i] = self.__ensembleDensity
+      # if fuv[i]==None: fuv[i] = self.__FUV
 
-    masspoints.setMasspointData(density=density, FUV=fuv)
+    masspoints.setMasspointData(density=self.__ensembleDensity, FUV=self.__FUV)
     ensemble.initialise(velocity=velocity, ensembleDispersion=self.__ensembleDispersion, clumpMass=self.__clumpMass)#, interclumpMass=self.__interclumpMass)
     combinations.initialise(clumpCombination=[ensemble.clumpCombinations[ens][ensemble.clumpLargestIndex[ens]] for ens in range(len(constants.clumpMassNumber))])#, \
                             # interclumpCombination=ensemble.interclumpCombinations[ensemble.interclumpLargestIndex])
@@ -285,7 +306,7 @@ class Voxel(object):
     # self.__interclumpVelocityIndeces = ensemble.interclumpIndeces
 
     Afuv = combinations.getAfuv()
-    self.__Afuv = [-np.log((ensemble.CLmaxProbability[ens].prod(1)*Afuv[ens]).sum()) for ens in range(len(density))]
+    self.__tauFUV = [-np.log((ensemble.CLmaxProbability[ens].prod(1)*Afuv[ens]).sum()) for ens in range(len(density))]
     
     return
 
@@ -310,12 +331,12 @@ class Voxel(object):
   def getClumpVelocity(self):
     return [constants.velocityRange[self.__clumpVelocityIndeces[i]] for i in range(len(self.__clumpVelocityIndeces))]
 
-  def getAfuv(self):
-    return self.__Afuv
+  def getFUVabsorption(self):
+    return self.__tauFUV
 
   def calculateEmission(self, verbose=False):
     
-    masspoints.calculateEmission(Afuv=self.__Afuv)
+    masspoints.calculateEmission(tauFUV=self.__tauFUV)
     combinations.calculateEmission()
 
     clumpIntensity = [[] for _ in range(len(constants.clumpMassNumber))]

@@ -42,7 +42,7 @@ h = 6.62606957*10**-34 #in [J s]
 c = 2.99792458*10**8  #in [m/s]
 kB = 1.3806488*10**-23  #in [J/K]
 
-# For observing the Milky Way from Earth
+# For observing the Milky Way from Earth (for use in a 3D model)
 fromEarth = True
 rGalEarth = 8178 #from Abuter and the GRAVITY collaboration (2019)
 rGal = 18000
@@ -76,7 +76,7 @@ clumpLogMass = [np.resize(np.linspace(clumpLogMassRange[i][0], clumpLogMassRange
 clumpMaxIndeces = [0, 0]
 clumpNmax = [1, 100]
 clumpDensity = [None, 1911]  #use None to take the voxel density
-clumpFUV = [None, 10]  #use None to take the voxel FUV field
+# clumpFUV = [None, 10]  #use None to take the voxel FUV field
 
 interclumpDensity = 1911  #as defined in the old version of this code
 interclumpLogFUV = 1
