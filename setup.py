@@ -14,7 +14,8 @@ setup(
                       'scipy>=1.4.1',
                       'sympy',
                       'matplotlib>=3.1.2',
-                      'tqdm>=4.36.1'],
+                      'tqdm>=4.36.1',
+                      'jupyterlab'],
     include_package_data=True,
     package_data={'': ['grid/*.dat', 'input/*/*.dat', 'molecular_data/*', 'preamble/*']}
 )
