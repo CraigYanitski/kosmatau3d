@@ -244,7 +244,7 @@ class Voxel(object):
       constants.changeMassFunctionParameters(alpha=alpha, gamma=gamma)
       constants.changeVelocityRange(velocityRange)
       constants.changeVelocityNumber(velocityNumber)
-      constants.addClumps(massRange=clumpMassRange, num=clumpMassNumber, density=clumpDensity, fuv=clumpFUV, Nmax=clumpNmax, reset=True)
+      constants.addClumps(massRange=clumpMassRange, num=clumpMassNumber, density=ensembleDensity, fuv=FUV, Nmax=clumpNmax, reset=True)
       constants.changeDustWavelengths(dust)
 
       observations.methods.initialise()
@@ -258,12 +258,12 @@ class Voxel(object):
       self.__mass = mass
       self.__velocity = velocity
 
-      if isinstance(list, clumpMass) or isinstance(np.array, clumpMass):
+      if isinstance(clumpMass, list) or isinstance(clumpMass, np.array):
         self.__clumpMass = clumpMass
       else:
         self.__clumpMass = [clumpMass] * len(constants.clumpMassNumber)
       
-      if isinstance(list, ensembleDispersion) or isinstance(np.array, ensembleDispersion):
+      if isinstance(ensembleDispersion, list) or isinstance(ensembleDispersion, np.array):
         self.__ensembleDispersion = ensembleDispersion
       else:
         self.__ensembleDispersion = [ensembleDispersion] * len(constants.clumpMassNumber)
@@ -274,7 +274,7 @@ class Voxel(object):
       else:
         self.__ensembleDensity = ensembleDensity
 
-      if isinstance(list, FUV) or isinstance(np.array, FUV):
+      if isinstance(FUV, list) or isinstance(FUV, np.array):
         self.__FUV = FUV
       else:
         self.__FUV = [FUV] * len(clumpMassNumber)
@@ -293,7 +293,7 @@ class Voxel(object):
     combinations.initialise(clumpCombination=[ensemble.clumpCombinations[ens][ensemble.clumpLargestIndex[ens]] for ens in range(len(constants.clumpMassNumber))])#, \
                             # interclumpCombination=ensemble.interclumpCombinations[ensemble.interclumpLargestIndex])
 
-    for ens in range(len(density)):
+    for ens in range(len(ensembleDensity)):
       self.__modelMass.append((ensemble.clumpDeltaNji[ens].sum(1)*10**constants.clumpLogMass[ens]).sum())
       if abs(self.__modelMass[ens]-self.__clumpMass[ens])>0.1*self.__clumpMass[ens]:
         print('ERROR: Voxel {} mass difference for clump set {} greater than 10%'.format(self.__index, ens+1))
@@ -306,7 +306,7 @@ class Voxel(object):
     # self.__interclumpVelocityIndeces = ensemble.interclumpIndeces
 
     Afuv = combinations.getAfuv()
-    self.__tauFUV = [-np.log((ensemble.CLmaxProbability[ens].prod(1)*Afuv[ens]).sum()) for ens in range(len(density))]
+    self.__tauFUV = [-np.log((ensemble.CLmaxProbability[ens].prod(1)*Afuv[ens]).sum()) for ens in range(len(ensembleDensity))]
     
     return
 
@@ -353,7 +353,8 @@ class Voxel(object):
     for ens in range(len(constants.clumpMassNumber)):
 
       vel = constants.velocityRange#[ensemble.clumpIndeces[ens]]
-      factor = np.exp(-(vel.reshape(1,-1)-vel.reshape(-1,1))**2/2/constants.clumpDispersion**2)
+      clumpVel = ensemble.clumpVelocities[ens]
+      factor = np.exp(-(vel.reshape(1,-1)-clumpVel.reshape(-1,1))**2/2/constants.clumpDispersion**2)
       
       for i,probability in enumerate(ensemble.clumpProbability[ens]):
 

@@ -36,7 +36,7 @@ def getAfuv(debug=False):
     clumpAfuv[ens] = interpolations.interpolateFUVextinction(masspoints.clumpLogDensity[ens], constants.clumpLogMass[ens])[0]
   return clumpAfuv
 
-def calculateEmission(Afuv=0):
+def calculateEmission(tauFUV=0):
   '''
   This function can be called to set-up the clump emissions in the masspoints module. It calls masspointEmission() for
   each clump. 

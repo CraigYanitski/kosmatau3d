@@ -6,6 +6,8 @@ from .ensemble import *
 
 clumpMass = 0
 
+clumpVelocities = [[] for _ in range(len(constants.clumpMassNumber))]
+
 clumpNj = [[] for _ in range(len(constants.clumpMassNumber))]
 clumpDeltaNji = [[] for _ in range(len(constants.clumpMassNumber))]
 clumpNormalisedNj = [[] for _ in range(len(constants.clumpMassNumber))]

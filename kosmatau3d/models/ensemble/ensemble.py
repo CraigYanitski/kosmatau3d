@@ -22,11 +22,10 @@ optical depth.
 It can be either a clump or an interclump ensemble.
 '''
 
-def initialise(velocity=0, ensembleDispersion=0, clumpMass=0, interclumpMass=0, verbose=False):
+def initialise(velocity=0, ensembleDispersion=0, clumpMass=0, verbose=False):
   if verbose:
     print('Ensemble instance initialised\n')
   ensemble.clumpMass = clumpMass
-  # ensemble.interclumpMass = interclumpMass
   createCombinationObjects(velocity, ensembleDispersion)
   return
 
@@ -89,16 +88,15 @@ def createCombinationObjects(velocity, ensembleDispersion, verbose=False, debug=
   '''
   #verbose = self.__verbose or verbose
   #if verbose: print(self.__clumpType)
-
-  ensembleDispersion = np.sqrt(constants.ensembleDispersion**2+ensembleDispersion**2)
-  #
-  # < < < C L U M P   S E C T I O N > > >
-  #
-
+  
   for ens in range(len(constants.clumpMassNumber)):
 
-    ensemble.clumpNj[ens] = (ensemble.clumpMass[ens]*10.**(constants.clumpLogMass[ens]*(1-constants.alpha))) / (10.**(constants.clumpLogMass[ens]*(2-constants.alpha))).sum()
+    # This can be used to add more dispersion if needed. It is left over from Silke's Orion Bar application. The ensembele dispersion in `constants` is 0, so this
+    #line does not have an effect.
+    ensembleDispersion[ens] = np.sqrt(constants.ensembleDispersion**2+ensembleDispersion[ens]**2)
     
+    ensemble.clumpNj[ens] = (ensemble.clumpMass[ens]*10.**(constants.clumpLogMass[ens]*(1-constants.alpha))) / (10.**(constants.clumpLogMass[ens]*(2-constants.alpha))).sum()
+
     if verbose:
       print('\nClump Nj:\n', ensemble.clumpNj[ens])
       print('\nInterclump Nj:\n', ensemble.interclumpNj)
@@ -116,9 +114,15 @@ def createCombinationObjects(velocity, ensembleDispersion, verbose=False, debug=
     if verbose:
       print('velocity, mean, dispersion', self.__velocity, self.__velocity.mean(), self.__velocityDispersion)
     
-    ensemble.clumpDeltaNji[ens] = (np.array(ensemble.clumpNj[ens]).T/np.sqrt(2*np.pi)/ensembleDispersion*\
-                             (np.exp(-0.5*((constants.velocityRange-velocity)/ensembleDispersion)**2)).T*\
-                             constants.velocityStep)
+    if ensembleDispersion[ens]:
+      ensemble.clumpVelocities[ens] = np.linspace(-3*ensembleDispersion[ens], 3*ensembleDispersion[ens], num=19)
+      velocityStep = ensemble.clumpVelocities[ens][1]-ensemble.clumpVelocities[ens][0]
+      ensemble.clumpDeltaNji[ens] = (np.array(ensemble.clumpNj[ens]).T/np.sqrt(2*np.pi)/ensembleDispersion[ens]*\
+                                    (np.exp(-0.5*(ensemble.clumpVelocities[ens]/ensembleDispersion[ens])**2)).T*\
+                                    velocityStep)
+    else:
+      ensemble.clumpVelocities[ens] = np.zeros(1)
+      ensemble.clumpDeltaNji[ens] = ensemble.clumpNj[ens]
     
     #self.__deltaNji = np.array([self.__deltaNji]).T
     
@@ -127,7 +131,7 @@ def createCombinationObjects(velocity, ensembleDispersion, verbose=False, debug=
 
     # print('\n\nC L U M P S\n\n')
     normalise = constants.clumpNmax[ens]/ensemble.clumpDeltaNji[ens][-1,:]   #scaling factor to set the maximum number of the largest clump
-    i_finite = ~(((abs(constants.velocityRange-velocity)/ensembleDispersion)>4.74))
+    i_finite = ~(((abs(ensemble.clumpVelocities[ens])/ensembleDispersion[ens])>4.74))
     normalise[~i_finite] = 0
     # print('resize:\n', resize)
     # print('number:\n', ensemble.clumpDeltaNji)
