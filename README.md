@@ -1,12 +1,12 @@
-# KOSMA-tau^3
+# $KOSMA-tau^3$
 
-This is the current working version of KOSMA-tau^3 where I have converted some of the classes from the ***class-based*** branch into modules. The reason for doing this is to reduce the memory footprint of the code to increase the overall efficiency. This also increases the maximum number of voxels that can be evaluated, since each voxel no longer owns as much memory.
+This is the current working version of `KOSMA-tau^3` where I have converted some of the classes from the ***class-based*** branch into modules. The reason for doing this is to reduce the memory footprint of the code to increase the overall efficiency. This also increases the maximum number of voxels that can be evaluated, since each voxel no longer owns as much memory.
 
 ## Installation
 In the directory containing `KOSMA-tau^3`, install this package in bash with,
 
 ```
-pip install ./KOSMA-tau^3
+python -m pip install ./KOSMA-tau^3
 ```
 
 A voxel instance can be initialised using,
