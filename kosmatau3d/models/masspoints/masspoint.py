@@ -108,7 +108,7 @@ def plotIntensity(molecule='all', title='', velocity=None, logscale=None):
   if isinstance(molecule, str) and molecule in species.molecules:
     molecule = [molecule]
 
-  elif isinstance(molecule, list):
+  elif isinstance(molecule, list) or isinstance(molecule, np.ndarray):
     pass
 
   else:
@@ -125,7 +125,7 @@ def plotIntensity(molecule='all', title='', velocity=None, logscale=None):
 
     fig,axes = plt.subplots(masspoints.clumpIntensity[ens].shape[0], figsize=(10,7))
 
-    if isinstance(axes, list):
+    if isinstance(axes, np.ndarray):
       ax = axes
 
     else:

@@ -258,12 +258,12 @@ class Voxel(object):
       self.__mass = mass
       self.__velocity = velocity
 
-      if isinstance(clumpMass, list) or isinstance(clumpMass, np.array):
+      if isinstance(clumpMass, list) or isinstance(clumpMass, np.ndarray):
         self.__clumpMass = clumpMass
       else:
         self.__clumpMass = [clumpMass] * len(constants.clumpMassNumber)
       
-      if isinstance(ensembleDispersion, list) or isinstance(ensembleDispersion, np.array):
+      if isinstance(ensembleDispersion, list) or isinstance(ensembleDispersion, np.ndarray):
         self.__ensembleDispersion = ensembleDispersion
       else:
         self.__ensembleDispersion = [ensembleDispersion] * len(constants.clumpMassNumber)
@@ -274,7 +274,7 @@ class Voxel(object):
       else:
         self.__ensembleDensity = ensembleDensity
 
-      if isinstance(FUV, list) or isinstance(FUV, np.array):
+      if isinstance(FUV, list) or isinstance(FUV, np.ndarray):
         self.__FUV = FUV
       else:
         self.__FUV = [FUV] * len(clumpMassNumber)
@@ -289,9 +289,8 @@ class Voxel(object):
       # if fuv[i]==None: fuv[i] = self.__FUV
 
     masspoints.setMasspointData(density=self.__ensembleDensity, FUV=self.__FUV)
-    ensemble.initialise(velocity=velocity, ensembleDispersion=self.__ensembleDispersion, clumpMass=self.__clumpMass)#, interclumpMass=self.__interclumpMass)
-    combinations.initialise(clumpCombination=[ensemble.clumpCombinations[ens][ensemble.clumpLargestIndex[ens]] for ens in range(len(constants.clumpMassNumber))])#, \
-                            # interclumpCombination=ensemble.interclumpCombinations[ensemble.interclumpLargestIndex])
+    ensemble.initialise(velocity=velocity, ensembleDispersion=self.__ensembleDispersion, clumpMass=self.__clumpMass)
+    combinations.initialise(clumpCombination=[ensemble.clumpCombinations[ens][ensemble.clumpLargestIndex[ens]] for ens in range(len(constants.clumpMassNumber))])
 
     for ens in range(len(ensembleDensity)):
       self.__modelMass.append((ensemble.clumpDeltaNji[ens].sum(1)*10**constants.clumpLogMass[ens]).sum())
@@ -302,9 +301,10 @@ class Voxel(object):
     # clumpAfuv *= ensemble.CLmaxProbability
     # interclumpAfuv *= ensemble.ICmaxProbability
 
+    self.__clumpVelocities = copy(ensemble.clumpVelocities)
     self.__clumpVelocityIndeces = copy(ensemble.clumpIndeces)   #all list entries should be the same
-    # self.__interclumpVelocityIndeces = ensemble.interclumpIndeces
 
+    # This gives an error if there are too many clumps in a line-of-sight; tau_FUV is too large for this equation...
     Afuv = combinations.getAfuv()
     self.__tauFUV = [-np.log((ensemble.CLmaxProbability[ens].prod(1)*Afuv[ens]).sum()) for ens in range(len(ensembleDensity))]
     
@@ -317,19 +317,19 @@ class Voxel(object):
     return self.__ensembleDensity
 
   def getMass(self):
-    return self.__mass
+    return self.__clumpMass
 
   def getClumpMass(self):
-    return self.__clumpMass
+    return self.__modelMass
 
   def getModelMass(self):
     return self.__modelMass
 
   def getVelocity(self):
-    return self.__velocity,self.__ensembleDispersion
+    return self.__velocity, self.__ensembleDispersion
 
   def getClumpVelocity(self):
-    return [constants.velocityRange[self.__clumpVelocityIndeces[i]] for i in range(len(self.__clumpVelocityIndeces))]
+    return self.__clumpVelocities, self.__clumpVelocityIndeces
 
   def getFUVabsorption(self):
     return self.__tauFUV
@@ -354,7 +354,7 @@ class Voxel(object):
 
       vel = constants.velocityRange#[ensemble.clumpIndeces[ens]]
       clumpVel = ensemble.clumpVelocities[ens]
-      factor = np.exp(-(vel.reshape(1,-1)-clumpVel.reshape(-1,1))**2/2/constants.clumpDispersion**2)
+      factor = np.exp(-(vel.reshape(1,-1)-clumpVel.reshape(-1,1)-self.__velocity)**2/2/constants.clumpDispersion**2)
       
       for i,probability in enumerate(ensemble.clumpProbability[ens]):
 
@@ -391,10 +391,13 @@ class Voxel(object):
   def getAbsorption(self):
     return self.__opticalDepth/constants.resolution
 
-  def getIntensity(self, verbose=False):
+  def getIntensity(self):
     epsilon = self.getEmissivity()
     kappa = self.getAbsorption()
-    return epsilon/kappa*(1-np.exp(-kappa*constants.resolution))
+    intensity = epsilon/kappa*(1-np.exp(-kappa*constants.resolution))
+    i_nan = np.isnan(intensity)
+    intensity[i_nan] = epsilon[i_nan]
+    return intensity
 
   def plotMolecule(self, molecule='', quantity='intensity', title='', logscale=False):
     # Plot the molecule emission with respect to the voxel velocity structure
@@ -428,7 +431,7 @@ class Voxel(object):
 
     for ens in range(len(value)):
 
-      if isinstance(axes, list):
+      if isinstance(axes, np.ndarray):
         ax = axes[ens]
 
       else:
