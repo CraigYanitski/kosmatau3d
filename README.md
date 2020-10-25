@@ -9,6 +9,8 @@ In the directory containing `KOSMA-tau^3`, install this package in bash with,
 python -m pip install ./KOSMA-tau^3
 ```
 
+**NOTE:** pip 20.2 has certain depreciations that make this install very slow. This is currently being investigated, so use pip 20.1 for now.
+
 A voxel instance can be initialised using,
 
 ```
