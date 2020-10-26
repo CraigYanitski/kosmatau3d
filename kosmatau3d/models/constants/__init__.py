@@ -113,7 +113,7 @@ globalUV = 10
 fortranEncoded = True
 
 # Finally, these are the wavelengths at which the dust emission will be computed
-dustNames = np.array(['3.1mm', '2.4mm', '1.8mm', '1.3', '1.0mm', '850um', '700um', '550um', '420um', '300um', '240um', '188.4um', '177.8um', '167.9um', '158.5um', '149.6um', \
+dustNames = np.array(['3.1mm', '2.4mm', '1.8mm', '1.3mm', '1.0mm', '850um', '700um', '550um', '420um', '300um', '240um', '188.4um', '177.8um', '167.9um', '158.5um', '149.6um', \
                       '141.3um', '133.4um', '125.9um', '118.9um', '112.2um', '105.9um', '100.0um', '94.41um', '89.13um', '84.14um', '79.43um', '74.99um', '70.79um', '66.83um', '63.1um', '59.57um', \
                       '56.23um', '53.09um', '50.12um', '47.32um', '44.67um', '44.28um', '42.75um', '41.33um', '39.99um', '38.74um', '37.57um', '36.47um', '35.42um', '34.44um', '33.51um', \
                       '32.63um', '31.79um', '31.um', '30.24um', '29.52um', '28.83um', '28.18um', '27.55um', '26.95um', '26.38um', '25.83um', '25.3um', '24.8um', '24.31um', '23.84um', '23.39um', \
