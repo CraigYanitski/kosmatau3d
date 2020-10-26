@@ -60,7 +60,7 @@ dust = True
 
 # Model characteristics
 nSigma = 3
-resolution = 1000
+voxel_size = 1000
 velocityNumber = 121
 velocityBin = [-300, 300]
 velocityRange = np.linspace(velocityBin[0], velocityBin[-1], num=velocityNumber)

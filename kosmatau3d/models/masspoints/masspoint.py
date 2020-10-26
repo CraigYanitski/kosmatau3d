@@ -123,7 +123,7 @@ def plotIntensity(molecule='all', title='', velocity=None, logscale=None):
 
   for ens in range(len(masspoints.clumpIntensity)):
 
-    fig,axes = plt.subplots(masspoints.clumpIntensity[ens].shape[0], figsize=(10,7))
+    fig,axes = plt.subplots(masspoints.clumpIntensity[ens].shape[0], figsize=(10, 5*masspoints.clumpIntensity[ens].shape[0]))
 
     if isinstance(axes, np.ndarray):
       ax = axes
@@ -189,4 +189,4 @@ def reinitialise():
 
   return
 
-# jit_module(nopython=False)
+jit_module(nopython=False)

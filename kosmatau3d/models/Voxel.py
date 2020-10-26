@@ -138,7 +138,7 @@ class Voxel(object):
 
   def setProperties(self, velocityRange=[-10,10], velocityNumber=51, alpha=1.84, gamma=2.31, \
                     clumpMassNumber=[3,1], clumpMassRange=[[0,2],[-2]], \
-                    clumpNmax=[1, 100], resolution=1, molecules=['C+ 1', 'C 1', 'CO 1'], dust='PAH', \
+                    clumpNmax=[1, 100], voxel_size=1, molecules=['C+ 1', 'C 1', 'CO 1'], dust='PAH', \
                     clumpMass=100, interclumpMass=100, mass=200, velocity=0., \
                     ensembleDispersion=1, volumeFactor=None, ensembleDensity=[15000, 1911], FUV=[20000, 1], fromFile=False):
     '''
@@ -178,7 +178,7 @@ class Voxel(object):
                 the calculation of a large combination of clumps by rescaling the voxel (thus
                 eliminating any change to the brightness temperature). Larger combinations are used
                 if the rescaled voxel is smaller than the largest clump. The default is [1, 100]. 
-     resolution: The voxel size in parsecs. The default is 1 pc.
+     voxel_size: The voxel size in parsecs. The default is 1 pc.
      molecules: The molecules included in the model. This is a list of strings, where each
                 string has the element name (as in the grid) followed by the transition
                 number (Which is taken from KOSMA-tau). It is set to the first transition
@@ -218,8 +218,8 @@ class Voxel(object):
     '''
     #print('Voxel instance initialised')
 
-    x,y = np.meshgrid(np.linspace(self.__x-.5*constants.resolution, self.__x+.5*constants.resolution,3), \
-                      np.linspace(self.__y-.5*constants.resolution, self.__y+.5*constants.resolution,3))
+    x,y = np.meshgrid(np.linspace(self.__x-.5*constants.voxel_size, self.__x+.5*constants.voxel_size,3), \
+                      np.linspace(self.__y-.5*constants.voxel_size, self.__y+.5*constants.voxel_size,3))
     r = np.array([x.flatten(), y.flatten()]).T
     r = np.linalg.norm(r, axis=1)
 
@@ -240,7 +240,7 @@ class Voxel(object):
 
     else:
 
-      constants.resolution = resolution
+      constants.voxel_size = voxel_size
       constants.changeMassFunctionParameters(alpha=alpha, gamma=gamma)
       constants.changeVelocityRange(velocityRange)
       constants.changeVelocityNumber(velocityNumber)
@@ -269,7 +269,7 @@ class Voxel(object):
         self.__ensembleDispersion = [ensembleDispersion] * len(constants.clumpMassNumber)
 
       if volumeFactor:
-        ensembleDensity = clumpMass/constants.massH/volumeFactor/constants.resolution**3/constants.pc**3
+        ensembleDensity = clumpMass/constants.massH/volumeFactor/constants.voxel_size**3/constants.pc**3
         self.__ensembleDensity = ensembleDensity
       else:
         self.__ensembleDensity = ensembleDensity
@@ -386,15 +386,15 @@ class Voxel(object):
     return
 
   def getEmissivity(self):
-    return self.__intensity/constants.resolution
+    return self.__intensity/constants.voxel_size
 
   def getAbsorption(self):
-    return self.__opticalDepth/constants.resolution
+    return self.__opticalDepth/constants.voxel_size
 
   def getIntensity(self):
     epsilon = self.getEmissivity()
     kappa = self.getAbsorption()
-    intensity = epsilon/kappa*(1-np.exp(-kappa*constants.resolution))
+    intensity = epsilon/kappa*(1-np.exp(-kappa*constants.voxel_size))
     i_nan = np.isnan(intensity)
     intensity[i_nan] = epsilon[i_nan]
     return intensity
@@ -427,7 +427,7 @@ class Voxel(object):
       value = self.getIntensity()
       ylabel = r'$I_{\lambda} \ \left( K \right)$'
 
-    fig,axes = plt.subplots(len(value), figsize=(10,7))
+    fig,axes = plt.subplots(len(value), figsize=(10, 5*len(value)))
 
     for ens in range(len(value)):
 
@@ -493,11 +493,11 @@ class Voxel(object):
     nDust = constants.wavelengths[constants.nDust].size
 
     if quantity=='emissivity':
-      value = self.__intensity/constants.resolution
+      value = self.__intensity/constants.voxel_size
       ylabel = r'$\epsilon_{\lambda} \ \left( \frac{K}{pc} \right)$'
 
     elif quantity=='absorption':
-      value = self.__opticalDepth/constants.resolution
+      value = self.__opticalDepth/constants.voxel_size
       ylabel = r'$\kappa_{\lambda} \ \left( \frac{1}{pc} \right)$'
 
     elif quantity=='intensity':
