@@ -136,10 +136,10 @@ class Voxel(object):
   def getFUV(self):
     return self.__FUV
 
-  def setProperties(self, velocityRange=[-10,10], velocityNumber=51, alpha=1.84, gamma=2.31, \
+  def setProperties(self, voxel_size=1, molecules='all', dust='PAH', alpha=1.84, gamma=2.31, \
                     clumpMassNumber=[3,1], clumpMassRange=[[0,2],[-2]], \
-                    clumpNmax=[1, 100], voxel_size=1, molecules=['C+ 1', 'C 1', 'CO 1'], dust='PAH', \
-                    clumpMass=100, interclumpMass=100, mass=200, velocity=0., \
+                    clumpNmax=[1, 100], velocityRange=[-10,10], velocityNumber=51, \
+                    clumpMass=100, velocity=0., \
                     ensembleDispersion=1, volumeFactor=None, ensembleDensity=[15000, 1911], FUV=[20000, 1], fromFile=False):
     '''
       This method calculates the radii assuming an origin of (0,0). It then averages
@@ -320,7 +320,7 @@ class Voxel(object):
     return self.__clumpMass
 
   def getClumpMass(self):
-    return self.__modelMass
+    return self.__clumpMass
 
   def getModelMass(self):
     return self.__modelMass
