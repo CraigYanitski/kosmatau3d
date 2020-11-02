@@ -504,7 +504,7 @@ class Voxel(object):
       value = self.__intensity/self.__opticalDepth * (1-np.exp(-self.__opticalDepth))
       ylabel = r'$I_{\lambda} \ \left( K \right)$'
 
-    fig,axes = plt.subplots(len(value), figsize=(10,7))
+    fig,axes = plt.subplots(len(value), figsize=(10, 5*len(value)))
 
     for ens in range(len(value)):
 
