@@ -292,7 +292,7 @@ class Voxel(object):
     ensemble.initialise(velocity=velocity, ensembleDispersion=self.__ensembleDispersion, clumpMass=self.__clumpMass)
     combinations.initialise(clumpCombination=[ensemble.clumpCombinations[ens][ensemble.clumpLargestIndex[ens]] for ens in range(len(constants.clumpMassNumber))])
 
-    for ens in range(len(clumpMassNumber)):
+    for ens in range(len(constants.clumpMassNumber)):
       self.__modelMass.append((ensemble.clumpDeltaNji[ens].sum(1)*10**constants.clumpLogMass[ens]).sum())
       if abs(self.__modelMass[ens]-self.__clumpMass[ens])>0.1*self.__clumpMass[ens]:
         print('ERROR: Voxel {} mass difference for clump set {} greater than 10%'.format(self.__index, ens+1))
@@ -306,7 +306,7 @@ class Voxel(object):
 
     # This gives an error if there are too many clumps in a line-of-sight; tau_FUV is too large for this equation...
     Afuv = combinations.getAfuv()
-    self.__tauFUV = [-np.log((ensemble.CLmaxProbability[ens].prod(1)*Afuv[ens]).sum()) for ens in range(len(clumpMassNumber))]
+    self.__tauFUV = [-np.log((ensemble.CLmaxProbability[ens].prod(1)*Afuv[ens]).sum()) for ens in range(len(constants.clumpMassNumber))]
     
     return
 
@@ -508,7 +508,7 @@ class Voxel(object):
 
     for ens in range(len(value)):
 
-      if isinstance(axes, list):
+      if isinstance(axes, np.ndarray):
         ax = axes[ens]
 
       else:
