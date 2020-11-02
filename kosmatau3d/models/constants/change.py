@@ -51,22 +51,22 @@ def addClumps(massRange=[], num=0, density=None, fuv=None, Nmax=1, reset=False):
   if reset:
     constants.clumpLogMassRange = []
     constants.clumpMassNumber = []
-    constants.clumpDensity = []
-    constants.clumpFUV = []
+    # constants.clumpDensity = []
+    # constants.clumpFUV = []
     constants.clumpMaxIndeces = []
     constants.clumpNmax = []
     constants.clumpLogMass = []
   if isinstance(massRange[0], int) or isinstance(massRange[0], float):
     massRange = [massRange]
     num = [num]
-    density = [density]
-    fuv = [fuv]
+    # density = [density]
+    # fuv = [fuv]
     Nmax = [Nmax]
   for i in range(len(num)):
     constants.clumpLogMassRange.append(massRange[i])
     constants.clumpMassNumber.append(num[i])
-    constants.clumpDensity.append(density[i])
-    constants.clumpFUV.append(fuv[i])
+    # constants.clumpDensity.append(density[i])
+    # constants.clumpFUV.append(fuv[i])
     constants.clumpMaxIndeces.append(0)
     constants.clumpNmax.append(Nmax[i])
     constants.clumpLogMass.append(np.resize(np.linspace(massRange[i][0], massRange[i][-1], num=num[i]), (1,num[i])))
