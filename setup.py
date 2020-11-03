@@ -38,5 +38,5 @@ setup(
                #                   ],
            include_package_data = True,
                    package_data = {'': ['grid/*.dat', 'input/*/*.dat', 'molecular_data/*', 'preamble/*']},
-                python_requires = ">=3.7"
+                python_requires = ">=3.6"
 )
