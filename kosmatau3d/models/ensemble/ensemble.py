@@ -116,7 +116,7 @@ def createCombinationObjects(velocity, ensembleDispersion, verbose=False, debug=
     
     if ensembleDispersion[ens]:
       velocityStep = np.minimum(ensembleDispersion[ens]/3, constants.clumpDispersion/3)
-      ensemble.clumpVelocities[ens] = np.linspace(-3*ensembleDispersion[ens], 3*ensembleDispersion[ens], num=np.round(6*ensembleDispersion[ens]/velocityStep).astype(np.int)+1)
+      ensemble.clumpVelocities[ens] = np.linspace(-4*ensembleDispersion[ens], 4*ensembleDispersion[ens], num=np.round(6*ensembleDispersion[ens]/velocityStep).astype(np.int)+1)
       velocityStep = ensemble.clumpVelocities[ens][1]-ensemble.clumpVelocities[ens][0]
       ensemble.clumpDeltaNji[ens] = (np.array(ensemble.clumpNj[ens]).T/np.sqrt(2*np.pi)/ensembleDispersion[ens]*\
                                     (np.exp(-0.5*(ensemble.clumpVelocities[ens]/ensembleDispersion[ens])**2)).T*\
@@ -131,7 +131,10 @@ def createCombinationObjects(velocity, ensembleDispersion, verbose=False, debug=
 
 
     # print('\n\nC L U M P S\n\n')
-    normalise = constants.clumpNmax[ens]/ensemble.clumpDeltaNji[ens][-1,:]   #scaling factor to set the maximum number of the largest clump
+    if constants.clumpNmax[ens]:
+      normalise = constants.clumpNmax[ens]/ensemble.clumpDeltaNji[ens][-1,:]   #scaling factor to set the maximum number of the largest clump
+    else:
+      normalise = np.ones(constants.clumpDelstaNji[ens][-1,:].size)
     i_finite = ~(((abs(ensemble.clumpVelocities[ens])/ensembleDispersion[ens])>4.74))
     normalise[~i_finite] = 0
     # print('resize:\n', resize)
@@ -162,7 +165,10 @@ def createCombinationObjects(velocity, ensembleDispersion, verbose=False, debug=
 
     # print('\nClump surface P, Pn, Sn\n', clumpSurfaceProbability, '\n\n', clumpProbableNumber, '\n\n', clumpStandardDeviation, '\n')
 
-    normaliseMax = constants.clumpNmax[ens]/ensemble.clumpNj[ens][0,-1]   #scaling factor to set the maximum number of the largest clump
+    if constants.clumpNmax[ens]:
+      normaliseMax = constants.clumpNmax[ens]/ensemble.clumpNj[ens][0,-1]   #scaling factor to set the maximum number of the largest clump
+    else:
+      normaliseMax = 1
     ensemble.clumpNormalisedNj[ens] = ensemble.clumpNj[ens]*normaliseMax
     CLmaxSurfaceProbability = np.array(np.pi*masspoints.clumpRadius[ens].T**2/constants.voxel_size**2/normaliseMax)
     if (CLmaxSurfaceProbability>=1).any():
@@ -291,24 +297,24 @@ def createCombinationObjects(velocity, ensembleDispersion, verbose=False, debug=
                 maxProbability[index,~iGauss] = (b.binomfunc(combination))[~iGauss]
 
           elif constants.probability=='poisson':
-            if np.any(clumpProbableNumber[:,i]>constants.pnGauss) and np.any(ensemble.clumpNormalisedDeltaNji[:,i]>constants.nGauss):
+            iGauss = (clumpProbableNumber[:,i]>constants.pnGauss) & (ensemble.clumpNormalisedDeltaNji[ens][:,i]>constants.nGauss)
+            if iGauss.any():
               # use gauss
               if verbose:
                 print('Gauss')
-              g = stat.Gauss(clumpProbableNumber[:,i], clumpStandardDeviation[:,i])
-              probability.append(g.gaussfunc(combination))
-            else:
+              probability[index,iGauss] = stats.norm.pdf(combination, loc=clumpProbableNumber[:,i], scale=clumpStandardDeviation[:,i])[iGauss]
+            if (~iGauss).any():
               # use poisson
               if verbose:
                 print('Poisson')
               po = stat.Poisson(clumpProbableNumber[:,i])
-              probability.append(po.poissonfunc(combination))
-            if np.any(CLmaxProbableNumber>constants.pnGauss) and np.any(ensemble.clumpNormalisedNj[ens]>constants.nGauss):
-              g = stat.Gauss(CLmaxProbableNumber, CLmaxStandardDeviation, debug=debug)
-              maxProbability[index,:] = (g.gaussfunc(combination))
-            else:
+              probability[index,~iGauss] = po.poissonfunc(combination)
+            iGauss = ((CLmaxProbableNumber>constants.pnGauss) & (ensemble.clumpNormalisedNj[ens]>constants.nGauss))[0]
+            if iGauss.any():
+              maxProbability[index,iGauss] = stats.norm.pdf(combination, loc=CLmaxProbableNumber.flatten(), scale=CLmaxStandardDeviation.flatten())[iGauss]
+            if (~iGauss).any():
               po = stat.Poisson(CLmaxProbableNumber) # n and p for binominal 
-              maxProbability[index,:] = (po.binomfunc(combination))
+              maxProbability[index,~iGauss] = (po.binomfunc(combination))
 
       if np.shape(probability)!=np.shape(maxProbability) and debug:
         for i in range(len(probability)):
