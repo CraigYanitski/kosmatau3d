@@ -134,7 +134,7 @@ def createCombinationObjects(velocity, ensembleDispersion, verbose=False, debug=
     if constants.clumpNmax[ens]:
       normalise = constants.clumpNmax[ens]/ensemble.clumpDeltaNji[ens][-1,:]   #scaling factor to set the maximum number of the largest clump
     else:
-      normalise = np.ones(constants.clumpDelstaNji[ens][-1,:].size)
+      normalise = np.ones(ensemble.clumpDeltaNji[ens][-1,:].size)
     i_finite = ~(((abs(ensemble.clumpVelocities[ens])/ensembleDispersion[ens])>4.74))
     normalise[~i_finite] = 0
     # print('resize:\n', resize)
