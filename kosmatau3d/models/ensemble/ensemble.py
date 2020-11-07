@@ -139,9 +139,11 @@ def createCombinationObjects(velocity, ensembleDispersion, verbose=False, debug=
     i_undef = (normalise==0) | ((abs(ensemble.clumpVelocities[ens])/ensembleDispersion[ens])>4.74)   #this accounts for NaNs or potential NaNs in the ensuing calculations
     normalise[i_undef] = 0
     ensemble.clumpNormalisedDeltaNji[ens] = ensemble.clumpDeltaNji[ens][:,:]*normalise
-    renormalise = np.ceil(ensemble.clumpNormalisedDeltaNji[ens][:,:])/ensemble.clumpNormalisedDeltaNji[ens][:,:]
+    # print(ensemble.clumpNormalisedDeltaNji[ens])
+    renormalise = np.around(ensemble.clumpNormalisedDeltaNji[ens][:,:])/ensemble.clumpNormalisedDeltaNji[ens][:,:]
     ensemble.clumpNormalisedDeltaNji[ens] = np.around(ensemble.clumpNormalisedDeltaNji[ens]*renormalise)   #to remove any rounding error from normalisation
-    clumpSurfaceProbability = np.array(np.pi*masspoints.clumpRadius[ens].T**2/constants.voxel_size**2/normalise)    #this is 'pTab' in the original code
+    # print(ensemble.clumpNormalisedDeltaNji[ens])
+    clumpSurfaceProbability = np.array(np.pi*masspoints.clumpRadius[ens].T**2/constants.voxel_size**2/normalise/renormalise)    #this is 'pTab' in the original code
     clumpSurfaceProbability[:,i_undef] = 0
     if (clumpSurfaceProbability>=1).any():    #increase voxel size if the clumps are too large
       print('resize')
@@ -149,10 +151,12 @@ def createCombinationObjects(velocity, ensembleDispersion, verbose=False, debug=
       resize = np.array(np.pi*masspoints.clumpRadius[ens].max()**2/constants.voxel_size**2/normalise)
       resize[i_undef] = 0
       ensemble.clumpNormalisedDeltaNji[ens] *= resize
-      # renormalise = 1#np.around(ensemble.clumpNormalisedDeltaNji[ens][:,:])/ensemble.clumpNormalisedDeltaNji[ens][:,:]
-      # ensemble.clumpNormalisedDeltaNji[ens] = np.around(ensemble.clumpNormalisedDeltaNji[ens]*renormalise)   #to remove any rounding error from normalisation
+      # print(ensemble.clumpNormalisedDeltaNji[ens])
+      renormalise2 = 1.   #np.ceil(ensemble.clumpNormalisedDeltaNji[ens][:,:])/ensemble.clumpNormalisedDeltaNji[ens][:,:]
+      ensemble.clumpNormalisedDeltaNji[ens] = np.around(ensemble.clumpNormalisedDeltaNji[ens]*renormalise2)   #to remove any rounding error from normalisation
+      # print(ensemble.clumpNormalisedDeltaNji[ens])
       i_undef = i_undef | (ensemble.clumpNormalisedDeltaNji[ens][-1,:]<1)
-      clumpSurfaceProbability = np.array(np.pi*masspoints.clumpRadius[ens].T**2/constants.voxel_size**2/normalise/resize/renormalise)
+      clumpSurfaceProbability = np.array(np.pi*masspoints.clumpRadius[ens].T**2/constants.voxel_size**2/normalise/resize/renormalise/renormalise2)
       clumpSurfaceProbability[:,i_undef] = 0
     clumpProbableNumber = (ensemble.clumpNormalisedDeltaNji[ens]*clumpSurfaceProbability)   #this is 'expectedValTab' in the original code
     clumpStandardDeviation = np.sqrt(ensemble.clumpNormalisedDeltaNji[ens]*clumpSurfaceProbability*(1-clumpSurfaceProbability))    #this is 'standardDeriTab' in the original code
@@ -168,12 +172,16 @@ def createCombinationObjects(velocity, ensembleDispersion, verbose=False, debug=
     else:
       normaliseMax = 1.
     ensemble.clumpNormalisedNj[ens] = ensemble.clumpNj[ens]*normaliseMax
-    CLmaxSurfaceProbability = np.array(np.pi*masspoints.clumpRadius[ens].T**2/constants.voxel_size**2/normaliseMax)
+    renormaliseMax = np.around(ensemble.clumpNormalisedNj[ens])/ensemble.clumpNormalisedNj[ens]
+    ensemble.clumpNormalisedNj[ens] = np.around(ensemble.clumpNormalisedNj[ens]*renormaliseMax)
+    CLmaxSurfaceProbability = np.array(np.pi*masspoints.clumpRadius[ens]**2/constants.voxel_size**2/normaliseMax/renormaliseMax)
     if (CLmaxSurfaceProbability>=1).any():
       # resize = np.ceil(np.pi*masspoints.clumpRadius[ens].max()**2/constants.voxel_size**2/normaliseMax)
       resize = np.array(np.pi*masspoints.clumpRadius[ens].max()**2/constants.voxel_size**2/normaliseMax)
       ensemble.clumpNormalisedNj[ens] *= resize
-      CLmaxSurfaceProbability = np.array(np.pi*masspoints.clumpRadius[ens].T**2/constants.voxel_size**2/normaliseMax/resize)
+      renormaliseMax2 = 1.   #np.around(ensemble.clumpNormalisedNj[ens])/ensemble.clumpNormalisedNj[ens]
+      ensemble.clumpNormalisedNj[ens] = np.around(ensemble.clumpNormalisedNj[ens]*renormaliseMax2)
+      CLmaxSurfaceProbability = np.array(np.pi*masspoints.clumpRadius[ens]**2/constants.voxel_size**2/normaliseMax/resize/renormaliseMax/renormaliseMax2)
     CLmaxProbableNumber = (ensemble.clumpNormalisedNj[ens]*CLmaxSurfaceProbability.flatten())
     CLmaxStandardDeviation = np.sqrt(ensemble.clumpNormalisedNj[ens]*(CLmaxSurfaceProbability*(1-CLmaxSurfaceProbability)).flatten())
 
