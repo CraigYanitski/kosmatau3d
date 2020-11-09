@@ -352,17 +352,17 @@ class Voxel(object):
     # Clump
     for ens in range(len(constants.clumpMassNumber)):
 
-      vel = constants.velocityRange#[ensemble.clumpIndeces[ens]]
-      clumpVel = ensemble.clumpVelocities[ens]
+      vel = constants.velocityRange   #v_obs
+      clumpVel = ensemble.clumpVelocities[ens]   #v_sys
       factor = np.exp(-(vel.reshape(1,-1)-clumpVel.reshape(-1,1)-self.__velocity)**2/2/constants.clumpDispersion**2)
       
       for i,probability in enumerate(ensemble.clumpProbability[ens]):
 
         intensity = copy(combinations.clumpIntensity[ens][:,iDust:])
-        intensity = np.array([intensity*factor[ensemble.clumpIndeces[ens][i],j] for j in range(vel.size)])  #shape (velocity, combination, wavelength)
-        clumpIntensity[ens].append(np.array([(probability.prod(1)*intensity[j].T).T for j in range(vel.size)]))  #shape (velocity, velocity, combination, wavelength)
+        intensity = np.array([intensity*factor[ensemble.clumpIndeces[ens][i],j] for j in range(vel.size)])  #shape (v_obs, combination, wavelength)
+        clumpIntensity[ens].append(np.array([(probability.prod(1)*intensity[j].T).T for j in range(vel.size)]))  #shape (v_sys, v_obs, combination, wavelength)
         intensityDust = copy(combinations.clumpIntensity[ens][:,:iDust])  #shape (combination, wavelength)
-        clumpIntensityDust[ens].append((probability.prod(1)*intensityDust.T).T)  #shape (velocity, combination, wavelength)
+        clumpIntensityDust[ens].append((probability.prod(1)*intensityDust.T).T)  #shape (v_obs, combination, wavelength)
 
         opticalDepth = copy(combinations.clumpOpticalDepth[ens][:,iDust:])
         opticalDepth = np.array([opticalDepth*factor[ensemble.clumpIndeces[ens][i],j] for j in range(vel.size)])
