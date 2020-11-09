@@ -101,7 +101,7 @@ def masspointEmission(interpolationPoint, radius, velocity=0, verbose=False, deb
 
   return (intensity,opticalDepth)
 
-def plotIntensity(molecule='all', title='', velocity=None, logscale=None):
+def plotIntensity(molecule='all', quantity='intensity', n_cl=[], title='', velocity=None, logscale=None):
 
   import matplotlib.pyplot as plt
 
@@ -119,9 +119,12 @@ def plotIntensity(molecule='all', title='', velocity=None, logscale=None):
     velocity = np.linspace(-5, 5, num=1000)
   profile = np.exp(-velocity**2/2/constants.clumpDispersion**2)
 
-  ylabel = r'$I_\nu \ (K)$'
+  # ylabel = r'$I_\nu \ (K)$'
 
   for ens in range(len(masspoints.clumpIntensity)):
+
+    if not len(n_cl):
+      n_cl = np.ones(masspoints.clumpIntensity[ens].shape[0])
 
     fig,axes = plt.subplots(masspoints.clumpIntensity[ens].shape[0], figsize=(10, 5*masspoints.clumpIntensity[ens].shape[0]))
 
@@ -130,6 +133,15 @@ def plotIntensity(molecule='all', title='', velocity=None, logscale=None):
 
     else:
       ax = [axes]
+
+    if quantity=='emissivity':
+      ylabel = r'$\epsilon_{\lambda} \ \left( \frac{K}{pc} \right)$'
+
+    elif quantity=='absorption':
+      ylabel = r'$\kappa_{\lambda} \ \left( \frac{1}{pc} \right)$'
+
+    elif quantity=='intensity':
+      ylabel = r'$I_{\lambda} \ \left( K \right)$'
 
     for clump in range(masspoints.clumpIntensity[ens].shape[0]):
 
@@ -146,16 +158,23 @@ def plotIntensity(molecule='all', title='', velocity=None, logscale=None):
         tcl = masspoints.clumpOpticalDepth[ens][clump,i]*profile
         intensity = Icl/tcl*(1-np.exp(-tcl))
 
+        if quantity=='emissivity':
+          value = n_cl[clump]*Icl/masspoints.clumpRadius[ens][0,clump]/2
+        elif quantity=='absorption':
+          value = n_cl[clump]*tcl/masspoints.clumpRadius[ens][0,clump]/2
+        elif quantity=='intensity':
+          value = Icl/tcl * (1-np.exp(-n_cl[clump]*tcl))
+
 
         if logscale:
-          ax[clump].semilogy(velocity, intensity, ls='-', lw=2)
+          ax[clump].semilogy(velocity, value, ls='-', lw=2)
         else:
-          ax[clump].plot(velocity, intensity, ls='-', lw=2)
+          ax[clump].plot(velocity, value, ls='-', lw=2)
 
         labels.append(mol)
 
       ax[clump].legend(labels=labels, fontsize=14, bbox_to_anchor=(1.05, 1))
-      ax[clump].set_title(r'{mass} $M_\odot$ clump intensity'.format(mass=10**constants.clumpLogMass[ens][0,clump]), fontsize=20)
+      ax[clump].set_title(r'{mass} $M_\odot$ clump {q}'.format(mass=10**constants.clumpLogMass[ens][0,clump], q=quantity), fontsize=20)
       ax[clump].set_xlabel(r'$V_r \ (\frac{km}{s})$', fontsize=20)
       ax[clump].set_ylabel(ylabel, fontsize=20)
       plt.setp(ax[clump].get_xticklabels(), fontsize=14)
@@ -189,4 +208,4 @@ def reinitialise():
 
   return
 
-jit_module(nopython=False)
+# jit_module(nopython=False)
