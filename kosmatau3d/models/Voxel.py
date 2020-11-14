@@ -268,7 +268,7 @@ class Voxel(object):
         self.__ensembleDispersion = [ensembleDispersion] * len(constants.clumpMassNumber)
 
       if volumeFactor:
-        ensembleDensity = clumpMass/constants.massH/volumeFactor/constants.voxel_size**3/constants.pc**3
+        ensembleDensity = clumpMass*constants.massSolar/constants.massH/volumeFactor/constants.voxel_size**3/constants.pc**3/100**3
       if isinstance(ensembleDensity, list) or isinstance(ensembleDensity, np.ndarray):
         self.__ensembleDensity = ensembleDensity
       else:
