@@ -115,7 +115,7 @@ def createCombinationObjects(velocity, ensembleDispersion, verbose=False, debug=
       print('velocity, mean, dispersion', self.__velocity, self.__velocity.mean(), self.__velocityDispersion)
     
     if ensembleDispersion[ens]:
-      velocityStep = np.minimum(ensembleDispersion[ens]/3, constants.clumpDispersion/3)
+      velocityStep = np.minimum(ensembleDispersion[ens]/2, constants.clumpDispersion/2)
       ensemble.clumpVelocities[ens] = np.linspace(-3*ensembleDispersion[ens], 3*ensembleDispersion[ens], num=np.round(6*ensembleDispersion[ens]/velocityStep).astype(np.int)+1)
       velocityStep = ensemble.clumpVelocities[ens][1]-ensemble.clumpVelocities[ens][0]
       ensemble.clumpDeltaNji[ens] = (np.array(ensemble.clumpNj[ens]).T/np.sqrt(2*np.pi)/ensembleDispersion[ens]*\
