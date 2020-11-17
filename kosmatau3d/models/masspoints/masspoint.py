@@ -1,6 +1,7 @@
 import numpy as np
 from numba import jit_module
 import importlib as il
+import matplotlib.pyplot as plt
 
 from .. import masspoints
 
@@ -102,8 +103,6 @@ def masspointEmission(interpolationPoint, radius, velocity=0, verbose=False, deb
   return (intensity,opticalDepth)
 
 def plotIntensity(molecule='all', quantity='intensity', n_cl=[], title='', velocity=None, logscale=None):
-
-  import matplotlib.pyplot as plt
 
   if isinstance(molecule, str) and molecule in species.molecules:
     molecule = [molecule]
@@ -208,4 +207,4 @@ def reinitialise():
 
   return
 
-# jit_module(nopython=False)
+jit_module(nopython=False)
