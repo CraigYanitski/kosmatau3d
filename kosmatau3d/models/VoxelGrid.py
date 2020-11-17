@@ -38,7 +38,7 @@ class VoxelGrid(object):
     self.__voxelOpticalDepth = []
 
     self.__voxelFUV = []
-    self.__voxelAfuv = []
+    self.__voxelFUVabsorption = []
 
     self.__x = []
     self.__y = []
@@ -56,13 +56,13 @@ class VoxelGrid(object):
   def __str__(self):
     return 'VoxelGrid\n  ->{} voxels\n  ->intensity {}\n  ->optical depth {}'.format(self.__voxelNumber, sum(self.__voxelIntensity), -np.log(np.exp(-self.__voxelOpticalDepth)))
 
-  def __calculateProperties(x, y, z):
+  def __calculateProperties(self, X, Y, Z):
     # This is a method to calculate the dict to unpack into the argument for Voxel.setProperties().
 
-    x,y = np.meshgrid(np.linspace(self.__x-.5*constants.voxel_size, self.__x+.5*constants.voxel_size,3), \
-                      np.linspace(self.__y-.5*constants.voxel_size, self.__y+.5*constants.voxel_size,3))
+    x,y = np.meshgrid(np.linspace(X-.5*constants.voxel_size, X+.5*constants.voxel_size,3), \
+                      np.linspace(Y-.5*constants.voxel_size, Y+.5*constants.voxel_size,3))
     rPol = np.array([x.flatten(), y.flatten()]).T
-    rPol = np.linalg.norm(r, axis=1)
+    rPol = np.linalg.norm(rPol, axis=1)
 
     # Mass
     clumpMass = [interpolations.interpolateClumpMass(rPol), interpolations.interpolateInterclumpMass(rPol)]
@@ -74,18 +74,18 @@ class VoxelGrid(object):
     if constants.fromEarth:
 
       # Calculate the correction to the voxel velocity vectors
-      relativeRpol = np.sqrt((x-constants.rGalEarth)**2+y**2)
-      relativePhi = np.arctan2(y, x-constants.rGalEarth)
-      relativeSigma = np.arccos((r**2+relativeRpol**2-constants.rGalEarth**2)/(2*r*relativeRpol))
-      sigma = np.arctan2(z, abs(x-constants.rGalEarth))
+      relativeRpol = np.sqrt((x.flatten()-constants.rGalEarth)**2+y.flatten()**2)
+      relativePhi = np.arctan2(y.flatten(), x.flatten()-constants.rGalEarth)
+      relativeSigma = np.arccos((rPol**2+relativeRpol**2-constants.rGalEarth**2)/(2*rPol*relativeRpol))
+      sigma = np.arctan2(Z, abs(x.flatten()-constants.rGalEarth))
 
       # Correct the relative velocity of the voxel
       velocityEarth = interpolations.interpolateRotationalVelocity(constants.rGalEarth)
-      velocityCirc = velocity.mean() - velocityEarth*r/constants.rGalEarth
+      velocityCirc = velocity - velocityEarth*rPol/constants.rGalEarth
 
-      velocity = np.sign(relativePhi) * velocityCirc * np.sin(relativeSigma) * np.cos(sigma)
+      velocity = (np.sign(relativePhi) * velocityCirc * np.sin(relativeSigma) * np.cos(sigma)).mean()
 
-      if r==0: velocity = 0
+      if (rPol==0).any(): velocity = 0
       #self.__velocity = (velocity.mean()) * np.sin(self.__phi)
     
     else:
@@ -103,19 +103,12 @@ class VoxelGrid(object):
     ensembleDensity = constants.densityFactor*ensembleDensity.mean()
 
     # FUV
-    FUV = interpolations.interpolateFUVfield(rPol, z)/constants.normUV*constants.globalUV
-    FUV = np.clip(FUV, 1, None)
+    FUV = interpolations.interpolateFUVfield(rPol, Z)/constants.normUV*constants.globalUV
+    FUV = np.clip(FUV, 1, None).mean()
 
     self.__properties = {  \
                         # Model parameters
-                        'voxel_size' : constants.voxel_size, \
-                         'molecules' : ['all'], \
-                              'dust' : 'PAH', \
-                    'clumpMassRange' : constants.clumpLogMassRange, \
-                   'clumpMassNumber' : constants.clumpMassNumber, \
-                         'clumpNmax' : constants.clumpNmax, \
-                     'velocityRange' : constants.velocityBin, \
-                    'velocityNumber' : constants.velocityNumber, \
+                          'fromGrid' : True, \
 
                         # Voxel properties
                           'velocity' : velocity, \
@@ -124,6 +117,8 @@ class VoxelGrid(object):
                    'ensembleDensity' : [ensembleDensity,1911], \
                                'FUV' : [FUV,1] \
                         }
+
+    return
 
   # PUBLIC
   #def createGrid(self, indeces):
@@ -167,10 +162,10 @@ class VoxelGrid(object):
 
         voxel.setIndex(i)#-len(self.__unusedVoxels))
         voxel.setPosition(x[i], y[i], z[i], r[i], phi[i])
-        self.__calculateProperies(x[i], y[i])
-        voxel.setProperties(**self.properties)
+        self.__calculateProperties(x[i], y[i], z[i])
+        voxel.setProperties(**self.__properties)
 
-        self.__voxelAfuv.append(voxel.getAfuv())
+        self.__voxelFUVabsorption.append(voxel.getFUVabsorption())
         voxel.calculateEmission()
 
         progress.update()
@@ -279,7 +274,7 @@ class VoxelGrid(object):
         # shdu_clump_velocity.write(clumpVelocity)
         # shdu_interclump_velocity.write(interclumpVelocity)
         shdu_FUV.write(np.array([voxel.getFUV()]))
-        shdu_FUVabsorption.write(np.array([voxel.getAfuv()]))
+        shdu_FUVabsorption.write(np.array([self.__voxelFUVabsorption[i]]))
 
         if debug:
 
