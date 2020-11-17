@@ -140,7 +140,7 @@ class Voxel(object):
                     clumpMassNumber=[3,1], clumpMassRange=[[0,2],[-2]], \
                     clumpNmax=[1, 100], velocityRange=[-10,10], velocityNumber=51, \
                     clumpMass=100, velocity=0., \
-                    ensembleDispersion=1, volumeFactor=None, ensembleDensity=[15000, 1911], FUV=[20000, 1], fromFile=False):
+                    ensembleDispersion=1, volumeFactor=None, ensembleDensity=[15000, 1911], FUV=[20000, 1], fromGrid=False):
     '''
       This method calculates the radii assuming an origin of (0,0). It then averages
      over a subgrid of 3x3. It might be improved later by having functionality to
@@ -223,33 +223,33 @@ class Voxel(object):
     r = np.array([x.flatten(), y.flatten()]).T
     r = np.linalg.norm(r, axis=1)
 
-    if fromFile:
+    # if fromFile:
 
-      self.__setClumpMass(r)
-      self.__setMass()
-      self.__setVelocity(r)
-      self.__setEnsembleDensity(r)
-      #self.__setExtinction()
-      self.__setFUV(self.__r, self.__z)
+    #   self.__setClumpMass(r)
+    #   self.__setMass()
+    #   self.__setVelocity(r)
+    #   self.__setEnsembleDensity(r)
+    #   #self.__setExtinction()
+    #   self.__setFUV(self.__r, self.__z)
 
-      # This can convert the velocity from Cartesian to radial. It is assumed a scalar value is a radial velocity.
-      if isinstance(self.__velocity, float):
-        velocity = self.__velocity
-      else:
-        velocity = np.linalg.norm(self.__velocity)
+    #   # This can convert the velocity from Cartesian to radial. It is assumed a scalar value is a radial velocity.
+    #   if isinstance(self.__velocity, float):
+    #     velocity = self.__velocity
+    #   else:
+    #     velocity = np.linalg.norm(self.__velocity)
 
-    else:
+    if True:
 
-      constants.voxel_size = voxel_size
-      constants.changeMassFunctionParameters(alpha=alpha, gamma=gamma)
-      constants.changeVelocityRange(velocityRange)
-      constants.changeVelocityNumber(velocityNumber)
-      constants.addClumps(massRange=clumpMassRange, num=clumpMassNumber, density=ensembleDensity, fuv=FUV, Nmax=clumpNmax, reset=True)
-      constants.changeDustWavelengths(dust)
-
-      observations.methods.initialise()
-      species.addMolecules(molecules)
-      interpolations.initialise()
+      if not fromGrid:
+        constants.voxel_size = voxel_size
+        constants.changeMassFunctionParameters(alpha=alpha, gamma=gamma)
+        constants.changeVelocityRange(velocityRange)
+        constants.changeVelocityNumber(velocityNumber)
+        constants.addClumps(massRange=clumpMassRange, num=clumpMassNumber, Nmax=clumpNmax, reset=True)
+        constants.changeDustWavelengths(dust)
+        observations.methods.initialise()
+        species.addMolecules(molecules)
+        interpolations.initialise()
 
       masspoints.reinitialise()
       combinations.reinitialise()
