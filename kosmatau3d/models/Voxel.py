@@ -34,6 +34,7 @@ class Voxel(object):
     
     self.__clumpVelocityIndeces = []
     self.__modelMass = []
+    self.__volumeFactor = []
 
     self.__intensity = 0      #intensity of emissions at voxel point
     self.__opticalDepth = 0   #optical depth at voxel point
@@ -267,8 +268,10 @@ class Voxel(object):
       else:
         self.__ensembleDispersion = [ensembleDispersion] * len(constants.clumpMassNumber)
 
+      if isinstance(volumeFactor, float) or isinstance(volumeFactor, int):
+        volumeFactor = [volumeFactor] * len(constants.clumpMassNumber)
       if volumeFactor:
-        ensembleDensity = clumpMass*constants.massSolar/constants.massH/volumeFactor/constants.voxel_size**3/constants.pc**3/100**3
+        ensembleDensity = [clumpMass[ens]*constants.massSolar/constants.massH/volumeFactor[ens]/constants.voxel_size**3/constants.pc**3/100**3 for ens in range(len(constants.clumpMassNumber))]
       if isinstance(ensembleDensity, list) or isinstance(ensembleDensity, np.ndarray):
         self.__ensembleDensity = ensembleDensity
       else:
@@ -294,6 +297,7 @@ class Voxel(object):
 
     for ens in range(len(constants.clumpMassNumber)):
       self.__modelMass.append((ensemble.clumpDeltaNji[ens].sum(1)*10**constants.clumpLogMass[ens]).sum())
+      self.__volumeFactor.append((ensemble.clumpNj[ens]*(masspoints.clumpRadius[ens]**3*4*np.pi/3)).sum()/constants.voxel_size**3)
       if abs(self.__modelMass[ens]-self.__clumpMass[ens])>0.1*self.__clumpMass[ens]:
         print('ERROR: Voxel {} mass difference for clump set {} greater than 10%'.format(self.__index, ens+1))
 
@@ -324,6 +328,9 @@ class Voxel(object):
 
   def getModelMass(self):
     return self.__modelMass
+
+  def getVolumeFillingFactor(self):
+    return self.__volumeFactor
 
   def getVelocity(self):
     return self.__velocity, self.__ensembleDispersion
