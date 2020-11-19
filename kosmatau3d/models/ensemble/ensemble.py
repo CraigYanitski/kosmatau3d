@@ -115,7 +115,7 @@ def createCombinationObjects(velocity, ensembleDispersion, verbose=False, debug=
       print('velocity, mean, dispersion', self.__velocity, self.__velocity.mean(), self.__velocityDispersion)
     
     if ensembleDispersion[ens]:
-      velocityStep = np.minimum(ensembleDispersion[ens]/2, constants.clumpDispersion/2)
+      velocityStep = np.minimum(ensembleDispersion[ens]/1, constants.clumpDispersion/1)
       ensemble.clumpVelocities[ens] = np.linspace(-3*ensembleDispersion[ens], 3*ensembleDispersion[ens], num=np.round(6*ensembleDispersion[ens]/velocityStep).astype(np.int)+1)
       velocityStep = ensemble.clumpVelocities[ens][1]-ensemble.clumpVelocities[ens][0]
       ensemble.clumpDeltaNji[ens] = (np.array(ensemble.clumpNj[ens]).T/np.sqrt(2*np.pi)/ensembleDispersion[ens]*\
@@ -128,6 +128,7 @@ def createCombinationObjects(velocity, ensembleDispersion, verbose=False, debug=
     #self.__deltaNji = np.array([self.__deltaNji]).T
     
     warnings.filterwarnings('ignore', category=RuntimeWarning)
+    # warnings.filterwarnings('ignore', category=np.VisibleDeprecationWarning)
 
 
     # print('\n\nC L U M P S\n\n')
@@ -140,6 +141,7 @@ def createCombinationObjects(velocity, ensembleDispersion, verbose=False, debug=
     normalise[i_undef] = 0
     ensemble.clumpNormalisedDeltaNji[ens] = ensemble.clumpDeltaNji[ens][:,:]*normalise
     # print(ensemble.clumpNormalisedDeltaNji[ens])
+    # renormalise = np.ones(ensemble.clumpNormalisedDeltaNji[ens].shape)
     renormalise = np.around(ensemble.clumpNormalisedDeltaNji[ens][:,:])/ensemble.clumpNormalisedDeltaNji[ens][:,:]
     ensemble.clumpNormalisedDeltaNji[ens] = np.around(ensemble.clumpNormalisedDeltaNji[ens]*renormalise)   #to remove any rounding error from normalisation
     # print(ensemble.clumpNormalisedDeltaNji[ens])
@@ -357,8 +359,11 @@ def createCombinationObjects(velocity, ensembleDispersion, verbose=False, debug=
         for i in clumpCombinationIndeces: print('Combination sizes:\n{}\n'.format(np.array(ensemble.clumpCombinations[ens][i].size)))
       input()
     ensemble.clumpIndeces[ens] = ensemble.clumpProbability[ens].prod(2).sum(1).nonzero()[0]
-    if ensemble.clumpIndeces[ens].size>constants.clumpMaxIndeces[ens]: constants.clumpMaxIndeces[ens] = ensemble.clumpIndeces[ens].size  
-    ensemble.clumpCombinations[ens] = np.array(ensemble.clumpCombinations[ens][ensemble.clumpIndeces[ens][0]:(ensemble.clumpIndeces[ens][-1]+1)])
+    if ensemble.clumpIndeces[ens].size>constants.clumpMaxIndeces[ens]: constants.clumpMaxIndeces[ens] = ensemble.clumpIndeces[ens].size
+    # print(type(ensemble.clumpCombinations[ens]))
+    ensemble.clumpCombinations[ens] = ensemble.clumpCombinations[ens][ensemble.clumpIndeces[ens][0]:(ensemble.clumpIndeces[ens][-1]+1)]
+    # ensemble.clumpCombinations[ens] = np.array(ensemble.clumpCombinations[ens][ensemble.clumpIndeces[ens][0]:(ensemble.clumpIndeces[ens][-1]+1)])
+    # print(type(ensemble.clumpCombinations[ens]))
     clumpProbability = ensemble.clumpProbability[ens][ensemble.clumpIndeces[ens],:,:]
     ensemble.clumpProbability[ens] = np.array([clumpProbability[i]/clumpProbability.prod(2).sum(1)[i] for i in range(clumpProbability.shape[0])])
     ensemble.clumpLargestIndex[ens] = np.where(ensemble.clumpIndeces[ens]==ensemble.clumpLargestIndex[ens])[0][0]
