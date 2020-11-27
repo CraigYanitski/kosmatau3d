@@ -16,4 +16,4 @@ clumpRadius = [[] for _ in range(len(constants.clumpMassNumber))]
 clumpIntensity = [[] for _ in range(len(constants.clumpMassNumber))]
 clumpOpticalDepth = [[] for _ in range(len(constants.clumpMassNumber))]
 
-jit_module(nopython=False)
+# jit_module(nopython=False)

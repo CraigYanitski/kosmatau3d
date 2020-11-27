@@ -26,7 +26,7 @@ def initialise(velocity=0, ensembleDispersion=0, clumpMass=0, verbose=False):
   if verbose:
     print('Ensemble instance initialised\n')
   ensemble.clumpMass = clumpMass
-  createCombinationObjects(velocity, ensembleDispersion)
+  createCombinationObjects(velocity, ensembleDispersion, dtype=constants.dtype)
   return
 
 def calculateCombinations(clumpN, test=True, verbose=False):
@@ -81,7 +81,7 @@ def calculateCombinations(clumpN, test=True, verbose=False):
     print('\nCalculated combinations:\n', combinations)
   return combinations
 
-def createCombinationObjects(velocity, ensembleDispersion, verbose=False, debug=False):
+def createCombinationObjects(velocity, ensembleDispersion, dtype=np.float64, verbose=False, debug=False):
   '''
   This function removes all of the unnecessary degenerate looping during this calculation.
   Of course it is possible because of the wonders of numpy.ndarray(). . .
@@ -115,7 +115,7 @@ def createCombinationObjects(velocity, ensembleDispersion, verbose=False, debug=
       print('velocity, mean, dispersion', self.__velocity, self.__velocity.mean(), self.__velocityDispersion)
     
     if ensembleDispersion[ens]:
-      velocityStep = np.minimum(ensembleDispersion[ens]/1, constants.clumpDispersion/1)
+      velocityStep = np.minimum(ensembleDispersion[ens]/3, constants.clumpDispersion/3)
       ensemble.clumpVelocities[ens] = np.linspace(-3*ensembleDispersion[ens], 3*ensembleDispersion[ens], num=np.round(6*ensembleDispersion[ens]/velocityStep).astype(np.int)+1)
       velocityStep = ensemble.clumpVelocities[ens][1]-ensemble.clumpVelocities[ens][0]
       ensemble.clumpDeltaNji[ens] = (np.array(ensemble.clumpNj[ens]).T/np.sqrt(2*np.pi)/ensembleDispersion[ens]*\
@@ -128,21 +128,19 @@ def createCombinationObjects(velocity, ensembleDispersion, verbose=False, debug=
     #self.__deltaNji = np.array([self.__deltaNji]).T
     
     warnings.filterwarnings('ignore', category=RuntimeWarning)
-    # warnings.filterwarnings('ignore', category=np.VisibleDeprecationWarning)
-
 
     # print('\n\nC L U M P S\n\n')
     if constants.clumpNmax[ens]:
       normalise = constants.clumpNmax[ens]/ensemble.clumpDeltaNji[ens][-1,:]   #scaling factor to set the maximum number of the largest clump
     else:
       # normalise = np.ones(ensemble.clumpDeltaNji[ens][-1,:].size, dtype=np.float)
-      normalise = (ensemble.clumpDeltaNji[ens][-1,:])/ensemble.clumpDeltaNji[ens][-1,:]
+      normalise = ensemble.clumpDeltaNji[ens][-1,:]/ensemble.clumpDeltaNji[ens][-1,:]
     i_undef = (normalise==0) | ((abs(ensemble.clumpVelocities[ens])/ensembleDispersion[ens])>4.74)   #this accounts for NaNs or potential NaNs in the ensuing calculations
     normalise[i_undef] = 0
-    ensemble.clumpNormalisedDeltaNji[ens] = ensemble.clumpDeltaNji[ens][:,:]*normalise
+    ensemble.clumpNormalisedDeltaNji[ens] = ensemble.clumpDeltaNji[ens]*normalise
     # print(ensemble.clumpNormalisedDeltaNji[ens])
-    # renormalise = np.ones(ensemble.clumpNormalisedDeltaNji[ens].shape)
-    renormalise = np.around(ensemble.clumpNormalisedDeltaNji[ens][:,:])/ensemble.clumpNormalisedDeltaNji[ens][:,:]
+    renormalise = 1.#np.ones(ensemble.clumpNormalisedDeltaNji[ens].shape)
+    # renormalise = np.around(ensemble.clumpNormalisedDeltaNji[ens])/ensemble.clumpNormalisedDeltaNji[ens]
     ensemble.clumpNormalisedDeltaNji[ens] = np.around(ensemble.clumpNormalisedDeltaNji[ens]*renormalise)   #to remove any rounding error from normalisation
     # print(ensemble.clumpNormalisedDeltaNji[ens])
     clumpSurfaceProbability = np.array(np.pi*masspoints.clumpRadius[ens].T**2/constants.voxel_size**2/normalise/renormalise)    #this is 'pTab' in the original code
@@ -150,11 +148,13 @@ def createCombinationObjects(velocity, ensembleDispersion, verbose=False, debug=
     if (clumpSurfaceProbability>=1).any():    #increase voxel size if the clumps are too large
       print('resize')
       # resize = np.ceil(np.pi*masspoints.clumpRadius[ens].max()**2/constants.voxel_size**2/normalise) #Comment out to prevent strange rounding feature in self-absorption
-      resize = np.array(np.pi*masspoints.clumpRadius[ens].max()**2/constants.voxel_size**2/normalise)
+      resize = np.array(np.pi*masspoints.clumpRadius[ens].max()**2/constants.voxel_size**2/normalise/renormalise)
       resize[i_undef] = 0
-      ensemble.clumpNormalisedDeltaNji[ens] *= resize
+      # resize[:,i_undef] = 0
+      ensemble.clumpNormalisedDeltaNji[ens] = ensemble.clumpNormalisedDeltaNji[ens]*resize
       # print(ensemble.clumpNormalisedDeltaNji[ens])
-      renormalise2 = 1.   #np.ceil(ensemble.clumpNormalisedDeltaNji[ens][:,:])/ensemble.clumpNormalisedDeltaNji[ens][:,:]
+      renormalise2 = 1.#np.around(ensemble.clumpNormalisedDeltaNji[ens])/ensemble.clumpNormalisedDeltaNji[ens]
+      # renormalise2[renormalise2==0] = 1.
       ensemble.clumpNormalisedDeltaNji[ens] = np.around(ensemble.clumpNormalisedDeltaNji[ens]*renormalise2)   #to remove any rounding error from normalisation
       # print(ensemble.clumpNormalisedDeltaNji[ens])
       i_undef = i_undef | (ensemble.clumpNormalisedDeltaNji[ens][-1,:]<1)
@@ -236,8 +236,8 @@ def createCombinationObjects(velocity, ensembleDispersion, verbose=False, debug=
     # print(clumpLargestCombination)
     for i,combinations in enumerate(ensemble.clumpCombinations[ens]):   #loop over combinations of masspoints in each velocity bin
       ensemble.clumpCombinations[ens][i] = np.array(combinations).T
-      probability = np.zeros((ensemble.clumpLargestCombination[ens], constants.clumpLogMass[ens].size), dtype=np.float128)
-      maxProbability = np.zeros((ensemble.clumpLargestCombination[ens], constants.clumpLogMass[ens].size), dtype=np.float128)
+      probability = np.zeros((ensemble.clumpLargestCombination[ens], constants.clumpLogMass[ens].size), dtype=dtype)
+      maxProbability = np.zeros((ensemble.clumpLargestCombination[ens], constants.clumpLogMass[ens].size), dtype=dtype)
       combinationIndeces.append(i)
       if verbose:
         print('\nEnsemble combinations:\n', combinations)
@@ -344,7 +344,7 @@ def createCombinationObjects(velocity, ensembleDispersion, verbose=False, debug=
       if i==ensemble.clumpLargestIndex[ens]:
         maxProbabilityList = np.array(maxProbability)
     clumpCombinationIndeces = np.array(combinationIndeces)
-    maxProbability = np.array(maxProbabilityList, dtype=np.float128)
+    maxProbability = np.array(maxProbabilityList, dtype=dtype)
     ensemble.clumpProbability[ens] = np.array(probabilityList)
     ensemble.CLmaxProbability[ens] = maxProbability#np.array([maxProbability[i]/maxProbability.prod(1).sum(0) for i in range(maxProbability.shape[0])], dtype=np.float128)
 

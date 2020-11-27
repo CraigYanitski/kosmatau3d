@@ -27,6 +27,9 @@ HISTORYPATH = KOSMAPATH + '/history/'#'/home/craig/Desktop/Köln/kosma-tau^3-dev
 # Interpolation style (it accepts 'linear' or 'cubic'/'radial')
 interpolation = 'linear'
 
+# Data type for the `ensemble` module calculations
+dtype = np.float64
+
 # Factors (and constant) for fine-tuning the input data
 clumpMassFactor = 1
 interclumpMassFactor = 1

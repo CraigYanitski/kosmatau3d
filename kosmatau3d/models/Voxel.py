@@ -1,7 +1,9 @@
 import importlib as il
 import numpy as np
+from numba import jit
 from scipy.interpolate import interp1d
 from copy import copy
+from time import time
 
 from . import constants
 from . import interpolations
@@ -137,11 +139,10 @@ class Voxel(object):
   def getFUV(self):
     return self.__FUV
 
-  def setProperties(self, voxel_size=1, molecules='all', dust='PAH', alpha=1.84, gamma=2.31, \
-                    clumpMassNumber=[3,1], clumpMassRange=[[0,2],[-2]], \
-                    clumpNmax=[1, 100], velocityRange=[-10,10], velocityNumber=51, \
-                    clumpMass=100, velocity=0., \
-                    ensembleDispersion=1, volumeFactor=None, ensembleDensity=[15000, 1911], FUV=[20000, 1], fromGrid=False):
+  def setProperties(self, voxel_size=1, molecules='all', dust='PAH', alpha=1.84, gamma=2.31, clumpMassNumber=[3,1], clumpMassRange=[[0,2],[-2]], \
+                    clumpNmax=[1, 100], velocityRange=[-10,10], velocityNumber=51, clumpMass=100, velocity=0., \
+                    ensembleDispersion=1, volumeFactor=None, ensembleDensity=[15000, 1911], FUV=[20000, 1], \
+                    fromGrid=False, timed=False):
     '''
       This method calculates the radii assuming an origin of (0,0). It then averages
      over a subgrid of 3x3. It might be improved later by having functionality to
@@ -218,6 +219,9 @@ class Voxel(object):
 
     '''
     #print('Voxel instance initialised')
+    
+    if timed:
+      t0 = time()
 
     x,y = np.meshgrid(np.linspace(self.__x-.5*constants.voxel_size, self.__x+.5*constants.voxel_size,3), \
                       np.linspace(self.__y-.5*constants.voxel_size, self.__y+.5*constants.voxel_size,3))
@@ -251,6 +255,10 @@ class Voxel(object):
         observations.methods.initialise()
         species.addMolecules(molecules)
         interpolations.initialise()
+      
+      if timed:
+        t1 = time()
+        print('Model setup:', t1-t0)
 
       masspoints.reinitialise()
       combinations.reinitialise()
@@ -294,6 +302,10 @@ class Voxel(object):
     masspoints.setMasspointData(density=self.__ensembleDensity, FUV=self.__FUV)
     ensemble.initialise(velocity=velocity, ensembleDispersion=self.__ensembleDispersion, clumpMass=self.__clumpMass)
     combinations.initialise(clumpCombination=[ensemble.clumpCombinations[ens][ensemble.clumpLargestIndex[ens]] for ens in range(len(constants.clumpMassNumber))])
+    
+    if timed:
+      t2 = time()
+      print('Modules initialised:', t2-t1)
 
     for ens in range(len(constants.clumpMassNumber)):
       self.__modelMass.append((ensemble.clumpDeltaNji[ens].sum(1)*10**constants.clumpLogMass[ens]).sum())
@@ -311,6 +323,9 @@ class Voxel(object):
     # This gives an error if there are too many clumps in a line-of-sight; tau_FUV is too large for this equation...
     Afuv = combinations.getAfuv()
     self.__tauFUV = [-np.log((ensemble.CLmaxProbability[ens].prod(1)*Afuv[ens]).sum()) for ens in range(len(constants.clumpMassNumber))]
+    
+    if timed:
+      print('setProperties() time of execution:', time()-t0)
     
     return
 
@@ -341,18 +356,26 @@ class Voxel(object):
   def getFUVabsorption(self):
     return self.__tauFUV
 
-  def calculateEmission(self, verbose=False):
+  # @jit
+  def calculateEmission(self, verbose=False, timed=False):
+    
+    if timed:
+      t0 = time()
     
     masspoints.calculateEmission(tauFUV=self.__tauFUV)
     combinations.calculateEmission()
+    
+    if timed:
+      t1 = time()
+      print('emission calculated:', t1-t0)
 
     clumpIntensity = [[] for _ in range(len(constants.clumpMassNumber))]
     clumpOpticalDepth = [[] for _ in range(len(constants.clumpMassNumber))]
     clumpIntensityDust = [[] for _ in range(len(constants.clumpMassNumber))]
     clumpOpticalDepthDust = [[] for _ in range(len(constants.clumpMassNumber))]
 
-    interclumpIntensity = []
-    interclumpOpticalDepth = []
+    # interclumpIntensity = []
+    # interclumpOpticalDepth = []
 
     iDust = constants.wavelengths[constants.nDust].size
 
@@ -363,7 +386,16 @@ class Voxel(object):
       clumpVel = ensemble.clumpVelocities[ens]   #v_sys
       factor = np.exp(-(vel.reshape(1,-1)-clumpVel.reshape(-1,1)-self.__velocity)**2/2/constants.clumpDispersion**2)
       
+      # clumpIntensity[ens] = np.zeros((ensemble.clumpVelocities[ens].size, constants.velocityRange.size, combinations.clumpIntensity[ens].shape[0], combinations.clumpIntensity[ens].shape[1]))
+      # clumpIntensityDust[ens] = np.zeros((constants.velocityRange.size, combinations.clumpIntensity[ens].shape[0], combinations.clumpIntensity[ens].shape[1]))
+      # clumpOpticalDepth[ens] = np.zeros((ensemble.clumpVelocities[ens].size, constants.velocityRange.size, combinations.clumpIntensity[ens].shape[0], combinations.clumpIntensity[ens].shape[1]))
+      # clumpOpticalDepthDust[ens] = np.zeros((constants.velocityRange.size, combinations.clumpIntensity[ens].shape[0], combinations.clumpIntensity[ens].shape[1]))
+      
       for i,probability in enumerate(ensemble.clumpProbability[ens]):
+
+        if timed:
+          t2 = time()
+          print('Start I_xi calculation:', t2-t0)
 
         intensity = copy(combinations.clumpIntensity[ens][:,iDust:])
         intensity = np.array([intensity*factor[ensemble.clumpIndeces[ens][i],j] for j in range(vel.size)])  #shape (v_obs, combination, wavelength)
@@ -377,6 +409,10 @@ class Voxel(object):
         opticalDepthDust = copy(combinations.clumpOpticalDepth[ens][:,:iDust])
         clumpOpticalDepthDust[ens].append((probability.prod(1)*np.exp(-opticalDepthDust.T)).T)
 
+        if timed:
+          t3 = time()
+          print('End I_xi calculation:', t3-t0)
+
       # All of these have shape (velocity, wavelength)
       clumpIntensity[ens] = (np.array(clumpIntensity[ens]).sum(2)).sum(0).astype(np.float64)
       clumpOpticalDepth[ens] = (-np.log(np.array(clumpOpticalDepth[ens]).sum(2))).sum(0).astype(np.float64)
@@ -389,6 +425,9 @@ class Voxel(object):
 
     if verbose:
       print('Voxel emission calculated.')
+      
+    if timed:
+      print('calculateEmission() time of execution:', time()-t0)
     
     return
 
