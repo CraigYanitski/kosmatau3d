@@ -22,9 +22,9 @@ For a detailed explanation of the properties that can be accessed with a voxel i
 
 #### Single-voxel models
 
-This is the basic component of KOSMA-tau^3. It is made available as a self-sufficient object for use in other subgridding models. Given a volume-filling factor, mass, and FUV field, the single voxel object calculates its emissivity, absorption, and intensity (assuming no background intensity) for a clumpy PDR ensemble. The explanation of this model is thoroughly-explained in `kosma-tau-3d/tests/voxel.ipynb`.
+This is the basic component of KOSMA-$`\tau^3`$. It is made available as a self-sufficient object for use in other subgridding models. Given a volume-filling factor, mass, and FUV field, the single voxel object calculates its emissivity, absorption, and intensity (assuming no background intensity) for a clumpy PDR ensemble. The explanation of this model is thoroughly-explained in `kosma-tau-3d/tests/voxel.ipynb`.
 
-#### KOSMA-tau^3 model
+#### KOSMA-$`\tau^3`$ model
 
 The full subgrid model is almost functional. Voxel data can be streamed into fits files and the radiative transfer portion is a self-contained module. What still remains is a few fixes the the radiative transfer module and to correctly map the integrated intensity using ``cygrid``. The current version fixes most of the errors inherent in the old code. It is setup for the galaxy model developed by Christoph Bruckmann as that will be its first application.
 
@@ -41,7 +41,7 @@ The major changes to the KOSMA-tau 3D model are described in the document treati
 
 ## Other Features
 
-It was necessary to create a version to initialise a single voxel. This is now the default version of initialising a `Voxel` instance, and it requires passing all of the needed arguments as kwargs. This feature can hopefully be used in the subgrid model of Stefano Ebagezio Daniel Seifried.
+It was necessary to create a version to initialise a single voxel. This is now the default version of initialising a `Voxel` instance, and it requires passing all of the needed arguments as kwargs. This feature can hopefully be used in other models that are unable to see the effect of the inhomogeneity of PDRs.
 
 ## Ongoing Development
 
