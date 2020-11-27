@@ -16,13 +16,13 @@ from kosmatau3d import models
 vox = models.Voxel()
 ```
 
-For a detailed explanation of the properties that can be accessed with a voxel instance, see the `jupyter` notebook in `kosma-tau-3d/tests/voxel.ipynb`.
+For a detailed explanation of the properties that can be accessed with a voxel instance, see the `jupyter` notebook in `./tests/voxel.ipynb`.
 
 ## Functionality
 
 #### Single-voxel models
 
-This is the basic component of KOSMA-$`\tau^3`$. It is made available as a self-sufficient object for use in other subgridding models. Given a volume-filling factor, mass, and FUV field, the single voxel object calculates its emissivity, absorption, and intensity (assuming no background intensity) for a clumpy PDR ensemble. The explanation of this model is thoroughly-explained in `kosma-tau-3d/tests/voxel.ipynb`.
+This is the basic component of KOSMA-$`\tau^3`$. It is made available as a self-sufficient object for use in other subgridding models. Given a volume-filling factor, mass, and FUV field, the single voxel object calculates its emissivity, absorption, and intensity (assuming no background intensity) for a clumpy PDR ensemble. The explanation of this model is thoroughly-explained in `./tests/voxel.ipynb`.
 
 #### KOSMA-$`\tau^3`$ model
 
