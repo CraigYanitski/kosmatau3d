@@ -12,7 +12,7 @@ from .. import ensemble
 from .. import combinations
 from .. import masspoints
 
-from .. import ensembleStatistics as stat
+# from .. import ensembleStatistics as stat
 
 '''
 This class owes itself largely to the work  done by Silke Andree-Labsch and
@@ -22,11 +22,11 @@ optical depth.
 It can be either a clump or an interclump ensemble.
 '''
 
-def initialise(velocity=0, ensembleDispersion=0, clumpMass=0, verbose=False):
+def initialise(ensembleDispersion=0, ensembleMass=0, verbose=False):
   if verbose:
     print('Ensemble instance initialised\n')
-  ensemble.clumpMass = clumpMass
-  createCombinationObjects(velocity, ensembleDispersion, dtype=constants.dtype)
+  ensemble.clumpMass = ensembleMass
+  createCombinationObjects(ensembleDispersion, dtype=constants.dtype)
   return
 
 def calculateCombinations(clumpN, test=True, verbose=False):
@@ -81,7 +81,7 @@ def calculateCombinations(clumpN, test=True, verbose=False):
     print('\nCalculated combinations:\n', combinations)
   return combinations
 
-def createCombinationObjects(velocity, ensembleDispersion, dtype=np.float64, verbose=False, debug=False):
+def createCombinationObjects(ensembleDispersion, dtype=np.float64, verbose=False, debug=False):
   '''
   This function removes all of the unnecessary degenerate looping during this calculation.
   Of course it is possible because of the wonders of numpy.ndarray(). . .
@@ -263,12 +263,12 @@ def createCombinationObjects(velocity, ensembleDispersion, dtype=np.float64, ver
               if not constants.gauss:
                 constants.gauss = True
 
-              if constants.scipyProbability:
-                probability[index,iGauss] = stats.norm.pdf(combination, loc=clumpProbableNumber[:,i], scale=clumpStandardDeviation[:,i])[iGauss]
+              # if constants.scipyProbability:
+              probability[index,iGauss] = stats.norm.pdf(combination, loc=clumpProbableNumber[:,i], scale=clumpStandardDeviation[:,i])[iGauss]
               
-              else:
-                g = stat.Gauss(clumpProbableNumber[:,i], clumpStandardDeviation[:,i], debug=debug)
-                probability[index,iGauss] = (g.gaussfunc(combination))[iGauss]
+              # else:
+              #   g = stat.Gauss(clumpProbableNumber[:,i], clumpStandardDeviation[:,i], debug=debug)
+              #   probability[index,iGauss] = (g.gaussfunc(combination))[iGauss]
 
             if (~iGauss).any():
               # use binomial
@@ -276,33 +276,33 @@ def createCombinationObjects(velocity, ensembleDispersion, dtype=np.float64, ver
                 print('Binomial')
               # <<This will likely print an error when there are more masspoints>>
               
-              if constants.scipyProbability:
-                probability[index,~iGauss] = stats.binom.pmf(combination, ensemble.clumpNormalisedDeltaNji[ens][:,i], clumpSurfaceProbability[:,i])[~iGauss]
+              # if constants.scipyProbability:
+              probability[index,~iGauss] = stats.binom.pmf(combination, ensemble.clumpNormalisedDeltaNji[ens][:,i], clumpSurfaceProbability[:,i])[~iGauss]
               
-              else:
-                b = stat.Binomial(ensemble.clumpNormalisedDeltaNji[ens][:,i], clumpSurfaceProbability[:,i], debug=debug) # n and p for binominal 
-                probability[index,~iGauss] = (b.binomfunc(combination))[~iGauss]
+              # else:
+              #   b = stat.Binomial(ensemble.clumpNormalisedDeltaNji[ens][:,i], clumpSurfaceProbability[:,i], debug=debug) # n and p for binominal
+              #   probability[index,~iGauss] = (b.binomfunc(combination))[~iGauss]
             
             iGauss = ((CLmaxProbableNumber>constants.pnGauss) & (ensemble.clumpNormalisedNj[ens]>constants.nGauss))[0]
             # print(iGauss.shape, iGauss)
             if iGauss.any():
               # print(combination)
               
-              if constants.scipyProbability:
-                maxProbability[index,iGauss] = stats.norm.pdf(combination, loc=CLmaxProbableNumber.flatten(), scale=CLmaxStandardDeviation.flatten())[iGauss]
+              # if constants.scipyProbability:
+              maxProbability[index,iGauss] = stats.norm.pdf(combination, loc=CLmaxProbableNumber.flatten(), scale=CLmaxStandardDeviation.flatten())[iGauss]
               
-              else:
-                g = stat.Gauss(CLmaxProbableNumber, CLmaxStandardDeviation, debug=debug)
-                maxProbability[index,iGauss] = (g.gaussfunc(combination))[iGauss]
+              # else:
+              #   g = stat.Gauss(CLmaxProbableNumber, CLmaxStandardDeviation, debug=debug)
+              #   maxProbability[index,iGauss] = (g.gaussfunc(combination))[iGauss]
             
             if (~iGauss).any():
               
-              if constants.scipyProbability:
-                maxProbability[index,~iGauss] = stats.binom.pmf(combination, ensemble.clumpNormalisedNj[ens].flatten(), CLmaxSurfaceProbability.flatten())[~iGauss]
+              # if constants.scipyProbability:
+              maxProbability[index,~iGauss] = stats.binom.pmf(combination, ensemble.clumpNormalisedNj[ens].flatten(), CLmaxSurfaceProbability.flatten())[~iGauss]
               
-              else:
-                b = stat.Binomial(ensemble.clumpNormalisedNj[ens], CLmaxSurfaceProbability, debug=debug) # n and p for binominal 
-                maxProbability[index,~iGauss] = (b.binomfunc(combination))[~iGauss]
+              # else:
+              #   b = stat.Binomial(ensemble.clumpNormalisedNj[ens], CLmaxSurfaceProbability, debug=debug) # n and p for binominal
+              #   maxProbability[index,~iGauss] = (b.binomfunc(combination))[~iGauss]
 
           elif constants.probability=='poisson':
             iGauss = (clumpProbableNumber[:,i]>constants.pnGauss) & (ensemble.clumpNormalisedDeltaNji[ens][:,i]>constants.nGauss)
@@ -315,14 +315,12 @@ def createCombinationObjects(velocity, ensembleDispersion, dtype=np.float64, ver
               # use poisson
               if verbose:
                 print('Poisson')
-              po = stat.Poisson(clumpProbableNumber[:,i])
-              probability[index,~iGauss] = po.poissonfunc(combination)
+              probability[index,~iGauss] = stats.pmf(combination, clumpProbableNumber[:,i])[~iGauss]
             iGauss = ((CLmaxProbableNumber>constants.pnGauss) & (ensemble.clumpNormalisedNj[ens]>constants.nGauss))[0]
             if iGauss.any():
               maxProbability[index,iGauss] = stats.norm.pdf(combination, loc=CLmaxProbableNumber.flatten(), scale=CLmaxStandardDeviation.flatten())[iGauss]
             if (~iGauss).any():
-              po = stat.Poisson(CLmaxProbableNumber) # n and p for binominal 
-              maxProbability[index,~iGauss] = (po.binomfunc(combination))
+              maxProbability[index,~iGauss] = stats.pmf(combination, clumpProbableNumber[:,i])[~iGauss]
 
       if np.shape(probability)!=np.shape(maxProbability) and debug:
         for i in range(len(probability)):

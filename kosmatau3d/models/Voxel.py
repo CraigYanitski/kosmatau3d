@@ -30,7 +30,7 @@ class Voxel(object):
     self.__debugging = debugging
     
     self.__mass = 0
-    self.__clumpMass = 0
+    self.__ensembleMass = 0
     self.__velocity = 0     #velocity of mass at voxel point
     self.__ensembleDispersion = 0   #dispersion of velocity at voxel point
     
@@ -140,7 +140,7 @@ class Voxel(object):
     return self.__FUV
 
   def setProperties(self, voxel_size=1, molecules='all', dust='PAH', alpha=1.84, gamma=2.31, clumpMassNumber=[3,1], clumpMassRange=[[0,2],[-2]], \
-                    clumpNmax=[1, 100], velocityRange=[-10,10], velocityNumber=51, clumpMass=100, velocity=0., \
+                    clumpNmax=[1, 100], velocityRange=[-10,10], velocityNumber=51, ensembleMass=100, velocity=0., \
                     ensembleDispersion=1, volumeFactor=None, ensembleDensity=[15000, 1911], FUV=[20000, 1], \
                     fromGrid=False, timed=False):
     '''
@@ -193,10 +193,8 @@ class Voxel(object):
 
      VOXEL PROPERTIES
 
-     clumpMass: This can be either a float or list of floats, depending on how many clump
-                sets you have. The default is 100 Msol.
-     mass: This is mostly useless. It is used for analysing a grid of Voxel instances. The
-           defalt is 100 Msol.
+     ensembleMass: This can be either a float or list of floats, depending on how many clump
+                  sets you have. The default is 100 Msol.
      velocity: The radial velocity of the observed Voxel instance. This is used with the
                model velocities to determine the number of clumps seen at a given velocity.
                The default is 0 km/s.
@@ -266,10 +264,10 @@ class Voxel(object):
       
       self.__velocity = velocity
 
-      if isinstance(clumpMass, list) or isinstance(clumpMass, np.ndarray):
-        self.__clumpMass = clumpMass
+      if isinstance(ensembleMass, list) or isinstance(ensembleMass, np.ndarray):
+        self.__ensembleMass = ensembleMass
       else:
-        self.__clumpMass = [clumpMass] * len(constants.clumpMassNumber)
+        self.__ensembleMass = [ensembleMass] * len(constants.clumpMassNumber)
       
       if isinstance(ensembleDispersion, list) or isinstance(ensembleDispersion, np.ndarray):
         self.__ensembleDispersion = ensembleDispersion
@@ -279,7 +277,7 @@ class Voxel(object):
       if isinstance(volumeFactor, float) or isinstance(volumeFactor, int):
         volumeFactor = [volumeFactor] * len(constants.clumpMassNumber)
       if volumeFactor:
-        ensembleDensity = [clumpMass[ens]*constants.massSolar/constants.massH/volumeFactor[ens]/constants.voxel_size**3/constants.pc**3/100**3 for ens in range(len(constants.clumpMassNumber))]
+        ensembleDensity = [ensembleMass[ens]*constants.massSolar/constants.massH/volumeFactor[ens]/constants.voxel_size**3/constants.pc**3/100**3 for ens in range(len(constants.clumpMassNumber))]
       if isinstance(ensembleDensity, list) or isinstance(ensembleDensity, np.ndarray):
         self.__ensembleDensity = ensembleDensity
       else:
@@ -300,7 +298,7 @@ class Voxel(object):
       # if fuv[i]==None: fuv[i] = self.__FUV
 
     masspoints.setMasspointData(density=self.__ensembleDensity, FUV=self.__FUV)
-    ensemble.initialise(velocity=velocity, ensembleDispersion=self.__ensembleDispersion, clumpMass=self.__clumpMass)
+    ensemble.initialise(ensembleDispersion=self.__ensembleDispersion, ensembleMass=self.__ensembleMass)
     combinations.initialise(clumpCombination=[ensemble.clumpCombinations[ens][ensemble.clumpLargestIndex[ens]] for ens in range(len(constants.clumpMassNumber))])
     
     if timed:
@@ -310,7 +308,7 @@ class Voxel(object):
     for ens in range(len(constants.clumpMassNumber)):
       self.__modelMass.append((ensemble.clumpDeltaNji[ens].sum(1)*10**constants.clumpLogMass[ens]).sum())
       self.__volumeFactor.append((ensemble.clumpNj[ens]*(masspoints.clumpRadius[ens]**3*4*np.pi/3)).sum()/constants.voxel_size**3)
-      if abs(self.__modelMass[ens]-self.__clumpMass[ens])>0.1*self.__clumpMass[ens]:
+      if abs(self.__modelMass[ens]-self.__ensembleMass[ens])>0.1*self.__ensembleMass[ens]:
         print('ERROR: Voxel {} mass difference for clump set {} greater than 10%'.format(self.__index, ens+1))
 
     # clumpAfuv,interclumpAfuv = combinations.getAfuv()
@@ -335,11 +333,8 @@ class Voxel(object):
   def getDensity(self):
     return self.__ensembleDensity
 
-  def getMass(self):
-    return self.__clumpMass
-
-  def getClumpMass(self):
-    return self.__clumpMass
+  def getEnsembleMass(self):
+    return self.__ensembleMass
 
   def getModelMass(self):
     return self.__modelMass
@@ -597,39 +592,5 @@ class Voxel(object):
     return
     
   def printVoxel(self):
-    # OUTDATED
-    if self.__debugging:
-      iClump,tauClump,FUVclump = self.__clump.getEnsembleEmission()
-      iInterclump,tauInterclump,FUVinterclump = self.__interclump.getEnsembleEmission()
-    names = self.__species[0].getMolecules() + self.__species[1].getDust()
-    transitions = self.__species[0].getTransitions() + self.__species[1].getTransitions()
-    totalIntensity = np.array([names, transitions, self.__intensity.sum(2).max(1)]).T
-    clumpIntensity = np.array([names, transitions, iClump.sum(2).max(1)]).T
-    interclumpIntensity = np.array([names, transitions, iInterclump.sum(2).max(1)]).T
-    totalTau = np.array([names, transitions, self.__opticalDepth.sum(2).max(1)]).T
-    clumpTau = np.array([names, transitions, tauClump.sum(2).max(1)]).T
-    interclumpTau = np.array([names, transitions, tauInterclump.sum(2).max(1)]).T
-    print('\nVoxel {}\n  ->Cartesian position: ({}, {}, {})'.format(self.__index, self.__x, self.__y, self.__z))
-    print('  ->mass {} M_sol'.format(self.__mass))
-    print('  ->intensity')
-    for i in range(len(names)):
-      print('    {} {}: {}'.format(totalIntensity[i][0],totalIntensity[i][1],totalIntensity[i][2]))
-    if self.__debugging:
-      print('    -clump')
-      for i in range(len(names)):
-        print('      {} {}: {}'.format(clumpIntensity[i][0],clumpIntensity[i][1],clumpIntensity[i][2]))
-      print('    -interclump')
-      for i in range(len(names)):
-        print('      {} {}: {}'.format(interclumpIntensity[i][0],interclumpIntensity[i][1],interclumpIntensity[i][2]))
-    print('  ->optical depth')
-    for i in range(len(names)):
-      print('    {} {}: {}'.format(totalTau[i][0],totalTau[i][1],totalTau[i][2]))
-    if self.__debugging:
-      print('    -clump')
-      for i in range(len(names)):
-        print('      {} {}: {}'.format(clumpTau[i][0],clumpTau[i][1],clumpTau[i][2]))
-      print('    -interclump')
-      for i in range(len(names)):
-        print('      {} {}: {}'.format(interclumpTau[i][0],interclumpTau[i][1],interclumpTau[i][2]))
-    print('  ->FUV field {}'.format(self.__FUV.getFUV()))
+    # Coming soon...
     return
