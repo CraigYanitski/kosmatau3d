@@ -1,6 +1,6 @@
-# $KOSMA-tau^3$
+# KOSMA-$`\tau^3`$
 
-This is the current working version of `KOSMA-tau^3`. It uses a series of sub-modules to perform most of the calculations. The reason for doing this is to reduce the memory footprint of the code to increase the overall efficiency. This also increases the maximum number of voxels that can be evaluated, since each voxel no longer owns as much memory.
+This is the current working version of KOSMA-$`\tau^3`$. It uses a series of sub-modules to perform most of the calculations. The reason for doing this is to reduce the memory footprint of the code to increase the overall efficiency. This also increases the maximum number of voxels that can be evaluated, since each voxel no longer owns as much memory.
 
 ## Installation
 In the directory of this repository, install this package in bash with,
