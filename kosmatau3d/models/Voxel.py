@@ -358,11 +358,16 @@ class Voxel(object):
       t0 = time()
     
     masspoints.calculateEmission(tauFUV=self.__tauFUV)
-    combinations.calculateEmission()
     
     if timed:
       t1 = time()
-      print('emission calculated:', t1-t0)
+      print('Masspoint emission calculated:', t1-t0)
+    
+    combinations.calculateEmission()
+    
+    if timed:
+      t2 = time()
+      print('Combination emission calculated:', t2-t1)
 
     clumpIntensity = [[] for _ in range(len(constants.clumpMassNumber))]
     clumpOpticalDepth = [[] for _ in range(len(constants.clumpMassNumber))]
@@ -389,8 +394,8 @@ class Voxel(object):
       for i,probability in enumerate(ensemble.clumpProbability[ens]):
 
         if timed:
-          t2 = time()
-          print('Start I_xi calculation:', t2-t0)
+          t3 = time()
+          print('Start I_xi calculation:', t3-t2)
 
         intensity = copy(combinations.clumpIntensity[ens][:,iDust:])
         intensity = np.array([intensity*factor[ensemble.clumpIndeces[ens][i],j] for j in range(vel.size)])  #shape (v_obs, combination, wavelength)
@@ -405,8 +410,8 @@ class Voxel(object):
         clumpOpticalDepthDust[ens].append((probability.prod(1)*np.exp(-opticalDepthDust.T)).T)
 
         if timed:
-          t3 = time()
-          print('End I_xi calculation:', t3-t0)
+          t4 = time()
+          print('End I_xi calculation:', t4-t3)
 
       # All of these have shape (velocity, wavelength)
       clumpIntensity[ens] = (np.array(clumpIntensity[ens]).sum(2)).sum(0).astype(np.float64)
