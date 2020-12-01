@@ -162,7 +162,7 @@ wavelengths = np.array([3100., 2400., 1800., 1300., 1000., 850., 700., 550., 420
                        0.01413, 0.01259, 0.01122, 0.0106, 0.01, 0.009, 0.008, 0.007, 0.006, 0.005, 0.004, 0.003, 0.002, 0.001]) * 10**-6
 # These are the flag and indeces to limit how many dust emission lines are calculated
 dustWavelengths = ''
-limitMolecular = 10**-4
+limitMolecular = 5*10**-5
 limitPAH = 5*10**-6
 nDust = wavelengths>0
 # [DEACTIVATED] These are variables to sort the wavelengths
