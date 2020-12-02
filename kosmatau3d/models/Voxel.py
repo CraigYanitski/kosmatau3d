@@ -445,7 +445,7 @@ class Voxel(object):
     intensity[i_nan] = epsilon[i_nan]
     return intensity
 
-  def plotMolecule(self, molecule='', quantity='intensity', moleculeNames=[], title='', logscale=False):
+  def plotMolecule(self, molecule='', quantity='intensity', moleculeName='', title='', logscale=False):
     # Plot the molecule emission with respect to the voxel velocity structure
 
     import matplotlib.pyplot as plt
@@ -486,7 +486,7 @@ class Voxel(object):
       vel = constants.velocityRange#[self.__clumpVelocityIndeces[ens]]
       labels = []
 
-      for i,mol in enumerate(molecule):
+      for n,mol in enumerate(molecule):
 
         if not mol in species.molecules:
           print('Species {} not in model.'.format(mol))
@@ -499,8 +499,10 @@ class Voxel(object):
         else:
           ax.plot(vel, value[ens][:,i], marker='o', ms=2, ls='-', lw=1)
         
-        if len(moleculeNames):
-          labels.append(moleculeNames[i])
+        if isinstance(moleculeName, list):
+          labels.append(moleculeName[n])
+        elif moleculeName:
+          labels.append(moleculeName)
         else:
           labels.append(mol)
 
