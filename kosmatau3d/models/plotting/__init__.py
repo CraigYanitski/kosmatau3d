@@ -13,42 +13,61 @@ def plotModel(plot='total intensity', ce=[], ie=[], grid=None, directory='/home/
   if grid:
 
     voxelPositions = []
+    mass = []
+    density = []
     fuv = []
-    Afuv = []
+    FUVabsorption = []
     velocity = []
     clumpVelocity = []
-    clumpEmission = []
+    clumpEmissivity = []
+    clumpAbsorption = []
+    clumpIntensity = []
 
     for voxel in grid.allVoxels():
       voxelPositions.append(voxel.getPosition())
+      mass.append(voxel.getEnsembleMass())
+      density.append(voxel.getDensity())
       fuv.append(voxel.getFUV())
-      Afuv.append(voxel.getAfuv())
+      FUVabsorption.append(voxel.getFUVabsorption())
       velocity.append(voxel.getVelocity())
       clumpVelocity.append(voxel.getClumpVelocity())
-      clumpEmission.append(voxel.getEmission())
+      clumpEmissivity.append(voxel.getEmissivity())
+      clumpAbsorption.append(voxel.getAbsorption())
+      clumpIntensity.append(voxel.getIntensity())
+
+    voxelPositions = np.array(voxelPositions)
+    mass = np.array(mass)[:,0]
+    density = np.array(density)[:,0]
+    fuv = np.array(fuv)[:,0]
+    FUVabsorption = np.array(FUVabsorption)
+    velocity = np.array(velocity)
+    clumpVelocity = np.array(clumpVelocity)
+    clumpEmissivity = np.array(clumpEmissivity)
+    clumpAbsorption = np.array(clumpAbsorption)
+    clumpIntensity = np.array(clumpIntensity)
   
   elif len(ce)==0 and len(ie)==0:
 
     voxelPositions = fits.open(directory+'voxel_position.fits')[0].data
-    fuv = fits.open(directory+'voxel_fuv.fits')[0].data
-    Afuv = fits.open(directory+'voxel_Afuv.fits')[0].data
-    velocity = fits.open(directory+'voxel_velocity.fits')[0].data
+    fuv = fits.open(directory+r'voxel_fuv.fits')[0].data
+    FUVabsorption = fits.open(directory+r'voxel_FUVabsorption.fits')[0].data
+    velocity = fits.open(directory+r'voxel_velocity.fits')[0].data
     
-    clumpEmission = fits.open(directory+'emission_clump.fits')[0].data
-    interclumpEmission = fits.open(directory+'emission_interclump.fits')[0].data
+    clumpEmissivity = fits.open(directory+r'emissivity_clump.fits')[0].data
+    clumpAbsorption = fits.open(directory+r'absorption_clump.fits')[0].data
 
-    maxClumpEmission = np.zeros(clumpEmission[:,:,:,0].shape)
-    maxInterclumpEmission = np.zeros(interclumpEmission[:,:,:,0].shape)
-    for emission in range(2):
-      for voxel in range(clumpEmission[:,0,0,0].size):
-        for species in range(clumpEmission[0,0,:,0].size):
-          maxClumpEmission[voxel,emission,species] = norm.fit(clumpEmission[voxel,emission,species,:])[0]
-          maxInterclumpEmission[voxel,emission,species] = norm.fit(interclumpEmission[voxel,emission,species,:])[0]
+    # maxClumpEmission = np.zeros(clumpEmission[:,:,:,0].shape)
+    # maxInterclumpEmission = np.zeros(interclumpEmission[:,:,:,0].shape)
+    # for emission in range(2):
+    #   for voxel in range(clumpEmission[:,0,0,0].size):
+    #     for species in range(clumpEmission[0,0,:,0].size):
+    #       maxClumpEmission[voxel,emission,species] = norm.fit(clumpEmission[voxel,emission,species,:])[0]
+    #       maxInterclumpEmission[voxel,emission,species] = norm.fit(interclumpEmission[voxel,emission,species,:])[0]
   else:
 
     voxelPositions = fits.open(directory+'voxel_position.fits')[0].data
     fuv = fits.open(directory+'voxel_fuv.fits')[0].data
-    Afuv = fits.open(directory+'voxel_Afuv.fits')[0].data
+    FUVabsorption = fits.open(directory+'voxel_FUVabsorption.fits')[0].data
     velocity = fits.open(directory+'voxel_velocity.fits')[0].data
 
     maxClumpEmission = ce
@@ -101,15 +120,25 @@ def plotModel(plot='total intensity', ce=[], ie=[], grid=None, directory='/home/
     scale = r'$\tau$'
     plotTitle = 'Interclump optical depth within the Milky Way'
   
+  elif plot=='mass':
+    weights = (mass)
+    scale = r'$M_{vox} \ (M_\odot)$'
+    plotTitle = 'Ensemble mass within the Milky Way'
+  
+  elif plot=='density':
+    weights = (density)
+    scale = r'$n \ (cm^{-3})$'
+    plotTitle = 'Density within the Milky Way'
+  
   elif plot=='FUV':
     weights = (fuv)
     scale = r'$FUV \ (\chi)$'
     plotTitle = 'FUV within the Milky Way'
   
-  elif plot=='Afuv':
-    weights = (Afuv)
+  elif plot=='FUV absorption':
+    weights = (FUVabsorption)
     scale = r'$\tau_{FUV}$'
-    plotTitle = r'$A_{FUV}$ within the Milky Way'
+    plotTitle = r'$\tau_{FUV}$ within the Milky Way'
   
   elif plot=='velocity':
     weights = (velocity)
