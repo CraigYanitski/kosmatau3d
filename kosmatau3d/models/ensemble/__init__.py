@@ -28,4 +28,4 @@ CLmaxProbability = [[] for _ in range(len(constants.clumpMassNumber))]
 
 clumpIndeces = [[] for _ in range(len(constants.clumpMassNumber))]
 
-jit_module(nopython=False)
+# jit_module(nopython=False)
