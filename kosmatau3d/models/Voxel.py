@@ -357,7 +357,7 @@ class Voxel(object):
     if timed:
       t0 = time()
     
-    masspoints.calculateEmission(tauFUV=self.__tauFUV)
+    masspoints.calculateEmission(tauFUV=self.__tauFUV, timed=timed)
     
     if timed:
       t1 = time()

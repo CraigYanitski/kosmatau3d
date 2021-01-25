@@ -2,6 +2,7 @@ import importlib as il
 import numpy as np
 import matplotlib.pyplot as plt
 from mpl_toolkits.mplot3d import Axes3D
+import sys
 
 from . import shape #import Shape
 # import statistics
@@ -17,12 +18,34 @@ class Model(object):
   '''
   # PRIVATE
 
-  def __init__(self, x, y, z, modelName='', modelType='', resolution=1000, dustLim='', verbose=False):
+  def __init__(self, history_path='', directory='', x=0, y=0, z=0, modelType='', resolution=1000, molecules=[], dust='', clumpMassRange=[], clumpMassNumber=[], clumpNmax=[], velocityRange=[], velocityNumber=0, clumpMassFactor=[], FUVfactor=1, densityFactor=1, globalUV=10, verbose=False):
+    
+    if not len(clumpMassRange):
+      sys.exit('<<ERROR>> Define mass sets in argument.')
+      # sys.exit()
+    if not len(velocityRange):
+      sys.exit('<<ERROR>> Define observing velocities in argument.')
+      # sys.exit()
+      
     constants.type = modelType   #this just adds a label to the type of model being created. ie 'disk', 'bar', 'sphere', etc.
     constants.resolution = float(resolution)
-    constants.changeDustWavelengths(dustLim)
-    # constants.changeDirectory(modelName)
+    constants.HISTORYPATH = history_path
+    constants.changeDirectory(directory)
+    
+    # Factors
+    constants.clumpMassFactor = clumpMassFactor
+    constants.FUVFactor = FUVfactor
+    constants.densityFactor = densityFactor
+    constants.globalUV = globalUV
+
+    constants.changeVelocityRange(velocityRange)
+    constants.changeVelocityNumber(velocityNumber)
+    constants.addClumps(massRange=clumpMassRange, num=clumpMassNumber, Nmax=clumpNmax, reset=True)
+    
     observations.methods.initialise()
+    self.__addSpecies(molecules)
+    constants.changeDustWavelengths(dust)
+    
     self.__shape = shape.Shape(x, y, z, modelType=modelType)      #Shape() object to create the parameters for the grid of voxels
     self.__grid = VoxelGrid(self.__shape)   #VoxelGrid() object to build the model and calculate the emission
     #self.__orientation = Orientation(self.__shape.getDimensions())      #Orientation() object to change the viewing angle and expected spectra
@@ -33,6 +56,10 @@ class Model(object):
     self.__verbose = verbose
     self.__intensityMap = []
     self.__mapPositions = []
+    return
+
+  def __addSpecies(self, speciesTransition):
+    species.addMolecules(speciesTransition)
     return
 
   def __str__(self):
@@ -82,12 +109,8 @@ class Model(object):
   #   self.__dust.reloadModules()
   #   return
 
-  def calculateModel(self, debug=False):
-    self.__grid.calculateEmission(debug=debug)
-    return
-
-  def addSpecies(self, speciesTransition):
-    species.addMolecules(speciesTransition)
+  def calculateModel(self, timed=False, debug=False):
+    self.__grid.calculateEmission(timed=timed, debug=debug)
     return
 
   def writeEmission(self, debug=False):

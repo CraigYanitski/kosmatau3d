@@ -60,4 +60,4 @@ def reinitialise():
 
   return
 
-# jit_module(nopython=False)
+jit_module(nopython=False)

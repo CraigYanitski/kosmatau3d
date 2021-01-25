@@ -53,7 +53,7 @@ def calculateGridInterpolation(verbose=False):
   logI = np.log10(I)
   logTau = np.log10(Tau)
 
-  if constants.fortranEncoded:
+  if constants.logEncoded:
     # Fully 'encode' the emission grid for interpolation
     logI *= 10
     logTau *= 10

@@ -64,14 +64,14 @@ def interpolateIntensity(points, verbose=False):
   This is converted from brightness temperature to Jansky units.
   '''
   # Fully 'encode' the interpolation points to the fortran standard
-  if constants.fortranEncoded:
+  if constants.logEncoded:
     points = np.asarray(points)*10
   verbose = verbose or verbose
   if len(species.molecules):
     intensity = np.zeros(len(species.molecules))
     intensity_xi = 0
     for i,index in enumerate(species.moleculeIndeces):
-      if constants.fortranEncoded:
+      if constants.logEncoded:
         if constants.interpolation=='linear': intensity[i] = (10**(intensityInterpolation[i](points)/10))
         elif constants.interpolation=='radial' or interpolation=='cubic': intensity[i] = (10**(intensityInterpolation[i](points[0], points[1], points[2])/10))
       
@@ -92,14 +92,14 @@ def interpolateIntensity(points, verbose=False):
 
 def interpolateTau(points, verbose=False):
   # Fully 'encode' the interpolation points to the fortran standard
-  if constants.fortranEncoded:
+  if constants.logEncoded:
     points = np.asarray(points)*10
   verbose = verbose or verbose
   #points = np.log10(points)
   if len(species.molecules):
     tau = np.zeros(len(species.molecules))
     for i,index in enumerate(species.moleculeIndeces):
-      if constants.fortranEncoded:
+      if constants.logEncoded:
         if constants.interpolation=='linear': tau[i] = (10**(tauInterpolation[i](points)/10))
         elif constants.interpolation=='radial' or interpolation=='cubic': tau[i] = (10**(tauInterpolation[i](points[0], points[1], points[2])/10))
       
@@ -125,7 +125,7 @@ def interpolateDustIntensity(points, verbose=False):
   This will calculate the intensity in Jansky units.
   '''
   # Fully 'encode' the interpolation points to the fortran standard
-  if constants.fortranEncoded:
+  if constants.logEncoded:
     points = np.asarray(points)*10
 
   # if fortranEncoded:
@@ -150,7 +150,7 @@ def interpolateDustIntensity(points, verbose=False):
 
 def interpolateDustTau(points, verbose=False):
   # Fully 'encode' the interpolation points to the fortran standard
-  if constants.fortranEncoded:
+  if constants.logEncoded:
     points = np.asarray(points)*10
   # verbose = verbose or verbose
   #tau = []
@@ -216,4 +216,4 @@ def interpolateFUVfield(radius, height):
 def __str__():
   return 'Available Interpolations:\n -Clump intensity\n -Clump optical depth\n -Clump mass (galactic)\n -Clump density (galactic)\n -Voxel rotation (galactic)\n -UV extinction\n -FUV field (galactic)'
 
-# jit_module(nopython=False)
+jit_module(nopython=False)

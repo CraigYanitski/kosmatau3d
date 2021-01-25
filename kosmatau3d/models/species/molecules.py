@@ -18,7 +18,7 @@ def addMolecules(molecules):
 
   species.molecules = []
   species.moleculeIndeces = []
-  species.moleculeFequencies = []
+  species.moleculeFrequencies = []
   species.moleculeWavelengths = []
 
   for molecule in molecules:

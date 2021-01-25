@@ -44,7 +44,7 @@ class VoxelGrid(object):
     self.__y = []
     self.__z = []
 
-    constants.history = 'r{}_im{}_cm{}_d{}_uv{}/'.format(int(constants.resolution), constants.interclumpMassFactor, constants.clumpMassFactor, constants.densityFactor, constants.globalUV)
+    constants.history = 'r{}_cm{}_d{}_uv{}/'.format(int(constants.resolution), '-'.join(str(f) for f in constants.clumpMassFactor), constants.densityFactor, constants.globalUV)
 
     return
 
@@ -66,7 +66,7 @@ class VoxelGrid(object):
 
     # Mass
     clumpMass = [interpolations.interpolateClumpMass(rPol), interpolations.interpolateInterclumpMass(rPol)]
-    clumpMass = constants.clumpMassFactor*np.asarray(clumpMass).mean(1)
+    clumpMass = [constants.clumpMassFactor[ens]*np.asarray(clumpMass).mean(1)[ens] for ens in range(len(constants.clumpMassNumber))]
 
     # Velocity
     velocity = interpolations.interpolateRotationalVelocity(rPol)
@@ -113,7 +113,7 @@ class VoxelGrid(object):
                         # Voxel properties
                           'velocity' : velocity, \
                 'ensembleDispersion' : ensembleDispersion, \
-                         'clumpMass' : clumpMass, \
+                      'ensembleMass' : clumpMass, \
                    'ensembleDensity' : [ensembleDensity,1911], \
                                'FUV' : [FUV,1] \
                         }
@@ -135,23 +135,34 @@ class VoxelGrid(object):
   def getDimensions(self):
     return self.__shape.getDimensions()
 
-  def calculateEmission(self, index=0, debug=False, verbose=False):
+  def calculateEmission(self, index=0, debug=False, timed=False, verbose=False):
     # This will initialise the grid of voxels and calculate their emission. This has to be
     #done in succession for each voxel since the calculations are modular (the temporary
     #voxel terms are changed when calculating different voxels). This can be rerun and it
     #will reinitialise the grid.
+    
+    if timed:
+      t0 = time()
 
     #print(observations.tauCenterline)
     interpolations.initialise()
     self.__initialiseGrid()
+    
+    if timed:
+      t1 = time()
+      print('Grid initialised: {:.4f} s'.format(t1-t0))
 
     print('\nCalculating Grid Emission...')
 
     x,y,z = self.__shape.voxelCartesianPositions()
     r,phi = self.__shape.voxelPolarPositions()
+    print()
     #self.__unusedVoxels = []
     with tqdm(total=len(self.__voxels), desc='Voxels initialised', miniters=1, dynamic_ncols=True) as progress:
       for i,voxel in enumerate(self.__voxels):
+        
+        if timed:
+          t2 = time()
 
         if verbose:
             print('\nMax X, Radius:', max(x), r[i], '\n')
@@ -164,9 +175,16 @@ class VoxelGrid(object):
         voxel.setPosition(x[i], y[i], z[i], r[i], phi[i])
         self.__calculateProperties(x[i], y[i], z[i])
         voxel.setProperties(**self.__properties)
+        
+        if timed:
+          print('\nVoxel initialised: {:.4f} s'.format(time()-t2))
 
         self.__voxelFUVabsorption.append(voxel.getFUVabsorption())
         voxel.calculateEmission()
+        
+        if timed:
+          print('Voxel calculated: {:.4f} s / {:.4f} s'.format(time()-t2, time()-t1))
+          print()
 
         progress.update()
 
@@ -184,16 +202,16 @@ class VoxelGrid(object):
 
     if debug:
 
-      dim = [1, self.__voxelNumber]
-      shdu_mass = self.shdu_header(name='Mass', units='Msol', filename='voxel_mass', dim=dim)
+      # dim = [1, self.__voxelNumber]
+      # shdu_mass = self.shdu_header(name='Mass', units='Msol', filename='voxel_mass', dim=dim)
 
-      dim = [1, self.__voxelNumber]
-      shdu_clump_mass = self.shdu_header(name='Clump Mass', units='Msol', filename='voxel_clump_mass', dim=dim)
+      dim = [len(constants.clumpMassNumber), self.__voxelNumber]
+      shdu_clump_mass = self.shdu_header(name='Ensemble Mass', units='Msol', filename='voxel_ensemble_mass', dim=dim)
 
-      dim = [1, self.__voxelNumber]
-      shdu_interclump_mass = self.shdu_header(name='Interclump Mass', units='Msol', filename='voxel_interclump_mass', dim=dim)
+      # dim = [1, self.__voxelNumber]
+      # shdu_interclump_mass = self.shdu_header(name='Interclump Mass', units='Msol', filename='voxel_interclump_mass', dim=dim)
 
-      dim = [1, self.__voxelNumber]
+      dim = [len(constants.clumpMassNumber), self.__voxelNumber]
       shdu_density = self.shdu_header(name='Density', units='cm^-3', filename='voxel_density', dim=dim)
 
     dim = [3, self.__voxelNumber]
@@ -208,7 +226,7 @@ class VoxelGrid(object):
     # dim = [constants.clumpMaxIndeces[1], self.__voxelNumber]
     # shdu_interclump_velocity = self.shdu_header(name='Interclump Velocity', units='km/s', filename='voxel_interclump_velocity', dim=dim)
     
-    dim = [1,self.__voxelNumber]
+    dim = [len(constants.clumpMassNumber),self.__voxelNumber]
     shdu_FUV = self.shdu_header(name='FUV', units='Draine', filename='voxel_fuv', dim=dim)
     shdu_FUVabsorption = self.shdu_header(name='tau_FUV', units='mag', filename='voxel_FUVabsorption', dim=dim)
 
@@ -274,13 +292,13 @@ class VoxelGrid(object):
         # shdu_clump_velocity.write(clumpVelocity)
         # shdu_interclump_velocity.write(interclumpVelocity)
         shdu_FUV.write(np.array([voxel.getFUV()]))
-        shdu_FUVabsorption.write(np.array([self.__voxelFUVabsorption[i]]))
+        shdu_FUVabsorption.write(np.asarray([voxel.getFUVabsorption()]))
 
         if debug:
 
-          shdu_mass.write(np.array([voxel.getMass()]))
-          shdu_clump_mass.write(np.array([voxel.getClumpMass()]))
-          shdu_interclump_mass.write(np.array([voxel.getInterclumpMass()]))
+          # shdu_mass.write(np.array([voxel.getMass()]))
+          shdu_clump_mass.write(np.array([voxel.getEnsembleMass()]))
+          # shdu_interclump_mass.write(np.array([voxel.getInterclumpMass()]))
           shdu_density.write(np.array([voxel.getDensity()]))
 
         shdu_clump_emissivity.write(np.array(epsilon))
@@ -353,7 +371,7 @@ class VoxelGrid(object):
 
     directory = constants.HISTORYPATH + constants.directory + constants.history
     
-    if not os.path.exists(directory): os.mkdir(directory)
+    if not os.path.exists(directory): os.makedirs(directory)
     
     if not '.fits' in filename: filename = directory + filename + '.fits'
     else: filename = directory + filename

@@ -18,11 +18,11 @@ to change the model parameters for when this is needed.
 directory = ''
 history = ''
 filename = inspect.getframeinfo(inspect.currentframe()).filename
-KOSMAPATH = os.path.abspath(os.path.dirname(filename)+'/../../')
-INPUTPATH = KOSMAPATH + '/input/'#'/home/craig/Desktop/Köln/kosma-tau^3-develop/kosma-tau-3d/input/'#
-GRIDPATH = KOSMAPATH + '/grid/'#'/home/craig/Desktop/Köln/kosma-tau^3-develop/kosma-tau-3d/grid/'#
-MOLECULARPATH = KOSMAPATH + '/molecular_data/'#'/home/craig/Desktop/Köln/kosma-tau^3-develop/kosma-tau-3d/molecular_data/'#
-HISTORYPATH = KOSMAPATH + '/history/'#'/home/craig/Desktop/Köln/kosma-tau^3-develop/kosma-tau-3d/history/'#
+KOSMAPATH = os.path.abspath(os.path.dirname(filename)+'/../../') #directory to kosmatau package
+INPUTPATH = KOSMAPATH + '/input/' #for model input properties
+GRIDPATH = KOSMAPATH + '/grid/' #for KOSMA-tau grid intensities, optical depths, and absorption
+MOLECULARPATH = KOSMAPATH + '/molecular_data/' #for KOSMA-tau ONION molecular data
+HISTORYPATH = '~/KOSMA-tau^3/history/' #history path
 
 # Interpolation style (it accepts 'linear' or 'cubic'/'radial')
 interpolation = 'linear'
@@ -31,10 +31,9 @@ interpolation = 'linear'
 dtype = np.float64
 
 # Factors (and constant) for fine-tuning the input data
-clumpMassFactor = 1
-interclumpMassFactor = 1
-densityFactor = 1
-FUVFactor = 1
+clumpMassFactor = [1]
+densityFactor = [1]
+FUVFactor = [1]
 
 # Standard constants
 massH = 1.007276466812*1.6605*10**-27  #in [kg]
@@ -113,7 +112,7 @@ normUV = 2.89433*10**39
 globalUV = 10
 
 # Interpolation
-fortranEncoded = True
+logEncoded = True
 
 # Finally, these are the wavelengths at which the dust emission will be computed
 dustNames = np.array(['3.1mm', '2.4mm', '1.8mm', '1.3mm', '1.0mm', '850um', '700um', '550um', '420um', '300um', '240um', '188.4um', '177.8um', '167.9um', '158.5um', '149.6um', \
