@@ -38,8 +38,10 @@ class Voxel(object):
     self.__modelMass = []
     self.__volumeFactor = []
 
-    self.__intensity = 0      #intensity of emissions at voxel point
-    self.__opticalDepth = 0   #optical depth at voxel point
+    self.__intensitySpecies = 0      #intensity of species transitions in voxel
+    self.__opticalDepthSpecies = 0   #optical depth of species transitions in voxel
+    self.__intensityDust = 0      #intensity of dust continuum in voxel
+    self.__opticalDepthDust = 0   #optical depth of dust continuum in voxel
     
     self.__FUV = 0.
     self.__Afuv = 0.
@@ -317,6 +319,11 @@ class Voxel(object):
 
     self.__clumpVelocities = copy(ensemble.clumpVelocities)
     self.__clumpVelocityIndeces = copy(ensemble.clumpIndeces)   #all list entries should be the same
+    
+    self.__intensitySpecies = [np.zeros((constants.velocityRange.size, len(species.molecules))) for _ in range(constants.ensembles)]
+    self.__opticalDepthSpecies = [np.zeros((constants.velocityRange.size, len(species.molecules))) for _ in range(constants.ensembles)]
+    self.__intensityDust = [np.zeros((constants.velocityRange.size, constants.wavelengths[constants.nDust].size)) for _ in range(constants.ensembles)]
+    self.__opticalDepthDust = [np.zeros((constants.velocityRange.size, constants.wavelengths[constants.nDust].size)) for _ in range(constants.ensembles)]
 
     # This gives an error if there are too many clumps in a line-of-sight; tau_FUV is too large for this equation...
     Afuv = combinations.getAfuv()
@@ -384,7 +391,9 @@ class Voxel(object):
 
       vel = constants.velocityRange   #v_obs
       clumpVel = ensemble.clumpVelocities[ens]   #v_sys
-      factor = np.exp(-(vel.reshape(1,-1)-clumpVel.reshape(-1,1)-self.__velocity)**2/2/constants.clumpDispersion**2)
+      # print(vel.shape, clumpVel.shape)
+      nv = np.abs(vel-self.__velocity) <= 4*np.maximum(self.__ensembleDispersion[ens], constants.clumpDispersion)
+      factor = np.exp(-(vel[nv].reshape(1,-1)-clumpVel.reshape(-1,1)-self.__velocity)**2/2/constants.clumpDispersion**2)
       
       # clumpIntensity[ens] = np.zeros((ensemble.clumpVelocities[ens].size, constants.velocityRange.size, combinations.clumpIntensity[ens].shape[0], combinations.clumpIntensity[ens].shape[1]))
       # clumpIntensityDust[ens] = np.zeros((constants.velocityRange.size, combinations.clumpIntensity[ens].shape[0], combinations.clumpIntensity[ens].shape[1]))
@@ -398,14 +407,14 @@ class Voxel(object):
           print('Start I_xi calculation:', t3-t2)
 
         intensity = copy(combinations.clumpIntensity[ens][:,iDust:])
-        intensity = np.array([intensity*factor[ensemble.clumpIndeces[ens][i],j] for j in range(vel.size)])  #shape (v_obs, combination, wavelength)
-        clumpIntensity[ens].append(np.array([(probability.prod(1)*intensity[j].T).T for j in range(vel.size)]))  #shape (v_sys, v_obs, combination, wavelength)
+        intensity = np.array([intensity*factor[ensemble.clumpIndeces[ens][i],j] for j in range(factor.shape[1])])  #shape (v_obs, combination, wavelength)
+        clumpIntensity[ens].append(np.array([(probability.prod(1)*intensity[j].T).T for j in range(factor.shape[1])]))  #shape (v_sys, v_obs, combination, wavelength)
         intensityDust = copy(combinations.clumpIntensity[ens][:,:iDust])  #shape (combination, wavelength)
         clumpIntensityDust[ens].append((probability.prod(1)*intensityDust.T).T)  #shape (v_obs, combination, wavelength)
 
         opticalDepth = copy(combinations.clumpOpticalDepth[ens][:,iDust:])
-        opticalDepth = np.array([opticalDepth*factor[ensemble.clumpIndeces[ens][i],j] for j in range(vel.size)])
-        clumpOpticalDepth[ens].append(np.array([(probability.prod(1)*np.exp(-opticalDepth[j].T)).T for j in range(vel.size)]))
+        opticalDepth = np.array([opticalDepth*factor[ensemble.clumpIndeces[ens][i],j] for j in range(factor.shape[1])])
+        clumpOpticalDepth[ens].append(np.array([(probability.prod(1)*np.exp(-opticalDepth[j].T)).T for j in range(factor.shape[1])]))
         opticalDepthDust = copy(combinations.clumpOpticalDepth[ens][:,:iDust])
         clumpOpticalDepthDust[ens].append((probability.prod(1)*np.exp(-opticalDepthDust.T)).T)
 
@@ -414,14 +423,14 @@ class Voxel(object):
           print('End I_xi calculation:', t4-t3)
 
       # All of these have shape (velocity, wavelength)
-      clumpIntensity[ens] = (np.array(clumpIntensity[ens]).sum(2)).sum(0).astype(np.float64)
-      clumpOpticalDepth[ens] = (-np.log(np.array(clumpOpticalDepth[ens]).sum(2))).sum(0).astype(np.float64)
-      clumpIntensityDust[ens] = np.array([np.array(clumpIntensityDust[ens]).sum(1).sum(0) for _ in range(vel.size)]).astype(np.float64)
-      clumpOpticalDepthDust[ens] = np.array([-np.log(np.array(clumpOpticalDepthDust[ens]).sum(1)).sum(0) for _ in range(vel.size)]).astype(np.float64)
+      self.__intensitySpecies[ens][nv,:] = self.__intensitySpecies[ens][nv,:]+(np.array(clumpIntensity[ens]).sum(2)).sum(0).astype(np.float64)
+      self.__opticalDepthSpecies[ens][nv,:] = self.__opticalDepthSpecies[ens][nv,:]+(-np.log(np.array(clumpOpticalDepth[ens]).sum(2))).sum(0).astype(np.float64)
+      self.__intensityDust[ens][nv,:] = self.__intensityDust[ens][nv,:]+np.array([np.array(clumpIntensityDust[ens]).sum(1).sum(0) for _ in range(factor.shape[1])]).astype(np.float64)
+      self.__opticalDepthDust[ens][nv,:] = self.__opticalDepthDust[ens][nv,:]+np.array([-np.log(np.array(clumpOpticalDepthDust[ens]).sum(1)).sum(0) for _ in range(factor.shape[1])]).astype(np.float64)
 
-    # Sum over ensembles
-    self.__intensity = np.append(clumpIntensityDust, clumpIntensity, axis=2)
-    self.__opticalDepth = np.append(clumpOpticalDepthDust, clumpOpticalDepth, axis=2)
+    # # Sum over ensembles
+    # self.__intensity = np.append(clumpIntensityDust, clumpIntensity, axis=2)
+    # self.__opticalDepth = np.append(clumpOpticalDepthDust, clumpOpticalDepth, axis=2)
 
     if verbose:
       print('Voxel emission calculated.')
@@ -431,15 +440,29 @@ class Voxel(object):
     
     return
 
-  def getEmissivity(self):
-    return self.__intensity/constants.voxel_size
+  def getSpeciesEmissivity(self):
+    return np.asarray(self.__intensitySpecies)/constants.voxel_size
 
-  def getAbsorption(self):
-    return self.__opticalDepth/constants.voxel_size
+  def getSpeciesAbsorption(self):
+    return np.asarray(self.__opticalDepthSpecies)/constants.voxel_size
 
-  def getIntensity(self):
-    epsilon = self.getEmissivity()
-    kappa = self.getAbsorption()
+  def getSpeciesIntensity(self):
+    epsilon = self.getSpeciesEmissivity()
+    kappa = self.getSpeciesAbsorption()
+    intensity = epsilon/kappa*(1-np.exp(-kappa*constants.voxel_size))
+    i_nan = np.isnan(intensity)
+    intensity[i_nan] = epsilon[i_nan]
+    return intensity
+
+  def getDustEmissivity(self):
+    return np.asarray(self.__intensityDust)/constants.voxel_size
+
+  def getDustAbsorption(self):
+    return np.asarray(self.__opticalDepthDust)/constants.voxel_size
+
+  def getDustIntensity(self):
+    epsilon = self.getDustAbsorption()
+    kappa = self.getDustAbsorption()
     intensity = epsilon/kappa*(1-np.exp(-kappa*constants.voxel_size))
     i_nan = np.isnan(intensity)
     intensity[i_nan] = epsilon[i_nan]
@@ -449,8 +472,6 @@ class Voxel(object):
     # Plot the molecule emission with respect to the voxel velocity structure
 
     import matplotlib.pyplot as plt
-
-    nDust = constants.wavelengths[constants.nDust].size
 
     if molecule in species.molecules and isinstance(molecule, str):
       molecule = [molecule]
@@ -462,15 +483,15 @@ class Voxel(object):
       molecule = species.molecules
 
     if quantity=='emissivity':
-      value = self.getEmissivity()
+      value = self.getSpeciesEmissivity()
       ylabel = r'$\epsilon_{\lambda} \ \left( \frac{K}{pc} \right)$'
 
     elif quantity=='absorption':
-      value = self.getAbsorption()
+      value = self.getSpeciesEmissivity()
       ylabel = r'$\kappa_{\lambda} \ \left( \frac{1}{pc} \right)$'
 
     elif quantity=='intensity':
-      value = self.getIntensity()
+      value = self.getSpeciesIntensity()
       ylabel = r'$I_{\lambda} \ \left( K \right)$'
 
     fig,axes = plt.subplots(len(value), figsize=(10, 5*len(value)))
@@ -492,7 +513,7 @@ class Voxel(object):
           print('Species {} not in model.'.format(mol))
           pass
 
-        i = nDust + np.where(mol==np.asarray(species.molecules))[0][0]
+        i = np.where(mol==np.asarray(species.molecules))[0][0]
         
         if logscale:
           ax.semilogy(vel, value[ens][:,i], marker='o', ms=2, ls='-', lw=1)
@@ -545,18 +566,21 @@ class Voxel(object):
     nDust = constants.wavelengths[constants.nDust].size
 
     if quantity=='emissivity':
-      value = self.__intensity/constants.voxel_size
+      valueDust = self.getDustEmissivity()
+      valueSpecies = self.getSpeciesEmissivity()
       ylabel = r'$\epsilon_{\lambda} \ \left( \frac{K}{pc} \right)$'
 
     elif quantity=='absorption':
-      value = self.__opticalDepth/constants.voxel_size
+      valueDust = self.getDustAbsorption()
+      valueSpecies = self.getSpeciesAbsorption()
       ylabel = r'$\kappa_{\lambda} \ \left( \frac{1}{pc} \right)$'
 
     elif quantity=='intensity':
-      value = self.__intensity/self.__opticalDepth * (1-np.exp(-self.__opticalDepth))
+      valueDust = self.getDustIntensity()
+      valueSpecies = self.getSpeciesIntensity()
       ylabel = r'$I_{\lambda} \ \left( K \right)$'
 
-    fig,axes = plt.subplots(len(value), figsize=(10, 5*len(value)))
+    fig,axes = plt.subplots(constants.ensembles, figsize=(10, 5*constants.ensembles))
 
     for ens in range(len(value)):
 
@@ -566,10 +590,10 @@ class Voxel(object):
       else:
         ax = axes
 
-      vel = int(value[ens].shape[0]/2)
-      dustInterp = interp1d(constants.wavelengths[constants.nDust], value[ens][vel,:nDust], fill_value='extrapolate')
+      vel = int(valueSpecies[ens].shape[0]/2)
+      dustInterp = interp1d(constants.wavelengths[constants.nDust], valueDust[ens][vel,:], fill_value='extrapolate')
 
-      ax.loglog(1e6*constants.wavelengths[constants.nDust], value[ens][vel,:nDust], ls='--', lw=0.5, c='xkcd:black')
+      ax.loglog(1e6*constants.wavelengths[constants.nDust], valueDust[ens][vel,:], ls='--', lw=0.5, c='xkcd:black')
       
       molecules = []
       colour = []
@@ -579,7 +603,7 @@ class Voxel(object):
         if not molecule.split()[0] in molecules:
           colour.append(moleculeColour[molecule.split()[0]])
           molecules.append(molecule.split()[0])
-        ax.loglog([1e6*species.moleculeWavelengths[i]]*2, [valTemp,valTemp+value[ens][vel,nDust+i]], ls='-', lw=1, c=colour[-1])
+        ax.loglog([1e6*species.moleculeWavelengths[i]]*2, [valTemp,valTemp+valueSpecies[ens][vel,i]], ls='-', lw=1, c=colour[-1])
 
       lines = [Line2D([0], [0], color=moleculeColour[molecule], lw=1) for molecule in molecules]
       # mols  = ['dust', ]
@@ -587,7 +611,7 @@ class Voxel(object):
       
       ax.set_xlabel(r'$\lambda \ (\mu m)$', fontsize=20)
       ax.set_ylabel(ylabel, fontsize=20)
-      ax.set_ylim([value[ens][vel,:nDust].min()*10e-3, value[ens][vel,:nDust].max()*10e3])
+      ax.set_ylim([valueDust[ens][vel,:].min()*10e-3, valueDust[ens][vel,:].max()*10e3])
       plt.setp(ax.get_xticklabels(), fontsize=14)
       plt.setp(ax.get_yticklabels(), fontsize=14)
 

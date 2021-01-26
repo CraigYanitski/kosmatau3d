@@ -64,6 +64,7 @@ def addClumps(massRange=[], num=0, Nmax=1, reset=False):
     constants.clumpMaxIndeces.append(0)
     constants.clumpNmax.append(Nmax[i])
     constants.clumpLogMass.append(np.resize(np.linspace(massRange[i][0], massRange[i][-1], num=num[i]), (1,num[i])))
+    constants.ensembles = len(num)
   return
 
 def resetClumps():
@@ -71,8 +72,8 @@ def resetClumps():
   constants.clumpMassNumber = [3, 1]
   constants.clumpLogMassRange = [[0,2], [-2]]
   constants.clumpLogMass = [[], []]
-  constants.clumpDensity = [None, 1911]
-  constants.clumpFUV = [None, 10]
+  # constants.clumpDensity = [None, 1911]
+  # constants.clumpFUV = [None, 10]
   for i in range(2):
     constants.clumpLogMass[i] = np.linspace(constants.clumpLogMassRange[i][0], constants.clumpLogMassRange[i][-1], num=constants.clumpMassNumber[i])
     constants.clumpLogMass[i].resize(1,constants.clumpMassNumber[i])
@@ -110,5 +111,9 @@ def resortWavelengths():
   allWavelengths = np.append(constants.wavelengths[constants.nDust], species.moleculeWavelengths)
   constants.sortedIndeces = allWavelengths.argsort()
   constants.sortedWavelengths = allWavelengths[constants.sortedIndeces]
+  return
+
+def dustWavelengths():
+  return constants.wavelengths[constants.nDust]
 
 jit_module(nopython=False)
