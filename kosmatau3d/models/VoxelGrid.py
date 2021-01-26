@@ -34,8 +34,10 @@ class VoxelGrid(object):
 
     #self.__species = None
 
-    self.__voxelIntensity = []
-    self.__voxelOpticalDepth = []
+    self.__voxelSpeciesIntensity = []
+    self.__voxelSpeciesOpticalDepth = []
+    self.__voxelDustIntensity = []
+    self.__voxelDustOpticalDepth = []
 
     self.__voxelFUV = []
     self.__voxelFUVabsorption = []
@@ -44,7 +46,7 @@ class VoxelGrid(object):
     self.__y = []
     self.__z = []
 
-    constants.history = 'r{}_cm{}_d{}_uv{}/'.format(int(constants.resolution), '-'.join(str(f) for f in constants.clumpMassFactor), constants.densityFactor, constants.globalUV)
+    constants.history = 'r{}_cm{}_d{}_uv{}/'.format(int(constants.voxel_size), '-'.join(str(f) for f in constants.clumpMassFactor), constants.densityFactor, constants.globalUV)
 
     return
 
@@ -54,7 +56,7 @@ class VoxelGrid(object):
     return
 
   def __str__(self):
-    return 'VoxelGrid\n  ->{} voxels\n  ->intensity {}\n  ->optical depth {}'.format(self.__voxelNumber, sum(self.__voxelIntensity), -np.log(np.exp(-self.__voxelOpticalDepth)))
+    return 'VoxelGrid\n  ->{} voxels\n'.format(self.__voxelNumber)
 
   def __calculateProperties(self, X, Y, Z):
     # This is a method to calculate the dict to unpack into the argument for Voxel.setProperties().
@@ -238,9 +240,13 @@ class VoxelGrid(object):
     #the number of wavelengths at which the emission is calculated (#molecules + 333 dust wavelengths),
     #and finally the number of voxels.
     # dim = [len(species.moleculeWavelengths)+nDust, constants.clumpMaxIndeces[0], self.__voxelNumber]
-    dim = [len(species.moleculeWavelengths)+nDust, constants.velocityRange.size, self.__voxelNumber]
-    shdu_clump_emissivity = self.shdu_header(name='Clump emissivity', units='K/pc', filename='emissivity_clump', dim=dim)
-    shdu_clump_absorption = self.shdu_header(name='Clump absorption', units='1/pc', filename='absorption_clump', dim=dim)
+    dim = [len(species.moleculeWavelengths), constants.velocityRange.size, self.__voxelNumber]
+    shdu_clump_emissivity_species = self.shdu_header(name='Clump species emissivity', units='K/pc', filename='species_emissivity_clump', dim=dim)
+    shdu_clump_absorption_species = self.shdu_header(name='Clump species absorption', units='1/pc', filename='species_absorption_clump', dim=dim)
+    
+    dim = [nDust, constants.velocityRange.size, self.__voxelNumber]
+    shdu_clump_emissivity_dust = self.shdu_header(name='Clump dust emissivity', units='K/pc', filename='dust_emissivity_clump', dim=dim)
+    shdu_clump_absorption_dust = self.shdu_header(name='Clump dust absorption', units='1/pc', filename='dust_absorption_clump', dim=dim)
     
     # dim = [len(species.moleculeWavelengths)+nDust, constants.clumpMaxIndeces[1], self.__voxelNumber]
     # shdu_interclump_intensity = self.shdu_header(name='Clump intensity', units='K', filename='intensity_interclump', dim=dim)
@@ -252,8 +258,10 @@ class VoxelGrid(object):
         
         gc.collect()
         
-        epsilon = np.sum(voxel.getEmissivity(), axis=0)
-        kappa = np.sum(voxel.getAbsorption(), axis=0)
+        epsilon_species = np.sum(voxel.getSpeciesEmissivity(), axis=0)
+        kappa_species = np.sum(voxel.getSpeciesAbsorption(), axis=0)
+        epsilon_dust = np.sum(voxel.getDustEmissivity(), axis=0)
+        kappa_dust = np.sum(voxel.getDustAbsorption(), axis=0)
 
         # Optain the voxel emission data
         # clumpIntensity = intensity[0]
@@ -301,8 +309,10 @@ class VoxelGrid(object):
           # shdu_interclump_mass.write(np.array([voxel.getInterclumpMass()]))
           shdu_density.write(np.array([voxel.getDensity()]))
 
-        shdu_clump_emissivity.write(np.array(epsilon))
-        shdu_clump_absorption.write(np.array(kappa))
+        shdu_clump_emissivity_species.write(np.array(epsilon_species))
+        shdu_clump_absorption_species.write(np.array(kappa_species))
+        shdu_clump_emissivity_dust.write(np.array(epsilon_dust))
+        shdu_clump_absorption_dust.write(np.array(kappa_dust))
 
         # shdu_interclump_intensity.write(interclumpIntensity)
         # shdu_interclump_tau.write(interclumpTau)
@@ -340,8 +350,8 @@ class VoxelGrid(object):
   def getFUV(self):
     return self.__voxelFUV
 
-  def getAfuv(self):
-    return self.__voxelAfuv
+  def getFUVabsorption(self):
+    return self.__voxelFUVabsorption
 
   def printVoxels(self):
     for voxel in self.__voxels: voxel.printVoxel()

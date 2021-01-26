@@ -28,7 +28,7 @@ class Model(object):
       # sys.exit()
       
     constants.type = modelType   #this just adds a label to the type of model being created. ie 'disk', 'bar', 'sphere', etc.
-    constants.resolution = float(resolution)
+    constants.voxel_size = float(resolution)
     constants.HISTORYPATH = history_path
     constants.changeDirectory(directory)
     

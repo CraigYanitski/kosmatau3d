@@ -13,16 +13,16 @@ class Dimensions(object):
   # PRIVATE
   def __init__(self, x, y, z, i=0):
     self.__i = i
-    self.__x = np.floor_divide(x*1000, constants.resolution)*constants.resolution
-    self.__y = np.floor_divide(y*1000, constants.resolution)*constants.resolution
-    self.__z = np.floor_divide(z*1000, constants.resolution)*constants.resolution
+    self.__x = np.floor_divide(x*1000, constants.voxel_size)*constants.voxel_size
+    self.__y = np.floor_divide(y*1000, constants.voxel_size)*constants.voxel_size
+    self.__z = np.floor_divide(z*1000, constants.voxel_size)*constants.voxel_size
     self.dimensions = (self.__x, self.__y, self.__z)
     self.__xOffset = self.__x/2.
     self.__yOffset = self.__y/2.
     self.__zOffset = self.__z/2.
-    self.__xRange = np.arange(0, self.__x+constants.resolution, constants.resolution)
-    self.__yRange = np.arange(0, self.__y+constants.resolution, constants.resolution)
-    self.__zRange = np.arange(0, self.__z+constants.resolution, constants.resolution)
+    self.__xRange = np.arange(0, self.__x+constants.voxel_size, constants.voxel_size)
+    self.__yRange = np.arange(0, self.__y+constants.voxel_size, constants.voxel_size)
+    self.__zRange = np.arange(0, self.__z+constants.voxel_size, constants.voxel_size)
     grid = np.meshgrid(self.__xRange-self.__xOffset, self.__yRange-self.__yOffset, self.__zRange-self.__zOffset)
     self.__xPositions = grid[0].flatten()
     self.__yPositions = grid[1].flatten()
