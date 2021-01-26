@@ -241,12 +241,12 @@ class VoxelGrid(object):
     #and finally the number of voxels.
     # dim = [len(species.moleculeWavelengths)+nDust, constants.clumpMaxIndeces[0], self.__voxelNumber]
     dim = [len(species.moleculeWavelengths), constants.velocityRange.size, self.__voxelNumber]
-    shdu_clump_emissivity_species = self.shdu_header(name='Clump species emissivity', units='K/pc', filename='species_emissivity_clump', dim=dim)
-    shdu_clump_absorption_species = self.shdu_header(name='Clump species absorption', units='1/pc', filename='species_absorption_clump', dim=dim)
+    shdu_clump_emissivity_species = self.shdu_header(name='Clump species emissivity', units='K/pc', species=True, filename='species_emissivity_clump', dim=dim)
+    shdu_clump_absorption_species = self.shdu_header(name='Clump species absorption', units='1/pc', species=True, filename='species_absorption_clump', dim=dim)
     
     dim = [nDust, constants.velocityRange.size, self.__voxelNumber]
-    shdu_clump_emissivity_dust = self.shdu_header(name='Clump dust emissivity', units='K/pc', filename='dust_emissivity_clump', dim=dim)
-    shdu_clump_absorption_dust = self.shdu_header(name='Clump dust absorption', units='1/pc', filename='dust_absorption_clump', dim=dim)
+    shdu_clump_emissivity_dust = self.shdu_header(name='Clump dust emissivity', units='K/pc', dust=True, filename='dust_emissivity_clump', dim=dim)
+    shdu_clump_absorption_dust = self.shdu_header(name='Clump dust absorption', units='1/pc', dust=True, filename='dust_absorption_clump', dim=dim)
     
     # dim = [len(species.moleculeWavelengths)+nDust, constants.clumpMaxIndeces[1], self.__voxelNumber]
     # shdu_interclump_intensity = self.shdu_header(name='Clump intensity', units='K', filename='intensity_interclump', dim=dim)
@@ -357,7 +357,7 @@ class VoxelGrid(object):
     for voxel in self.__voxels: voxel.printVoxel()
     return
 
-  def shdu_header(self, name='', units='', filename=None, dim=None):
+  def shdu_header(self, name='', units='', species=False, dust=False, filename=None, dim=None):
 
     if filename==None or dim==None: return
 
@@ -367,6 +367,10 @@ class VoxelGrid(object):
     header['BITPIX'] = (-64, 'element size')
     header['NAXIS'] = (len(dim), 'number of axes')
     header['EXTEND'] = True
+    if species:
+      header['species'] = ', '.join(species.molecules)
+    if dust:
+      header['dust'] = constants.dustWavelengths
 
     for i in range(len(dim)):
       header['NAXIS{}'.format(i+1)] = dim[i]

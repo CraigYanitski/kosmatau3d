@@ -320,10 +320,10 @@ class Voxel(object):
     self.__clumpVelocities = copy(ensemble.clumpVelocities)
     self.__clumpVelocityIndeces = copy(ensemble.clumpIndeces)   #all list entries should be the same
     
-    self.__intensitySpecies = [np.zeros((constants.velocityRange.size, len(species.molecules))) for _ in range(constants.ensembles)]
-    self.__opticalDepthSpecies = [np.zeros((constants.velocityRange.size, len(species.molecules))) for _ in range(constants.ensembles)]
-    self.__intensityDust = [np.zeros((constants.velocityRange.size, constants.wavelengths[constants.nDust].size)) for _ in range(constants.ensembles)]
-    self.__opticalDepthDust = [np.zeros((constants.velocityRange.size, constants.wavelengths[constants.nDust].size)) for _ in range(constants.ensembles)]
+    self.__intensitySpecies = [np.zeros((constants.velocityRange.size, len(species.molecules)), dtype=np.float64) for _ in range(constants.ensembles)]
+    self.__opticalDepthSpecies = [np.zeros((constants.velocityRange.size, len(species.molecules)), dtype=np.float64) for _ in range(constants.ensembles)]
+    self.__intensityDust = [np.zeros((constants.velocityRange.size, constants.wavelengths[constants.nDust].size), dtype=np.float64) for _ in range(constants.ensembles)]
+    self.__opticalDepthDust = [np.zeros((constants.velocityRange.size, constants.wavelengths[constants.nDust].size), dtype=np.float64) for _ in range(constants.ensembles)]
 
     # This gives an error if there are too many clumps in a line-of-sight; tau_FUV is too large for this equation...
     Afuv = combinations.getAfuv()
@@ -387,7 +387,7 @@ class Voxel(object):
     iDust = constants.wavelengths[constants.nDust].size
 
     # Clump
-    for ens in range(len(constants.clumpMassNumber)):
+    for ens in range(constants.ensembles):
 
       vel = constants.velocityRange   #v_obs
       clumpVel = ensemble.clumpVelocities[ens]   #v_sys

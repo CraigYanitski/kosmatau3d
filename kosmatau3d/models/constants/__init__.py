@@ -170,4 +170,4 @@ sortedIndeces = wavelengths.argsort()
 
 hclambda = h*c/wavelengths #to aid in calculations
 
-jit_module(nopython=False)
+# jit_module(nopython=False)

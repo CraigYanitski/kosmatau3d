@@ -124,4 +124,4 @@ class Shape():
     # Return the polar coordinates of each voxel
     return (self.__r, self.__phi)
 
-jit_module(nopython=False)
+# jit_module(nopython=False)

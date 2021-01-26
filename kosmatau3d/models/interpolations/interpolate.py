@@ -177,4 +177,4 @@ def interpolateETildeReal():
 def interpolateETildeImaginary():
   return interpolate.interp1d(observations.eTildeImaginary[0], observations.eTildeImaginary[1], kind='linear')
 
-jit_module(nopython=False)
+# jit_module(nopython=False)

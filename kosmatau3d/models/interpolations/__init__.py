@@ -216,4 +216,4 @@ def interpolateFUVfield(radius, height):
 def __str__():
   return 'Available Interpolations:\n -Clump intensity\n -Clump optical depth\n -Clump mass (galactic)\n -Clump density (galactic)\n -Voxel rotation (galactic)\n -UV extinction\n -FUV field (galactic)'
 
-jit_module(nopython=False)
+# jit_module(nopython=False)

@@ -116,4 +116,4 @@ def resortWavelengths():
 def dustWavelengths():
   return constants.wavelengths[constants.nDust]
 
-jit_module(nopython=False)
+# jit_module(nopython=False)

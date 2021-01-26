@@ -19,9 +19,12 @@ def plotModel(plot='total intensity', ce=[], ie=[], grid=None, directory='/home/
     FUVabsorption = []
     velocity = []
     clumpVelocity = []
-    clumpEmissivity = []
-    clumpAbsorption = []
-    clumpIntensity = []
+    voxelSpeciesEmissivity = []
+    voxelSpeciesAbsorption = []
+    voxelSpeciesIntensity = []
+    voxelDustEmissivity = []
+    voxelDustAbsorption = []
+    voxelDustIntensity = []
 
     for voxel in grid.allVoxels():
       voxelPositions.append(voxel.getPosition())
@@ -31,9 +34,12 @@ def plotModel(plot='total intensity', ce=[], ie=[], grid=None, directory='/home/
       FUVabsorption.append(voxel.getFUVabsorption())
       velocity.append(voxel.getVelocity())
       clumpVelocity.append(voxel.getClumpVelocity())
-      clumpEmissivity.append(voxel.getEmissivity())
-      clumpAbsorption.append(voxel.getAbsorption())
-      clumpIntensity.append(voxel.getIntensity())
+      voxelSpeciesEmissivity.append(voxel.getSpeciesEmissivity())
+      voxelSpeciesAbsorption.append(voxel.getSpeciesAbsorption())
+      voxelSpeciesIntensity.append(voxel.getSpeciesIntensity())
+      voxelDustEmissivity.append(voxel.getDustEmissivity())
+      voxelDustAbsorption.append(voxel.getDustAbsorption())
+      voxelDustIntensity.append(voxel.getDustIntensity())
 
     voxelPositions = np.array(voxelPositions)
     mass = np.array(mass)[:,0]
@@ -42,9 +48,12 @@ def plotModel(plot='total intensity', ce=[], ie=[], grid=None, directory='/home/
     FUVabsorption = np.array(FUVabsorption)
     velocity = np.array(velocity)
     clumpVelocity = np.array(clumpVelocity)
-    clumpEmissivity = np.array(clumpEmissivity)
-    clumpAbsorption = np.array(clumpAbsorption)
-    clumpIntensity = np.array(clumpIntensity)
+    voxelSpeciesEmissivity = np.array(voxelSpeciesEmissivity)
+    voxelSpeciesAbsorption = np.array(voxelSpeciesAbsorption)
+    voxelSpeciesIntensity = np.array(voxelSpeciesIntensity)
+    voxelDustEmissivity = np.array(voxelDustEmissivity)
+    voxelDustAbsorption = np.array(voxelDustAbsorption)
+    voxelDustIntensity = np.array(voxelDustIntensity)
   
   elif len(ce)==0 and len(ie)==0:
 
@@ -53,8 +62,10 @@ def plotModel(plot='total intensity', ce=[], ie=[], grid=None, directory='/home/
     FUVabsorption = fits.open(directory+r'voxel_FUVabsorption.fits')[0].data
     velocity = fits.open(directory+r'voxel_velocity.fits')[0].data
     
-    clumpEmissivity = fits.open(directory+r'emissivity_clump.fits')[0].data
-    clumpAbsorption = fits.open(directory+r'absorption_clump.fits')[0].data
+    voxelSpeciesEmissivity = fits.open(directory+r'emissivity_clump_species.fits')[0].data
+    voxelSpeciesAbsorption = fits.open(directory+r'absorption_clump_species.fits')[0].data
+    voxelDustEmissivity = fits.open(directory+r'emissivity_clump_dust.fits')[0].data
+    voxelDustAbsorption = fits.open(directory+r'absorption_clump_dust.fits')[0].data
 
     # maxClumpEmission = np.zeros(clumpEmission[:,:,:,0].shape)
     # maxInterclumpEmission = np.zeros(interclumpEmission[:,:,:,0].shape)
@@ -63,6 +74,7 @@ def plotModel(plot='total intensity', ce=[], ie=[], grid=None, directory='/home/
     #     for species in range(clumpEmission[0,0,:,0].size):
     #       maxClumpEmission[voxel,emission,species] = norm.fit(clumpEmission[voxel,emission,species,:])[0]
     #       maxInterclumpEmission[voxel,emission,species] = norm.fit(interclumpEmission[voxel,emission,species,:])[0]
+    
   else:
 
     voxelPositions = fits.open(directory+'voxel_position.fits')[0].data
@@ -88,7 +100,7 @@ def plotModel(plot='total intensity', ce=[], ie=[], grid=None, directory='/home/
   
   elif plot=='species total intensity':
     i = allSpecies==species
-    weights = maxClumpEmission[:,0,i]+maxInterclumpEmission[:,0,i]
+    weights = voxelSpeciesEmissivity[:,:,i]*constants.voxel_size
     weights = weights/max(weights)
     scale = r'$I \ (\chi)$'
     plotTitle = species + ' intensity within the Milky Way'
