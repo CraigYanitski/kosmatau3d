@@ -487,7 +487,7 @@ class Voxel(object):
       ylabel = r'$\epsilon_{\lambda} \ \left( \frac{K}{pc} \right)$'
 
     elif quantity=='absorption':
-      value = self.getSpeciesEmissivity()
+      value = self.getSpeciesAbsorption()
       ylabel = r'$\kappa_{\lambda} \ \left( \frac{1}{pc} \right)$'
 
     elif quantity=='intensity':
@@ -496,7 +496,7 @@ class Voxel(object):
 
     fig,axes = plt.subplots(len(value), figsize=(10, 5*len(value)))
 
-    for ens in range(len(value)):
+    for ens in range(constants.ensembles):
 
       if isinstance(axes, np.ndarray):
         ax = axes[ens]
@@ -511,7 +511,7 @@ class Voxel(object):
 
         if not mol in species.molecules:
           print('Species {} not in model.'.format(mol))
-          pass
+          continue
 
         i = np.where(mol==np.asarray(species.molecules))[0][0]
         
