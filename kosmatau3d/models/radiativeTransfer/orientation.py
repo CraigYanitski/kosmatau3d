@@ -32,12 +32,14 @@ def calculateObservation(directory='', dim='xy', sl=[50,50], terminal=True, plot
     sl = [5,5]
 
   voxelPositions = fits.open(constants.HISTORYPATH+constants.directory+directory+'/voxel_position.fits')[0].data
-  radiativeTransfer.voxelVelocities = fits.open(constants.HISTORYPATH+constants.directory+directory+'/voxel_velocity.fits')[0].data #test
-  clumpIntensity = fits.open(constants.HISTORYPATH+constants.directory+directory+'/intensity_clump.fits')[0].data
-  clumpOpticalDepth = fits.open(constants.HISTORYPATH+constants.directory+directory+'/opticalDepth_clump.fits')[0].data
-  clumpVelocity = fits.open(constants.HISTORYPATH+constants.directory+directory+'/voxel_clump_velocity.fits')[0].data
-  interclumpIntensity = fits.open(constants.HISTORYPATH+constants.directory+directory+'/intensity_interclump.fits')[0].data
-  interclumpOpticalDepth = fits.open(constants.HISTORYPATH+constants.directory+directory+'/opticalDepth_interclump.fits')[0].data
+  radiativeTransfer.voxelVelocities = fits.open(directory+'/voxel_velocity.fits')[0].data #test
+  clumpSpeciesEmissivity = fits.open(directory+'/species_emissivity_clump.fits')[0].data
+  clumpSpeciesAbsorption = fits.open(directory+'/species_absorption_clump.fits')[0].data
+  clumpDustEmissivity = fits.open(directory+'/dust_emissivity_clump.fits')[0].data
+  clumpDustAbsorption = fits.open(directory+'/dust_absorption_clump.fits')[0].data
+  clumpVelocity = fits.open(directory+'/voxel_clump_velocity.fits')[0].data
+  interclumpIntensity = fits.open(directory+'/intensity_interclump.fits')[0].data
+  interclumpOpticalDepth = fits.open(directory+'/opticalDepth_interclump.fits')[0].data
   interclumpVelocity = c.copy(clumpVelocity)#fits.open(constants.HISTORYPATH+constants.directory+directory+'/voxel_interclump_velocity.fits')[0].data
 
   # Create emission arrays; the current shape is (emission type, voxel, wavelength, velocity)
@@ -95,8 +97,7 @@ def calculateObservation(directory='', dim='xy', sl=[50,50], terminal=True, plot
     for i,velocity in enumerate(constants.velocityRange):
 
       # Find the voxels that exist at the observing velocity
-      iCV = (clumpVelocity==velocity)
-      iIV = (interclumpVelocity==velocity)
+      iV =  #(clumpVelocity==velocity)
       #if np.any(iCV): input('{}'.format(iCV))
 
       # Update velocity progress bar
