@@ -11,36 +11,53 @@ import scipy.interpolate as interpolate
 from scipy.stats import norm
 
 positions = []
-intensity = []
+intensitySpecies = []
+intensityDust = []
 losVoxels = []
 x1LoS = 0
 x2LoS = 0
 x3LoS = []
 
-tempClumpVelocity = []
-tempClumpEmission = []
-tempClumpPosition = []
-tempInterclumpVelocity = []
-tempInterclumpEmission = []
-tempInterclumpPosition = []
+# tempClumpVelocity = []
+tempSpeciesEmissivity = []
+tempSpeciesAbsorption = []
+tempDustEmissivity = []
+tempDustAbsorption = []
+tempPosition = []
+# tempInterclumpVelocity = []
+# tempInterclumpEmission = []
+# tempInterclumpPosition = []
 
 # This is used for the integration of each individual sightline
-epsilon = []
-epsilonStep = 0
-kappa = []
-kappaStep = 0
+epsilonSpecies = []
+epsilonStepSpecies = 0
+kappaSpecies = []
+kappaStepSpecies = 0
+epsilonDust = []
+epsilonStepDust = 0
+kappaDust = []
+kappaStepDust = 0
 
 # These can be used for debugging the code. It will store the indeces, kappa, and epsilon values for 25 sightlines.
 allIndeces = []
-allK = []
-allE = []
-allKstep = []
-allEstep = []
-allAreal = []
-allBreal = []
-allAimag = []
-allBimag = []
-allIntensity = []
+
+allKSpecies = []
+allESpecies = []
+allKstepSpecies = []
+allEstepSpecies = []
+allArealSpecies = []
+allBrealSpecies = []
+allAimagSpecies = []
+allBimagSpecies = []
+allIntensitySpecies = []
+
+allKstepDust = []
+allEstepDust = []
+allArealDust = []
+allBrealDust = []
+allAimagDust = []
+allBimagDust = []
+allIntensityDust = []
 
 # Here are the values for interpolating the real and imaginary emission
 eTildeRealObs = orientation.eTildeReal()
