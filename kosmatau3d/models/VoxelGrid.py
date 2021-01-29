@@ -368,9 +368,9 @@ class VoxelGrid(object):
     header['NAXIS'] = (len(dim), 'number of axes')
     header['EXTEND'] = True
     if molecules:
-      header['species'] = ', '.join(species.molecules)
+      header['SPECIES'] = ', '.join(species.molecules)
     if dust:
-      header['dust'] = constants.dustWavelengths
+      header['DUST'] = constants.dustWavelengths
 
     for i in range(len(dim)):
       header['NAXIS{}'.format(i+1)] = dim[i]
