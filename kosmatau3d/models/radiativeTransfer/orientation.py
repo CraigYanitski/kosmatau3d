@@ -33,7 +33,7 @@ def calculateObservation(directory='', dim='xy', sl=[50,50], terminal=True, plot
     
   # print('Load data')
 
-  voxelPositions = fits.open(directory+'/voxel_position.fits')
+  radiativeTransfer.voxelPositions = fits.open(directory+'/voxel_position.fits')
   radiativeTransfer.voxelVelocities = fits.open(directory+'/voxel_velocity.fits')
   radiativeTransfer.tempSpeciesEmissivity = fits.open(directory+'/species_emissivity_clump.fits')# in K/pc
   radiativeTransfer.tempSpeciesAbsorption = fits.open(directory+'/species_absorption_clump.fits')# in 1/pc
@@ -42,10 +42,7 @@ def calculateObservation(directory='', dim='xy', sl=[50,50], terminal=True, plot
   
   # print('Data loaded :-)')
 
-  if verbose:
-    print(voxelPositions.shape, clumpEmission.shape, interclumpEmission.shape)
-
-  xPositions,yPositions,zPositions = voxelPositions[0].data[:,0],voxelPositions[0].data[:,1],voxelPositions[0].data[:,2]
+  xPositions,yPositions,zPositions = radiativeTransfer.voxelPositions[0].data[:,0],radiativeTransfer.voxelPositions[0].data[:,1],radiativeTransfer.voxelPositions[0].data[:,2]
   r = np.sqrt((xPositions-constants.rGalEarth)**2 + yPositions**2)
 
   radGrid = np.sqrt((xPositions-constants.rGalEarth)**2 + yPositions**2 + zPositions**2)
@@ -94,8 +91,8 @@ def calculateObservation(directory='', dim='xy', sl=[50,50], terminal=True, plot
     for i_vel,velocity in enumerate(constants.velocityRange):
 
       # Find the voxels that exist at the observing velocity
-      iV =  radiativeTransfer.tempSpeciesEmissivity[0].data[:,i_vel,:].any(1)#(clumpVelocity==velocity)
-      #if np.any(iCV): input('{}'.format(iCV))
+      radiativeTransfer.i_vox =  radiativeTransfer.tempSpeciesEmissivity[0].data[:,i_vel,:].any(1)#(clumpVelocity==velocity)
+      # print(iV)
 
       # Update velocity progress bar
       vTqdm.update()
@@ -114,7 +111,7 @@ def calculateObservation(directory='', dim='xy', sl=[50,50], terminal=True, plot
       # iClumpV = np.where(iCV)
       # iInterclumpV = np.where(iIV)
 
-      if iV.any()==False: continue
+      if radiativeTransfer.i_vox.any()==False: continue
 
       if velocity<vmin: vmin = velocity
       if velocity>vmax: vmax = velocity
@@ -124,7 +121,7 @@ def calculateObservation(directory='', dim='xy', sl=[50,50], terminal=True, plot
       # radiativeTransfer.tempSpeciesAbsorption = tempSpeciesAbsorption#[iV,i,:] / constants.pc/100
       # radiativeTransfer.tempDustEmissivity = tempDustEmissivity#[iV,i,:] / constants.pc/100
       # radiativeTransfer.tempDustAbsorption = tempDustAbsorption#[iV,i,:] / constants.pc/100
-      radiativeTransfer.tempPosition = voxelPositions[0].data[iV,:]
+      # radiativeTransfer.tempPosition = radiativeTransfer.voxelPositions[0].data[iV,:]
       # radiativeTransfer.tempClumpVelocity = clumpVelocity[iClumpV[0],:]
       # radiativeTransfer.tempInterclumpEmission = interclumpEmission[:,iInterclumpV[0],iInterclumpV[1],:]
       # radiativeTransfer.tempInterclumpPosition = voxelPositions[iInterclumpV[0],:]
@@ -154,8 +151,8 @@ def calculateObservation(directory='', dim='xy', sl=[50,50], terminal=True, plot
             Rsl = constants.hd/np.sin(abs(lat))
 
           # Isolate voxels in LoS
-          result,vel = setLOS(lon=lon, lat=lat, i_vel=i, directory=directory, dim=dim, debug=debug)
-          # print(vel)
+          result,vel = setLOS(lon=lon, lat=lat, i_vel=i_vel, directory=directory, dim=dim, debug=debug)
+          # if vel>1: print('\n\n', vel, '\n', (radiativeTransfer.epsilonSpecies>0).any(), '\n\n')
 
           position.append([lon,lat])
           
@@ -273,7 +270,7 @@ def calculateObservation(directory='', dim='xy', sl=[50,50], terminal=True, plot
       IntensityHDUSpecies.header['CDELT4'] = (vmax-vmin)/(IntensityHDUSpecies.header['NAXIS4']-1)
       IntensityHDUSpecies.header['CRPIX4'] = (IntensityHDUSpecies.header['NAXIS4'])/2.
       IntensityHDUSpecies.header['DIREC'] = 'Radial'
-      IntensityHDUSpecies.header['SPECIES'] = fits.open(directory+'/species_emissivity_clump.fits')[0].header['SPECIES']
+      IntensityHDUSpecies.header['SPECIES'] = radiativeTransfer.tempSpeciesEmissivity[0].header['SPECIES']
 
       IntensityHDUDust.header['TYPE'] = 'Dust continuum'
       IntensityHDUDust.header['BUNIT'] = 'K'
@@ -298,7 +295,7 @@ def calculateObservation(directory='', dim='xy', sl=[50,50], terminal=True, plot
       IntensityHDUDust.header['CDELT4'] = (vmax-vmin)/(IntensityHDUDust.header['NAXIS4']-1)
       IntensityHDUDust.header['CRPIX4'] = (IntensityHDUDust.header['NAXIS4'])/2.
       IntensityHDUDust.header['DIREC'] = 'Radial'
-      IntensityHDUDust.header['DUST'] = fits.open(directory+'/dust_emissivity_clump.fits')[0].header['DUST']
+      IntensityHDUDust.header['DUST'] = radiativeTransfer.tempDustEmissivity[0].header['DUST']
 
       hdul.append(PositionHDU)
       hdul.append(IntensityHDUSpecies)
@@ -308,7 +305,7 @@ def calculateObservation(directory='', dim='xy', sl=[50,50], terminal=True, plot
 
       print('Intensity map written successfully :-)')
 
-    voxelPositions.close()
+    radiativeTransfer.voxelPositions.close()
     radiativeTransfer.voxelVelocities.close()
     radiativeTransfer.tempSpeciesEmissivity.close()
     radiativeTransfer.tempSpeciesAbsorption.close()
@@ -347,7 +344,7 @@ def setLOS(emission=0, positions=0, x=0, y=0, z=0, lon=0, lat=0, i_vel=0, tempSp
   # gridIntensity -> rt.tempSpeciesEmissivity/tempDustEmissivity, gridOpticalDepth -> rt.tempSpeciesAbsorption/tempDustAbsorption
 
   # Specify the voxel positions relative to Earth
-  xGrid,yGrid,zGrid = radiativeTransfer.tempPosition[:,0]-constants.rGalEarth,radiativeTransfer.tempPosition[:,1],radiativeTransfer.tempPosition[:,2]#grid.getVoxelPositions()
+  xGrid,yGrid,zGrid = radiativeTransfer.voxelPositions[0].data[:,0]-constants.rGalEarth,radiativeTransfer.voxelPositions[0].data[:,1],radiativeTransfer.voxelPositions[0].data[:,2]#grid.getVoxelPositions()
   
   if verbose:
     print('Centered at x={}, y={}, z={}'.format(x,y,z))
@@ -377,59 +374,54 @@ def setLOS(emission=0, positions=0, x=0, y=0, z=0, lon=0, lat=0, i_vel=0, tempSp
     dLon[(lat>1.0)|(lat<-1.0)] = np.pi
     dLat = np.arctan(height/radGrid)
     # dLat[(lat>1.0)|(lat<-1.0)] = np.pi/2.
-    iLOS = np.where((abs(lonGrid-radiativeTransfer.x1LoS)<=dLon)&(abs(latGrid-radiativeTransfer.x2LoS)<=dLat))[0]
+    iLoS = np.where((abs(lonGrid-radiativeTransfer.x1LoS)<=dLon)&(abs(latGrid-radiativeTransfer.x2LoS)<=dLat)&(radiativeTransfer.i_vox))[0]
   
   elif 'disk' in dim:
     radiativeTransfer.x1LoS = y
     radiativeTransfer.x2LoS = z
-    iLOS = np.where((zGrid==z)&(yGrid==y))[0]
+    iLoS = np.where((zGrid==z)&(yGrid==y)&(radiativeTransfer.i_vox))[0]
   
   elif ('x' in dim) and ('y' in dim):
     radiativeTransfer.x1LoS = x
     radiativeTransfer.x2LoS = y
-    iLOS = np.where((xGrid==x)&(yGrid==y))[0]
+    iLoS = np.where((xGrid==x)&(yGrid==y)&(radiativeTransfer.i_vox))[0]
   
   elif ('x' in dim) and ('z' in dim):
     radiativeTransfer.x1LoS = x
     radiativeTransfer.x2LoS = z
-    iLOS = np.where((xGrid==x)&(zGrid==z))[0]
+    iLoS = np.where((xGrid==x)&(zGrid==z)&(radiativeTransfer.i_vox))[0]
   
   elif ('z' in dim) and ('y' in dim):
     radiativeTransfer.x1LoS = z
     radiativeTransfer.x2LoS = y
-    iLOS = np.where((zGrid==z)&(yGrid==y))[0]
+    iLoS = np.where((zGrid==z)&(yGrid==y)&(radiativeTransfer.i_vox))[0]
 
   else:
     print('\nPlease enter valid dimensions.\n')
     return False
   
   if verbose:
-    print(iLOS)
+    print(iLoS)
   
-  if iLOS.size==1:
-    
-    # tempSpeciesEmissivity = fits.open(directory+'/species_emissivity_clump.fits')# / constants.pc/100
-    # tempDustEmissivity = fits.open(directory+'/dust_emissivity_clump.fits')# / constants.pc/100
+  if iLoS.size==1:
 
-    radiativeTransfer.intensitySpecies = scale*radiativeTransfer.tempSpeciesEmissivity[0].data[iLOS,i_vel,:][0,:] / constants.pc/100
-    radiativeTransfer.intensityDust = scale*radiativeTransfer.tempDustEmissivity[0].data[iLOS,i_vel,:][0,:] / constants.pc/100
-    # print('Shape along LoS', radiativeTransfer.intensity.shape)
+    radiativeTransfer.intensitySpecies = scale*radiativeTransfer.tempSpeciesEmissivity[0].data[iLoS,i_vel,:][0,:] / constants.pc/100
+    radiativeTransfer.intensityDust = scale*radiativeTransfer.tempDustEmissivity[0].data[iLoS,i_vel,:][0,:] / constants.pc/100
     
-    # tempSpeciesEmissivity.close()
-    # tempDustEmissivity.close()
+    # print('\n\n', (radiativeTransfer.tempSpeciesEmissivity[0].data[iLOS,i_vel,:]>0).any(), '\n\n')
 
     if debug:
 
-      radiativeTransfer.allIndeces.append(iLOS)
-      radiativeTransfer.allK.append(np.zeros(iLOS.size))
-      radiativeTransfer.allE.append(np.zeros(iLOS.size))
-      radiativeTransfer.allKstep.append(np.zeros(iLOS.size-1))
-      radiativeTransfer.allEstep.append(np.zeros(iLOS.size-1))
+      radiativeTransfer.allIndeces.append(iLoS)
+      radiativeTransfer.allK.append(np.zeros(iLoS.size))
+      radiativeTransfer.allE.append(np.zeros(iLoS.size))
+      radiativeTransfer.allKstep.append(np.zeros(iLoS.size-1))
+      radiativeTransfer.allEstep.append(np.zeros(iLoS.size-1))
 
       with warnings.catch_warnings():
         warnings.simplefilter('ignore')
-        a = np.zeros(iLOS.size-1)
-        b = np.zeros(iLOS.size-1)
+        a = np.zeros(iLoS.size-1)
+        b = np.zeros(iLoS.size-1)
 
       # ar = []
       # br = []
@@ -449,50 +441,44 @@ def setLOS(emission=0, positions=0, x=0, y=0, z=0, lon=0, lat=0, i_vel=0, tempSp
 
       radiativeTransfer.allIntensity.append(radiativeTransfer.intensity)
   
-  elif iLOS.size>1:
-    
-    if verbose:
-      print('Intensity:', intensity, scale)
-      print('Optical depth:', tau, scale)
+  elif iLoS.size>1:
     
     if 'spherical' == dim:
-      radiativeTransfer.x3LoS = radGrid[iLOS]
+      radiativeTransfer.x3LoS = radGrid[iLoS]
     elif not 'x' in dim:
-      radiativeTransfer.x3LoS = xGrid[iLOS]
+      radiativeTransfer.x3LoS = xGrid[iLoS]
     elif not 'y' in dim:
-      radiativeTransfer.x3LoS = yGrid[iLOS]
+      radiativeTransfer.x3LoS = yGrid[iLoS]
     elif not 'z' in dim:
-      radiativeTransfer.x3LoS = zGrid[iLOS]
+      radiativeTransfer.x3LoS = zGrid[iLoS]
       
     if reverse:
+      #order the voxels in the line-of-sight according to increasing radial distance
       i = np.argsort(radiativeTransfer.x3LoS)
+      iLoS_ordered = iLoS[i]
     else:
+      #order the voxels in the line-of-sight according to decreasing radial distance
       i = np.argsort(radiativeTransfer.x3LoS)[::-1]
-    # if radiativeTransfer.x2LoS<-0.8: print(len(i))
+      iLoS_ordered = iLoS[i]
     
-    # tempSpeciesEmissivity = fits.open(directory+'/species_emissivity_clump.fits')# / constants.pc/100
-    # tempSpeciesAbsorption = fits.open(directory+'/species_absorption_clump.fits')# / constants.pc/100
-    # tempDustEmissivity = fits.open(directory+'/dust_emissivity_clump.fits')# / constants.pc/100
-    # tempDustAbsorption = fits.open(directory+'/dust_absorption_clump.fits')# / constants.pc/100
+    # print('\n\n', iLoS, i, iLoS_ordered, i_vel, (radiativeTransfer.tempSpeciesEmissivity[0].data[iLoS_ordered,i_vel,:]>0).any(), '\n\n')
+    # print(radiativeTransfer.i_vox)
+    # print(radiativeTransfer.x3LoS)
+    # input()
     
-    radiativeTransfer.epsilonSpecies = radiativeTransfer.tempSpeciesEmissivity[0].data[i,i_vel,:] / constants.pc/100
+    radiativeTransfer.epsilonSpecies = c.copy(radiativeTransfer.tempSpeciesEmissivity[0].data[iLoS_ordered,i_vel,:]) / constants.pc/100
     radiativeTransfer.epsilonStepSpecies = (radiativeTransfer.epsilonSpecies[1:]-radiativeTransfer.epsilonSpecies[:-1])/(scale)
-    radiativeTransfer.kappaSpecies = radiativeTransfer.tempSpeciesAbsorption[0].data[i,i_vel,:] / constants.pc/100
+    radiativeTransfer.kappaSpecies = c.copy(radiativeTransfer.tempSpeciesAbsorption[0].data[iLoS_ordered,i_vel,:]) / constants.pc/100
     radiativeTransfer.kappaStepSpecies = (radiativeTransfer.kappaSpecies[1:]-radiativeTransfer.kappaSpecies[:-1])/(scale)
     
-    radiativeTransfer.epsilonDust = radiativeTransfer.tempDustEmissivity[0].data[i,i_vel,:] / constants.pc/100
+    radiativeTransfer.epsilonDust = c.copy(radiativeTransfer.tempDustEmissivity[0].data[iLoS_ordered,i_vel,:]) / constants.pc/100
     radiativeTransfer.epsilonStepDust = (radiativeTransfer.epsilonDust[1:]-radiativeTransfer.epsilonDust[:-1])/(scale)
-    radiativeTransfer.kappaDust = radiativeTransfer.tempDustAbsorption[0].data[i,i_vel,:] / constants.pc/100
+    radiativeTransfer.kappaDust = c.copy(radiativeTransfer.tempDustAbsorption[0].data[iLoS_ordered,i_vel,:]) / constants.pc/100
     radiativeTransfer.kappaStepDust = (radiativeTransfer.kappaDust[1:]-radiativeTransfer.kappaDust[:-1])/(scale)
-    
-    # tempSpeciesEmissivity.close()
-    # tempSpeciesAbsorption.close()
-    # tempDustEmissivity.close()
-    # tempDustAbsorption.close()
 
     if debug:
 
-      radiativeTransfer.allIndeces.append(iLOS)
+      radiativeTransfer.allIndeces.append(iLoS)
       
       radiativeTransfer.allKSpecies.append(np.array(radiativeTransfer.kappaSpecies))
       radiativeTransfer.allESpecies.append(np.array(radiativeTransfer.epsilonSpecies))
@@ -523,7 +509,7 @@ def setLOS(emission=0, positions=0, x=0, y=0, z=0, lon=0, lat=0, i_vel=0, tempSp
   else:
     return False,0
 
-  vel = radiativeTransfer.voxelVelocities[0].data[iLOS]
+  vel = radiativeTransfer.voxelVelocities[0].data[iLoS]
   
   if verbose:
     print('voxels:', i)
