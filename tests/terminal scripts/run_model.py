@@ -7,9 +7,10 @@ debug = False
 
 print('KOSMA-tau^3')
 
+# Edit these parameters according to the model you want to produce.
 parameters = {
                 # Model information
-                'history_path': r'\Users\cyani\projects\KT3_history',
+                'history_path': r'\Users\cyani\projects\pdr\KT3_history',
                 'directory': r'\MilkyWay',
                 'x': 36,
                 'y': 36,
@@ -17,7 +18,7 @@ parameters = {
                 'modelType': 'disk',
                 
                 # Model parameters
-                'resolution': 1000,
+                'resolution': 500,
                 'molecules': 'all',
                 # 'molecules' : ['C+ 1', 'C 1', 'CO 1'],
                'dust' : 'PAH',
@@ -38,4 +39,4 @@ parameters = {
 kosma = models.Model(**parameters)
 
 kosma.calculateModel(timed=timed, debug=debug)
-kosma.writeEmission(debug=debug)
+# kosma.writeEmission(debug=debug)
