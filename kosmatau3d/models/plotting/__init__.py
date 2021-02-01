@@ -2,6 +2,7 @@ import numpy as np
 from astropy.io import fits
 import matplotlib.pyplot as plt
 
+from .viewMap import *
 from .. import constants
 
 def plotModel(plot='total intensity', ce=[], ie=[], grid=None, directory='/home/craig/projects/pdr/KOSMA-tau^3/history/MilkyWay/r1000.0_s3015/', species='13C+ 1', debug=False):
