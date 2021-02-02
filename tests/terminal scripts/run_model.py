@@ -18,11 +18,11 @@ parameters = {
                 'modelType': 'disk',
                 
                 # Model parameters
-                'resolution': 500,
-                'molecules': 'all',
-                # 'molecules' : ['C+ 1', 'C 1', 'CO 1'],
-               'dust' : 'PAH',
-                # 'dust': 'molecular',
+                'resolution': 250,
+                # 'molecules': 'all',
+                'molecules' : ['C+ 1', 'C 1', 'CO 1'],
+               # 'dust' : 'PAH',
+                'dust': 'molecular',
                 'clumpMassRange': [[0, 2], [-2]],
                 'clumpMassNumber': [3, 1],
                 'clumpNmax': [1, 100],
