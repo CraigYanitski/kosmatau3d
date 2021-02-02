@@ -133,10 +133,10 @@ class viewMap(QWidget):
     spe = self.SPEslider.value()
     
     if spe<self.species_length:
-      self.updatePlot(self.species_intensity_integrated[:,:,spe], 'integrated {}'.format(self.species[spe]))
+      self.updatePlot(self.species_intensity_integrated[:,:,spe], 'integrated {}'.format(self.species[spe]), integrated=True)
     else:
       dust = spe-self.species_length
-      self.updatePlot(self.dust_intensity_integrated[:,:,dust], 'integrated {}'.format(self.dust[dust]))
+      self.updatePlot(self.dust_intensity_integrated[:,:,dust], 'integrated {}'.format(self.dust[dust]), integrated=True)
   
   def updatePlot(self, data, title, integrated=False):
     # Remove the current Axes object and create a new one of the desired subplot.
