@@ -73,7 +73,7 @@ class VoxelGrid(object):
 
     # Mass
     ensembleMass = [interpolations.interpolateClumpMass(rPol), interpolations.interpolateInterclumpMass(rPol)]
-    ensembleMass = [constants.clumpMassFactor[ens]*np.asarray(clumpMass).mean(1)[ens] for ens in range(len(constants.clumpMassNumber))]
+    ensembleMass = [constants.clumpMassFactor[ens]*np.asarray(ensembleMass).mean(1)[ens] for ens in range(len(constants.clumpMassNumber))]
 
     # Velocity
     velocity = interpolations.interpolateRotationalVelocity(rPol)
@@ -214,18 +214,33 @@ class VoxelGrid(object):
         self.__calculateProperties(x[i], y[i], z[i])
         voxel.setProperties(**self.__properties)
         
-        # Save voxel properties
-        shdu_voxel_position.write([x[i],y[i],z[i]])
-        shdu_voxel_velocity.write(self.__properties['velocity'])
-        shdu_ensemble_mass.write(self.__properties['ensembleMass'])
-        shdu_ensemble_density.write(self.__properties['ensembleDensity'])
-        shdu_FUV.write(self.__properties['FUV'])
-        shdu_FUVabsorption.write(self.__properties['FUVabsorption'])
-        
         if timed:
           print('\nVoxel initialised: {:.4f} s'.format(time()-t2))
 
+        #this is likely unneeded now that I am directly writing to a fits file
         self.__voxelFUVabsorption.append(voxel.getFUVabsorption())
+        
+        # Save voxel properties
+        # print(np.asarray([self.__properties['velocity']]))
+        # shdu_voxel_position.write(np.asarray([x[i],y[i],z[i]]))
+        # shdu_voxel_velocity.write(np.asarray([self.__properties['velocity']]))
+        # shdu_ensemble_mass.write(np.asarray(self.__properties['ensembleMass']))
+        # shdu_ensemble_density.write(np.asarray(self.__properties['ensembleDensity']))
+        # shdu_FUV.write(np.asarray(self.__properties['FUV']))
+        # shdu_FUVabsorption.write(np.asarray(self.__voxelFUVabsorption[-1]))
+        
+        shdu_voxel_position.write(voxel.getPosition())
+        velocity = voxel.getVelocity()[0]
+        if isinstance(velocity, float):
+          shdu_voxel_velocity.write(np.array([velocity]))
+        else:
+          shdu_voxel_velocity.write(np.linalg.norm(velocity))
+        shdu_ensemble_mass.write(np.asarray(voxel.getEnsembleMass()))
+        shdu_ensemble_density.write(np.asarray(voxel.getDensity()))
+        shdu_FUV.write(np.array([voxel.getFUV()]))
+        shdu_FUVabsorption.write(np.asarray([voxel.getFUVabsorption()]))
+        
+        # Calculate emissivity and absorption
         voxel.calculateEmission()
         
         # Save emissivity and absorption
@@ -234,7 +249,10 @@ class VoxelGrid(object):
         shdu_voxel_emissivity_dust.write(np.sum(voxel.getDustEmissivity(), axis=0))
         shdu_voxel_absorption_dust.write(np.sum(voxel.getDustAbsorption(), axis=0))
         
-        del voxel
+        # del self.__voxels[i]
+        # del voxel
+        self.__voxels[i] = None
+        # print(len(self.__voxels))
         
         if timed:
           print('Voxel calculated: {:.4f} s / {:.4f} s'.format(time()-t2, time()-t1))
