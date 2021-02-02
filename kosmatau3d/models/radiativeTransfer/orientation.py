@@ -35,10 +35,10 @@ def calculateObservation(directory='', dim='xy', sl=[50,50], terminal=True, plot
 
   radiativeTransfer.voxelPositions = fits.open(directory+'/voxel_position.fits')
   radiativeTransfer.voxelVelocities = fits.open(directory+'/voxel_velocity.fits')
-  radiativeTransfer.tempSpeciesEmissivity = fits.open(directory+'/species_emissivity_clump.fits')# in K/pc
-  radiativeTransfer.tempSpeciesAbsorption = fits.open(directory+'/species_absorption_clump.fits')# in 1/pc
-  radiativeTransfer.tempDustEmissivity = fits.open(directory+'/dust_emissivity_clump.fits')# in K/pc
-  radiativeTransfer.tempDustAbsorption = fits.open(directory+'/dust_absorption_clump.fits')# in 1/pc
+  radiativeTransfer.tempSpeciesEmissivity = fits.open(directory+'/species_emissivity.fits')# in K/pc
+  radiativeTransfer.tempSpeciesAbsorption = fits.open(directory+'/species_absorption.fits')# in 1/pc
+  radiativeTransfer.tempDustEmissivity = fits.open(directory+'/dust_emissivity.fits')# in K/pc
+  radiativeTransfer.tempDustAbsorption = fits.open(directory+'/dust_absorption.fits')# in 1/pc
   
   # print('Data loaded :-)')
 
@@ -150,14 +150,49 @@ def calculateObservation(directory='', dim='xy', sl=[50,50], terminal=True, plot
           else:
             Rsl = constants.hd/np.sin(abs(lat))
 
-          # Isolate voxels in LoS
-          result,vel = setLOS(lon=lon, lat=lat, i_vel=i_vel, directory=directory, dim=dim, debug=debug)
+          # Try to isolate voxels in LoS and work with all transitions, else do them one at a time
+          try:
+            result,vel = setLOS(lon=lon, lat=lat, i_vel=i_vel, dim=dim, debug=debug)
+          except OSError:
+            intensity = []
+            for spe in range(radiativeTransfer.tempSpeciesEmissivity[0].shape[-1]):
+              result,vel = setLOS(lon=lon, lat=lat, i_vel=i_vel, i_spe=spe, dim=dim, debug=debug)
+              if result:
+                normfactor = Rsl/constants.voxel_size/vel  #to normalise to disk shape...
+                if radiativeTransfer.sightlines[i,j]<vel: radiativeTransfer.sightlines[i,j] = normfactor*vel
+                if vel==1:
+                  radiativeTransfer.intensitySpecies *= normfactor
+                else:
+                  calculateRadiativeTransfer(scale=normfactor, dust=False)
+                intensity.append(radiativeTransfer.intensitySpecies[0])
+                radiativeTransfer.intensitySpecies = []
+              else:
+                intensity.append(np.zeros(radiativeTransfer.tempSpeciesEmissivity[0].shape[-1]))
+            positionIntensitySpecies.append(np.asarray(intensity))
+            intensity = []
+            for dust in range(radiativeTransfer.tempDustEmissivity[0].shape[-1]):
+              result,vel = setLOS(lon=lon, lat=lat, i_vel=i_vel, i_dust=dust, dim=dim, debug=debug)
+              if result:
+                normfactor = Rsl/constants.voxel_size/vel  #to normalise to disk shape...
+                if radiativeTransfer.sightlines[i,j]<vel: radiativeTransfer.sightlines[i,j] = normfactor*vel
+                if vel==1:
+                  radiativeTransfer.intensityDust *= normfactor
+                else:
+                  calculateRadiativeTransfer(scale=normfactor, species=False)
+                intensity.append(radiativeTransfer.intensityDust[0])
+                radiativeTransfer.intensityDust = []
+              else:
+                intensity.append(np.zeros(radiativeTransfer.tempDustEmissivity[0].shape[-1]))
+            positionIntensityDust.append(np.asarray(intensity))
+            result = 2
           # if vel>1: print('\n\n', vel, '\n', (radiativeTransfer.epsilonSpecies>0).any(), '\n\n')
 
           position.append([lon,lat])
           
           # Integrate along LoS
-          if result:
+          if result==2:
+            pass
+          elif result==1:
             normfactor = Rsl/constants.voxel_size/vel  #to normalise to disk shape...
             if radiativeTransfer.sightlines[i,j]<vel: radiativeTransfer.sightlines[i,j] = normfactor*vel
             if vel==1:
@@ -314,7 +349,7 @@ def calculateObservation(directory='', dim='xy', sl=[50,50], terminal=True, plot
   
   return
 
-def setLOS(emission=0, positions=0, x=0, y=0, z=0, lon=0, lat=0, i_vel=0, tempSpeciesEmissivity=[], tempSpeciesAbsorption=[], tempDustEmissivity=[], tempDustAbsorption=[], directory='', dim='xy', reverse=True, debug=False, verbose=False):
+def setLOS(x=0, y=0, z=0, lon=0, lat=0, i_vel=0, i_spe=None, i_dust=None, dim='xy', reverse=True, debug=False, verbose=False):
   '''
   The emission dimensions should be velocity x species x 2 x voxels. Axis 1 should be split for intensity and optical depth.
   The positions dimensions should be 3 x voxels.
@@ -466,15 +501,28 @@ def setLOS(emission=0, positions=0, x=0, y=0, z=0, lon=0, lat=0, i_vel=0, tempSp
     # print(radiativeTransfer.x3LoS)
     # input()
     
-    radiativeTransfer.epsilonSpecies = c.copy(radiativeTransfer.tempSpeciesEmissivity[0].data[iLoS_ordered,i_vel,:]) / constants.pc/100
-    radiativeTransfer.epsilonStepSpecies = (radiativeTransfer.epsilonSpecies[1:]-radiativeTransfer.epsilonSpecies[:-1])/(scale)
-    radiativeTransfer.kappaSpecies = c.copy(radiativeTransfer.tempSpeciesAbsorption[0].data[iLoS_ordered,i_vel,:]) / constants.pc/100
-    radiativeTransfer.kappaStepSpecies = (radiativeTransfer.kappaSpecies[1:]-radiativeTransfer.kappaSpecies[:-1])/(scale)
+    if (i_spe==None)&(i_dust==None):
+      radiativeTransfer.epsilonSpecies = c.copy(radiativeTransfer.tempSpeciesEmissivity[0].data[iLoS_ordered,i_vel,:]) / constants.pc/100
+      radiativeTransfer.epsilonStepSpecies = (radiativeTransfer.epsilonSpecies[1:]-radiativeTransfer.epsilonSpecies[:-1])/(scale)
+      radiativeTransfer.kappaSpecies = c.copy(radiativeTransfer.tempSpeciesAbsorption[0].data[iLoS_ordered,i_vel,:]) / constants.pc/100
+      radiativeTransfer.kappaStepSpecies = (radiativeTransfer.kappaSpecies[1:]-radiativeTransfer.kappaSpecies[:-1])/(scale)
+      
+      radiativeTransfer.epsilonDust = c.copy(radiativeTransfer.tempDustEmissivity[0].data[iLoS_ordered,i_vel,:]) / constants.pc/100
+      radiativeTransfer.epsilonStepDust = (radiativeTransfer.epsilonDust[1:]-radiativeTransfer.epsilonDust[:-1])/(scale)
+      radiativeTransfer.kappaDust = c.copy(radiativeTransfer.tempDustAbsorption[0].data[iLoS_ordered,i_vel,:]) / constants.pc/100
+      radiativeTransfer.kappaStepDust = (radiativeTransfer.kappaDust[1:]-radiativeTransfer.kappaDust[:-1])/(scale)
     
-    radiativeTransfer.epsilonDust = c.copy(radiativeTransfer.tempDustEmissivity[0].data[iLoS_ordered,i_vel,:]) / constants.pc/100
-    radiativeTransfer.epsilonStepDust = (radiativeTransfer.epsilonDust[1:]-radiativeTransfer.epsilonDust[:-1])/(scale)
-    radiativeTransfer.kappaDust = c.copy(radiativeTransfer.tempDustAbsorption[0].data[iLoS_ordered,i_vel,:]) / constants.pc/100
-    radiativeTransfer.kappaStepDust = (radiativeTransfer.kappaDust[1:]-radiativeTransfer.kappaDust[:-1])/(scale)
+    elif i_spe!=None:
+      radiativeTransfer.epsilonSpecies = (radiativeTransfer.tempSpeciesEmissivity[0].data[iLoS_ordered,i_vel,i_spe]) / constants.pc/100
+      radiativeTransfer.epsilonStepSpecies = (radiativeTransfer.epsilonSpecies[1:]-radiativeTransfer.epsilonSpecies[:-1])/(scale)
+      radiativeTransfer.kappaSpecies = (radiativeTransfer.tempSpeciesAbsorption[0].data[iLoS_ordered,i_vel,i_spe]) / constants.pc/100
+      radiativeTransfer.kappaStepSpecies = (radiativeTransfer.kappaSpecies[1:]-radiativeTransfer.kappaSpecies[:-1])/(scale)
+    elif i_dust!=None:
+      print(iLoS_ordered)
+      radiativeTransfer.epsilonDust = (radiativeTransfer.tempDustEmissivity[0].data[iLoS_ordered,i_vel,i_dust]) / constants.pc/100
+      radiativeTransfer.epsilonStepDust = (radiativeTransfer.epsilonDust[1:]-radiativeTransfer.epsilonDust[:-1])/(scale)
+      radiativeTransfer.kappaDust = (radiativeTransfer.tempDustAbsorption[0].data[iLoS_ordered,i_vel,i_dust]) / constants.pc/100
+      radiativeTransfer.kappaStepDust = (radiativeTransfer.kappaDust[1:]-radiativeTransfer.kappaDust[:-1])/(scale)
 
     if debug:
 
@@ -516,24 +564,39 @@ def setLOS(emission=0, positions=0, x=0, y=0, z=0, lon=0, lat=0, i_vel=0, tempSp
   
   return True,vel.size
 
-def calculateRadiativeTransfer(scale=1, backgroundI=0., verbose=False, test=True):
+def calculateRadiativeTransfer(scale=1, backgroundI=0., species=True, dust=True, verbose=False, test=True):
 
-  # if np.size(radiativeTransfer.intensity)>0: return
+  # Modify data and initialise observed intensity array
+  if not dust:
+    radiativeTransfer.epsilonSpecies = radiativeTransfer.epsilonSpecies.reshape((-1,1))
+    radiativeTransfer.epsilonStepSpecies = radiativeTransfer.epsilonStepSpecies.reshape((-1,1))
+    radiativeTransfer.kappaSpecies = radiativeTransfer.kappaSpecies.reshape((-1,1))
+    radiativeTransfer.kappaStepSpecies = radiativeTransfer.kappaStepSpecies.reshape((-1,1))
+    intensitySpecies = np.array([backgroundI])
+    nSteps = radiativeTransfer.epsilonStepSpecies.shape[0]
+  elif not species:
+    radiativeTransfer.epsilonDust = radiativeTransfer.epsilonDust.reshape((-1,1))
+    radiativeTransfer.epsilonStepDust = radiativeTransfer.epsilonStepDust.reshape((-1,1))
+    radiativeTransfer.kappaDust = radiativeTransfer.kappaDust.reshape((-1,1))
+    radiativeTransfer.kappaStepDust = radiativeTransfer.kappaStepDust.reshape((-1,1))
+    intensityDust = np.array([backgroundI])
+    nSteps = radiativeTransfer.epsilonStepDust.shape[0]
+  else:
+    intensitySpecies = np.full(radiativeTransfer.kappaSpecies.shape[1], backgroundI)
+    intensityDust = np.full(radiativeTransfer.kappaDust.shape[1], backgroundI)
+    nSteps = radiativeTransfer.epsilonStepSpecies.shape[0]
   
-  intensitySpecies = np.full(radiativeTransfer.kappaSpecies.shape[1], backgroundI)
-  intensityDust = np.full(radiativeTransfer.kappaDust.shape[1], backgroundI)
-  
-  # print(scale)
-  # Rescale the LoS emission
-  # scale = 1
-  radiativeTransfer.kappaSpecies /= scale
-  radiativeTransfer.kappaStepSpecies /= scale**2
-  radiativeTransfer.epsilonSpecies /= scale
-  radiativeTransfer.epsilonStepSpecies /= scale**2
-  radiativeTransfer.kappaDust /= scale
-  radiativeTransfer.kappaStepDust /= scale**2
-  radiativeTransfer.epsilonDust /= scale
-  radiativeTransfer.epsilonStepDust /= scale**2
+  # Adjust according to the average voxel depth
+  if species:
+    radiativeTransfer.epsilonSpecies /= scale
+    radiativeTransfer.epsilonStepSpecies /= scale**2
+    radiativeTransfer.kappaSpecies /= scale
+    radiativeTransfer.kappaStepSpecies /= scale**2
+  if dust:
+    radiativeTransfer.epsilonDust /= scale
+    radiativeTransfer.epsilonStepDust /= scale**2
+    radiativeTransfer.kappaDust /= scale
+    radiativeTransfer.kappaStepDust /= scale**2
 
   scale = scale*constants.voxel_size*constants.pc*100  #pc should be in cm
   # print(scale)
@@ -548,157 +611,148 @@ def calculateRadiativeTransfer(scale=1, backgroundI=0., verbose=False, test=True
   # kEg = ~(k0|kg)&(radiativeTransfer.kappaStep>0)
   # kEl = ~(k0|kg)&(radiativeTransfer.kappaStep<0)
   
-  # Variables for utilising the E tilde tables
+  # Calculate the variables needed to utilise the E tilde tables
   with warnings.catch_warnings():
     warnings.simplefilter('ignore')
-    aSpecies = (radiativeTransfer.kappaSpecies[:-1,:]/np.sqrt(2*radiativeTransfer.kappaStepSpecies.astype(np.complex)))
-    bSpecies = ((radiativeTransfer.kappaSpecies[:-1,:]+radiativeTransfer.kappaStepSpecies*scale)/np.sqrt(2*radiativeTransfer.kappaStepSpecies.astype(np.complex)))
-    aDust = (radiativeTransfer.kappaDust[:-1,:]/np.sqrt(2*radiativeTransfer.kappaStepDust.astype(np.complex)))
-    bDust = ((radiativeTransfer.kappaDust[:-1,:]+radiativeTransfer.kappaStepDust*scale)/np.sqrt(2*radiativeTransfer.kappaStepDust.astype(np.complex)))
+    if species:
+      aSpecies = (radiativeTransfer.kappaSpecies[:-1,:]/np.sqrt(2*radiativeTransfer.kappaStepSpecies.astype(np.complex)))
+      bSpecies = ((radiativeTransfer.kappaSpecies[:-1,:]+radiativeTransfer.kappaStepSpecies*scale)/np.sqrt(2*radiativeTransfer.kappaStepSpecies.astype(np.complex)))
+    if dust:
+      aDust = (radiativeTransfer.kappaDust[:-1,:]/np.sqrt(2*radiativeTransfer.kappaStepDust.astype(np.complex)))
+      bDust = ((radiativeTransfer.kappaDust[:-1,:]+radiativeTransfer.kappaStepDust*scale)/np.sqrt(2*radiativeTransfer.kappaStepDust.astype(np.complex)))
   
   if verbose: print(radiativeTransfer.kappaSpecies.shape[0])
   
-  for i in range(len(radiativeTransfer.kappaStepSpecies)):
+  for i in range(nSteps):
   
     # Determine which form of integration the species transitions require
-    k0Species = (radiativeTransfer.kappaStepSpecies[i,:]==0)&(abs(radiativeTransfer.kappaSpecies[:-1,:][i,:]*scale)<10**-10)
-    try:
-      kgSpecies = ~k0Species&(radiativeTransfer.kappaSpecies[:-1,:][i,:]>10**3*abs(radiativeTransfer.kappaStepSpecies[i,:])*scale)
-    except RuntimeWarning:
-      print(radiativeTransfer.x1LoS, radiativeTransfer.x2LoS)
-      print(radiativeTransfer.x3LoS)
-      print(radiativeTransfer.kappaStepSpecies[i,:])
-      print(radiativeTransfer.kappaSpecies[i,:])
-      input()
-      kgSpecies = ~k0&(radiativeTransfer.kappa[:-1,:][i,:]>10**3*abs(radiativeTransfer.kappaStep[i,:])*scale)
-    kESpecies = ~(k0Species|kgSpecies)
-    kEgSpecies = kESpecies&(radiativeTransfer.kappaStepSpecies[i,:]>0)
-    kElSpecies = kESpecies&(radiativeTransfer.kappaStepSpecies[i,:]<0)
-  
+    if species:
+      k0Species = (radiativeTransfer.kappaStepSpecies[i,:]==0)&(abs(radiativeTransfer.kappaSpecies[:-1,:][i,:]*scale)<10**-10)
+      try:
+        kgSpecies = ~k0Species&(radiativeTransfer.kappaSpecies[:-1,:][i,:]>10**3*abs(radiativeTransfer.kappaStepSpecies[i,:])*scale)
+      except RuntimeWarning:
+        print(radiativeTransfer.x1LoS, radiativeTransfer.x2LoS)
+        print(radiativeTransfer.x3LoS)
+        print(radiativeTransfer.kappaStepSpecies[i,:])
+        print(radiativeTransfer.kappaSpecies[i,:])
+        input()
+        kgSpecies = ~k0&(radiativeTransfer.kappa[:-1,:][i,:]>10**3*abs(radiativeTransfer.kappaStep[i,:])*scale)
+      kESpecies = ~(k0Species|kgSpecies)
+      kEgSpecies = kESpecies&(radiativeTransfer.kappaStepSpecies[i,:]>0)
+      kElSpecies = kESpecies&(radiativeTransfer.kappaStepSpecies[i,:]<0)
+
     # Determine which form of integration the dust continuum requires
-    k0Dust = (radiativeTransfer.kappaStepDust[i,:]==0)&(abs(radiativeTransfer.kappaDust[:-1,:][i,:]*scale)<10**-10)
-    try:
-      kgDust = ~k0Dust&(radiativeTransfer.kappaDust[:-1,:][i,:]>10**3*abs(radiativeTransfer.kappaStepDust[i,:])*scale)
-    except RuntimeWarning:
-      print(radiativeTransfer.x1LoS, radiativeTransfer.x2LoS)
-      print(radiativeTransfer.x3LoS)
-      print(radiativeTransfer.kappaStepDust[i,:])
-      print(radiativeTransfer.kappaDust[i,:])
-      input()
-      kgDust = ~k0&(radiativeTransfer.kappa[:-1,:][i,:]>10**3*abs(radiativeTransfer.kappaStep[i,:])*scale)
-    kEDust = ~(k0Dust|kgDust)
-    kEgDust = kEDust&(radiativeTransfer.kappaStepDust[i,:]>0)
-    kElDust = kEDust&(radiativeTransfer.kappaStepDust[i,:]<0)
-  
-    if verbose:
-      print('\ni_k0 Species\n', k0Species)
-      print('i_kg Species\n', kgSpecies)
-      print('i_kEg Species\n', kEgSpecies)
-      print('i_kEl Species\n', kElSpecies)
-      print('\ni_k0 Dust\n', k0Dust)
-      print('i_kg Dust\n', kgDust)
-      print('i_kEg Dust\n', kEgDust)
-      print('i_kEl Dust\n', kElDust)
-      
-      print('\nSpecies kappa, kappa step:\n', radiativeTransfer.kappaSpecies[i], '\n', radiativeTransfer.kappaStepSpecies[i])
-      print('\nSpecies epsilon, epsilon step, scale\n', radiativeTransfer.epsilonSpecies[i], radiativeTransfer.epsilonStepSpecies[i], scale)
-      print('\nDust kappa, kappa step:\n', radiativeTransfer.kappaDust[i], '\n', radiativeTransfer.kappaStepDust[i])
-      print('\nDust epsilon, epsilon step, scale\n', radiativeTransfer.epsilonDust[i], radiativeTransfer.epsilonStepDust[i], scale)
+    if dust:
+      k0Dust = (radiativeTransfer.kappaStepDust[i,:]==0)&(abs(radiativeTransfer.kappaDust[:-1,:][i,:]*scale)<10**-10)
+      try:
+        kgDust = ~k0Dust&(radiativeTransfer.kappaDust[:-1,:][i,:]>10**3*abs(radiativeTransfer.kappaStepDust[i,:])*scale)
+      except RuntimeWarning:
+        print(radiativeTransfer.x1LoS, radiativeTransfer.x2LoS)
+        print(radiativeTransfer.x3LoS)
+        print(radiativeTransfer.kappaStepDust[i,:])
+        print(radiativeTransfer.kappaDust[i,:])
+        input()
+        kgDust = ~k0&(radiativeTransfer.kappa[:-1,:][i,:]>10**3*abs(radiativeTransfer.kappaStep[i,:])*scale)
+      kEDust = ~(k0Dust|kgDust)
+      kEgDust = kEDust&(radiativeTransfer.kappaStepDust[i,:]>0)
+      kElDust = kEDust&(radiativeTransfer.kappaStepDust[i,:]<0)
     
     # << Compute radiative transfer for the species transitions >>
+    if species:
+      if k0Species.any():
+        intensitySpecies[k0Species] = intensitySpecies[k0Species] + radiativeTransfer.epsilonSpecies[:-1,:][i,:][k0Species]*scale+0.5*radiativeTransfer.epsilonStepSpecies[i,:][k0Species]*scale**2
+    
+      elif kgSpecies.any():
+        try:
+          intensitySpecies[kgSpecies] = np.exp(-radiativeTransfer.kappaSpecies[i,:][kgSpecies]*scale) * intensitySpecies[kgSpecies] + \
+                             ((radiativeTransfer.epsilonSpecies[i,:][kgSpecies]*radiativeTransfer.kappaSpecies[i,:][kgSpecies]+radiativeTransfer.epsilonStepSpecies[i,:][kgSpecies]*(radiativeTransfer.kappaSpecies[i,:][kgSpecies]*scale-1))/(radiativeTransfer.kappaSpecies[i,:][kgSpecies]**2.)) - \
+                             np.exp(-radiativeTransfer.kappaSpecies[i,:][kgSpecies]*scale)*((radiativeTransfer.epsilonSpecies[i,:][kgSpecies]*radiativeTransfer.kappaSpecies[i,:][kgSpecies]-radiativeTransfer.epsilonStepSpecies[i,:][kgSpecies])/(radiativeTransfer.kappaSpecies[i,:][kgSpecies]**2.))
+        except RuntimeWarning:
+          print('ERROR: Integration option 2')
+          intensitySpecies[kgSpecies] = np.exp(-radiativeTransfer.kappaSpecies[i,:][kgSpecies]*scale) * (intensitySpecies[kgSpecies] + \
+                             ((radiativeTransfer.epsilonSpecies[i,:][kgSpecies]*radiativeTransfer.kappaSpecies[i,:][kgSpecies]+radiativeTransfer.epsilonStepSpecies[i,:][kgSpecies]*(radiativeTransfer.kappaSpecies[i,:][kgSpecies]*scale-1))/(radiativeTransfer.kappaSpecies[i,:][kgSpecies]**2.)) - \
+                             ((radiativeTransfer.epsilonSpecies[i,:][kgSpecies]*radiativeTransfer.kappaSpecies[i,:][kgSpecies]-radiativeTransfer.epsilonStepSpecies[i,:][kgSpecies])/(radiativeTransfer.kappaSpecies[i,:][kgSpecies]**2.)))
   
-    if k0Species.any():
-      intensitySpecies[k0Species] = intensitySpecies[k0Species] + radiativeTransfer.epsilonSpecies[:-1,:][i,:][k0Species]*scale+0.5*radiativeTransfer.epsilonStepSpecies[i,:][k0Species]*scale**2
+      elif kEgSpecies.any():
+        if verbose: print('\na, b:\n', aSpecies[i,:,:], '\n', bSpecies[i,:,:])
+        aE = np.array(list(Ereal(aSpecies[i,:][kEgSpecies])))
+        bE = np.array(list(Ereal(bSpecies[i,:][kEgSpecies])))
+        intensitySpecies[kEgSpecies] = (radiativeTransfer.epsilonStepSpecies[i,:][kEgSpecies]/radiativeTransfer.kappaStepSpecies[i,:][kEgSpecies]*(1-np.exp(-radiativeTransfer.kappaSpecies[:-1,:][i,:][kEgSpecies]*scale-radiativeTransfer.kappaStepSpecies[i,:][kEgSpecies]/2.*scale**2.)) - \
+                          (radiativeTransfer.epsilonSpecies[:-1,:][i,:][kEgSpecies]*radiativeTransfer.kappaStepSpecies[i,:][kEgSpecies]-radiativeTransfer.epsilonStepSpecies[i,:][kEgSpecies]*radiativeTransfer.kappaSpecies[:-1,:][i,:][kEgSpecies])/radiativeTransfer.kappaStepSpecies[i,:][kEgSpecies] * \
+                          np.sqrt(np.pi/(2.*abs(radiativeTransfer.kappaStepSpecies[i][kEgSpecies].astype(np.complex)))) * \
+                          (np.exp(aSpecies[i,:][kEgSpecies]**2.-bSpecies[i,:][kEgSpecies]**2.)*aE-bE) + \
+                          intensitySpecies[kEgSpecies]*np.exp(-radiativeTransfer.kappaSpecies[:-1][i,:][kEgSpecies]*scale-radiativeTransfer.kappaStepSpecies[i,:][kEgSpecies]/2.*scale**2.)).real
   
-    elif kgSpecies.any():
-      try:
-        intensitySpecies[kgSpecies] = np.exp(-radiativeTransfer.kappaSpecies[i,:][kgSpecies]*scale) * intensitySpecies[kgSpecies] + \
-                           ((radiativeTransfer.epsilonSpecies[i,:][kgSpecies]*radiativeTransfer.kappaSpecies[i,:][kgSpecies]+radiativeTransfer.epsilonStepSpecies[i,:][kgSpecies]*(radiativeTransfer.kappaSpecies[i,:][kgSpecies]*scale-1))/(radiativeTransfer.kappaSpecies[i,:][kgSpecies]**2.)) - \
-                           np.exp(-radiativeTransfer.kappaSpecies[i,:][kgSpecies]*scale)*((radiativeTransfer.epsilonSpecies[i,:][kgSpecies]*radiativeTransfer.kappaSpecies[i,:][kgSpecies]-radiativeTransfer.epsilonStepSpecies[i,:][kgSpecies])/(radiativeTransfer.kappaSpecies[i,:][kgSpecies]**2.))
-      except RuntimeWarning:
-        print('ERROR: Integration option 2')
-        intensitySpecies[kgSpecies] = np.exp(-radiativeTransfer.kappaSpecies[i,:][kgSpecies]*scale) * (intensitySpecies[kgSpecies] + \
-                           ((radiativeTransfer.epsilonSpecies[i,:][kgSpecies]*radiativeTransfer.kappaSpecies[i,:][kgSpecies]+radiativeTransfer.epsilonStepSpecies[i,:][kgSpecies]*(radiativeTransfer.kappaSpecies[i,:][kgSpecies]*scale-1))/(radiativeTransfer.kappaSpecies[i,:][kgSpecies]**2.)) - \
-                           ((radiativeTransfer.epsilonSpecies[i,:][kgSpecies]*radiativeTransfer.kappaSpecies[i,:][kgSpecies]-radiativeTransfer.epsilonStepSpecies[i,:][kgSpecies])/(radiativeTransfer.kappaSpecies[i,:][kgSpecies]**2.)))
-
-    elif kEgSpecies.any():
-      if verbose: print('\na, b:\n', aSpecies[i,:,:], '\n', bSpecies[i,:,:])
-      aE = np.array(list(Ereal(aSpecies[i,:][kEgSpecies])))
-      bE = np.array(list(Ereal(bSpecies[i,:][kEgSpecies])))
-      intensitySpecies[kEgSpecies] = (radiativeTransfer.epsilonStepSpecies[i,:][kEgSpecies]/radiativeTransfer.kappaStepSpecies[i,:][kEgSpecies]*(1-np.exp(-radiativeTransfer.kappaSpecies[:-1,:][i,:][kEgSpecies]*scale-radiativeTransfer.kappaStepSpecies[i,:][kEgSpecies]/2.*scale**2.)) - \
-                        (radiativeTransfer.epsilonSpecies[:-1,:][i,:][kEgSpecies]*radiativeTransfer.kappaStepSpecies[i,:][kEgSpecies]-radiativeTransfer.epsilonStepSpecies[i,:][kEgSpecies]*radiativeTransfer.kappaSpecies[:-1,:][i,:][kEgSpecies])/radiativeTransfer.kappaStepSpecies[i,:][kEgSpecies] * \
-                        np.sqrt(np.pi/(2.*abs(radiativeTransfer.kappaStepSpecies[i][kEgSpecies].astype(np.complex)))) * \
-                        (np.exp(aSpecies[i,:][kEgSpecies]**2.-bSpecies[i,:][kEgSpecies]**2.)*aE-bE) + \
-                        intensitySpecies[kEgSpecies]*np.exp(-radiativeTransfer.kappaSpecies[:-1][i,:][kEgSpecies]*scale-radiativeTransfer.kappaStepSpecies[i,:][kEgSpecies]/2.*scale**2.)).real
-
-    elif kElSpecies.any():
-      if verbose: print('\na, b:\n', aSpecies[i,:,:], '\n', bSpecies[i,:])
-      aE = np.array(list(Eimag(aSpecies[i,:][kElSpecies])))
-      bE = np.array(list(Eimag(bSpecies[i,:][kElSpecies])))
-      try:
-        intensitySpecies[kElSpecies] = (radiativeTransfer.epsilonStepSpecies[i,:][kElSpecies]/radiativeTransfer.kappaStepSpecies[i,:][kElSpecies]*(1-np.exp(-radiativeTransfer.kappaSpecies[:-1,:][i,:][kElSpecies]*scale-radiativeTransfer.kappaStepSpecies[i,:][kElSpecies]/2.*scale**2.))\
-                          -(radiativeTransfer.epsilonSpecies[:-1,:][i,:][kElSpecies]*radiativeTransfer.kappaStepSpecies[i,:][kElSpecies]-radiativeTransfer.epsilonStepSpecies[i,:][kElSpecies]*radiativeTransfer.kappaSpecies[:-1,:][i,:][kElSpecies])/radiativeTransfer.kappaStepSpecies[i,:][kElSpecies] * \
-                          np.sqrt(np.pi/(2.*abs(radiativeTransfer.kappaStepSpecies[i][kElSpecies].astype(np.complex))))* \
-                          (np.exp(aSpecies[i,:][kElSpecies]**2.-bSpecies[i,:][kElSpecies]**2.)*aE-bE) + \
-                          intensitySpecies[kElSpecies]*np.exp(-radiativeTransfer.kappaSpecies[:-1,:][i,:][kElSpecies]*scale-radiativeTransfer.kappaStepSpecies[i,:][kElSpecies]/2.*scale**2.)).real
-      except RuntimeWarning:
-        print(radiativeTransfer.kappaSpecies[-1,:][kElSpecies])
-        print(radiativeTransfer.kappaStepSpecies[-1,kElSpecies])
-        print(aSpecies[i,kElSpecies]**2)
-        print(bSpecies[i,kElSpecies]**2)
-        input()
+      elif kElSpecies.any():
+        if verbose: print('\na, b:\n', aSpecies[i,:,:], '\n', bSpecies[i,:])
+        aE = np.array(list(Eimag(aSpecies[i,:][kElSpecies])))
+        bE = np.array(list(Eimag(bSpecies[i,:][kElSpecies])))
+        try:
+          intensitySpecies[kElSpecies] = (radiativeTransfer.epsilonStepSpecies[i,:][kElSpecies]/radiativeTransfer.kappaStepSpecies[i,:][kElSpecies]*(1-np.exp(-radiativeTransfer.kappaSpecies[:-1,:][i,:][kElSpecies]*scale-radiativeTransfer.kappaStepSpecies[i,:][kElSpecies]/2.*scale**2.))\
+                            -(radiativeTransfer.epsilonSpecies[:-1,:][i,:][kElSpecies]*radiativeTransfer.kappaStepSpecies[i,:][kElSpecies]-radiativeTransfer.epsilonStepSpecies[i,:][kElSpecies]*radiativeTransfer.kappaSpecies[:-1,:][i,:][kElSpecies])/radiativeTransfer.kappaStepSpecies[i,:][kElSpecies] * \
+                            np.sqrt(np.pi/(2.*abs(radiativeTransfer.kappaStepSpecies[i][kElSpecies].astype(np.complex))))* \
+                            (np.exp(aSpecies[i,:][kElSpecies]**2.-bSpecies[i,:][kElSpecies]**2.)*aE-bE) + \
+                            intensitySpecies[kElSpecies]*np.exp(-radiativeTransfer.kappaSpecies[:-1,:][i,:][kElSpecies]*scale-radiativeTransfer.kappaStepSpecies[i,:][kElSpecies]/2.*scale**2.)).real
+        except RuntimeWarning:
+          print(radiativeTransfer.kappaSpecies[-1,:][kElSpecies])
+          print(radiativeTransfer.kappaStepSpecies[-1,kElSpecies])
+          print(aSpecies[i,kElSpecies]**2)
+          print(bSpecies[i,kElSpecies]**2)
+          input()
     
     # << Compute radiative transfer for the dust continuum >>
+    if dust:
+      if k0Dust.any():
+        intensityDust[k0Dust] = intensityDust[k0Dust] + radiativeTransfer.epsilonDust[:-1,:][i,:][k0Dust]*scale+0.5*radiativeTransfer.epsilonStepDust[i,:][k0Dust]*scale**2
+    
+      elif kgDust.any():
+        try:
+          intensityDust[kgDust] = np.exp(-radiativeTransfer.kappaDust[i,:][kgDust]*scale) * intensityDust[kgDust] + \
+                             ((radiativeTransfer.epsilonDust[i,:][kgDust]*radiativeTransfer.kappaDust[i,:][kgDust]+radiativeTransfer.epsilonStepDust[i,:][kgDust]*(radiativeTransfer.kappaDust[i,:][kgDust]*scale-1))/(radiativeTransfer.kappaDust[i,:][kgDust]**2.)) - \
+                             np.exp(-radiativeTransfer.kappaDust[i,:][kgDust]*scale)*((radiativeTransfer.epsilonDust[i,:][kgDust]*radiativeTransfer.kappaDust[i,:][kgDust]-radiativeTransfer.epsilonStepDust[i,:][kgDust])/(radiativeTransfer.kappaDust[i,:][kgDust]**2.))
+        except RuntimeWarning:
+          print('ERROR: Integration option 2')
+          intensityDust[kgDust] = np.exp(-radiativeTransfer.kappaDust[i,:][kgDust]*scale) * (intensityDust[kgDust] + \
+                             ((radiativeTransfer.epsilonDust[i,:][kgDust]*radiativeTransfer.kappaDust[i,:][kgDust]+radiativeTransfer.epsilonStepDust[i,:][kgDust]*(radiativeTransfer.kappaDust[i,:][kgDust]*scale-1))/(radiativeTransfer.kappaDust[i,:][kgDust]**2.)) - \
+                             ((radiativeTransfer.epsilonDust[i,:][kgDust]*radiativeTransfer.kappaDust[i,:][kgDust]-radiativeTransfer.epsilonStepDust[i,:][kgDust])/(radiativeTransfer.kappaDust[i,:][kgDust]**2.)))
   
-    if k0Dust.any():
-      intensityDust[k0Dust] = intensityDust[k0Dust] + radiativeTransfer.epsilonDust[:-1,:][i,:][k0Dust]*scale+0.5*radiativeTransfer.epsilonStepDust[i,:][k0Dust]*scale**2
+      elif kEgDust.any():
+        if verbose: print('\na, b:\n', aDust[i,:,:], '\n', bDust[i,:,:])
+        aE = np.array(list(Ereal(aDust[i,:][kEgDust])))
+        bE = np.array(list(Ereal(bDust[i,:][kEgDust])))
+        intensityDust[kEgDust] = (radiativeTransfer.epsilonStepDust[i,:][kEgDust]/radiativeTransfer.kappaStepDust[i,:][kEgDust]*(1-np.exp(-radiativeTransfer.kappaDust[:-1,:][i,:][kEgDust]*scale-radiativeTransfer.kappaStepDust[i,:][kEgDust]/2.*scale**2.)) - \
+                          (radiativeTransfer.epsilonDust[:-1,:][i,:][kEgDust]*radiativeTransfer.kappaStepDust[i,:][kEgDust]-radiativeTransfer.epsilonStepDust[i,:][kEgDust]*radiativeTransfer.kappaDust[:-1,:][i,:][kEgDust])/radiativeTransfer.kappaStepDust[i,:][kEgDust] * \
+                          np.sqrt(np.pi/(2.*abs(radiativeTransfer.kappaStepDust[i][kEgDust].astype(np.complex)))) * \
+                          (np.exp(aDust[i,:][kEgDust]**2.-bDust[i,:][kEgDust]**2.)*aE-bE) + \
+                          intensityDust[kEgDust]*np.exp(-radiativeTransfer.kappaDust[:-1][i,:][kEgDust]*scale-radiativeTransfer.kappaStepDust[i,:][kEgDust]/2.*scale**2.)).real
   
-    elif kgDust.any():
-      try:
-        intensityDust[kgDust] = np.exp(-radiativeTransfer.kappaDust[i,:][kgDust]*scale) * intensityDust[kgDust] + \
-                           ((radiativeTransfer.epsilonDust[i,:][kgDust]*radiativeTransfer.kappaDust[i,:][kgDust]+radiativeTransfer.epsilonStepDust[i,:][kgDust]*(radiativeTransfer.kappaDust[i,:][kgDust]*scale-1))/(radiativeTransfer.kappaDust[i,:][kgDust]**2.)) - \
-                           np.exp(-radiativeTransfer.kappaDust[i,:][kgDust]*scale)*((radiativeTransfer.epsilonDust[i,:][kgDust]*radiativeTransfer.kappaDust[i,:][kgDust]-radiativeTransfer.epsilonStepDust[i,:][kgDust])/(radiativeTransfer.kappaDust[i,:][kgDust]**2.))
-      except RuntimeWarning:
-        print('ERROR: Integration option 2')
-        intensityDust[kgDust] = np.exp(-radiativeTransfer.kappaDust[i,:][kgDust]*scale) * (intensityDust[kgDust] + \
-                           ((radiativeTransfer.epsilonDust[i,:][kgDust]*radiativeTransfer.kappaDust[i,:][kgDust]+radiativeTransfer.epsilonStepDust[i,:][kgDust]*(radiativeTransfer.kappaDust[i,:][kgDust]*scale-1))/(radiativeTransfer.kappaDust[i,:][kgDust]**2.)) - \
-                           ((radiativeTransfer.epsilonDust[i,:][kgDust]*radiativeTransfer.kappaDust[i,:][kgDust]-radiativeTransfer.epsilonStepDust[i,:][kgDust])/(radiativeTransfer.kappaDust[i,:][kgDust]**2.)))
-
-    elif kEgDust.any():
-      if verbose: print('\na, b:\n', aDust[i,:,:], '\n', bDust[i,:,:])
-      aE = np.array(list(Ereal(aDust[i,:][kEgDust])))
-      bE = np.array(list(Ereal(bDust[i,:][kEgDust])))
-      intensityDust[kEgDust] = (radiativeTransfer.epsilonStepDust[i,:][kEgDust]/radiativeTransfer.kappaStepDust[i,:][kEgDust]*(1-np.exp(-radiativeTransfer.kappaDust[:-1,:][i,:][kEgDust]*scale-radiativeTransfer.kappaStepDust[i,:][kEgDust]/2.*scale**2.)) - \
-                        (radiativeTransfer.epsilonDust[:-1,:][i,:][kEgDust]*radiativeTransfer.kappaStepDust[i,:][kEgDust]-radiativeTransfer.epsilonStepDust[i,:][kEgDust]*radiativeTransfer.kappaDust[:-1,:][i,:][kEgDust])/radiativeTransfer.kappaStepDust[i,:][kEgDust] * \
-                        np.sqrt(np.pi/(2.*abs(radiativeTransfer.kappaStepDust[i][kEgDust].astype(np.complex)))) * \
-                        (np.exp(aDust[i,:][kEgDust]**2.-bDust[i,:][kEgDust]**2.)*aE-bE) + \
-                        intensityDust[kEgDust]*np.exp(-radiativeTransfer.kappaDust[:-1][i,:][kEgDust]*scale-radiativeTransfer.kappaStepDust[i,:][kEgDust]/2.*scale**2.)).real
-
-    elif kElDust.any():
-      if verbose: print('\na, b:\n', aDust[i,:,:], '\n', bDust[i,:])
-      aE = np.array(list(Eimag(aDust[i,:][kElDust])))
-      bE = np.array(list(Eimag(bDust[i,:][kElDust])))
-      try:
-        intensityDust[kElDust] = (radiativeTransfer.epsilonStepDust[i,:][kElDust]/radiativeTransfer.kappaStepDust[i,:][kElDust]*(1-np.exp(-radiativeTransfer.kappaDust[:-1,:][i,:][kElDust]*scale-radiativeTransfer.kappaStepDust[i,:][kElDust]/2.*scale**2.))\
-                          -(radiativeTransfer.epsilonDust[:-1,:][i,:][kElDust]*radiativeTransfer.kappaStepDust[i,:][kElDust]-radiativeTransfer.epsilonStepDust[i,:][kElDust]*radiativeTransfer.kappaDust[:-1,:][i,:][kElDust])/radiativeTransfer.kappaStepDust[i,:][kElDust] * \
-                          np.sqrt(np.pi/(2.*abs(radiativeTransfer.kappaStepDust[i][kElDust].astype(np.complex))))* \
-                          (np.exp(aDust[i,:][kElDust]**2.-bDust[i,:][kElDust]**2.)*aE-bE) + \
-                          intensityDust[kElDust]*np.exp(-radiativeTransfer.kappaDust[:-1,:][i,:][kElDust]*scale-radiativeTransfer.kappaStepDust[i,:][kElDust]/2.*scale**2.)).real
-      except RuntimeWarning:
-        print(radiativeTransfer.kappaDust[-1,:][kElDust])
-        print(radiativeTransfer.kappaStepDust[-1,kElDust])
-        print(aDust[i,kElDust]**2)
-        print(bDust[i,kElDust]**2)
-        input()
+      elif kElDust.any():
+        if verbose: print('\na, b:\n', aDust[i,:,:], '\n', bDust[i,:])
+        aE = np.array(list(Eimag(aDust[i,:][kElDust])))
+        bE = np.array(list(Eimag(bDust[i,:][kElDust])))
+        try:
+          intensityDust[kElDust] = (radiativeTransfer.epsilonStepDust[i,:][kElDust]/radiativeTransfer.kappaStepDust[i,:][kElDust]*(1-np.exp(-radiativeTransfer.kappaDust[:-1,:][i,:][kElDust]*scale-radiativeTransfer.kappaStepDust[i,:][kElDust]/2.*scale**2.))\
+                            -(radiativeTransfer.epsilonDust[:-1,:][i,:][kElDust]*radiativeTransfer.kappaStepDust[i,:][kElDust]-radiativeTransfer.epsilonStepDust[i,:][kElDust]*radiativeTransfer.kappaDust[:-1,:][i,:][kElDust])/radiativeTransfer.kappaStepDust[i,:][kElDust] * \
+                            np.sqrt(np.pi/(2.*abs(radiativeTransfer.kappaStepDust[i][kElDust].astype(np.complex))))* \
+                            (np.exp(aDust[i,:][kElDust]**2.-bDust[i,:][kElDust]**2.)*aE-bE) + \
+                            intensityDust[kElDust]*np.exp(-radiativeTransfer.kappaDust[:-1,:][i,:][kElDust]*scale-radiativeTransfer.kappaStepDust[i,:][kElDust]/2.*scale**2.)).real
+        except RuntimeWarning:
+          print(radiativeTransfer.kappaDust[-1,:][kElDust])
+          print(radiativeTransfer.kappaStepDust[-1,kElDust])
+          print(aDust[i,kElDust]**2)
+          print(bDust[i,kElDust]**2)
+          input()
   
   if verbose:
     print('Species intensity shape:', np.shape(intensitySpecies))
     print('Dust intensity shape:', np.shape(intensityDust))
 
-  radiativeTransfer.intensitySpecies = intensitySpecies
-  radiativeTransfer.intensityDust = intensityDust
-  radiativeTransfer.allIntensitySpecies.append(intensitySpecies)
-  radiativeTransfer.allIntensityDust.append(intensityDust)
+  if species:
+    radiativeTransfer.intensitySpecies = intensitySpecies
+    radiativeTransfer.allIntensitySpecies.append(intensitySpecies)
+  if dust:
+    radiativeTransfer.intensityDust = intensityDust
+    radiativeTransfer.allIntensityDust.append(intensityDust)
 
   return
 
