@@ -33,12 +33,12 @@ def calculateObservation(directory='', dim='xy', sl=[50,50], terminal=True, plot
     
   # print('Load data')
 
-  radiativeTransfer.voxelPositions = fits.open(directory+'/voxel_position.fits')
-  radiativeTransfer.voxelVelocities = fits.open(directory+'/voxel_velocity.fits')
-  radiativeTransfer.tempSpeciesEmissivity = fits.open(directory+'/species_emissivity.fits')# in K/pc
-  radiativeTransfer.tempSpeciesAbsorption = fits.open(directory+'/species_absorption.fits')# in 1/pc
-  radiativeTransfer.tempDustEmissivity = fits.open(directory+'/dust_emissivity.fits')# in K/pc
-  radiativeTransfer.tempDustAbsorption = fits.open(directory+'/dust_absorption.fits')# in 1/pc
+  radiativeTransfer.voxelPositions = fits.open(directory+'/voxel_position.fits', mode='denywrite')
+  radiativeTransfer.voxelVelocities = fits.open(directory+'/voxel_velocity.fits', mode='denywrite')
+  radiativeTransfer.tempSpeciesEmissivity = fits.open(directory+'/species_emissivity.fits', mode='denywrite')# in K/pc
+  radiativeTransfer.tempSpeciesAbsorption = fits.open(directory+'/species_absorption.fits', mode='denywrite')# in 1/pc
+  radiativeTransfer.tempDustEmissivity = fits.open(directory+'/dust_emissivity.fits', mode='denywrite')# in K/pc
+  radiativeTransfer.tempDustAbsorption = fits.open(directory+'/dust_absorption.fits', mode='denywrite')# in 1/pc
   
   # print('Data loaded :-)')
 
