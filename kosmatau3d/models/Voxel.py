@@ -430,8 +430,8 @@ class Voxel(object):
         self.__intensityDust[ens][nv,:] = self.__intensityDust[ens][nv,:]+np.array([np.array(clumpIntensityDust[ens]).sum(1).sum(0) for _ in range(factor.shape[1])]).astype(constants.dtype)
         self.__opticalDepthDust[ens][nv,:] = self.__opticalDepthDust[ens][nv,:]+np.array([-np.log(np.array(clumpOpticalDepthDust[ens]).sum(1)).sum(0) for _ in range(factor.shape[1])]).astype(constants.dtype)
   
-        intensityDustInterp = interp1d(constants.wavelengths[constants.nDust], self.__intensityDust[ens][0, :], fill_value='extrapolate')
-        opticalDepthDustInterp = interp1d(constants.wavelengths[constants.nDust], self.__opticalDepthDust[ens][0, :], fill_value='extrapolate')
+        intensityDustInterp = interp1d(constants.wavelengths[constants.nDust], self.__intensityDust[ens].max(0), fill_value='extrapolate')
+        opticalDepthDustInterp = interp1d(constants.wavelengths[constants.nDust], self.__opticalDepthDust[ens].max(0), fill_value='extrapolate')
   
         for i,transition in enumerate(species.moleculeWavelengths):
           self.__intensitySpecies[ens][:,i] += intensityDustInterp(transition)
@@ -598,7 +598,7 @@ class Voxel(object):
 
     fig,axes = plt.subplots(constants.ensembles, figsize=(10, 5*constants.ensembles))
 
-    for ens in range(len(value)):
+    for ens in range(constants.ensembles):
 
       if isinstance(axes, np.ndarray):
         ax = axes[ens]
