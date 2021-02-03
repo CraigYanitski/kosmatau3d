@@ -24,8 +24,6 @@ from .. import constants
 # Make sure that we are using QT5
 matplotlib.use('Qt5Agg')
 
-fig = plt.figure(figsize=(9, 6))
-
 def main():
   directory = constants.HISTORYPATH
   
@@ -35,6 +33,7 @@ def main():
   sys.exit(app.exec_())
 
 class viewMap(QWidget):
+  fig = plt.figure(figsize=(9, 6))
   def __init__(self, directory, posXY=(700, 40), windowSize=(925, 750)):
     super().__init__()
     self.title = 'Subplot Switcher'
