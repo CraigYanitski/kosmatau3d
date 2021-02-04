@@ -46,6 +46,9 @@ class viewMap(QApplication):
     self.windowSize = windowSize
     self.directory = directory
     self.file = fits.open(directory+'/channel_intensity.fits')
+    lon = np.linspace(-np.pi, np.pi, self.file[1].shape[2])
+    lat = np.linspace(-np.pi/2, np.pi/2, self.file[1].shape[1])
+    self.lon,self.lat = np.meshgrid(lon,lat)
     self.velocity = np.linspace(self.file[1].header['CRVAL4'] - self.file[1].header['CRPIX4'] * self.file[1].header['CDELT4'],
                            self.file[1].header['CRVAL4'] + self.file[1].header['CRPIX4'] * self.file[1].header['CDELT4'],
                            num=self.file[1].header['NAXIS4'])
@@ -149,27 +152,19 @@ class viewMap(QApplication):
     for ax in axTemp:
       self.fig.delaxes(ax)
     
-    # value = np.full(data.shape, 1e-100)
-    # value[data>0] = data[data>0]
-    # value = np.log10(value)
-    # value = np.nan_to_num(value, nan=-100)
-    print(data.shape)
-    vmax = np.ciel(data.max())
-    vmin = np.floor(data.min())
+    vmax = data.max()
+    vmin = data.min()
     
     ax = self.fig.add_axes((0.1, 0.1, 0.8, 0.9), projection='mollweide')
     # cm = ax.imshow(data, extent=(-np.pi, np.pi, -np.pi/2, np.pi/2), norm=colors.SymLogNorm(linthresh=0.1, vmin=vmin, vmax=vmax), cmap='cubehelix')
-    lon = np.linspace(-np.pi, np.pi, data.shape[1])
-    lat = np.linspace(-np.pi/2, np.pi/2, data.shape[0])
-    lon,lat = np.meshgrid(lon,lat)
-    cm = ax.pcolormesh(lon, lat, data, norm=colors.SymLogNorm(linthresh=0.1, vmin=vmin, vmax=vmax), cmap='cubehelix')
+    cm = ax.pcolormesh(self.lon, self.lat, data, norm=colors.SymLogNorm(linthresh=0.1, vmin=vmin, vmax=vmax), cmap='cubehelix')
     cb = self.fig.colorbar(cm, extend='both', ax=ax, fraction=0.02)
     if integrated:
-      cb.ax.set_ylabel('Intensity log(K km/s)', fontsize=20, labelpad=16, rotation=270)
+      cb.ax.set_ylabel(r'Intensity $log_{10} \left( K \frac{km}{s} \right)$', fontsize=20, labelpad=16, rotation=270)
     else:
-      cb.ax.set_ylabel('Intensity log(K)', fontsize=20, labelpad=16, rotation=270)
-    ax.set_xlabel('Longitude (rad)', fontsize=16)
-    ax.set_ylabel('Latitude (rad)', fontsize=16)
+      cb.ax.set_ylabel(r'Intensity $log_{10} \left( K \right)$', fontsize=20, labelpad=16, rotation=270)
+    ax.set_xlabel(r'Longitude $\left( rad \right)$', fontsize=16)
+    ax.set_ylabel(r'Latitude $\left( rad \right)$', fontsize=16)
     ax.set_title('Galactic '+title, fontsize=24)
     self.fig.tight_layout()
     

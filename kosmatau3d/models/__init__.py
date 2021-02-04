@@ -13,7 +13,7 @@ from . import masspoints
 
 from . import radiativeTransfer
 
-# from . import plotting
+from . import plotting
 
 def help():
 
