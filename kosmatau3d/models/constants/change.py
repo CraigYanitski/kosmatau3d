@@ -93,13 +93,29 @@ def changeDirectory(direc):
   return
 
 def changeDustWavelengths(limit=''):
+  
   constants.dustWavelengths = limit
-  if limit=='PAH':
+  
+  # Only use the longest wavelength with roughly the same intensity for all the species transitions for a reduced dust model.
+  if limit=='reduced':
+    limit = ['3.1mm']
+  elif limit in constants.dustNames:
+    limit = [limit]
+    
+  # Check if individual wavelengths of the dust continuum are specified
+  if isinstance(limit, list):
+    nDust = [line==np.asarray(constants.dustNames) for line in limit]
+    constants.nDust = np.any(nDust, 0)
+  # Use PAH to include the PAH features of the dust continuum
+  elif limit=='PAH':
     constants.nDust = constants.wavelengths>constants.limitPAH
+  # Use molecular to use just the section of the dust continuum relevant for the species transitions
   elif limit=='molecular':
     constants.nDust = constants.wavelengths>constants.limitMolecular
-  elif limit=='':
+  # Otherwise include the entire dust continuum.
+  else:
     constants.nDust = constants.wavelengths>0
+    
   return
 
 def setupMolecules(species):

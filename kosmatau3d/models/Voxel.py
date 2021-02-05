@@ -430,12 +430,17 @@ class Voxel(object):
         self.__intensityDust[ens][nv,:] = self.__intensityDust[ens][nv,:]+np.array([np.array(clumpIntensityDust[ens]).sum(1).sum(0) for _ in range(factor.shape[1])]).astype(constants.dtype)
         self.__opticalDepthDust[ens][nv,:] = self.__opticalDepthDust[ens][nv,:]+np.array([-np.log(np.array(clumpOpticalDepthDust[ens]).sum(1)).sum(0) for _ in range(factor.shape[1])]).astype(constants.dtype)
   
-        intensityDustInterp = interp1d(constants.wavelengths[constants.nDust], self.__intensityDust[ens].max(0), fill_value='extrapolate')
-        opticalDepthDustInterp = interp1d(constants.wavelengths[constants.nDust], self.__opticalDepthDust[ens].max(0), fill_value='extrapolate')
+        if iDust>1:
+          intensityDustInterp = interp1d(constants.wavelengths[constants.nDust], self.__intensityDust[ens].max(0), fill_value='extrapolate')
+          opticalDepthDustInterp = interp1d(constants.wavelengths[constants.nDust], self.__opticalDepthDust[ens].max(0), fill_value='extrapolate')
   
         for i,transition in enumerate(species.moleculeWavelengths):
-          self.__intensitySpecies[ens][:,i] += intensityDustInterp(transition)
-          self.__opticalDepthSpecies[ens][:,i] += opticalDepthDustInterp(transition)
+          if iDust>1:
+            self.__intensitySpecies[ens][:,i] += intensityDustInterp(transition)
+            self.__opticalDepthSpecies[ens][:,i] += opticalDepthDustInterp(transition)
+          else:
+            self.__intensitySpecies[ens][:,i] += self.__intensityDust[ens].max()
+            self.__opticalDepthSpecies[ens][:,i] += self.__intensityDust[ens].max()
       
       else:
         print('Voxel with velocity {} not within given observing velocity range.'.format(self.__velocity))
