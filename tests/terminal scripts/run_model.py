@@ -14,20 +14,20 @@ parameters = {
                 'directory': r'\MilkyWay',
                 'x': 36,
                 'y': 36,
-                'z': 2,
+                'z': 1,
                 'modelType': 'disk',
                 
                 # Model parameters
-                'resolution': 250,
-                # 'molecules': 'all',
-                'molecules' : ['C+ 1', 'C 1', 'CO 1'],
-               # 'dust' : 'PAH',
-                'dust': 'molecular',
+                'resolution': 1000,
+                'molecules': 'all',
+                # 'molecules' : ['C+ 1', 'C 1', 'CO 1'],
+               'dust' : 'PAH',
+                # 'dust': '3.1mm',
                 'clumpMassRange': [[0, 2], [-2]],
                 'clumpMassNumber': [3, 1],
                 'clumpNmax': [1, 100],
                 'velocityRange': [-300, 300],
-                'velocityNumber': 1000,
+                'velocityNumber': 500,
                 
                 # Property factors
                 'clumpMassFactor': [1, 1],
