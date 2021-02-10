@@ -35,7 +35,7 @@ def calculateObservation(directory='', dim='xy', slRange=[(-np.pi,np.pi), (-np.p
   if debug:
     sl = [5,5]
   
-  constants.velocityRange = np.linspace(-300, 300, 500)
+  # constants.velocityRange = np.linspace(-300, 300, 500)
     
   # print('Load data')
 
@@ -154,13 +154,13 @@ def calculateObservation(directory='', dim='xy', slRange=[(-np.pi,np.pi), (-np.p
       IntensityHDUSpecies.header['CRPIX1'] = 'N/A'
       IntensityHDUSpecies.header['CTYPE2'] = 'GLON'
       IntensityHDUSpecies.header['CUNIT2'] = 'rad'
-      IntensityHDUSpecies.header['CRVAL2'] = 0.
-      IntensityHDUSpecies.header['CDELT2'] = 2*np.pi/(IntensityHDUSpecies.header['NAXIS2']-1)
+      IntensityHDUSpecies.header['CRVAL2'] = (slRange[0][1]-slRange[0][0])/2.
+      IntensityHDUSpecies.header['CDELT2'] = (slRange[0][1]-slRange[0][0])/(IntensityHDUSpecies.header['NAXIS2']-1)
       IntensityHDUSpecies.header['CRPIX2'] = (IntensityHDUSpecies.header['NAXIS2']-1)/2.
       IntensityHDUSpecies.header['CTYPE3'] = 'GLAT'
       IntensityHDUSpecies.header['CUNIT3'] = 'rad'
-      IntensityHDUSpecies.header['CRVAL3'] = 0.
-      IntensityHDUSpecies.header['CDELT3'] = np.pi/(IntensityHDUSpecies.header['NAXIS3']-1)
+      IntensityHDUSpecies.header['CRVAL3'] = (slRange[1][1]-slRange[1][0])/2.
+      IntensityHDUSpecies.header['CDELT3'] = (slRange[1][1]-slRange[1][0])/(IntensityHDUSpecies.header['NAXIS3']-1)
       IntensityHDUSpecies.header['CRPIX3'] = (IntensityHDUSpecies.header['NAXIS3']-1)/2.
       IntensityHDUSpecies.header['CTYPE4'] = 'Velocity'
       IntensityHDUSpecies.header['CUNIT4'] = 'km/s'
@@ -219,26 +219,21 @@ def multiprocessCalculation(slRange=[(-np.pi,np.pi), (-np.pi/2,np.pi/2)], nsl=[5
   VintensityMapDust = []
   sightlines = []
   
-  velChannel = partial(calculateVelocityChannel, slRange=slRange, nsl=nsl, dim=dim, debug=debug)
+  velChannel = partial(calculateVelocityChannel, slRange=slRange, nsl=nsl, dim=dim, debug=debug, multiprocess=multiprocessing)
   vNum = constants.velocityRange.size
-  # print('Pause')
-  # input()
+  
   t0 = time()
   
   if multiprocessing:
     pool = Pool(processes=multiprocessing)
-    intensity = pool.imap(velChannel, list(enumerate(constants.velocityRange)), vNum/multiprocessing)
+    chunksize = int(vNum/multiprocessing)
+    intensity = pool.imap(velChannel, list(enumerate(constants.velocityRange)), chunksize)
   else:
     intensity = []
     vTqdm = tqdm(total=constants.velocityRange.size, desc='Observing velocity', miniters=1, dynamic_ncols=True)
-    # t0 = time()
-    # print('{} of {} velocities'.format(0, constants.velocityRange.size))
     for iv in enumerate(constants.velocityRange):
       intensity.append(velChannel(iv))
-      # print('\r{} of {} velocities: {:.2f}'.format(iv[0], constants.velocityRange.size, time()-t0))
       vTqdm.update()
-      
-  print(time()-t0)
       
   vmin = constants.velocityRange.max()
   vmax = constants.velocityRange.min()
@@ -256,16 +251,19 @@ def multiprocessCalculation(slRange=[(-np.pi,np.pi), (-np.pi/2,np.pi/2)], nsl=[5
       VintensityMapSpecies.append(i[1])
       VintensityMapDust.append(i[2])
       sightlines.append(i[3])
+      
+  print('\n\nTotal evaluation time for {} sightlines and {} velocity channels: {}\n\n'.format(nsl[0]*nsl[1], vNum, time()-t0))
   
   return (Vpositions,VintensityMapSpecies,VintensityMapDust,sightlines,(vmin,vmax))
 
 # for i_vel,velocity in enumerate(constants.velocityRange):
-def calculateVelocityChannel(ivelocity, slRange=[(-np.pi,np.pi), (-np.pi/2,np.pi/2)], nsl=[50,25], dim='spherical', debug=False):
+def calculateVelocityChannel(ivelocity, slRange=[(-np.pi,np.pi), (-np.pi/2,np.pi/2)], nsl=[50,25], dim='spherical', debug=False, multiprocess=0):
 
   # Convert the tuple to the desired index and velocity
   i_vel = ivelocity[0]
   velocity = ivelocity[1]
-  print('Calculating velocity channel at {:.2f} km\s'.format(velocity))
+  if multiprocess:
+    print('Calculating velocity channel at {:.2f} km\s'.format(velocity))
   
   # Setup the sightlines that are calculated
   longrid = np.linspace(slRange[0][0], slRange[0][1], num=nsl[0])
@@ -965,22 +963,22 @@ def debugEmission(sl,i):
 
   return df
 
-# if __name__=='__main__':
-#
-#   print('spawned process')
-#
-#   directory = r'C:\Users\cyani\projects\pdr\KT3_history\MilkyWay\r200_cm1-1_d1_uv10'
-#
-#   constants.velocityRange = np.linspace(-300, 300, 500)
-#
-#   radiativeTransfer.voxelPositions = fits.open(directory+'/voxel_position.fits', mode='denywrite')
-#   radiativeTransfer.voxelVelocities = fits.open(directory+'/voxel_velocity.fits', mode='denywrite')
-#   radiativeTransfer.tempSpeciesEmissivity = fits.open(directory+'/species_emissivity.fits', mode='denywrite')# in K/pc
-#   radiativeTransfer.tempSpeciesAbsorption = fits.open(directory+'/species_absorption.fits', mode='denywrite')# in 1/pc
-#   radiativeTransfer.tempDustEmissivity = fits.open(directory+'/dust_emissivity.fits', mode='denywrite')# in K/pc
-#   radiativeTransfer.tempDustAbsorption = fits.open(directory+'/dust_absorption.fits', mode='denywrite')# in 1/pc
-#
-#   multiprocessCalculation(slRange=[(-np.pi,np.pi), (-np.pi/2,np.pi/2)], nsl=[50,25], dim='spherical', multiprocessing=2)
+if __name__=='__main__':
+
+  print('spawned process')
+
+  directory = r'C:\Users\cyani\projects\pdr\KT3_history\MilkyWay\r250_cm1-1_d1_uv10'
+
+  constants.velocityRange = np.linspace(-300, 300, 500)
+
+  radiativeTransfer.voxelPositions = fits.open(directory+'/voxel_position.fits', mode='denywrite')
+  radiativeTransfer.voxelVelocities = fits.open(directory+'/voxel_velocity.fits', mode='denywrite')
+  radiativeTransfer.tempSpeciesEmissivity = fits.open(directory+'/species_emissivity.fits', mode='denywrite')# in K/pc
+  radiativeTransfer.tempSpeciesAbsorption = fits.open(directory+'/species_absorption.fits', mode='denywrite')# in 1/pc
+  radiativeTransfer.tempDustEmissivity = fits.open(directory+'/dust_emissivity.fits', mode='denywrite')# in K/pc
+  radiativeTransfer.tempDustAbsorption = fits.open(directory+'/dust_absorption.fits', mode='denywrite')# in 1/pc
+
+  multiprocessCalculation(slRange=[(-np.pi,np.pi), (-np.pi/2,np.pi/2)], nsl=[50,25], dim='spherical', multiprocessing=2)
   
   # multiprocessing.freeze_support()
 
