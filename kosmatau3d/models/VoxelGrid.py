@@ -176,13 +176,13 @@ class VoxelGrid(object):
     # Setup fits files to stream the voxel emissivity and absorption.
     #species
     dim = [len(species.moleculeWavelengths), constants.velocityRange.size, self.__voxelNumber]
-    shdu_voxel_emissivity_species = self.shdu_header(name='Clump species emissivity', units='K/pc', molecules=True, filename='species_emissivity', dim=dim)
-    shdu_voxel_absorption_species = self.shdu_header(name='Clump species absorption', units='1/pc', molecules=True, filename='species_absorption', dim=dim)
+    shdu_voxel_emissivity_species = self.shdu_header(name='Clump species emissivity', units='K/pc', molecules=True, filename='species_emissivity', velocity=True, dim=dim)
+    shdu_voxel_absorption_species = self.shdu_header(name='Clump species absorption', units='1/pc', molecules=True, filename='species_absorption', velocity=True, dim=dim)
     #dust
     nDust = constants.wavelengths[constants.nDust].size
     dim = [nDust, constants.velocityRange.size, self.__voxelNumber]
-    shdu_voxel_emissivity_dust = self.shdu_header(name='Clump dust emissivity', units='K/pc', dust=True, filename='dust_emissivity', dim=dim)
-    shdu_voxel_absorption_dust = self.shdu_header(name='Clump dust absorption', units='1/pc', dust=True, filename='dust_absorption', dim=dim)
+    shdu_voxel_emissivity_dust = self.shdu_header(name='Clump dust emissivity', units='K/pc', dust=True, filename='dust_emissivity', velocity=True, dim=dim)
+    shdu_voxel_absorption_dust = self.shdu_header(name='Clump dust absorption', units='1/pc', dust=True, filename='dust_absorption', velocity=True, dim=dim)
 
     dim = [len(constants.clumpMassNumber), self.__voxelNumber]
     shdu_ensemble_mass = self.shdu_header(name='Ensemble Mass', units='Msol', filename='voxel_ensemble_mass', dim=dim)
@@ -437,7 +437,7 @@ class VoxelGrid(object):
     for voxel in self.__voxels: voxel.printVoxel()
     return
 
-  def shdu_header(self, name='', units='', molecules=False, dust=False, filename=None, dim=None):
+  def shdu_header(self, name='', units='', molecules=False, dust=False, filename=None, velocity=False, dim=None):
 
     if filename==None or dim==None: return
 
@@ -454,6 +454,24 @@ class VoxelGrid(object):
 
     for i in range(len(dim)):
       header['NAXIS{}'.format(i+1)] = dim[i]
+      if velocity&i==0:
+        header['CTYPE1'] = 'Transition/wavelength'
+        header['CUNIT1'] = 'm'
+        header['CRPIX1'] = 'N/A'
+        header['CRVAL1'] = 'N/A'
+        header['CDELT1'] = 'N/A'
+      elif velocity&i==1:
+        header['CTYPE2'] = 'Velocity'
+        header['CUNIT2'] = 'km\s'
+        header['CRPIX2'] = (header['NAXIS2']-1)/2
+        header['CRVAL2'] = 0
+        header['CDELT2'] = (constants.velocityRange[-1]-constants.velocityRange[0])/(header['NAXIS2']-1)
+      elif velocity&i==2:
+        header['CTYPE3'] = 'Voxel'
+        header['CUNIT1'] = 'N/A'
+        header['CRPIX1'] = 'N/A'
+        header['CRVAL1'] = 'N/A'
+        header['CDELT1'] = 'N/A'
 
     # header['NAXIS1'] = self.__constants.velocityBins.size#emission[0].data[0,0,0,:].size
     # header['NAXIS2'] = len(self.__species[0].getMolecules())+len(self.__species[1].getDust())#emission[0].data[0,0,:,0].size
