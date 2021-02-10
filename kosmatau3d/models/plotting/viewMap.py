@@ -4,6 +4,7 @@ import matplotlib.pyplot as plt
 import matplotlib.colors as colors
 from astropy.io import fits
 import numpy as np
+
 from PyQt5.QtCore import Qt
 from PyQt5.QtWidgets import (
   QApplication,
@@ -46,8 +47,14 @@ class viewMap(QApplication):
     self.windowSize = windowSize
     self.directory = directory
     self.file = fits.open(directory+'/channel_intensity.fits')
-    lon = np.linspace(-np.pi, np.pi, self.file[1].shape[2])
-    lat = np.linspace(-np.pi/2, np.pi/2, self.file[1].shape[1])
+    # lon = np.linspace(-np.pi, np.pi, self.file[1].shape[2])
+    # lat = np.linspace(-np.pi/2, np.pi/2, self.file[1].shape[1])
+    lon = np.linspace(self.file[1].header['CRVAL2'] - self.file[1].header['CRPIX2'] * self.file[1].header['CDELT2'],
+                           self.file[1].header['CRVAL2'] + self.file[1].header['CRPIX2'] * self.file[1].header['CDELT2'],
+                           num=self.file[1].header['NAXIS2'])
+    lat = np.linspace(self.file[1].header['CRVAL3'] - self.file[1].header['CRPIX3'] * self.file[1].header['CDELT3'],
+                           self.file[1].header['CRVAL3'] + self.file[1].header['CRPIX3'] * self.file[1].header['CDELT3'],
+                           num=self.file[1].header['NAXIS3'])
     self.lon,self.lat = np.meshgrid(lon,lat)
     self.velocity = np.linspace(self.file[1].header['CRVAL4'] - self.file[1].header['CRPIX4'] * self.file[1].header['CDELT4'],
                            self.file[1].header['CRVAL4'] + self.file[1].header['CRPIX4'] * self.file[1].header['CDELT4'],
