@@ -47,6 +47,7 @@ class viewMap(QApplication):
     self.windowSize = windowSize
     self.directory = directory
     self.file = fits.open(directory+'/channel_intensity.fits')
+    print(self.file[1].header)
     # lon = np.linspace(-np.pi, np.pi, self.file[1].shape[2])
     # lat = np.linspace(-np.pi/2, np.pi/2, self.file[1].shape[1])
     lon = np.linspace(self.file[1].header['CRVAL2'] - self.file[1].header['CRPIX2'] * self.file[1].header['CDELT2'],

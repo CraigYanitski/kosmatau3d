@@ -1,6 +1,8 @@
 import numpy as np
 from astropy.io import fits
 import matplotlib.pyplot as plt
+import matplotlib.colors as colors
+from pprint import pprint
 
 from .viewMap import *
 from .. import constants
@@ -177,3 +179,77 @@ def plotModel(plot='total intensity', ce=[], ie=[], grid=None, directory='/home/
   plt.show()
   
   return maxClumpEmission,maxInterclumpEmission
+
+def PVplot(directory='', lat=[-np.pi/9,np.pi/9], species=[], dust=[], save=False):
+  # Plot the PV diagram for the selected latitude range.
+
+  channelMap = fits.open(directory+'/channel_intensity.fits')
+  
+  if species:
+    print('Species channel map')
+    speciesMap = channelMap[1].data
+  if dust:
+    print('Dust channel map')
+    dustMap = channelMap[2].data
+
+  pprint(channelMap[1].header)
+  velocity = np.linspace(channelMap[1].header['CRVAL4'] - channelMap[1].header['CRPIX4'] * channelMap[1].header['CDELT4'],
+                         channelMap[1].header['CRVAL4'] + channelMap[1].header['CRPIX4'] * channelMap[1].header['CDELT4'],
+                         num=channelMap[1].header['NAXIS4'])
+  latitude = np.linspace(channelMap[1].header['CRVAL3'] - channelMap[1].header['CRPIX3'] * channelMap[1].header['CDELT3'],
+                         channelMap[1].header['CRVAL3'] + channelMap[1].header['CRPIX3'] * channelMap[1].header['CDELT3'],
+                         num=channelMap[1].header['NAXIS3'])
+  longitude = np.linspace(channelMap[1].header['CRVAL2'] - channelMap[1].header['CRPIX2'] * channelMap[1].header['CDELT2'],
+                          channelMap[1].header['CRVAL2'] + channelMap[1].header['CRPIX2'] * channelMap[1].header['CDELT2'],
+                          num=channelMap[1].header['NAXIS2'])
+  
+  velocity,longitude = np.meshgrid(velocity, longitude)
+  
+  i_min = np.abs(latitude-lat[0]).argmin()
+  i_max = np.abs(latitude-lat[1]).argmax()
+  
+  if isinstance(species, str):
+    species = [species]
+  if isinstance(dust, str):
+    dust = [dust]
+
+  i_species = []
+  i_dust = []
+  
+  for transition in species:
+    print('Find species')
+    allSpecies = channelMap[1].header['SPECIES'].split(', ')
+    i_species.append(np.where(np.asarray(allSpecies)==transition)[0][0])
+  for line in dust:
+    print('Find dust')
+    allDust = channelMap[2].header['DUST'].split(', ')
+    i_dust.append(np.where(np.asarray(allDust)==line)[0][0])
+  
+  for i,i_transition in enumerate(i_species):
+    fig,ax = plt.subplots(1, 1, figsize=(15,10))
+    intensityMap = speciesMap[:,i_min:i_max,:,i_transition].sum(1)
+    print(i_max, i_min)
+    print(intensityMap.min(), intensityMap.max())
+    cm = ax.pcolormesh(longitude, velocity, intensityMap.T, shading='flat', norm=colors.SymLogNorm(linthresh=0.1, vmin=intensityMap.min(), vmax=intensityMap.max()), cmap='cubehelix')
+    cb = fig.colorbar(cm, extend='max', ax=ax, fraction=0.02)
+    cb.ax.set_ylabel(r'Intensity $log_{10} \left( K \right)$', fontsize=20, labelpad=16, rotation=270)
+    ax.set_xlabel(r'Longitude $\left( ^\circ \right)$', fontsize=20)
+    ax.set_ylabel(r'Velocity $\left( \frac{km}{s} \right)$', fontsize=20)
+    ax.set_title(r'{} galactic position-velocity diagram'.format(species[i]), fontsize=26)
+    if save:
+      plt.savefig(r'{}_pv_plot.png'.format(species[i].replace(' ', '_')))
+    else:
+      plt.show(block=False)
+  for i,i_line in enumerate(i_dust):
+    fig,ax = plt.subplots(1, 1, figsize=(15,10))
+    intensityMap = dustMap[:,i_min:i_max,:,i_line].sum(1)
+    cm = ax.pcolormesh(longitude, velocity, intensityMap.T, cmap='cubehelix')
+    cb = fig.colorbar(cm, extend='max', ax=ax, fraction=0.02)
+    cb.ax.set_ylabel(r'Intensity $log_{10} \left( K \right)$', fontsize=20, labelpad=16, rotation=270)
+    ax.set_xlabel(r'Longitude $\left( ^\circ \right)$', fontsize=20)
+    ax.set_ylabel(r'Velocity $\left( \frac{km}{s} \right)$', fontsize=20)
+    ax.set_title(r'Dust {} galactic position-velocity diagram'.format(dust[i]), fontsize=26)
+    if save:
+      plt.savefig(r'{}_pv_plot.png'.format(dust[i].replace(' ', '_')))
+    else:
+      plt.show(block=False)
