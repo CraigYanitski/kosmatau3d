@@ -226,12 +226,12 @@ def multiprocessCalculation(slRange=[(-np.pi,np.pi), (-np.pi/2,np.pi/2)], nsl=[5
   
   if multiprocessing:
     pool = Pool(processes=multiprocessing)
-    chunksize = max(int(vNum/multiprocessing), 1)
+    chunksize = 5#max(int(vNum/multiprocessing), 1)
     intensity = pool.imap(velChannel, list(enumerate(constants.velocityRange)), chunksize)
   else:
     intensity = []
     vTqdm = tqdm(total=constants.velocityRange.size, desc='Observing velocity', miniters=1, dynamic_ncols=True)
-    radiativeTransfer.slTqdm = tqdm(total=270, desc='Sightline', miniters=1, dynamic_ncols=True)
+    radiativeTransfer.slTqdm = tqdm(total=nsl[0]*nsl[1], desc='Sightline', miniters=1, dynamic_ncols=True)
     for iv in enumerate(constants.velocityRange):
       intensity.append(velChannel(iv))
       vTqdm.update()
@@ -244,7 +244,7 @@ def multiprocessCalculation(slRange=[(-np.pi,np.pi), (-np.pi/2,np.pi/2)], nsl=[5
   for n,i in enumerate(intensity):
   #   i.wait()
   #   print(i)
-    if i[3].any():
+    if len(i[3]):
       if constants.velocityRange[n]<vmin:
         vmin = constants.velocityRange[n]
       if constants.velocityRange[n]>vmax:
@@ -304,7 +304,7 @@ def calculateVelocityChannel(ivelocity, slRange=[(-np.pi,np.pi), (-np.pi/2,np.pi
   # iInterclumpV = np.where(iIV)
 
   if i_vox.any()==False:
-    return 0,0,0,np.asarray([])
+    return 0,0,0,[]#sightlines
 
   # The voxel positions can be any of the voxels
   # radiativeTransfer.tempSpeciesEmissivity = tempSpeciesEmissivity#[iV,i,:] / constants.pc/100
