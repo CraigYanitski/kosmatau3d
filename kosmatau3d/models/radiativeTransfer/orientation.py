@@ -18,6 +18,7 @@ from time import time
 import warnings
 
 from .. import constants
+from .. import species
 from .. import interpolations
 from .. import observations
 from .. import radiativeTransfer
@@ -45,6 +46,16 @@ def calculateObservation(directory='', dim='xy', slRange=[(-np.pi,np.pi), (-np.p
   radiativeTransfer.tempSpeciesAbsorption = fits.open(directory+'/species_absorption.fits', mode='denywrite')# in 1/pc
   radiativeTransfer.tempDustEmissivity = fits.open(directory+'/dust_emissivity.fits', mode='denywrite')# in K/pc
   radiativeTransfer.tempDustAbsorption = fits.open(directory+'/dust_absorption.fits', mode='denywrite')# in 1/pc
+
+  nDust = radiativeTransfer.tempDustEmissivity[0].shape[2]
+  if nDust>1:
+    # default interpolation is along the last axis, which is what we need
+    radiativeTransfer.interpDust = interpolate.interp1d(constants.wavelengths[:nDust],
+                                    radiativeTransfer.tempDustEmissivity[0].data[:, 0, :], fill_value='extrapolate')
+  
+  observations.methods.initialise()
+  species.addMolecules(radiativeTransfer.tempSpeciesEmissivity[0].header['SPECIES'].split(', '))
+  # print(radiativeTransfer.tempSpeciesEmissivity[0].header['SPECIES'].split(', '), '\n', species.moleculeWavelengths)
   
   # print('Data loaded :-)')
 
@@ -284,7 +295,13 @@ def calculateVelocityChannel(ivelocity, slRange=[(-np.pi,np.pi), (-np.pi/2,np.pi
   # print('lon/lat arrays created:', time()-t0)
 
   # Find the voxels that exist at the observing velocity
-  i_vox = (radiativeTransfer.tempSpeciesEmissivity[0].data[:,i_vel,:]==radiativeTransfer.tempDustEmissivity[0].data[0,0,0]).any(1)#(clumpVelocity==velocity)
+  nDust = radiativeTransfer.tempDustEmissivity[0].shape[2]
+  if nDust>1:
+    base = radiativeTransfer.interpDust(species.moleculeWavelengths)[:,:,0]
+  else:
+    base = radiativeTransfer.tempDustEmissivity.data[0,0,0]
+    
+  i_vox = (radiativeTransfer.tempSpeciesEmissivity[0].data[:,i_vel,:]>base).any(1)
   
   # print('Voxels selected (shape={}):'.format(i_vox[i_vox].shape), time()-t0)
 
@@ -304,6 +321,7 @@ def calculateVelocityChannel(ivelocity, slRange=[(-np.pi,np.pi), (-np.pi/2,np.pi
   # iInterclumpV = np.where(iIV)
 
   if i_vox.any()==False:
+    print('\n\n', [], '\n\n')
     return 0,0,0,[]#sightlines
 
   # The voxel positions can be any of the voxels
@@ -344,44 +362,14 @@ def calculateVelocityChannel(ivelocity, slRange=[(-np.pi,np.pi), (-np.pi/2,np.pi
         result,vox = setLOS(lon=lon, lat=lat, i_vox=i_vox, i_vel=i_vel, dim=dim, debug=debug)
       except OSError:
         print('OSError!!')
-        intensity = []
-        for spe in range(radiativeTransfer.tempSpeciesEmissivity[0].shape[-1]):
-          result,vel = setLOS(lon=lon, lat=lat, i_vel=i_vel, i_spe=spe, dim=dim, debug=debug)
-          if result:
-            normfactor = Rsl/constants.voxel_size/vel  #to normalise to disk shape...
-            radiativeTransfer.sightlines[i,j] = normfactor*vel
-            if vel==1:
-              radiativeTransfer.intensitySpecies *= normfactor
-            else:
-              calculateRadiativeTransfer(scale=normfactor, dust=False)
-            intensity.append(radiativeTransfer.intensitySpecies[0])
-            radiativeTransfer.intensitySpecies = []
-          else:
-            intensity.append(np.zeros(radiativeTransfer.tempSpeciesEmissivity[0].shape[-1]))
-        positionIntensitySpecies.append(np.asarray(intensity))
-        intensity = []
-        for dust in range(radiativeTransfer.tempDustEmissivity[0].shape[-1]):
-          result,vel = setLOS(lon=lon, lat=lat, i_vel=i_vel, i_dust=dust, dim=dim, debug=debug)
-          if result:
-            normfactor = Rsl/constants.voxel_size/vel  #to normalise to disk shape...
-            if radiativeTransfer.sightlines[i,j]<vel: radiativeTransfer.sightlines[i,j] = normfactor*vel
-            if vel==1:
-              radiativeTransfer.intensityDust *= normfactor
-            else:
-              calculateRadiativeTransfer(scale=normfactor, species=False)
-            intensity.append(radiativeTransfer.intensityDust[0])
-            radiativeTransfer.intensityDust = []
-          else:
-            intensity.append(np.zeros(radiativeTransfer.tempDustEmissivity[0].shape[-1]))
-        positionIntensityDust.append(np.asarray(intensity))
         result = 2
-      # if vel>1: print('\n\n', vel, '\n', (radiativeTransfer.epsilonSpecies>0).any(), '\n\n')
 
       position.append([lon,lat])
       
       if vox:
         normfactor = Rsl/constants.voxel_size/vox  #to normalise to disk shape...
-        if sightlines[i,j]<vox: sightlines[i,j] = normfactor*vox
+        # if sightlines[i,j]<vox: sightlines[i,j] = normfactor*vox
+        sightlines[i,j] = normfactor*vox
       
       # Integrate along LoS
       if vox==1:
@@ -427,6 +415,7 @@ def calculateVelocityChannel(ivelocity, slRange=[(-np.pi,np.pi), (-np.pi/2,np.pi
   #   ax.set_yticklabels([])
   #   plt.show(block=True)
   
+  print('\n\n', sightlines.shape, '\n\n')
   return (position,intensityMapSpecies,intensityMapDust,sightlines)
 
 def setLOS(x=0, y=0, z=0, lon=0, lat=0, i_vox=[], i_vel=0, i_spe=None, i_dust=None, dim='xy', reverse=True, debug=False, verbose=False):
