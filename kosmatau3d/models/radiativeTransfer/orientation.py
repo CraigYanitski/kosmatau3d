@@ -237,7 +237,7 @@ def multiprocessCalculation(slRange=[(-np.pi,np.pi), (-np.pi/2,np.pi/2)], nsl=[5
   
   if multiprocessing:
     pool = Pool(processes=multiprocessing)
-    chunksize = 5#max(int(vNum/multiprocessing), 1)
+    chunksize = 10#max(int(vNum/multiprocessing), 1)
     intensity = pool.imap(velChannel, list(enumerate(constants.velocityRange)), chunksize)
   else:
     intensity = []
@@ -299,7 +299,7 @@ def calculateVelocityChannel(ivelocity, slRange=[(-np.pi,np.pi), (-np.pi/2,np.pi
   if nDust>1:
     base = radiativeTransfer.interpDust(species.moleculeWavelengths)[:,:,0]
   else:
-    base = radiativeTransfer.tempDustEmissivity.data[0,0,0]
+    base = radiativeTransfer.tempDustEmissivity[0].data[0,0,0]
     
   i_vox = (radiativeTransfer.tempSpeciesEmissivity[0].data[:,i_vel,:]>base).any(1)
   
@@ -321,7 +321,7 @@ def calculateVelocityChannel(ivelocity, slRange=[(-np.pi,np.pi), (-np.pi/2,np.pi
   # iInterclumpV = np.where(iIV)
 
   if i_vox.any()==False:
-    print('\n\n', [], '\n\n')
+    #print('\n\n', [], '\n\n')
     return 0,0,0,[]#sightlines
 
   # The voxel positions can be any of the voxels
@@ -415,7 +415,7 @@ def calculateVelocityChannel(ivelocity, slRange=[(-np.pi,np.pi), (-np.pi/2,np.pi
   #   ax.set_yticklabels([])
   #   plt.show(block=True)
   
-  print('\n\n', sightlines.shape, '\n\n')
+  # print('\n\n', sightlines.shape, '\n\n')
   return (position,intensityMapSpecies,intensityMapDust,sightlines)
 
 def setLOS(x=0, y=0, z=0, lon=0, lat=0, i_vox=[], i_vel=0, i_spe=None, i_dust=None, dim='xy', reverse=True, debug=False, verbose=False):

@@ -19,10 +19,10 @@ parameters = {
                 
                 # Model parameters
                 'resolution': 1000,
-                'molecules': 'all',
-                # 'molecules' : ['C+ 1', 'C 1', 'CO 1'],
-               'dust' : 'PAH',
-                # 'dust': '3.1mm',
+                # 'molecules': 'all',
+                'molecules' : ['C+ 1', 'C 1', 'CO 1'],
+               # 'dust' : 'PAH',
+                'dust': '3.1mm',
                 'clumpMassRange': [[0, 2], [-2]],
                 'clumpMassNumber': [3, 1],
                 'clumpNmax': [1, 100],
