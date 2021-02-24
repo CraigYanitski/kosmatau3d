@@ -26,7 +26,11 @@ def eTildeImaginary(file='Eimag.dat'):
   eImaginary = np.genfromtxt(constants.GRIDPATH+file, names=['x', 'Eimaginary'])
   return (eImaginary['x'],eImaginary['Eimaginary'])
 
-def calculateObservation(directory='', dim='xy', sl=[50,50], terminal=True, plotV=False, debug=False, verbose=False):
+def calculateObservation(directory='', dim='xy', slRange=[(-np.pi,np.pi), (-np.pi/2,np.pi/2)], nsl=[50,50], terminal=True, multiprocessing=0, debug=False, verbose=False):
+
+  if multiprocessing:
+    print("switch to multiprocessing branch and re-install kosmatau3d to use the multiprocessing feature.")
+    exit()
 
   if debug:
     sl = [5,5]
@@ -39,6 +43,17 @@ def calculateObservation(directory='', dim='xy', sl=[50,50], terminal=True, plot
   radiativeTransfer.tempSpeciesAbsorption = fits.open(directory+'/species_absorption.fits', mode='denywrite')# in 1/pc
   radiativeTransfer.tempDustEmissivity = fits.open(directory+'/dust_emissivity.fits', mode='denywrite')# in K/pc
   radiativeTransfer.tempDustAbsorption = fits.open(directory+'/dust_absorption.fits', mode='denywrite')# in 1/pc
+
+  nDust = radiativeTransfer.tempDustEmissivity[0].shape[2]
+  if nDust>1:
+    # default interpolation is along the last axis, which is what we need
+    radiativeTransfer.interpDust = interpolate.interp1d(constants.wavelengths[:nDust],
+                                    radiativeTransfer.tempDustEmissivity[0].data[:, 0, :], fill_value='extrapolate')
+  
+  observations.methods.initialise()
+  species.addMolecules(radiativeTransfer.tempSpeciesEmissivity[0].header['SPECIES'].split(', '))
+  # print(radiativeTransfer.tempSpeciesEmissivity[0].header['SPECIES'].split(', '), '\n', species.moleculeWavelengths)
+
   
   # print('Data loaded :-)')
 
@@ -69,8 +84,8 @@ def calculateObservation(directory='', dim='xy', sl=[50,50], terminal=True, plot
     # np.set_printoptions(threshold=1000000)
 
     # Define sightlines calculated
-    longrid = np.linspace(-np.pi, np.pi, num=sl[0])
-    latgrid = np.linspace(-np.pi/2, np.pi/2, num=sl[1])
+    longrid = np.linspace(slRange[0][0], slRange[0][1], num=nsl[0])
+    latgrid = np.linspace(slRange[1][0], slRange[1][1], num=nsl[1])
     # grid = np.meshgrid(lon, lat)
     # grid = np.array([grid[0].flatten(), grid[1].flatten()])
 
@@ -91,8 +106,13 @@ def calculateObservation(directory='', dim='xy', sl=[50,50], terminal=True, plot
     for i_vel,velocity in enumerate(constants.velocityRange):
 
       # Find the voxels that exist at the observing velocity
-      radiativeTransfer.i_vox =  radiativeTransfer.tempSpeciesEmissivity[0].data[:,i_vel,:].any(1)#(clumpVelocity==velocity)
-      # print(iV)
+      nDust = radiativeTransfer.tempDustEmissivity[0].shape[2]
+      if nDust>1:
+        base = radiativeTransfer.interpDust(species.moleculeWavelengths)[:,:,0]
+      else:
+        base = radiativeTransfer.tempDustEmissivity[0].data[0,0,0]
+        
+      radiativeTransfer.i_vox = (radiativeTransfer.tempSpeciesEmissivity[0].data[:,i_vel,:]>base).any(1)
 
       # Update velocity progress bar
       vTqdm.update()
@@ -224,18 +244,6 @@ def calculateObservation(directory='', dim='xy', sl=[50,50], terminal=True, plot
 
       if verbose:
         print('Evaluating {} km/s HDU'.format(velocity))
-
-
-      if plotV:
-        fig = plt.figure()
-        ax = fig.add_subplot(111, projection='mollweide')
-        cb = ax.scatter(np.array(position)[:,0], np.array(position)[:,1], c=np.array(intensityMapSpecies)[:,:,0,23].flatten(), s=64, marker='s')
-        plt.ion()
-        fig.colorbar(cb)
-        ax.grid(True)
-        ax.set_xticklabels([])
-        ax.set_yticklabels([])
-        plt.show(block=True)
     
     # Save sightline lengths
     np.savetxt(directory+'/sightlines.csv', radiativeTransfer.sightlines, delimiter=',')
@@ -291,13 +299,13 @@ def calculateObservation(directory='', dim='xy', sl=[50,50], terminal=True, plot
       IntensityHDUSpecies.header['CRPIX1'] = 'N/A'
       IntensityHDUSpecies.header['CTYPE2'] = 'GLON'
       IntensityHDUSpecies.header['CUNIT2'] = 'rad'
-      IntensityHDUSpecies.header['CRVAL2'] = 0.
-      IntensityHDUSpecies.header['CDELT2'] = 2*np.pi/(IntensityHDUSpecies.header['NAXIS2']-1)
+      IntensityHDUSpecies.header['CRVAL2'] = (slRange[0][0]+slRange[0][1])/2.
+      IntensityHDUSpecies.header['CDELT2'] = (slRange[0][1]-slRange[0][0])/(IntensityHDUSpecies.header['NAXIS2']-1)
       IntensityHDUSpecies.header['CRPIX2'] = (IntensityHDUSpecies.header['NAXIS2']-1)/2.
       IntensityHDUSpecies.header['CTYPE3'] = 'GLAT'
       IntensityHDUSpecies.header['CUNIT3'] = 'rad'
-      IntensityHDUSpecies.header['CRVAL3'] = 0.
-      IntensityHDUSpecies.header['CDELT3'] = np.pi/(IntensityHDUSpecies.header['NAXIS3']-1)
+      IntensityHDUSpecies.header['CRVAL3'] = (slRange[1][0]+slRange[1][1])/2.
+      IntensityHDUSpecies.header['CDELT3'] = (slRange[1][1]-slRange[1][0])/(IntensityHDUSpecies.header['NAXIS3']-1)
       IntensityHDUSpecies.header['CRPIX3'] = (IntensityHDUSpecies.header['NAXIS3']-1)/2.
       IntensityHDUSpecies.header['CTYPE4'] = 'Velocity'
       IntensityHDUSpecies.header['CUNIT4'] = 'km/s'
@@ -316,13 +324,13 @@ def calculateObservation(directory='', dim='xy', sl=[50,50], terminal=True, plot
       IntensityHDUDust.header['CRPIX1'] = 'N/A'
       IntensityHDUDust.header['CTYPE2'] = 'GLON'
       IntensityHDUDust.header['CUNIT2'] = 'rad'
-      IntensityHDUDust.header['CRVAL2'] = 0.
-      IntensityHDUDust.header['CDELT2'] = 2*np.pi/(IntensityHDUDust.header['NAXIS2']-1)
+      IntensityHDUDust.header['CRVAL2'] = (slRange[0][0]+slRange[0][1])/2.
+      IntensityHDUDust.header['CDELT2'] = (slRange[0][1]-slRange[0][0])/(IntensityHDUDust.header['NAXIS2']-1)
       IntensityHDUDust.header['CRPIX2'] = (IntensityHDUDust.header['NAXIS2']-1)/2.
       IntensityHDUDust.header['CTYPE3'] = 'GLAT'
       IntensityHDUDust.header['CUNIT3'] = 'rad'
-      IntensityHDUDust.header['CRVAL3'] = 0.
-      IntensityHDUDust.header['CDELT3'] = np.pi/(IntensityHDUDust.header['NAXIS3']-1)
+      IntensityHDUDust.header['CRVAL3'] = (slRange[1][0]+slRange[1][1])/2.
+      IntensityHDUDust.header['CDELT3'] = (slRange[1][1]-slRange[1][0])/(IntensityHDUDust.header['NAXIS3']-1)
       IntensityHDUDust.header['CRPIX3'] = (IntensityHDUDust.header['NAXIS3']-1)/2.
       IntensityHDUDust.header['CTYPE4'] = 'Velocity'
       IntensityHDUDust.header['CUNIT4'] = 'km/s'
