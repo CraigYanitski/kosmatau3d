@@ -14,6 +14,7 @@ from tqdm import tqdm
 import warnings
 
 from .. import constants
+from .. import species
 from .. import interpolations
 from .. import observations
 from .. import radiativeTransfer
