@@ -165,12 +165,12 @@ def calculateObservation(directory='', dim='xy', slRange=[(-np.pi,np.pi), (-np.p
       IntensityHDUSpecies.header['CRPIX1'] = 'N/A'
       IntensityHDUSpecies.header['CTYPE2'] = 'GLON'
       IntensityHDUSpecies.header['CUNIT2'] = 'rad'
-      IntensityHDUSpecies.header['CRVAL2'] = (slRange[0][1]-slRange[0][0])/2.
+      IntensityHDUSpecies.header['CRVAL2'] = (slRange[0][1]+slRange[0][0])/2.
       IntensityHDUSpecies.header['CDELT2'] = (slRange[0][1]-slRange[0][0])/(IntensityHDUSpecies.header['NAXIS2']-1)
       IntensityHDUSpecies.header['CRPIX2'] = (IntensityHDUSpecies.header['NAXIS2']-1)/2.
       IntensityHDUSpecies.header['CTYPE3'] = 'GLAT'
       IntensityHDUSpecies.header['CUNIT3'] = 'rad'
-      IntensityHDUSpecies.header['CRVAL3'] = (slRange[1][1]-slRange[1][0])/2.
+      IntensityHDUSpecies.header['CRVAL3'] = (slRange[1][1]+slRange[1][0])/2.
       IntensityHDUSpecies.header['CDELT3'] = (slRange[1][1]-slRange[1][0])/(IntensityHDUSpecies.header['NAXIS3']-1)
       IntensityHDUSpecies.header['CRPIX3'] = (IntensityHDUSpecies.header['NAXIS3']-1)/2.
       IntensityHDUSpecies.header['CTYPE4'] = 'Velocity'
@@ -190,14 +190,14 @@ def calculateObservation(directory='', dim='xy', slRange=[(-np.pi,np.pi), (-np.p
       IntensityHDUDust.header['CRPIX1'] = 'N/A'
       IntensityHDUDust.header['CTYPE2'] = 'GLON'
       IntensityHDUDust.header['CUNIT2'] = 'rad'
-      IntensityHDUDust.header['CRVAL2'] = 0.
-      IntensityHDUDust.header['CDELT2'] = 2*np.pi/(IntensityHDUDust.header['NAXIS2']-1)
-      IntensityHDUDust.header['CRPIX2'] = (IntensityHDUDust.header['NAXIS2']-1)/2.
+      IntensityHDUDust.header['CRVAL2'] = (slRange[0][1]+slRange[0][0])/2
+      IntensityHDUDust.header['CDELT2'] = (slRange[0][1]-slRange[0][0])/(IntensityHDUDust.header['NAXIS2']-1)
+      IntensityHDUDust.header['CRPIX2'] = (IntensityHDUDust.header['NAXIS2'])/2.
       IntensityHDUDust.header['CTYPE3'] = 'GLAT'
       IntensityHDUDust.header['CUNIT3'] = 'rad'
-      IntensityHDUDust.header['CRVAL3'] = 0.
-      IntensityHDUDust.header['CDELT3'] = np.pi/(IntensityHDUDust.header['NAXIS3']-1)
-      IntensityHDUDust.header['CRPIX3'] = (IntensityHDUDust.header['NAXIS3']-1)/2.
+      IntensityHDUDust.header['CRVAL3'] = (slRange[1][1]+slRange[1][0])/2
+      IntensityHDUDust.header['CDELT3'] = (slRange[1][1]-slRange[1][0])/(IntensityHDUDust.header['NAXIS3']-1)
+      IntensityHDUDust.header['CRPIX3'] = (IntensityHDUDust.header['NAXIS3'])/2.
       IntensityHDUDust.header['CTYPE4'] = 'Velocity'
       IntensityHDUDust.header['CUNIT4'] = 'km/s'
       IntensityHDUDust.header['CRVAL4'] = (vmax+vmin)/2.
@@ -301,7 +301,7 @@ def calculateVelocityChannel(ivelocity, slRange=[(-np.pi,np.pi), (-np.pi/2,np.pi
   else:
     base = radiativeTransfer.tempDustEmissivity[0].data[0,0,0]
     
-  i_vox = (radiativeTransfer.tempSpeciesEmissivity[0].data[:,i_vel,:]>base).any(1)
+  radiativeTransfer.i_vox = (radiativeTransfer.tempSpeciesEmissivity[0].data[:,i_vel,:]>base).any(1)
   
   # print('Voxels selected (shape={}):'.format(i_vox[i_vox].shape), time()-t0)
 
@@ -320,7 +320,7 @@ def calculateVelocityChannel(ivelocity, slRange=[(-np.pi,np.pi), (-np.pi/2,np.pi
   # iClumpV = np.where(iCV)
   # iInterclumpV = np.where(iIV)
 
-  if i_vox.any()==False:
+  if radiativeTransfer.i_vox.any()==False:
     #print('\n\n', [], '\n\n')
     return 0,0,0,[]#sightlines
 
@@ -359,7 +359,7 @@ def calculateVelocityChannel(ivelocity, slRange=[(-np.pi,np.pi), (-np.pi/2,np.pi
       
       # Try to isolate voxels in LoS and work with all transitions, else do them one at a time
       try:
-        result,vox = setLOS(lon=lon, lat=lat, i_vox=i_vox, i_vel=i_vel, dim=dim, debug=debug)
+        result,vox = setLOS(lon=lon, lat=lat, i_vel=i_vel, dim=dim, debug=debug)
       except OSError:
         print('OSError!!')
         result = 2
@@ -446,7 +446,7 @@ def setLOS(x=0, y=0, z=0, lon=0, lat=0, i_vox=[], i_vel=0, i_spe=None, i_dust=No
   # gridIntensity -> rt.tempSpeciesEmissivity/tempDustEmissivity, gridOpticalDepth -> rt.tempSpeciesAbsorption/tempDustAbsorption
 
   # Specify the voxel positions relative to Earth
-  xGrid,yGrid,zGrid = radiativeTransfer.voxelPositions[0].data[i_vox,0]-constants.rGalEarth,radiativeTransfer.voxelPositions[0].data[i_vox,1],radiativeTransfer.voxelPositions[0].data[i_vox,2]#grid.getVoxelPositions()
+  xGrid,yGrid,zGrid = radiativeTransfer.voxelPositions[0].data[:,0]-constants.rGalEarth,radiativeTransfer.voxelPositions[0].data[:,1],radiativeTransfer.voxelPositions[0].data[:,2]#grid.getVoxelPositions()
 
   if dim=='spherical':
     # Set sightline position
@@ -473,7 +473,7 @@ def setLOS(x=0, y=0, z=0, lon=0, lat=0, i_vox=[], i_vel=0, i_spe=None, i_dust=No
     dLon[(lat>1.0)|(lat<-1.0)] = np.pi
     dLat = np.arctan(height/radGrid)
     # dLat[(lat>1.0)|(lat<-1.0)] = np.pi/2.
-    iLoS = np.where((abs(lonGrid-x1LoS)<=dLon)&(abs(latGrid-x2LoS)<=dLat))[0]
+    iLoS = np.where((abs(lonGrid-x1LoS)<=dLon)&(abs(latGrid-x2LoS)<=dLat)&radiativeTransfer.i_vox)[0]
   
   elif 'disk' in dim:
     x1LoS = y
@@ -504,8 +504,8 @@ def setLOS(x=0, y=0, z=0, lon=0, lat=0, i_vox=[], i_vel=0, i_spe=None, i_dust=No
   
   if iLoS.size==1:
 
-    radiativeTransfer.intensitySpecies = scale * radiativeTransfer.tempSpeciesEmissivity[0].data[i_vox,:,:][iLoS,i_vel,:][0,:] / constants.pc/100
-    radiativeTransfer.intensityDust = scale * radiativeTransfer.tempDustEmissivity[0].data[i_vox,:,:][iLoS,i_vel,:][0,:] / constants.pc/100
+    radiativeTransfer.intensitySpecies = scale * radiativeTransfer.tempSpeciesEmissivity[0].data[iLoS,i_vel,:][0,:] / constants.pc/100
+    radiativeTransfer.intensityDust = scale * radiativeTransfer.tempDustEmissivity[0].data[iLoS,i_vel,:][0,:] / constants.pc/100
     
     # print('\n\n', (radiativeTransfer.tempSpeciesEmissivity[0].data[iLOS,i_vel,:]>0).any(), '\n\n')
 
@@ -540,7 +540,7 @@ def setLOS(x=0, y=0, z=0, lon=0, lat=0, i_vox=[], i_vel=0, i_spe=None, i_dust=No
 
       radiativeTransfer.allIntensity.append(radiativeTransfer.intensity)
 
-    vel = radiativeTransfer.voxelVelocities[0].data[i_vox][iLoS]
+    vel = radiativeTransfer.voxelVelocities[0].data[radiativeTransfer.i_vox][iLoS]
     
     return 1,vel.size#,[intensitySpecies,intensityDust]
   
@@ -570,14 +570,14 @@ def setLOS(x=0, y=0, z=0, lon=0, lat=0, i_vox=[], i_vel=0, i_spe=None, i_dust=No
     # input()
     
     if (i_spe==None)&(i_dust==None):
-      radiativeTransfer.epsilonSpecies = c.copy(radiativeTransfer.tempSpeciesEmissivity[0].data[i_vox,:,:][iLoS_ordered,i_vel,:]) / constants.pc/100
+      radiativeTransfer.epsilonSpecies = c.copy(radiativeTransfer.tempSpeciesEmissivity[0].data[iLoS_ordered,i_vel,:]) / constants.pc/100
       radiativeTransfer.epsilonStepSpecies = (radiativeTransfer.epsilonSpecies[1:]-radiativeTransfer.epsilonSpecies[:-1])/(scale)
-      radiativeTransfer.kappaSpecies = c.copy(radiativeTransfer.tempSpeciesAbsorption[0].data[i_vox,:,:][iLoS_ordered,i_vel,:]) / constants.pc/100
+      radiativeTransfer.kappaSpecies = c.copy(radiativeTransfer.tempSpeciesAbsorption[0].data[iLoS_ordered,i_vel,:]) / constants.pc/100
       radiativeTransfer.kappaStepSpecies = (radiativeTransfer.kappaSpecies[1:]-radiativeTransfer.kappaSpecies[:-1])/(scale)
       
-      radiativeTransfer.epsilonDust = c.copy(radiativeTransfer.tempDustEmissivity[0].data[i_vox,:,:][iLoS_ordered,i_vel,:]) / constants.pc/100
+      radiativeTransfer.epsilonDust = c.copy(radiativeTransfer.tempDustEmissivity[0].data[iLoS_ordered,i_vel,:]) / constants.pc/100
       radiativeTransfer.epsilonStepDust = (radiativeTransfer.epsilonDust[1:]-radiativeTransfer.epsilonDust[:-1])/(scale)
-      radiativeTransfer.kappaDust = c.copy(radiativeTransfer.tempDustAbsorption[0].data[i_vox,:,:][iLoS_ordered,i_vel,:]) / constants.pc/100
+      radiativeTransfer.kappaDust = c.copy(radiativeTransfer.tempDustAbsorption[0].data[iLoS_ordered,i_vel,:]) / constants.pc/100
       radiativeTransfer.kappaStepDust = (radiativeTransfer.kappaDust[1:]-radiativeTransfer.kappaDust[:-1])/(scale)
     
     # elif i_spe!=None:
@@ -625,7 +625,7 @@ def setLOS(x=0, y=0, z=0, lon=0, lat=0, i_vox=[], i_vel=0, i_spe=None, i_dust=No
   else:
     return 0,0#,[]
 
-  vel = radiativeTransfer.voxelVelocities[0].data[i_vox][iLoS]
+  vel = radiativeTransfer.voxelVelocities[0].data[iLoS]
   
   if verbose:
     print('voxels:', i)
