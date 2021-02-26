@@ -167,12 +167,12 @@ def calculateObservation(directory='', dim='xy', slRange=[(-np.pi,np.pi), (-np.p
       IntensityHDUSpecies.header['CUNIT2'] = 'rad'
       IntensityHDUSpecies.header['CRVAL2'] = (slRange[0][1]+slRange[0][0])/2.
       IntensityHDUSpecies.header['CDELT2'] = (slRange[0][1]-slRange[0][0])/(IntensityHDUSpecies.header['NAXIS2']-1)
-      IntensityHDUSpecies.header['CRPIX2'] = (IntensityHDUSpecies.header['NAXIS2']-1)/2.
+      IntensityHDUSpecies.header['CRPIX2'] = (IntensityHDUSpecies.header['NAXIS2'])/2.
       IntensityHDUSpecies.header['CTYPE3'] = 'GLAT'
       IntensityHDUSpecies.header['CUNIT3'] = 'rad'
       IntensityHDUSpecies.header['CRVAL3'] = (slRange[1][1]+slRange[1][0])/2.
       IntensityHDUSpecies.header['CDELT3'] = (slRange[1][1]-slRange[1][0])/(IntensityHDUSpecies.header['NAXIS3']-1)
-      IntensityHDUSpecies.header['CRPIX3'] = (IntensityHDUSpecies.header['NAXIS3']-1)/2.
+      IntensityHDUSpecies.header['CRPIX3'] = (IntensityHDUSpecies.header['NAXIS3'])/2.
       IntensityHDUSpecies.header['CTYPE4'] = 'Velocity'
       IntensityHDUSpecies.header['CUNIT4'] = 'km/s'
       IntensityHDUSpecies.header['CRVAL4'] = (vmax+vmin)/2.
