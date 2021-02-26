@@ -24,4 +24,4 @@ if __name__=='__main__':
   
   print('Main script')
   
-  models.radiativeTransfer.calculateObservation(directory=directory, dim='spherical', slRange=[(-np.pi,np.pi), (-np.pi/9,np.pi/9)], nsl=[180,10], terminal=True, debug=False, multiprocessing=0)
+  models.radiativeTransfer.calculateObservation(directory=directory, dim='spherical', slRange=[(-np.pi,np.pi), (-np.pi/4,np.pi/4)], nsl=[180,45], terminal=True, debug=False, multiprocessing=4)
