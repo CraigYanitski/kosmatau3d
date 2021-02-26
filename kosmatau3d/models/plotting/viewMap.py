@@ -4,6 +4,7 @@ import matplotlib.pyplot as plt
 import matplotlib.colors as colors
 from astropy.io import fits
 import numpy as np
+from pprint import pprint
 
 from PyQt5.QtCore import Qt
 from PyQt5.QtWidgets import (
@@ -37,7 +38,7 @@ def main():
 
 class viewMap(QApplication):
   
-  def __init__(self, directory='', posXY=(700, 40), windowSize=(925, 750)):
+  def __init__(self, directory='', file='/channel_intensity.fits', posXY=(700, 40), windowSize=(925, 750)):
     if not directory:
       print('please specify the directory of the model history files.')
     super().__init__(sys.argv)
@@ -46,16 +47,16 @@ class viewMap(QApplication):
     self.posXY = posXY
     self.windowSize = windowSize
     self.directory = directory
-    self.file = fits.open(directory+'/channel_intensity.fits')
-    print(self.file[1].header)
-    lon = np.linspace(-np.pi, np.pi, self.file[1].shape[2])
-    lat = np.linspace(-np.pi/9, np.pi/9, self.file[1].shape[1])
-    # lon = np.linspace(self.file[1].header['CRVAL2'] - self.file[1].header['CRPIX2'] * self.file[1].header['CDELT2'],
-    #                        self.file[1].header['CRVAL2'] + self.file[1].header['CRPIX2'] * self.file[1].header['CDELT2'],
-    #                        num=self.file[1].header['NAXIS2'])
-    # lat = np.linspace(self.file[1].header['CRVAL3'] - self.file[1].header['CRPIX3'] * self.file[1].header['CDELT3'],
-    #                        self.file[1].header['CRVAL3'] + self.file[1].header['CRPIX3'] * self.file[1].header['CDELT3'],
-    #                        num=self.file[1].header['NAXIS3'])
+    self.file = fits.open(directory+file)
+    pprint(self.file[1].header)
+    # lon = np.linspace(-np.pi, np.pi, self.file[1].shape[2])
+    # lat = np.linspace(-np.pi/9, np.pi/9, self.file[1].shape[1])
+    lon = np.linspace(self.file[1].header['CRVAL2'] - self.file[1].header['CRPIX2'] * self.file[1].header['CDELT2'],
+                           self.file[1].header['CRVAL2'] + self.file[1].header['CRPIX2'] * self.file[1].header['CDELT2'],
+                           num=self.file[1].header['NAXIS2'])
+    lat = np.linspace(self.file[1].header['CRVAL3'] - self.file[1].header['CRPIX3'] * self.file[1].header['CDELT3'],
+                           self.file[1].header['CRVAL3'] + self.file[1].header['CRPIX3'] * self.file[1].header['CDELT3'],
+                           num=self.file[1].header['NAXIS3'])
     self.lon,self.lat = np.meshgrid(lon,lat)
     self.velocity = np.linspace(self.file[1].header['CRVAL4'] - self.file[1].header['CRPIX4'] * self.file[1].header['CDELT4'],
                            self.file[1].header['CRVAL4'] + self.file[1].header['CRPIX4'] * self.file[1].header['CDELT4'],

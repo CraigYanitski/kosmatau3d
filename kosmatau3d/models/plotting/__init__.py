@@ -180,10 +180,10 @@ def plotModel(plot='total intensity', ce=[], ie=[], grid=None, directory='/home/
   
   return maxClumpEmission,maxInterclumpEmission
 
-def PVplot(directory='', lat=[-np.pi/9,np.pi/9], species=[], dust=[], save=False):
+def PVplot(directory='', file='/channel_intensity.fits', lat=[-np.pi/9,np.pi/9], species=[], dust=[], save=False):
   # Plot the PV diagram for the selected latitude range.
 
-  channelMap = fits.open(directory+'/channel_intensity.fits')
+  channelMap = fits.open(directory+file)
   
   if species:
     print('Species channel map')
@@ -192,7 +192,7 @@ def PVplot(directory='', lat=[-np.pi/9,np.pi/9], species=[], dust=[], save=False
     print('Dust channel map')
     dustMap = channelMap[2].data
 
-  pprint(channelMap[1].header)
+  # pprint(channelMap[1].header)
   velocity = np.linspace(channelMap[1].header['CRVAL4'] - channelMap[1].header['CRPIX4'] * channelMap[1].header['CDELT4'],
                          channelMap[1].header['CRVAL4'] + channelMap[1].header['CRPIX4'] * channelMap[1].header['CDELT4'],
                          num=channelMap[1].header['NAXIS4'])
@@ -206,7 +206,7 @@ def PVplot(directory='', lat=[-np.pi/9,np.pi/9], species=[], dust=[], save=False
   velocity,longitude = np.meshgrid(velocity, longitude)
   
   i_min = np.abs(latitude-lat[0]).argmin()
-  i_max = np.abs(latitude-lat[1]).argmax()
+  i_max = np.abs(latitude-lat[1]).argmin()
   
   if isinstance(species, str):
     species = [species]
