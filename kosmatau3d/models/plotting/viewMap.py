@@ -6,6 +6,7 @@ from astropy.io import fits
 import numpy as np
 from pprint import pprint
 
+# import QtQuick.Controls.Universal 2.2
 from PyQt5.QtCore import Qt
 from PyQt5.QtWidgets import (
   QApplication,
@@ -14,6 +15,7 @@ from PyQt5.QtWidgets import (
   QWidget,
   QLabel,
   QPushButton,
+  QCheckBox,
   QScrollArea,
   QSlider,
 )
@@ -48,7 +50,7 @@ class viewMap(QApplication):
     self.windowSize = windowSize
     self.directory = directory
     self.file = fits.open(directory+file)
-    pprint(self.file[1].header)
+    # pprint(self.file[1].header)
     # lon = np.linspace(-np.pi, np.pi, self.file[1].shape[2])
     # lat = np.linspace(-np.pi/9, np.pi/9, self.file[1].shape[1])
     lon = np.linspace(self.file[1].header['CRVAL2'] - self.file[1].header['CRPIX2'] * self.file[1].header['CDELT2'],
@@ -73,6 +75,7 @@ class viewMap(QApplication):
     # Initialise the user interface, including widgets.
     
     QMainWindow().setCentralWidget(QWidget())
+    # print(self.window.styleSheet())
     
     self.window.setLayout(QVBoxLayout())
     self.window.layout().setContentsMargins(0, 0, 0, 0)
@@ -96,8 +99,8 @@ class viewMap(QApplication):
     
     self.SPE = QLabel('Species: {}'.format(self.species[0]))
     
-    button = QPushButton('Integrate')
-    button.clicked.connect(self.plotIntegrated)
+    self.integrateButton = QCheckBox('Integrate')
+    self.integrateButton.clicked.connect(self.plotIntegrated)
     
     nav = NabToolbar(self.canvas, self.window)
     
@@ -107,7 +110,7 @@ class viewMap(QApplication):
     self.window.layout().addWidget(self.VEL)
     self.window.layout().addWidget(self.SPEslider)
     self.window.layout().addWidget(self.SPE)
-    self.window.layout().addWidget(button)
+    self.window.layout().addWidget(self.integrateButton)
     self.updatePlot(self.file[1].data[0,:,:,0], '{}'.format(self.species[0]))
     
     self.show_basic()
@@ -116,6 +119,10 @@ class viewMap(QApplication):
   
   def changeVelocity(self, value):
     # Update the subplot value.
+    
+    if self.integrateButton.isChecked()==True:
+      self.plotIntegrated()
+      return
     
     spe = self.SPEslider.value()
     self.VEL.setText('Velocity: {:.2f}'.format(self.velocity[value]))
@@ -130,6 +137,10 @@ class viewMap(QApplication):
   
   def changeSpecies(self, value):
     # Update the subplot value.
+    
+    if self.integrateButton.isChecked()==True:
+      self.plotIntegrated()
+      return
     
     vel = self.VELslider.value()
     
@@ -148,11 +159,22 @@ class viewMap(QApplication):
     
     spe = self.SPEslider.value()
     
+    if self.integrateButton.isChecked()==False:
+      self.VELslider.setEnabled(True)
+      self.changeSpecies(spe)
+      return
+    else:
+      self.VELslider.setEnabled(False)
+    
     if spe<self.species_length:
+      self.SPE.setText('Species: {}'.format(self.species[spe]))
       self.updatePlot(self.species_intensity_integrated[:,:,spe], 'integrated {}'.format(self.species[spe]), integrated=True)
     else:
       dust = spe-self.species_length
+      self.SPE.setText('Dust: {}'.format(self.dust[dust]))
       self.updatePlot(self.dust_intensity_integrated[:,:,dust], 'integrated {}'.format(self.dust[dust]), integrated=True)
+    
+    return
   
   def updatePlot(self, data, title, integrated=False):
     # Remove the current Axes object and create a new one of the desired subplot.
