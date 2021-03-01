@@ -193,20 +193,24 @@ def PVplot(directory='', file='/channel_intensity.fits', lat=[-np.pi/9,np.pi/9],
     dustMap = channelMap[2].data
 
   # pprint(channelMap[1].header)
-  velocity = np.linspace(channelMap[1].header['CRVAL4'] - channelMap[1].header['CRPIX4'] * channelMap[1].header['CDELT4'],
-                         channelMap[1].header['CRVAL4'] + channelMap[1].header['CRPIX4'] * channelMap[1].header['CDELT4'],
+  velocity = np.linspace(channelMap[1].header['CRVAL4'] - (channelMap[1].header['CRPIX4']-.5) * channelMap[1].header['CDELT4'],
+                         channelMap[1].header['CRVAL4'] + (channelMap[1].header['CRPIX4']-.5) * channelMap[1].header['CDELT4'],
                          num=channelMap[1].header['NAXIS4'])
-  latitude = np.linspace(channelMap[1].header['CRVAL3'] - channelMap[1].header['CRPIX3'] * channelMap[1].header['CDELT3'],
-                         channelMap[1].header['CRVAL3'] + channelMap[1].header['CRPIX3'] * channelMap[1].header['CDELT3'],
+  latitude = np.linspace(channelMap[1].header['CRVAL3'] - (channelMap[1].header['CRPIX3']-.5) * channelMap[1].header['CDELT3'],
+                         channelMap[1].header['CRVAL3'] + (channelMap[1].header['CRPIX3']-.5) * channelMap[1].header['CDELT3'],
                          num=channelMap[1].header['NAXIS3'])
-  longitude = np.linspace(channelMap[1].header['CRVAL2'] - channelMap[1].header['CRPIX2'] * channelMap[1].header['CDELT2'],
-                          channelMap[1].header['CRVAL2'] + channelMap[1].header['CRPIX2'] * channelMap[1].header['CDELT2'],
+  longitude = np.linspace(channelMap[1].header['CRVAL2'] - (channelMap[1].header['CRPIX2']-.5) * channelMap[1].header['CDELT2'],
+                          channelMap[1].header['CRVAL2'] + (channelMap[1].header['CRPIX2']-.5) * channelMap[1].header['CDELT2'],
                           num=channelMap[1].header['NAXIS2'])
   
   velocity,longitude = np.meshgrid(velocity, longitude)
   
-  i_min = np.abs(latitude-lat[0]).argmin()
-  i_max = np.abs(latitude-lat[1]).argmin()
+  # print(velocity)
+  # print(latitude)
+  # print(longitude)
+  i_min = np.floor(latitude.size/2).astype(np.int)#np.abs(latitude-lat[0]).argmin()
+  i_max = np.floor(latitude.size/2).astype(np.int)+1#np.abs(latitude-lat[1]).argmin()
+  print(i_max, i_min)
   
   if isinstance(species, str):
     species = [species]
@@ -228,9 +232,8 @@ def PVplot(directory='', file='/channel_intensity.fits', lat=[-np.pi/9,np.pi/9],
   for i,i_transition in enumerate(i_species):
     fig,ax = plt.subplots(1, 1, figsize=(15,10))
     intensityMap = speciesMap[:,i_min:i_max,:,i_transition].sum(1)
-    print(i_max, i_min)
     print(intensityMap.min(), intensityMap.max())
-    cm = ax.pcolormesh(longitude, velocity, intensityMap.T, shading='flat', norm=colors.SymLogNorm(linthresh=0.1, vmin=intensityMap.min(), vmax=intensityMap.max()), cmap='cubehelix')
+    cm = ax.pcolormesh(longitude*180/np.pi, velocity, intensityMap.T, shading='flat', norm=colors.SymLogNorm(linthresh=0.1, vmin=intensityMap.min(), vmax=intensityMap.max()), cmap='cubehelix')
     cb = fig.colorbar(cm, extend='max', ax=ax, fraction=0.02)
     cb.ax.set_ylabel(r'Intensity $log_{10} \left( K \right)$', fontsize=20, labelpad=16, rotation=270)
     ax.set_xlabel(r'Longitude $\left( ^\circ \right)$', fontsize=20)
@@ -243,7 +246,8 @@ def PVplot(directory='', file='/channel_intensity.fits', lat=[-np.pi/9,np.pi/9],
   for i,i_line in enumerate(i_dust):
     fig,ax = plt.subplots(1, 1, figsize=(15,10))
     intensityMap = dustMap[:,i_min:i_max,:,i_line].sum(1)
-    cm = ax.pcolormesh(longitude, velocity, intensityMap.T, cmap='cubehelix')
+    cm = ax.pcolormesh(longitude*180/np.pi, velocity, intensityMap.T, cmap='cubehelix')
+    ax.invert_xaxis()
     cb = fig.colorbar(cm, extend='max', ax=ax, fraction=0.02)
     cb.ax.set_ylabel(r'Intensity $log_{10} \left( K \right)$', fontsize=20, labelpad=16, rotation=270)
     ax.set_xlabel(r'Longitude $\left( ^\circ \right)$', fontsize=20)
@@ -253,3 +257,5 @@ def PVplot(directory='', file='/channel_intensity.fits', lat=[-np.pi/9,np.pi/9],
       plt.savefig(r'{}_pv_plot.png'.format(dust[i].replace(' ', '_')))
     else:
       plt.show(block=False)
+  
+  return
