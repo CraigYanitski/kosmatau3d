@@ -3,6 +3,7 @@ from astropy.io import fits
 import matplotlib.pyplot as plt
 import matplotlib.colors as colors
 from pprint import pprint
+from scipy.interpolate import interp2d
 
 from .viewMap import *
 from .. import constants
@@ -180,7 +181,7 @@ def plotModel(plot='total intensity', ce=[], ie=[], grid=None, directory='/home/
   
   return maxClumpEmission,maxInterclumpEmission
 
-def PVplot(directory='', file='/channel_intensity.fits', lat=[-np.pi/9,np.pi/9], species=[], dust=[], save=False):
+def PVplot(directory='', file='/channel_intensity.fits', latRange=[-np.pi/9,np.pi/9], species=[], dust=[], newMap=[], save=False, verbose=False):
   # Plot the PV diagram for the selected latitude range.
 
   channelMap = fits.open(directory+file)
@@ -193,23 +194,26 @@ def PVplot(directory='', file='/channel_intensity.fits', lat=[-np.pi/9,np.pi/9],
     dustMap = channelMap[2].data
 
   # pprint(channelMap[1].header)
-  velocity = np.linspace(channelMap[1].header['CRVAL4'] - (channelMap[1].header['CRPIX4']-.5) * channelMap[1].header['CDELT4'],
-                         channelMap[1].header['CRVAL4'] + (channelMap[1].header['CRPIX4']-.5) * channelMap[1].header['CDELT4'],
-                         num=channelMap[1].header['NAXIS4'])
-  latitude = np.linspace(channelMap[1].header['CRVAL3'] - (channelMap[1].header['CRPIX3']-.5) * channelMap[1].header['CDELT3'],
-                         channelMap[1].header['CRVAL3'] + (channelMap[1].header['CRPIX3']-.5) * channelMap[1].header['CDELT3'],
-                         num=channelMap[1].header['NAXIS3'])
-  longitude = np.linspace(channelMap[1].header['CRVAL2'] - (channelMap[1].header['CRPIX2']-.5) * channelMap[1].header['CDELT2'],
-                          channelMap[1].header['CRVAL2'] + (channelMap[1].header['CRPIX2']-.5) * channelMap[1].header['CDELT2'],
-                          num=channelMap[1].header['NAXIS2'])
+  vel = np.linspace(channelMap[1].header['CRVAL4'] - (channelMap[1].header['CRPIX4']-.5) * channelMap[1].header['CDELT4'],
+                    channelMap[1].header['CRVAL4'] + (channelMap[1].header['CRPIX4']-.5) * channelMap[1].header['CDELT4'],
+                    num=channelMap[1].header['NAXIS4'])
+  lat = np.linspace(channelMap[1].header['CRVAL3'] - (channelMap[1].header['CRPIX3']-.5) * channelMap[1].header['CDELT3'],
+                    channelMap[1].header['CRVAL3'] + (channelMap[1].header['CRPIX3']-.5) * channelMap[1].header['CDELT3'],
+                    num=channelMap[1].header['NAXIS3'])
+  lon = np.linspace(channelMap[1].header['CRVAL2'] - (channelMap[1].header['CRPIX2']-.5) * channelMap[1].header['CDELT2'],
+                    channelMap[1].header['CRVAL2'] + (channelMap[1].header['CRPIX2']-.5) * channelMap[1].header['CDELT2'],
+                    num=channelMap[1].header['NAXIS2'])*180/np.pi
   
-  velocity,longitude = np.meshgrid(velocity, longitude)
+  velocity,longitude = np.meshgrid(vel, lon)
+  vel_new = np.linspace(vel.min(), vel.max(), newMap[1])
+  lon_new = np.linspace(lon.min(), lon.max(), newMap[0])
+  velocity_new,longitude_new = np.meshgrid(vel_new,lon_new)
   
   # print(velocity)
   # print(latitude)
   # print(longitude)
-  i_min = np.floor(latitude.size/2).astype(np.int)#np.abs(latitude-lat[0]).argmin()
-  i_max = np.floor(latitude.size/2).astype(np.int)+1#np.abs(latitude-lat[1]).argmin()
+  i_min = np.floor(lat.size/2).astype(np.int)#np.abs(lat-latRange[0]).argmin()
+  i_max = np.floor(lat.size/2).astype(np.int)+1#np.abs(lat-latRange[1]).argmin()
   print(i_max, i_min)
   
   if isinstance(species, str):
@@ -230,31 +234,71 @@ def PVplot(directory='', file='/channel_intensity.fits', lat=[-np.pi/9,np.pi/9],
     i_dust.append(np.where(np.asarray(allDust)==line)[0][0])
   
   for i,i_transition in enumerate(i_species):
+
     fig,ax = plt.subplots(1, 1, figsize=(15,10))
     intensityMap = speciesMap[:,i_min:i_max,:,i_transition].sum(1)
-    print(intensityMap.min(), intensityMap.max())
-    cm = ax.pcolormesh(longitude*180/np.pi, velocity, intensityMap.T, shading='flat', norm=colors.SymLogNorm(linthresh=0.1, vmin=intensityMap.min(), vmax=intensityMap.max()), cmap='cubehelix')
-    cb = fig.colorbar(cm, extend='max', ax=ax, fraction=0.02)
-    cb.ax.set_ylabel(r'Intensity $log_{10} \left( K \right)$', fontsize=20, labelpad=16, rotation=270)
+    if verbose:
+      print(np.shape(vel), np.shape(lon), np.shape(intensityMap))
+
+    if verbose:
+      print('intensityMap min/max:', np.nanmin(intensityMap), np.nanmax(intensityMap))
+
+    if newMap:
+      f = interp2d(vel, lon, intensityMap.T)
+      intensityMap_new = f(vel_new, lon_new)
+      intensityMap_new[intensityMap_new==0] = np.nan
+      cm = ax.pcolormesh(longitude_new, velocity_new, intensityMap_new, shading='nearest', \
+                         norm=colors.SymLogNorm(linthresh=0.001, vmin=np.nanmin(intensityMap), vmax=np.nanmax(intensityMap)), cmap='jet')
+    else:
+      intensityMap[intensityMap==0] = np.nan
+      cm = ax.pcolormesh(longitude, velocity, intensityMap.T, shading='nearest', \
+                         norm=colors.SymLogNorm(linthresh=0.001, vmin=np.nanmin(intensityMap), vmax=np.nanmax(intensityMap)), cmap='jet')
+    cb = fig.colorbar(cm, ax=ax, fraction=0.02)
+    # bounds = np.array([0.03, 0.05, 0.1, 0.5, 1, 6, 10])
+    # cm = ax.pcolormesh(longitude*180/np.pi, velocity, intensityMap.T, shading='nearest', norm=colors.BoundaryNorm(boundaries=bounds, ncolors=50), cmap='jet')
+    # cb = fig.colorbar(cm, extend='max', ax=ax, fraction=0.02, ticks=[0.03, 0.5, 2.5, 6, 10])
+    cb.ax.set_ylabel(r'Intensity $log_{10} \left( K \right)$', fontsize=20, labelpad=20, rotation=270)
+
+    ax.invert_xaxis()
     ax.set_xlabel(r'Longitude $\left( ^\circ \right)$', fontsize=20)
     ax.set_ylabel(r'Velocity $\left( \frac{km}{s} \right)$', fontsize=20)
     ax.set_title(r'{} galactic position-velocity diagram'.format(species[i]), fontsize=26)
     if save:
-      plt.savefig(r'{}_pv_plot.png'.format(species[i].replace(' ', '_')))
+      plt.savefig(directory+r'/plots/{}_pv_plot.png'.format(species[i].replace(' ', '_')))
+      plt.close()
     else:
       plt.show(block=False)
+
   for i,i_line in enumerate(i_dust):
+
     fig,ax = plt.subplots(1, 1, figsize=(15,10))
     intensityMap = dustMap[:,i_min:i_max,:,i_line].sum(1)
-    cm = ax.pcolormesh(longitude*180/np.pi, velocity, intensityMap.T, cmap='cubehelix')
-    ax.invert_xaxis()
+    if verbose:
+      print(np.shape(vel), np.shape(lon), np.shape(intensityMap))
+
+    if verbose:
+      print('intensityMap min/max:', np.nanmin(intensityMap), np.nanmax(intensityMap))
+    
+    if newMap:
+      f = interp2d(vel, lon, intensityMap.T)
+      intensityMap_new = f(vel_new, lon_new)
+      intensityMap_new[intensityMap_new==0] = np.nan
+      cm = ax.pcolormesh(longitude_new, velocity_new, intensityMap_new, shading='nearest', \
+                         norm=colors.SymLogNorm(linthresh=0.001, vmin=np.nanmin(intensityMap), vmax=np.nanmax(intensityMap)), cmap='jet')
+    else:
+      intensityMap[intensityMap==0] = np.nan
+      cm = ax.pcolormesh(longitude*180/np.pi, velocity, intensityMap.T,
+                         norm=colors.SymLogNorm(linthresh=0.001, vmin=np.nanmin(intensityMap), vmax=np.nanmax(intensityMap)), cmap='jet')
     cb = fig.colorbar(cm, extend='max', ax=ax, fraction=0.02)
-    cb.ax.set_ylabel(r'Intensity $log_{10} \left( K \right)$', fontsize=20, labelpad=16, rotation=270)
+    cb.ax.set_ylabel(r'Intensity $log_{10} \left( K \right)$', fontsize=20, labelpad=20, rotation=270)
+    
+    ax.invert_xaxis()
     ax.set_xlabel(r'Longitude $\left( ^\circ \right)$', fontsize=20)
     ax.set_ylabel(r'Velocity $\left( \frac{km}{s} \right)$', fontsize=20)
     ax.set_title(r'Dust {} galactic position-velocity diagram'.format(dust[i]), fontsize=26)
     if save:
-      plt.savefig(r'{}_pv_plot.png'.format(dust[i].replace(' ', '_')))
+      plt.savefig(directory+r'/plots/{}_pv_plot.png'.format(dust[i].replace(' ', '_')))
+      plt.close()
     else:
       plt.show(block=False)
   
