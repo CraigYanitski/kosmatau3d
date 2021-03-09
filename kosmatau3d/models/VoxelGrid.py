@@ -7,6 +7,7 @@ from tqdm import tqdm
 from numba import jit
 import importlib as il
 import gc
+from multiprocessing import Pool
 
 from . import constants
 from . import species
@@ -157,7 +158,7 @@ class VoxelGrid(object):
   def getDimensions(self):
     return self.__shape.getDimensions()
 
-  def calculateEmission(self, index=0, debug=False, timed=False, verbose=False):
+  def calculateEmission(self, index=0, debug=False, timed=False, verbose=False, multiprocessing=0):
     # This will initialise the grid of voxels and calculate their emission. This has to be
     #done in succession for each voxel since the calculations are modular (the temporary
     #voxel terms are changed when calculating different voxels). This can be rerun and it
@@ -204,23 +205,62 @@ class VoxelGrid(object):
     shdu_FUV = self.shdu_header(name='FUV', units='Draine', filename='voxel_fuv', dim=dim)
     shdu_FUVabsorption = self.shdu_header(name='tau_FUV', units='mag', filename='voxel_FUVabsorption', dim=dim)
     
+    #test of multiprocessing
+    def getProperties(voxel):
+      i,voxel = voxel
+
+      self.__x.append(x[i])
+      self.__y.append(y[i])
+      self.__z.append(z[i])
+
+      voxel.setIndex(i)#-len(self.__unusedVoxels))
+      voxel.setPosition(x[i], y[i], z[i], r[i], phi[i])
+      self.__calculateProperties(x[i], y[i], z[i])
+      voxel.setProperties(**self.__properties)
+      
+      voxel.calculateEmission()
+      
+      return voxel
+      
+    if multiprocessing:
+      pool = Pool(multiprocessing)
+      chunksize = int(len(self.__voxels)/1000/multiprocessing)
+      voxels = pool.imap(getProperties, list(enumerate(self.__voxels)), chunksize)
+    else:
+      voxels = self.__voxels
+    
     with tqdm(total=len(self.__voxels), desc='Voxels initialised', miniters=1, dynamic_ncols=True) as progress:
-      for i,voxel in enumerate(self.__voxels):
+      
+      # for i,voxel in enumerate(self.__voxels):
+      for i,voxel in enumerate(voxels):
         
         if timed:
           t2 = time()
 
         if verbose:
-            print('\nMax X, Radius:', max(x), r[i], '\n')
+          print('\nMax X, Radius:', max(x), r[i], '\n')
+          
+        if not multiprocessing:
+          voxel = getProperties((i,voxel))
 
-        self.__x.append(x[i])
-        self.__y.append(y[i])
-        self.__z.append(z[i])
+        ##modified for multiprocessing
+        #------------------------------
+        # self.__x.append(x[i])
+        # self.__y.append(y[i])
+        # self.__z.append(z[i])
+        #------------------------------
+        X,Y,Z = voxel.getPosition()
+        self.__x.append(X)
+        self.__y.append(Y)
+        self.__z.append(Z)
 
-        voxel.setIndex(i)#-len(self.__unusedVoxels))
-        voxel.setPosition(x[i], y[i], z[i], r[i], phi[i])
-        self.__calculateProperties(x[i], y[i], z[i])
-        voxel.setProperties(**self.__properties)
+        ## moved to getProperties
+        #------------------------------------------------------
+        # voxel.setIndex(i)#-len(self.__unusedVoxels))
+        # voxel.setPosition(x[i], y[i], z[i], r[i], phi[i])
+        # self.__calculateProperties(x[i], y[i], z[i])
+        # voxel.setProperties(**self.__properties)
+        #------------------------------------------------------
         
         if timed:
           print('\nVoxel initialised: {:.4f} s'.format(time()-t2))
@@ -248,8 +288,11 @@ class VoxelGrid(object):
         shdu_FUV.write(np.array([voxel.getFUV()]))
         shdu_FUVabsorption.write(np.asarray([voxel.getFUVabsorption()]))
         
+        #moved to getProperties
+        #------------------------------------
         # Calculate emissivity and absorption
-        voxel.calculateEmission()
+        # voxel.calculateEmission()
+        #------------------------------------
         
         # Save emissivity and absorption
         shdu_voxel_emissivity_species.write(np.sum(voxel.getSpeciesEmissivity(), axis=0))
@@ -257,9 +300,8 @@ class VoxelGrid(object):
         shdu_voxel_emissivity_dust.write(np.sum(voxel.getDustEmissivity(), axis=0))
         shdu_voxel_absorption_dust.write(np.sum(voxel.getDustAbsorption(), axis=0))
         
-        # del self.__voxels[i]
-        # del voxel
-        self.__voxels[i] = None
+        voxels[i] = None
+        # self.__voxels[i] = None
         # print(len(self.__voxels))
         
         if timed:
