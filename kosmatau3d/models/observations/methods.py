@@ -89,8 +89,8 @@ def clumpMassProfile(file='mass_profile.dat'):
 def interclumpMassProfile(file='mass_profile_inter.dat'):
   # Open file for the mass profile (interclump) of the object (Msol/pc**2)
   if constants.directory!='':
-    interclumpMass = np.genfromtxt(constants.INPUTPATH+constants.directory+file, names=['radius', 'h2_mass'])
-    observations.interclumpMassProfile = (interclumpMass['radius']*1000,interclumpMass['h2_mass']*constants.voxel_size**2)
+    interclumpMass = np.genfromtxt(constants.INPUTPATH+constants.directory+file, names=['radius', 'hi_mass'])
+    observations.interclumpMassProfile = (interclumpMass['radius']*1000,interclumpMass['hi_mass']*constants.voxel_size**2)
   return
 
 def densityProfile(file='densities_clouds.dat'):
@@ -113,7 +113,10 @@ def FUVfield(file='galactic_FUV_complete.dat'):
   return
 
 def rotationProfile(file='rot_milki2018_14.dat'):
-  # Open file for the rotation profile of the object
+  # Open file for the rotation profile of the object. There is `rot_milki2018_14.dat`, which is taken from Bhattacharjee
+  #  et al. (2014) and Eilers et al. (2018), and there is `rot_curve.dat`, for which I cannot find a reference. Christoph's
+  #  latest version of KOSMA-tau-3D seemed to be using the former data file, but I will test both. The latter file has
+  #  higher rotational velocities, though it seems somewhat artificially created (multiple entries with the same value).
   if constants.directory!='':
     rotation = np.genfromtxt(constants.INPUTPATH+constants.directory+file)
     observations.rotationProfile = (rotation[:,0]*1000., rotation[:,1:])
