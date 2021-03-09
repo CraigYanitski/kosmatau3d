@@ -18,7 +18,7 @@ from .. import species
 def initialise():
   interpolations.intensityInterpolation,interpolations.tauInterpolation = calculateGridInterpolation()
   interpolations.rotationInterpolation = calculateRotationVelocity()
-  interpolations.dispersionInterpolation = calculateVelocityDispersion()
+  interpolations.dispersionInterpolation = 1#calculateVelocityDispersion()
   interpolations.densityInterpolation = calculateDensity()
   interpolations.clumpMassInterpolation = clumpMassProfile()
   interpolations.interclumpMassInterpolation = interclumpMassProfile()
