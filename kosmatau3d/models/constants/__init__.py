@@ -89,7 +89,7 @@ interclumpLogMass.resize(1,interclumpMassNumber)
 interclumpMaxIndeces = 0
 interclumpNmax = 100
 
-ensembleDispersion = 0#10./2.3548
+ensembleDispersion = 10./2.3548
 
 # Initial mass function parameters (Heithausen et al. (1998))
 alpha = 1.84
