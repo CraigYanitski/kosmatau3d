@@ -63,11 +63,15 @@ class VoxelGrid(object):
   def __str__(self):
     return 'VoxelGrid\n  ->{} voxels\n'.format(self.__voxelNumber)
 
-  def __calculateProperties(self, X, Y, Z):
+  def __calculateProperties(self, X, Y, Z, average=False):
     # This is a method to calculate the dict to unpack into the argument for Voxel.setProperties().
 
-    x,y = np.meshgrid(np.linspace(X-.5*constants.voxel_size, X+.5*constants.voxel_size,3), \
-                      np.linspace(Y-.5*constants.voxel_size, Y+.5*constants.voxel_size,3))
+    if average:
+      x,y = np.meshgrid(np.linspace(X-.5*constants.voxel_size, X+.5*constants.voxel_size,2), \
+                        np.linspace(Y-.5*constants.voxel_size, Y+.5*constants.voxel_size,2))
+    else:
+      x = np.array([X])
+      y = np.array([Y])
     rPol = np.array([x.flatten(), y.flatten()]).T
     rPol = np.linalg.norm(rPol, axis=1)
 
@@ -82,28 +86,32 @@ class VoxelGrid(object):
 
       # Calculate the correction to the voxel velocity vectors
       relativeRpol = np.sqrt((x.flatten()-constants.rGalEarth)**2+y.flatten()**2)
-      relativePhi = np.arctan2(y.flatten(), x.flatten()-constants.rGalEarth)
+      relativePhi = np.arctan2(y.flatten(), constants.rGalEarth-x.flatten())
       relativeSigma = np.arccos((rPol**2+relativeRpol**2-constants.rGalEarth**2)/(2*rPol*relativeRpol))
       sigma = np.arctan2(Z, abs(x.flatten()-constants.rGalEarth))
 
       # Correct the relative velocity of the voxel
-      velocityEarth = interpolations.interpolateRotationalVelocity(constants.rGalEarth)
+      velocityEarth = 254#interpolations.interpolateRotationalVelocity(constants.rGalEarth)
       velocityCirc = velocity - velocityEarth*rPol/constants.rGalEarth
 
-      velocity = (np.sign(relativePhi) * velocityCirc * np.sin(relativeSigma) * np.cos(sigma)).mean()
+      velocity = (np.sign(relativePhi) * velocityCirc * np.sin(relativeSigma) * np.cos(sigma))
+      # velocity = np.sign(np.arctan2(Y,X))*velocity*np.sin(relativeSigma) - velocityEarth*np.sin(relativePhi)
+      ensembleDispersion = np.sqrt(velocity.std()**2+(10./2.3548)**2)
+      velocity = velocity.mean()
 
       if (rPol==0).any(): velocity = 0
       #self.__velocity = (velocity.mean()) * np.sin(self.__phi)
     
     else:
-      velocity = np.array(velocity)
+      velocity = velocity.mean()
+      ensembleDispersion = 10./2.3548
 
     # Use this to check the evaluation of the velocity field. It is still not working correctly...
     #print(self.__velocity)
 
-    ensembleDispersion = interpolations.interpolateVelocityDispersion(rPol)
-    
-    ensembleDispersion = ensembleDispersion.mean()
+    # ensembleDispersion = interpolations.interpolateVelocityDispersion(rPol)
+    #
+    # ensembleDispersion = ensembleDispersion.mean()
 
     # Ensemble density
     ensembleDensity = interpolations.interpolateDensity(rPol)
