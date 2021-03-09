@@ -109,8 +109,8 @@ class Model(object):
   #   self.__dust.reloadModules()
   #   return
 
-  def calculateModel(self, timed=False, debug=False):
-    self.__grid.calculateEmission(timed=timed, debug=debug)
+  def calculateModel(self, **kwargs):
+    self.__grid.calculateEmission(**kwargs)
     return
 
   def writeEmission(self, debug=False):
