@@ -5,9 +5,9 @@ import numpy as np
 from astropy.io import fits
 
 # directory = r'C:\Users\cyani\projects\pdr\KT3_history\MilkyWay\r200_cm1.0-1.0_d1.0_uv10'
-directory = r'C:\Users\cyani\projects\pdr\KT3_history\MilkyWay\r1000_cm1-1_d1_uv10'
+directory = r'C:\users\cyani\projects\pdr\KT3_history\MilkyWay\r200_cm1-1_d1_uv10'
 
-models.constants.velocityRange = np.linspace(-300, 300, 500)
+# models.constants.velocityRange = np.linspace(-300, 300, 301)
 
 # Edit the directory in this condition to allow multiprocessing in Windows. Linux does not need this hard encoding.
 if 'win' in sys.platform:
