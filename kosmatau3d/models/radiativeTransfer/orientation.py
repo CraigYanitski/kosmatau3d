@@ -373,7 +373,7 @@ def calculateVelocityChannel(ivelocity, slRange=[(-np.pi,np.pi), (-np.pi/2,np.pi
       if vox:
         normfactor = Rsl/constants.voxel_size/vox  #to normalise to disk shape...
         # if sightlines[i,j]<vox: sightlines[i,j] = normfactor*vox
-        sightlines[i,j] = normfactor*vox
+        sightlines[i,j] = vox
       
       # Integrate along LoS
       if vox==1:
