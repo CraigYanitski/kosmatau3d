@@ -6,8 +6,6 @@ from astropy.io import fits
 
 from kosmatau3d import models
 
-radiativeTransfer = False
-
 # print('KOSMA-tau^3')
 
 # Edit these parameters according to the model you want to produce.
@@ -21,7 +19,7 @@ parameters = {
                 'modelType': 'disk',
                 
                 # Model parameters
-                'resolution': 500,
+                'resolution': 200,
                 # 'molecules': 'all',
                 'molecules' : ['C+ 1', 'C 1', 'C 2', 'C 3', 'CO 1', 'CO 2', 'CO 3', 'CO 4', 'CO 5', '13C+ 1', '13C 1', '13C 2', '13CO 1', '13CO 2', '13CO 3', '13CO 4', '13CO 5', 'HCO+ 1'],
                 # 'dust' : 'PAH',
@@ -29,8 +27,8 @@ parameters = {
                 'clumpMassRange': [[0, 2], [-2]],
                 'clumpMassNumber': [3, 1],
                 'clumpNmax': [1, 100],
-                'velocityRange': [-360, 360],
-                'velocityNumber': 101,
+                'velocityRange': [-300, 300],
+                'velocityNumber': 601,
                 
                 # Property factors
                 'clumpMassFactor': [1, 1],
@@ -39,7 +37,7 @@ parameters = {
                 'globalUV': 10
               }
 
-if ('win' in sys.platform) and (__name__!='__main__') and not radiativeTransfer:
+if ('win' in sys.platform) and (__name__!='__main__'):
   models.constants.type = parameters['modelType']  # this just adds a label to the type of model being created. ie 'disk', 'bar', 'sphere', etc.
   models.constants.voxel_size = float(parameters['resolution'])
   models.constants.HISTORYPATH = parameters['history_path']
@@ -65,15 +63,12 @@ if __name__=='__main__':
   multiprocessing = 0
   
   kosma = models.Model(**parameters)
-  
   kosma.calculateModel(timed=timed, debug=debug, multiprocessing=multiprocessing)
-  
-  radiativeTransfer = True
 
 directory = parameters['history_path'] + parameters['directory'] + r'\r{}_cm{}-{}_d{}_uv{}'.format(parameters['resolution'], parameters['clumpMassFactor'][0], parameters['clumpMassFactor'][1], parameters['densityFactor'], parameters['globalUV'])
 
 # Edit the directory in this condition to allow multiprocessing in Windows. Linux does not need this hard encoding.
-if ('win' in sys.platform) and (__name__!='__main__') and radiativeTransfer:
+if ('win' in sys.platform) and (__name__!='__main__'):
   
   models.radiativeTransfer.voxelPositions = fits.open(directory+'/voxel_position.fits', mode='denywrite')
   models.radiativeTransfer.voxelVelocities = fits.open(directory+'/voxel_velocity.fits', mode='denywrite')
