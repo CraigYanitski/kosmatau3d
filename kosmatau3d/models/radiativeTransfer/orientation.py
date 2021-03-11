@@ -450,7 +450,7 @@ def setLOS(x=0, y=0, z=0, lon=0, lat=0, i_vox=[], i_vel=0, i_spe=None, i_dust=No
   # gridIntensity -> rt.tempSpeciesEmissivity/tempDustEmissivity, gridOpticalDepth -> rt.tempSpeciesAbsorption/tempDustAbsorption
 
   # Specify the voxel positions relative to Earth
-  xGrid,yGrid,zGrid = radiativeTransfer.voxelPositions[0].data[:,0]-constants.rGalEarth,radiativeTransfer.voxelPositions[0].data[:,1],radiativeTransfer.voxelPositions[0].data[:,2]#grid.getVoxelPositions()
+  xGrid,yGrid,zGrid = radiativeTransfer.voxelPositions[0].data[:,0],radiativeTransfer.voxelPositions[0].data[:,1],radiativeTransfer.voxelPositions[0].data[:,2]#grid.getVoxelPositions()
 
   if dim=='spherical':
     # Set sightline position
