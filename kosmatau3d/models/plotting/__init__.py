@@ -205,9 +205,10 @@ def PVplot(directory='', file='/channel_intensity.fits', latRange=[-np.pi/9,np.p
                     num=channelMap[1].header['NAXIS2'])*180/np.pi
   
   velocity,longitude = np.meshgrid(vel, lon)
-  vel_new = np.linspace(vel.min(), vel.max(), newMap[1])
-  lon_new = np.linspace(lon.min(), lon.max(), newMap[0])
-  velocity_new,longitude_new = np.meshgrid(vel_new,lon_new)
+  if newMap:
+    vel_new = np.linspace(vel.min(), vel.max(), newMap[1])
+    lon_new = np.linspace(lon.min(), lon.max(), newMap[0])
+    velocity_new,longitude_new = np.meshgrid(vel_new,lon_new)
   
   # print(velocity)
   # print(latitude)
