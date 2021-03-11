@@ -89,13 +89,14 @@ class VoxelGrid(object):
       relativeRpol = np.sqrt((x.flatten()-constants.rGalEarth)**2+y.flatten()**2)
       relativePhi = np.arctan2(y.flatten(), constants.rGalEarth-x.flatten())
       relativeSigma = np.arccos((rPol**2+relativeRpol**2-constants.rGalEarth**2)/(2*rPol*relativeRpol))
-      sigma = np.arctan2(Z, abs(x.flatten()-constants.rGalEarth))
+      relativeTheta = np.arctan(Z / relativeRpol)
 
       # Correct the relative velocity of the voxel
-      velocityEarth = 254#interpolations.interpolateRotationalVelocity(constants.rGalEarth)
+      velocityEarth = interpolations.interpolateRotationalVelocity(constants.rGalEarth)
       velocityCirc = velocity - velocityEarth*rPol/constants.rGalEarth
 
-      velocity = (np.sign(relativePhi) * velocityCirc * np.sin(relativeSigma) * np.cos(sigma))
+      velocity = (np.sign(relativePhi) * velocityCirc * np.sin(relativeSigma) * np.cos(relativeTheta))
+      # velocity = (np.sign(relativePhi) * velocityCirc * np.sin(relativeSigma))
       # velocity = np.sign(np.arctan2(Y,X))*velocity*np.sin(relativeSigma) - velocityEarth*np.sin(relativePhi)
       ensembleDispersion = np.sqrt(velocity.std()**2+(10./2.3548)**2)
       velocity = velocity.mean()
