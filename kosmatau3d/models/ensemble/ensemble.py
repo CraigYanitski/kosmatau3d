@@ -91,9 +91,8 @@ def createCombinationObjects(ensembleDispersion, dtype=np.float64, verbose=False
   
   for ens in range(len(constants.clumpMassNumber)):
 
-    # This can be used to add more dispersion if needed. It is left over from Silke's Orion Bar application. The ensembele dispersion in `constants` is 0, so this
-    #line does not have an effect.
-    ensembleDispersion[ens] = np.sqrt(constants.ensembleDispersion**2+ensembleDispersion[ens]**2)
+    # This can be used to add more dispersion if needed. It is left over from Silke's Orion Bar application. It has moved to the VoxelGrid setup.
+    # ensembleDispersion[ens] = np.sqrt(constants.ensembleDispersion**2+ensembleDispersion[ens]**2)
     
     ensemble.clumpNj[ens] = (ensemble.clumpMass[ens]*10.**(constants.clumpLogMass[ens]*(1-constants.alpha))) / (10.**(constants.clumpLogMass[ens]*(2-constants.alpha))).sum()
 

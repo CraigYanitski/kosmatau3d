@@ -98,7 +98,7 @@ class VoxelGrid(object):
       velocity = (np.sign(relativePhi) * velocityCirc * np.sin(relativeSigma) * np.cos(relativeTheta))
       # velocity = (np.sign(relativePhi) * velocityCirc * np.sin(relativeSigma))
       # velocity = np.sign(np.arctan2(Y,X))*velocity*np.sin(relativeSigma) - velocityEarth*np.sin(relativePhi)
-      ensembleDispersion = np.sqrt(velocity.std()**2+(10./2.3548)**2)
+      ensembleDispersion = np.sqrt(velocity.std()**2+(constants.ensembleDispersion)**2) #this is leftover from Silke's version
       velocity = velocity.mean()
 
       if (rPol==0).any(): velocity = 0
@@ -106,7 +106,7 @@ class VoxelGrid(object):
     
     else:
       velocity = velocity.mean()
-      ensembleDispersion = 10./2.3548
+      ensembleDispersion = constants.ensembleDispersion
 
     # Use this to check the evaluation of the velocity field. It is still not working correctly...
     #print(self.__velocity)
