@@ -253,7 +253,8 @@ def PVplot(directory='', file='/channel_intensity.fits', latRange=[-np.pi/9,np.p
     else:
       intensityMap[intensityMap==0] = np.nan
       cm = ax.pcolormesh(longitude, velocity, intensityMap.T, shading='nearest', \
-                         norm=colors.SymLogNorm(linthresh=0.001, vmin=np.nanmin(intensityMap), vmax=np.nanmax(intensityMap)), cmap='jet')
+                         # norm=colors.SymLogNorm(linthresh=0.001, vmin=np.nanmin(intensityMap), vmax=np.nanmax(intensityMap)), cmap='jet')
+                         norm=colors.SymLogNorm(linthresh=0.001, vmin=0.01, vmax=10), cmap='jet')
     cb = fig.colorbar(cm, ax=ax, fraction=0.02)
     # bounds = np.array([0.03, 0.05, 0.1, 0.5, 1, 6, 10])
     # cm = ax.pcolormesh(longitude*180/np.pi, velocity, intensityMap.T, shading='nearest', norm=colors.BoundaryNorm(boundaries=bounds, ncolors=50), cmap='jet')
@@ -297,6 +298,7 @@ def PVplot(directory='', file='/channel_intensity.fits', latRange=[-np.pi/9,np.p
     ax.set_xlabel(r'Longitude $\left( ^\circ \right)$', fontsize=20)
     ax.set_ylabel(r'Velocity $\left( \frac{km}{s} \right)$', fontsize=20)
     ax.set_title(r'Dust {} galactic position-velocity diagram'.format(dust[i]), fontsize=26)
+    
     if save:
       plt.savefig(directory+r'/plots/{}_pv_plot.png'.format(dust[i].replace(' ', '_')))
       plt.close()
