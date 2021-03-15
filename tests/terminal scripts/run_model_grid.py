@@ -20,7 +20,7 @@ parameters = {
               'modelType': 'disk',
 
               # Model parameters
-              'resolution': 100,
+              'resolution': 200,
               # 'molecules': 'all',
               'molecules': ['C+ 1', 'C 1', 'C 2', 'CO 1', 'CO 2', 'CO 3', 'CO 4', 'CO 5', '13C+ 1', '13C 1', '13C 2', '13CO 1',
                             '13CO 2', '13CO 3', '13CO 4', '13CO 5', 'HCO+ 1'],
