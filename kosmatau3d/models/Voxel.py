@@ -427,8 +427,10 @@ class Voxel(object):
         # All of these have shape (velocity, wavelength)
         self.__intensitySpecies[ens][nv,:] = self.__intensitySpecies[ens][nv,:]+(np.array(clumpIntensity[ens]).sum(2)).sum(0).astype(constants.dtype)
         self.__opticalDepthSpecies[ens][nv,:] = self.__opticalDepthSpecies[ens][nv,:]+(-np.log(np.array(clumpOpticalDepth[ens]).sum(2))).sum(0).astype(constants.dtype)
-        self.__intensityDust[ens][nv,:] = self.__intensityDust[ens][nv,:]+np.array([np.array(clumpIntensityDust[ens]).sum(1).sum(0) for _ in range(factor.shape[1])]).astype(constants.dtype)
-        self.__opticalDepthDust[ens][nv,:] = self.__opticalDepthDust[ens][nv,:]+np.array([-np.log(np.array(clumpOpticalDepthDust[ens]).sum(1)).sum(0) for _ in range(factor.shape[1])]).astype(constants.dtype)
+        # self.__intensityDust[ens][:,:] = self.__intensityDust[ens][:,:]+np.array([np.array(clumpIntensityDust[ens]).sum(1).sum(0) for _ in range(factor.shape[1])]).astype(constants.dtype)
+        # self.__opticalDepthDust[ens][:,:] = self.__opticalDepthDust[ens][:,:]+np.array([-np.log(np.array(clumpOpticalDepthDust[ens]).sum(1)).sum(0) for _ in range(factor.shape[1])]).astype(constants.dtype)(factor.shape[1])]).astype(constants.dtype)
+        self.__intensityDust[ens][:,:] = self.__intensityDust[ens][:,:]+np.array([np.array(clumpIntensityDust[ens]).sum(1).sum(0) for _ in range(self.__intensityDust[ens].shape[0])]).astype(constants.dtype)
+        self.__opticalDepthDust[ens][:,:] = self.__opticalDepthDust[ens][:,:]+np.array([-np.log(np.array(clumpOpticalDepthDust[ens]).sum(1)).sum(0) for _ in range(self.__opticalDepthDust[ens].shape[0])]).astype(constants.dtype)
   
         if iDust>1:
           intensityDustInterp = interp1d(constants.wavelengths[constants.nDust], self.__intensityDust[ens].max(0), fill_value='extrapolate')
