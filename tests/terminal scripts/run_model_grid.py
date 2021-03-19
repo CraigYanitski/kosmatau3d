@@ -39,10 +39,10 @@ parameters = {
               'globalUV': 10
               }
 
-for f_mass1 in [0.5,1.0,2.0,4.0]:
-  for f_mass2 in [1.0,2.0]:
-    for f_density in [0.5,1.0,2.0, 4.0]:
-      for f_uv in [10, 100]:
+for f_mass1 in [1]:#[0.5,1.0,2.0,4.0]:
+  for f_mass2 in [1]:#[1.0,2.0]:
+    for f_density in [1]:#[0.5,1.0,2.0, 4.0]:
+      for f_uv in [100]:#[10, 100]:
 
           parameters['clumpMassFactor'] = [f_mass1, f_mass2]
           parameters['densityFactor'] = f_density
@@ -53,4 +53,4 @@ for f_mass1 in [0.5,1.0,2.0,4.0]:
 
           directory = parameters['history_path'] + parameters['directory'] + '/r{}_cm{}-{}_d{}_uv{}'.format(parameters['resolution'], f_mass1, f_mass2, f_density, f_uv)
           models.radiativeTransfer.calculateObservation(directory=directory, dim='spherical', slRange=[(-np.pi, np.pi), (-np.pi/4, np.pi/4)],
-                                                        nsl=[360, 90], terminal=True, debug=False, multiprocessing=12)
+                                                        nsl=[360, 15], terminal=True, debug=False, multiprocessing=6)
