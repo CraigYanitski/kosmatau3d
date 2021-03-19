@@ -29,8 +29,8 @@ parameters = {
               'clumpMassRange': [[0, 2], [-2]],
               'clumpMassNumber': [3, 1],
               'clumpNmax': [1, 100],
-              'velocityRange': [-300, 300],
-              'velocityNumber': 601,
+              'velocityRange': [-350, 350],
+              'velocityNumber': 701,
 
               # Property factors
               'clumpMassFactor': [1, 1],
@@ -42,7 +42,7 @@ parameters = {
 for f_mass1 in [1]:#[0.5,1.0,2.0,4.0]:
   for f_mass2 in [1]:#[1.0,2.0]:
     for f_density in [1]:#[0.5,1.0,2.0, 4.0]:
-      for f_uv in [100]:#[10, 100]:
+      for f_uv in [10]:#[10, 100]:
 
           parameters['clumpMassFactor'] = [f_mass1, f_mass2]
           parameters['densityFactor'] = f_density
