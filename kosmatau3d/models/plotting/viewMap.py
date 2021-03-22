@@ -5,6 +5,7 @@ import matplotlib.colors as colors
 from astropy.io import fits
 import numpy as np
 from copy import copy
+from functools import partial
 from pprint import pprint
 
 # import QtQuick.Controls.Universal 2.2
@@ -97,53 +98,57 @@ class viewMap(QApplication):
     # Min/max boxes for the intensity colour map
     self.minIlabel = QLabel('minimum I:')
     self.minI = QDoubleSpinBox()
-    self.minI.setMaximum(1.0001)
+    self.minI.setMaximum(100.0001)
     self.minI.setMinimum(-9.9999)
     self.minI.setSingleStep(0.0001)
     self.minI.setDecimals(4)
     self.minI.setValue(0.01)
-    self.minI.valueChanged.connect(self.plotIntegrated)
+    # self.minI.valueChanged.connect(partial(self.plotDifference, minmax=True))
     self.maxIlabel = QLabel('maximum I:')
     self.maxI = QDoubleSpinBox()
-    self.maxI.setMaximum(999.9999)
-    self.maxI.setMinimum(1.0001)
+    self.maxI.setMaximum(9999.9999)
+    self.maxI.setMinimum(0.0001)
     self.maxI.setSingleStep(0.0001)
     self.maxI.setDecimals(4)
     self.maxI.setValue(10)
-    self.maxI.valueChanged.connect(self.plotIntegrated)
+    # self.maxI.valueChanged.connect(partial(self.plotDifference, minmax=True))
+    
+    # Button to rescale plot
+    self.rescaleButton = QCheckBox('rescale')
+    self.rescaleButton.clicked.connect(partial(self.plotDifference, minmax=True))
     
     # Velocity slider (only for channel maps)
     self.VELslider = QSlider(Qt.Horizontal, self.window)
     self.VELslider.setRange(0, self.velocity.size - 1)
-    self.VELslider.valueChanged[int].connect(self.changeVelocity)
+    self.VELslider.valueChanged[int].connect(partial(self.plotDifference, velocity=True))
     self.VEL = QLabel('Velocity: {:.2f} km/s'.format(self.velocity[0]))
     
     # Species/dust wavelength slider
     self.SPEslider = QSlider(Qt.Horizontal, self.window)
     self.SPEslider.setRange(0, len(self.species) + len(self.dust) - 1)
-    self.SPEslider.valueChanged[int].connect(self.changeSpecies)
+    self.SPEslider.valueChanged[int].connect(partial(self.plotDifference, species=True))
     self.SPE = QLabel('Species: {}'.format(self.species[0]))
     
     # Latitude slider (only for position-velocity plot)
     self.LATslider = QSlider(Qt.Horizontal, self.window)
     self.LATslider.setRange(0, self.latitude.size - 1)
     self.LATslider.setValue(int(self.latitude.size/2))
-    self.LATslider.valueChanged[int].connect(self.plotPV)
+    self.LATslider.valueChanged[int].connect(partial(self.plotDifference, latitude=True))
     self.LATslider.setEnabled(False)
     self.LAT = QLabel('Latitude: {:.1f} degrees'.format(self.latitude[self.LATslider.value()]*180/np.pi))
     
     # Button to plot channel intensity (enabled by default)
     self.channelButton = QRadioButton('Channel intensity')
     self.channelButton.toggle()
-    self.channelButton.clicked.connect(self.changeVelocity)
+    self.channelButton.clicked.connect(partial(self.plotDifference))
     
     # Button to plot integrated intensity
     self.integrateButton = QRadioButton('Integrated intensity')
-    self.integrateButton.clicked.connect(self.plotIntegrated)
+    self.integrateButton.clicked.connect(partial(self.plotDifference))
     
     # Button to plot position-velocity diagram
     self.PVButton = QRadioButton('Position-velocity Diagram')
-    self.PVButton.clicked.connect(self.plotPV)
+    self.PVButton.clicked.connect(partial(self.plotDifference))
     
     # Button to plot position-velocity diagram
     self.tempButton = QPushButton('Print window size')
@@ -154,55 +159,31 @@ class viewMap(QApplication):
     self.window.layout().addWidget(scroll)
     
     grid = QGridLayout()
+    
     layout = QGridLayout()
     layout.addWidget(self.minIlabel, 0, 0)
     layout.addWidget(self.minI, 0, 1)
     layout.addWidget(self.maxIlabel, 1, 0)
     layout.addWidget(self.maxI, 1, 1)
+    layout.addWidget(self.rescaleButton, 0, 2, 2, 2)
     grid.addLayout(layout, 0, 0, 2, 2)
+    
     grid.addWidget(self.VEL, 2, 0)
     grid.addWidget(self.VELslider, 2, 1, 1, 6)
     grid.addWidget(self.SPE, 3, 0)
     grid.addWidget(self.SPEslider, 3, 1, 1, 6)
     grid.addWidget(self.LAT, 4, 0)
     grid.addWidget(self.LATslider, 4, 1, 1, 6)
+    
     layout = QHBoxLayout()
     layout.addWidget(self.channelButton)
     layout.addWidget(self.integrateButton)
     layout.addWidget(self.PVButton)
     # layout.addWidget(self.tempButton)
     grid.addLayout(layout, 5, 0, 1, 7)
+    
     self.window.layout().addLayout(grid)
     
-    # column = QVBoxLayout()
-    # column.addWidget(nav)
-    # column.addWidget(scroll)
-    # column.addWidget(self.VELslider)
-    # column.addWidget(self.VEL)
-    # column.addWidget(self.SPEslider)
-    # column.addWidget(self.SPE)
-    # column.addWidget(self.LATslider)
-    # column.addWidget(self.LAT)
-    # layout = QHBoxLayout()
-    # layout.addWidget(self.channelButton)
-    # layout.addWidget(self.integrateButton)
-    # layout.addWidget(self.PVButton)
-    # layout.addWidget(self.tempButton)
-    # column.addLayout(layout)
-    # self.window.layout().addLayout(column)
-    
-    # self.window.layout().addWidget(nav)
-    # self.window.layout().addWidget(scroll)
-    # self.window.layout().addWidget(self.VELslider)
-    # self.window.layout().addWidget(self.VEL)
-    # self.window.layout().addWidget(self.SPEslider)
-    # self.window.layout().addWidget(self.SPE)
-    # self.window.layout().addWidget(self.LATslider)
-    # self.window.layout().addWidget(self.LAT)
-    # self.window.layout().addWidget(self.channelButton)
-    # self.window.layout().addWidget(self.integrateButton)
-    # self.window.layout().addWidget(self.PVButton)
-    # self.window.layout().addWidget(self.tempButton)
     self.updatePlot(self.file[1].data[0,:,:,0], '{}'.format(self.species[0]))
     
     self.show_basic()
@@ -216,31 +197,44 @@ class viewMap(QApplication):
     print('width:', self.window.width())
     return
   
-  def changeVelocity(self, value):
-    # Update the subplot value.
+  def plotDifference(self, **kwargs):
     
-    if self.integrateButton.isChecked()==True:
-      self.plotIntegrated()
-      return
-    elif self.channelButton.isChecked()==True:
+    if self.channelButton.isChecked():
       self.VELslider.setEnabled(True)
+      self.SPEslider.setEnabled(True)
       self.LATslider.setEnabled(False)
-    
-    if value==True:
-      value = self.VELslider.value()
-    
+      self.plotChannel(channel=True, **kwargs)
+    elif self.integrateButton.isChecked():
+      self.VELslider.setEnabled(False)
+      self.SPEslider.setEnabled(True)
+      self.LATslider.setEnabled(False)
+      self.plotIntegrated(integrated=True, **kwargs)
+    elif self.PVButton.isChecked():
+      self.VELslider.setEnabled(False)
+      self.SPEslider.setEnabled(True)
+      self.LATslider.setEnabled(True)
+      self.plotPV(PV=True, **kwargs)
+      
+    return
+  
+  def plotChannel(self, **kwargs):
+    # Update the subplot value.
+
     spe = self.SPEslider.value()
-    self.VEL.setText('Velocity: {:.2f} km/s'.format(self.velocity[value]))
+    vel = self.VELslider.value()
+    self.VEL.setText('Velocity: {:.2f} km/s'.format(self.velocity[vel]))
     
     if spe<self.species_length:
-      self.updatePlot(self.file[1].data[value,:,:,spe], '{}'.format(self.species[spe]))
+      self.SPE.setText('Species: {}'.format(self.species[spe]))
+      self.updatePlot(self.file[1].data[vel,:,:,spe], '{}'.format(self.species[spe]), **kwargs)
     else:
       dust = spe-self.species_length
-      self.updatePlot(self.file[2].data[value,:,:,dust], '{}'.format(self.dust[dust]))
+      self.SPE.setText('Dust: {}'.format(self.dust[dust]))
+      self.updatePlot(self.file[2].data[vel,:,:,dust], '{}'.format(self.dust[dust]), **kwargs)
     
     return
   
-  def changeSpecies(self, value):
+  def changeSpecies(self, **kwargs):
     # Update the subplot value.
 
     if self.PVButton.isChecked()==True:
@@ -268,77 +262,62 @@ class viewMap(QApplication):
     
     return
   
-  def plotIntegrated(self):
+  def plotIntegrated(self, **kwargs):
     # Plot the corresponding integrated intensity.
     
     spe = self.SPEslider.value()
     
-    if self.integrateButton.isChecked()==False:
-      self.VELslider.setEnabled(True)
-      self.changeSpecies(spe)
-      return
-    elif self.PVButton.isChecked()==True:
-      self.plotPV(True)
-      return
-    else:
-      self.VELslider.setEnabled(False)
-      self.LATslider.setEnabled(False)
-    
     if spe<self.species_length:
       self.SPE.setText('Species: {}'.format(self.species[spe]))
-      self.updatePlot(self.species_intensity_integrated[:,:,spe], 'integrated {}'.format(self.species[spe]), integrated=True)
+      self.updatePlot(self.species_intensity_integrated[:,:,spe], 'integrated {}'.format(self.species[spe]), **kwargs)
     else:
       dust = spe-self.species_length
       self.SPE.setText('Dust: {}'.format(self.dust[dust]))
-      self.updatePlot(self.dust_intensity_integrated[:,:,dust], 'integrated {}'.format(self.dust[dust]), integrated=True)
+      self.updatePlot(self.dust_intensity_integrated[:,:,dust], 'integrated {}'.format(self.dust[dust]), **kwargs)
     
     return
   
-  def plotPV(self, value=False):
+  def plotPV(self, **kwargs):
     # Plot the corresponding integrated intensity.
     
     spe = self.SPEslider.value()
-    
-    if self.PVButton.isChecked()==False:
-      self.VELslider.setEnabled(True)
-      self.LATslider.setEnabled(False)
-      self.changeSpecies(spe)
-      return
-    else:
-      self.VELslider.setEnabled(False)
-      self.LATslider.setEnabled(True)
-      
-    # if value==True:
-    value = self.LATslider.value()
-    self.LAT.setText('Latitude: {:.1f} degrees'.format(self.latitude[value]*180/np.pi))
+    lat = self.LATslider.value()
+    self.LAT.setText('Latitude: {:.1f} degrees'.format(self.latitude[lat]*180/np.pi))
     
     if spe<self.species_length:
       self.SPE.setText('Species: {}'.format(self.species[spe]))
-      self.updatePlot(self.file[1].data[:,value,:,spe].T, 'PV {}'.format(self.species[spe]), PV=True)
+      self.updatePlot(self.file[1].data[:,lat,:,spe].T, 'PV {}'.format(self.species[spe]), **kwargs)
     else:
       dust = spe-self.species_length
       self.SPE.setText('Dust: {}'.format(self.dust[dust]))
-      self.updatePlot(self.file[1].data[:,value,:,dust].T, 'PV {}'.format(self.dust[dust]), PV=True)
+      self.updatePlot(self.file[2].data[:,lat,:,dust].T, 'PV {}'.format(self.dust[dust]), **kwargs)
     
     return
   
-  def updatePlot(self, data, title, integrated=False, PV=False):
+  def updatePlot(self, data, title, integrated=False, PV=False, minmax=False, **kwargs):
     # Remove the current Axes object and create a new one of the desired subplot.
     
     axTemp = self.fig.axes
     for ax in axTemp:
       self.fig.delaxes(ax)
     
-    # vmax = np.max(data)
-    # vmin = np.min(data)
-    vmin = self.minI.value()
-    vmax = self.maxI.value()
+    if self.rescaleButton.isChecked():
+      vmin = self.minI.value()
+      vmax = self.maxI.value()
+    else:
+      vmax = np.max(data)
+      vmin = np.min(data)
+      self.minI.setValue(vmin)
+      self.maxI.setValue(vmax)
     
     if PV:
       data = copy(data)
       data[data==0] = np.nan
-      # vmax = np.nanmax(data)
-      # vmin = np.nanmin(data)
+      if not self.rescaleButton.isChecked():
+        vmax = np.nanmax(data)
+        vmin = np.nanmin(data)
+        self.minI.setValue(vmin)
+        self.maxI.setValue(vmax)
       ax = self.fig.add_axes((0.1, 0.1, 0.8, 0.9))
       cm = ax.pcolormesh(self.lonPV*180/np.pi, self.velPV, data, norm=colors.SymLogNorm(linthresh=0.1, vmin=vmin, vmax=vmax), cmap=self.cmappv)
     else:
@@ -359,10 +338,10 @@ class viewMap(QApplication):
       ax.set_ylabel(r'Velocity $\left( \frac{km}{s} \right)$', fontsize=16)
       ax.invert_xaxis()
       # ax.set_aspect('equal')
+      self.fig.tight_layout()
     else:
       ax.set_ylabel(r'Latitude $\left( rad \right)$', fontsize=16)
     ax.set_title('Galactic '+title, fontsize=24)
-    self.fig.tight_layout()
     
     self.canvas.draw()
     
