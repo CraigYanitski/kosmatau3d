@@ -477,7 +477,8 @@ def setLOS(x=0, y=0, z=0, lon=0, lat=0, i_vox=[], i_vel=0, i_spe=None, i_dust=No
     dLon[(lat>1.0)|(lat<-1.0)] = np.pi
     dLat = np.arctan(height/radGrid)
     # dLat[(lat>1.0)|(lat<-1.0)] = np.pi/2.
-    iLoS = np.where((abs(lonGrid-x1LoS)<=dLon)&(abs(latGrid-x2LoS)<=dLat))[0]
+    # iLoS = np.where((abs(lonGrid-x1LoS)<=dLon)&(abs(latGrid-x2LoS)<=dLat)&radiativeTransfer.i_vox)[0]
+    iLoS = np.where((abs(lonGrid-x1LoS)<=dLon)&(abs(latGrid-x2LoS)<=dLat)&np.isnan(radiativeTransfer.tempDustEmissivity[0].data).any()&np.isnan(radiativeTransfer.tempDustAbsorption[0].data).any())[0]
   
   elif 'disk' in dim:
     x1LoS = y
