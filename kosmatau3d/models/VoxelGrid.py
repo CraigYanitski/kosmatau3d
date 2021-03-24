@@ -68,8 +68,8 @@ class VoxelGrid(object):
     # This is a method to calculate the dict to unpack into the argument for Voxel.setProperties().
 
     if average:
-      x,y = np.meshgrid(np.linspace(X-.5*constants.voxel_size, X+.5*constants.voxel_size,2), \
-                        np.linspace(Y-.5*constants.voxel_size, Y+.5*constants.voxel_size,2))
+      x,y = np.meshgrid(np.linspace(X-.5*constants.voxel_size, X+.5*constants.voxel_size,3), \
+                        np.linspace(Y-.5*constants.voxel_size, Y+.5*constants.voxel_size,3))
     else:
       x = np.array([X])
       y = np.array([Y])
@@ -202,6 +202,7 @@ class VoxelGrid(object):
     shdu_voxel_position = self.shdu_header(name='Position', units='pc', filename='voxel_position', dim=dim)
     dim = [1, self.__voxelNumber]
     shdu_voxel_velocity = self.shdu_header(name='Velocity', units='km/s', filename='voxel_velocity', dim=dim)
+    shdu_voxel_dispersion = self.shdu_header(name='Velocity dispersion', units='km/s', filename='voxel_ensemble_dispersion', dim=dim)
     dim = [len(constants.clumpMassNumber),self.__voxelNumber]
     shdu_FUV = self.shdu_header(name='FUV', units='Draine', filename='voxel_fuv', dim=dim)
     shdu_FUVabsorption = self.shdu_header(name='tau_FUV', units='mag', filename='voxel_FUVabsorption', dim=dim)
@@ -279,11 +280,12 @@ class VoxelGrid(object):
         # shdu_FUVabsorption.write(np.asarray(self.__voxelFUVabsorption[-1]))
         
         shdu_voxel_position.write(voxel.getPosition())
-        velocity = voxel.getVelocity()[0]
+        velocity,dispersion = voxel.getVelocity()
         if isinstance(velocity, float):
           shdu_voxel_velocity.write(np.array([velocity]))
         else:
           shdu_voxel_velocity.write(np.linalg.norm(velocity))
+        shdu_voxel_dispersion.write(np.array([dispersion[0]]))
         shdu_ensemble_mass.write(np.asarray(voxel.getEnsembleMass()))
         shdu_ensemble_density.write(np.asarray(voxel.getDensity()))
         shdu_FUV.write(np.array([voxel.getFUV()]))
