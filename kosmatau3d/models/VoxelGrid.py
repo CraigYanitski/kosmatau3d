@@ -68,8 +68,8 @@ class VoxelGrid(object):
     # This is a method to calculate the dict to unpack into the argument for Voxel.setProperties().
 
     if average:
-      x,y = np.meshgrid(np.linspace(X-.5*constants.voxel_size, X+.5*constants.voxel_size,3), \
-                        np.linspace(Y-.5*constants.voxel_size, Y+.5*constants.voxel_size,3))
+      x,y = np.meshgrid(np.linspace(X-.5*constants.voxel_size, X+.5*constants.voxel_size,average), \
+                        np.linspace(Y-.5*constants.voxel_size, Y+.5*constants.voxel_size,average))
     else:
       x = np.array([X])
       y = np.array([Y])
@@ -98,11 +98,13 @@ class VoxelGrid(object):
       velocity = (np.sign(relativePhi) * velocityCirc * np.sin(relativeSigma) * np.cos(relativeTheta))
       # velocity = (np.sign(relativePhi) * velocityCirc * np.sin(relativeSigma))
       # velocity = np.sign(np.arctan2(Y,X))*velocity*np.sin(relativeSigma) - velocityEarth*np.sin(relativePhi)
+
+      if (rPol==0).any():
+        velocity[rPol==0] = 0
+      #self.__velocity = (velocity.mean()) * np.sin(self.__phi)
+      
       ensembleDispersion = np.sqrt(velocity.std()**2+(constants.ensembleDispersion)**2) #this is leftover from Silke's version
       velocity = velocity.mean()
-
-      if (rPol==0).any(): velocity = 0
-      #self.__velocity = (velocity.mean()) * np.sin(self.__phi)
     
     else:
       velocity = velocity.mean()
@@ -217,7 +219,7 @@ class VoxelGrid(object):
 
       voxel.setIndex(i)#-len(self.__unusedVoxels))
       voxel.setPosition(x[i], y[i], z[i], r[i], phi[i])
-      self.__calculateProperties(x[i], y[i], z[i])
+      self.__calculateProperties(x[i], y[i], z[i], average=3)
       voxel.setProperties(**self.__properties)
       
       voxel.calculateEmission()
