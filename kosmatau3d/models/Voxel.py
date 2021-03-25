@@ -442,7 +442,7 @@ class Voxel(object):
             self.__opticalDepthSpecies[ens][:,i] += opticalDepthDustInterp(transition)
           else:
             self.__intensitySpecies[ens][:,i] += self.__intensityDust[ens].max()
-            self.__opticalDepthSpecies[ens][:,i] += self.__intensityDust[ens].max()
+            self.__opticalDepthSpecies[ens][:,i] += self.__opticalDepthDust[ens].max()
       
       else:
         print('Voxel with velocity {} not within given observing velocity range.'.format(self.__velocity))
