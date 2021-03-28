@@ -2,7 +2,7 @@ import numpy as np
 from numba import jit_module
 
 from .combination import *
-from .. import constants
+from kosmatau3d.models import constants
 
 clumpCombination = [[] for _ in range(len(constants.clumpMassNumber))]
 

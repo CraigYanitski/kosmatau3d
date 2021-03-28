@@ -1,8 +1,9 @@
 import numpy as np
 from numba import jit_module
 
-from .. import constants
 from .ensemble import *
+from kosmatau3d.models import constants
+
 
 clumpMass = 0
 

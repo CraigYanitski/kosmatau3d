@@ -2,13 +2,12 @@
 # from astropy.io import fits
 # import matplotlib.pyplot as plt
 # from mpl_toolkits.mplot3d import Axes3D
-
-from .orientation import *
-
-from .. import constants
-
 import scipy.interpolate as interpolate
 from scipy.stats import norm
+
+from .orientation import *
+from kosmatau3d.models import constants
+
 
 positions = []
 intensitySpecies = []
