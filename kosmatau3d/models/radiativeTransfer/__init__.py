@@ -10,8 +10,8 @@ from kosmatau3d.models import constants
 
 
 positions = []
-intensitySpecies = []
-intensityDust = []
+intensity_species = []
+intensity_dust = []
 losVoxels = []
 voxelVelocities = []
 voxelPositions = []
@@ -32,14 +32,14 @@ tempPosition = []
 # tempInterclumpPosition = []
 
 # This is used for the integration of each individual sightline
-epsilonSpecies = []
-epsilonStepSpecies = 0
-kappaSpecies = []
-kappaStepSpecies = 0
-epsilonDust = []
-epsilonStepDust = 0
-kappaDust = []
-kappaStepDust = 0
+e_species = []
+de_species = 0
+k_species = []
+dk_species = 0
+e_dust = []
+de_dust = 0
+k_dust = []
+dk_dust = 0
 
 # These can be used for debugging the code. It will store the indeces, kappa, and epsilon values for 25 sightlines.
 allIndeces = []
