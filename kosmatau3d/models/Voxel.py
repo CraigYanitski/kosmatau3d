@@ -84,15 +84,15 @@ class Voxel(object):
       
             self.__velocity = np.sign(relativePhi) * velocityCirc * np.sin(relativeSigma) * np.cos(sigma)
       
-            if self.__r==0:
+            if self.__r == 0:
                 self.__velocity = 0
-            #self.__velocity = (velocity.mean()) * np.sin(self.__phi)
+            # self.__velocity = (velocity.mean()) * np.sin(self.__phi)
         
         else:
             self.__velocity = np.array(velocity)
     
         # Use this to check the evaluation of the velocity field. It is still not working correctly...
-        #print(self.__velocity)
+        # print(self.__velocity)
     
         ensembleDispersion = interpolations.interpolateVelocityDispersion(r)
         
@@ -330,10 +330,18 @@ class Voxel(object):
         self.__clumpVelocities = copy(ensemble.clumpVelocities)
         self.__clumpVelocityIndeces = copy(ensemble.clumpIndeces)   # all list entries should be the same
         
-        self.__intensitySpecies = [np.zeros((constants.velocityRange.size, len(species.molecules)), dtype=np.float64) for _ in range(constants.ensembles)]
-        self.__opticalDepthSpecies = [np.zeros((constants.velocityRange.size, len(species.molecules)), dtype=np.float64) for _ in range(constants.ensembles)]
-        self.__intensityDust = [np.zeros((constants.velocityRange.size, constants.wavelengths[constants.nDust].size), dtype=np.float64) for _ in range(constants.ensembles)]
-        self.__opticalDepthDust = [np.zeros((constants.velocityRange.size, constants.wavelengths[constants.nDust].size), dtype=np.float64) for _ in range(constants.ensembles)]
+        self.__intensitySpecies = [np.zeros((constants.velocityRange.size,
+                                             len(species.molecules)), dtype=np.float64)
+                                   for _ in range(constants.ensembles)]
+        self.__opticalDepthSpecies = [np.zeros((constants.velocityRange.size,
+                                                len(species.molecules)), dtype=np.float64)
+                                      for _ in range(constants.ensembles)]
+        self.__intensityDust = [np.zeros((constants.velocityRange.size,
+                                          constants.wavelengths[constants.nDust].size), dtype=np.float64)
+                                for _ in range(constants.ensembles)]
+        self.__opticalDepthDust = [np.zeros((constants.velocityRange.size,
+                                             constants.wavelengths[constants.nDust].size), dtype=np.float64)
+                                   for _ in range(constants.ensembles)]
     
         # This gives an error if there are too many clumps in a line-of-sight; tau_FUV is too large for this equation...
         Afuv = combinations.getAfuv()
@@ -403,8 +411,10 @@ class Voxel(object):
             vel = constants.velocityRange   # v_obs
             clumpVel = ensemble.clumpVelocities[ens]   # v_sys
             # print(vel.shape, clumpVel.shape)
-            nv = np.abs(vel-self.__velocity) <= 4*np.maximum(self.__ensembleDispersion[ens], constants.clumpDispersion)
-            factor = np.exp(-(vel[nv].reshape(1, -1)-clumpVel.reshape(-1, 1)-self.__velocity)**2/2/constants.clumpDispersion**2)
+            nv = np.abs(vel-self.__velocity) <= 4*np.maximum(self.__ensembleDispersion[ens],
+                                                             constants.clumpDispersion)
+            factor = np.exp(-(vel[nv].reshape(1, -1)-clumpVel.reshape(-1, 1)-self.__velocity)**2
+                            /2/constants.clumpDispersion**2)
             
             # clumpIntensity[ens] = np.zeros((ensemble.clumpVelocities[ens].size,
             #                                 constants.velocityRange.size,
@@ -569,7 +579,7 @@ class Voxel(object):
             else:
                 ax = axes
       
-            vel = constants.velocityRange#[self.__clumpVelocityIndeces[ens]]
+            vel = constants.velocityRange  # [self.__clumpVelocityIndeces[ens]]
             labels = []
       
             for n, mol in enumerate(molecule):
