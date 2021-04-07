@@ -642,7 +642,7 @@ def calculatert(scale=1, background_intensity=0., species=True, dust=True, verbo
     # else:
     rt.intensity_species = np.full(rt.k_species.shape[1], background_intensity)
     rt.intensity_dust = np.full(rt.k_dust.shape[1], background_intensity)
-    nSteps = rt.de_species.shape[0]
+    n_steps = rt.de_species.shape[0]
     
     # Adjust according to the average voxel depth
     if species:
@@ -687,133 +687,148 @@ def calculatert(scale=1, background_intensity=0., species=True, dust=True, verbo
         print(rt.k_species.shape[0])
         
     # if test:
-    #     print(nSteps)
+    #     print(n_steps)
     
-    for i in range(nSteps):
-        
-        # if test:
-        #     print('\n\nCO 3-2 intensity:', rt.intensity_species[6])
-        #     print('\n\nCO 3-2 epsilon:', rt.e_species[i, 6])
-        #     print('\n\nCO 3-2 depsilon:', rt.de_species[i, 6])
-        #     print('\n\nCO 3-2 kappa:', rt.k_species[i, 6])
-        #     print('\n\nCO 3-2 dkappa:', rt.dk_species[i, 6])
-        #     print('\n\nCO 3-2 a:', aSpecies[i, 6])
-        #     print('\n\nCO 3-2 b:', bSpecies[i, 6])
-        #     input()
-    
-        # Determine which form of integration the species transitions require
-        if species:
-            k0Species = ((rt.dk_species[i, :] == 0) &
-                         (np.abs(rt.k_species[i, :]*scale) < 10**-10))
-            try:
-                kgSpecies = ~k0Species & (np.abs(rt.k_species[i, :]) >
-                                          (10**3*np.abs(rt.dk_species[i, :])*scale))
-            except RuntimeWarning:
-                # print(rt.x1LoS, rt.x2LoS)
-                # print(rt.x3LoS)
-                # print(rt.dk_species[i,:])
-                # print(rt.k_species[i,:])
-                input()
-                kgSpecies = ~k0 & (np.abs(rt.k_species[:-1, :][i, :]) >
-                                   (10**3*np.abs(rt.dk_species[i, :])*scale))
-            kESpecies = ~(k0Species | kgSpecies)
-            kEgSpecies = kESpecies & (rt.dk_species[i, :] > 0)
-            kElSpecies = kESpecies & (rt.dk_species[i, :] < 0)
-  
-        # Determine which form of integration the dust continuum requires
-        if dust:
-            k0Dust = ((rt.dk_dust[i, :] == 0) &
-                      (abs(rt.k_dust[:-1, :][i, :]*scale) < 10**-10))
-            try:
-                kgDust = ~k0Dust & (np.abs(rt.k_dust[:-1, :][i, :]) >
-                                    10**3*abs(rt.dk_dust[i, :])*scale)
-            except RuntimeWarning:
-                # print(rt.x1LoS, rt.x2LoS)
-                # print(rt.x3LoS)
-                # print(rt.dk_dust[i,:])
-                # print(rt.k_dust[i,:])
-                input()
-                kgDust = ~k0 & (np.abs(rt.k_dust[:-1, :][i, :]) >
-                                10**3*np.abs(rt.dk_dust[i, :])*scale)
-            kEDust = ~(k0Dust | kgDust)
-            kEgDust = kEDust & (rt.dk_dust[i, :] > 0)
-            kElDust = kEDust & (rt.dk_dust[i, :] < 0)
+    for i in range(n_steps):
       
         # << Compute radiative transfer for the species transitions >>
         if species:
-            if k0Species.any():
-                rt.intensity_species[k0Species] = (rt.e_species[i, k0Species] * scale
-                                                  + 0.5*rt.de_species[i, k0Species] * scale**2
-                                                  + rt.intensity_species[k0Species])
+    
+            # Determine which form of integration the species transitions require
+            k0_species = ((rt.dk_species[i, :] == 0) &
+                          (np.abs(rt.k_species[i, :]*scale) < 10**-10))
+            kg_species = ~k0_species & (np.abs(rt.k_species[i, :])
+                                        > (10**3*np.abs(rt.dk_species[i, :])*scale))
+            keg_species = ~k0_species & ~kg_species & (rt.dk_species[i, :] > 0)
+            kel_species = ~k0_species & ~kg_species & (rt.dk_species[i, :] < 0)
+            
+            # Integrate using the required method
+            if k0_species.any():
+                rt.intensity_species[k0_species] = (rt.e_species[i, k0_species] * scale
+                                                    + 0.5*rt.de_species[i, k0_species] * scale**2.
+                                                    + rt.intensity_species[k0_species])
         
-            elif kgSpecies.any():
-                try:
-                    rt.intensity_species[kgSpecies] = ((rt.e_species[i, kgSpecies]*rt.k_species[i, kgSpecies]+rt.de_species[i, kgSpecies]*(rt.k_species[i, kgSpecies]*scale-1))/(rt.k_species[i, kgSpecies]**2.)) - np.exp(-rt.k_species[i, kgSpecies]*scale)*((rt.e_species[i, kgSpecies]*rt.k_species[i, kgSpecies]-rt.de_species[i, kgSpecies])/(rt.k_species[i, kgSpecies]**2.) + rt.intensity_species[kgSpecies])
-                except RuntimeWarning:
-                    print('\n\nERROR: Integration option 2')
-                    rt.intensity_species[kgSpecies] = ((rt.e_species[i, kgSpecies]*rt.k_species[i, kgSpecies]+rt.de_species[i, kgSpecies]*(rt.k_species[i, kgSpecies]*scale-1))/(rt.k_species[i, kgSpecies]**2.)) - np.exp(-rt.k_species[i, kgSpecies]*scale) * ((rt.e_species[i, kgSpecies]*rt.k_species[i, kgSpecies]-rt.de_species[i, kgSpecies])/(rt.k_species[i, kgSpecies]**2.) + rt.intensity_species[kgSpecies])
+            if kg_species.any():
+                rt.intensity_species[kg_species] = ((rt.e_species[i, kg_species]*rt.k_species[i, kg_species]
+                                                    + rt.de_species[i, kg_species]
+                                                    * (rt.k_species[i, kg_species]*scale-1.))
+                                                    / (rt.k_species[i, kg_species]**2.)) \
+                                                  - np.exp(-rt.k_species[i, kg_species]*scale)\
+                                                  * ((rt.e_species[i, kg_species]*rt.k_species[i, kg_species]
+                                                      - rt.de_species[i, kg_species])
+                                                     / (rt.k_species[i, kg_species]**2.)) \
+                                                  + (rt.intensity_species[kg_species]
+                                                     * np.exp(-rt.k_species[i, kg_species]*scale))
       
-            elif kEgSpecies.any():
+            if keg_species.any():
                 if verbose:
-                    print('\na, b:\n', a_species[i, :, :], '\n', b_species[i, :, :])
-                a_error = np.array(list(Ereal(a_species[i, kEgSpecies])))
-                b_error = np.array(list(Ereal(b_species[i, kEgSpecies])))
-                rt.intensity_species[kEgSpecies] = (rt.de_species[i, kEgSpecies]/rt.dk_species[i, kEgSpecies]*(1-np.exp(-rt.k_species[i, kEgSpecies]*scale-0.5*rt.dk_species[i, kEgSpecies]*scale**2.)) - (rt.e_species[i, kEgSpecies]*rt.dk_species[i, kEgSpecies]-rt.de_species[i, kEgSpecies]*rt.k_species[i, kEgSpecies])/rt.dk_species[i, kEgSpecies] * np.sqrt(np.pi/(2.*np.abs(rt.dk_species[i, kEgSpecies].astype(np.complex_)))) * (np.exp(a_species[i, kEgSpecies]**2.-b_species[i, kEgSpecies]**2.)*a_error-b_error) + rt.intensity_species[kEgSpecies]*np.exp(-rt.k_species[i, kEgSpecies]*scale-0.5*rt.dk_species[i, kEgSpecies]*scale**2.)).real
+                    print('\na, b:\n', a_species[i, :], '\n', b_species[i, :])
+                a_error = e_real(a_species[i, keg_species].real)
+                b_error = e_real(b_species[i, keg_species].real)
+                rt.intensity_species[keg_species] = (rt.de_species[i, keg_species]/rt.dk_species[i, keg_species]
+                                                     * (1.-np.exp(-rt.k_species[i, keg_species]*scale
+                                                                  - 0.5*rt.dk_species[i, keg_species]*scale**2.))
+                                                     - (rt.e_species[i, keg_species]*rt.dk_species[i, keg_species]
+                                                        - rt.k_species[i, keg_species]*rt.de_species[i, keg_species])
+                                                     / rt.dk_species[i, keg_species]
+                                                     * np.sqrt(np.pi/2./np.abs(rt.dk_species[i, keg_species]))
+                                                     * (np.exp(a_species[i, keg_species]**2.
+                                                               - b_species[i, keg_species]**2.).real*a_error
+                                                        - b_error)
+                                                     + rt.intensity_species[keg_species]
+                                                     * np.exp(-rt.k_species[i, keg_species]*scale
+                                                              - 0.5*rt.dk_species[i, keg_species]*scale**2.))
       
-            elif kElSpecies.any():
+            if kel_species.any():
                 if verbose:
-                    print('\na, b:\n', a_species[i, :, :], '\n', b_species[i, :])
-                a_error = np.array(list(Eimag(a_species[i, :][kElSpecies])))
-                b_error = np.array(list(Eimag(b_species[i, :][kElSpecies])))
-                try:
-                    rt.intensity_species[kElSpecies] = (rt.de_species[i, kElSpecies]/rt.dk_species[i, kElSpecies]*(1-np.exp(-rt.k_species[i, kElSpecies]*scale-0.5*rt.dk_species[i, kElSpecies]*scale**2.)) - (rt.e_species[i, kElSpecies]*rt.dk_species[i, kElSpecies]-rt.de_species[i, kElSpecies]*rt.k_species[i, kElSpecies])/rt.dk_species[i, kElSpecies] * np.sqrt(np.pi/(2.*np.abs(rt.dk_species[i, kElSpecies].astype(np.complex_)))) * (np.exp(a_species[i, kElSpecies]**2.-b_species[i, kElSpecies]**2.)*a_error-b_error) + rt.intensity_species[kElSpecies]*np.exp(-rt.k_species[i, kElSpecies]*scale-0.5*rt.dk_species[i, kElSpecies]*scale**2.)).real
-                except RuntimeWarning:
-                    print(rt.k_species[-1, :][kElSpecies])
-                    print(rt.dk_species[-1, kElSpecies])
-                    print(a_species[i, kElSpecies]**2)
-                    print(b_species[i, kElSpecies]**2)
-                    input()
+                    print('\na, b:\n', a_species[i, :], '\n', b_species[i, :])
+                a_error = e_imag(a_species[i, :][kel_species].imag)
+                b_error = e_imag(b_species[i, :][kel_species].imag)
+                rt.intensity_species[kel_species] = (rt.de_species[i, kel_species]/rt.dk_species[i, kel_species]
+                                                     * (1.-np.exp(-rt.k_species[i, kel_species]*scale
+                                                                  - 0.5*rt.dk_species[i, kel_species]*scale**2.))
+                                                     - (rt.e_species[i, kel_species]*rt.dk_species[i, kel_species]
+                                                        - rt.k_species[i, kel_species]*rt.de_species[i, kel_species])
+                                                     / rt.dk_species[i, kel_species]
+                                                     * np.sqrt(np.pi/2./np.abs(rt.dk_species[i, kel_species]))
+                                                     * (np.exp(a_species[i, kel_species]**2.
+                                                               - b_species[i, kel_species]**2.).real*a_error
+                                                        - b_error)
+                                                     + rt.intensity_species[kel_species]
+                                                     * np.exp(-rt.k_species[i, kel_species]*scale
+                                                              - 0.5*rt.dk_species[i, kel_species]*scale**2.))
         
         # << Compute radiative transfer for the dust continuum >>
         if dust:
-            if k0Dust.any():
-                rt.intensity_dust[k0Dust] = rt.e_dust[i, k0Dust]*scale + 0.5*rt.de_dust[i, k0Dust]*scale**2 + rt.intensity_dust[k0Dust]
+    
+            # Determine which form of integration the dust continuum requires
+            k0_dust = ((rt.dk_dust[i, :] == 0) &
+                       (abs(rt.k_dust[:-1, :][i, :]*scale) < 10**-10))
+            kg_dust = ~k0_dust & (np.abs(rt.k_dust[:-1, :][i, :])
+                                  > (10**3*abs(rt.dk_dust[i, :])*scale))
+            keg_dust = ~k0_dust & ~kg_dust & (rt.dk_dust[i, :] > 0)
+            kel_dust = ~k0_dust & ~kg_dust & (rt.dk_dust[i, :] < 0)
+            
+            # Integrate using the required method
+            if k0_dust.any():
+                rt.intensity_dust[k0_dust] = (rt.e_dust[i, k0_dust]*scale
+                                              + 0.5*rt.de_dust[i, k0_dust]*scale**2
+                                              + rt.intensity_dust[k0_dust])
         
-            elif kgDust.any():
-                try:
-                    rt.intensity_dust[kgDust] = ((rt.e_dust[i, kgDust]*rt.k_dust[i, kgDust]+rt.de_dust[i, kgDust]*(rt.k_dust[i, kgDust]*scale-1))/(rt.k_dust[i, kgDust]**2.)) - np.exp(-rt.k_dust[i, kgDust]*scale)*((rt.e_dust[i, kgDust]*rt.k_dust[i, kgDust]-rt.de_dust[i, kgDust])/(rt.k_dust[i, kgDust]**2.) + rt.intensity_dust[kgDust])
-                except RuntimeWarning:
-                    print('ERROR: Integration option 2')
-                    rt.intensity_dust[kgDust] = ((rt.e_dust[i, kgDust]*rt.k_dust[i, kgDust]+rt.de_dust[i, kgDust]*(rt.k_dust[i, kgDust]*scale-1))/(rt.k_dust[i, kgDust]**2.)) - np.exp(-rt.k_dust[i, kgDust]*scale)*(((rt.e_dust[i, kgDust]*rt.k_dust[i, kgDust]-rt.de_dust[i, kgDust])/(rt.k_dust[i, kgDust]**2.)) + rt.intensity_dust[kgDust])
+            if kg_dust.any():
+                rt.intensity_dust[kg_dust] = ((rt.e_dust[i, kg_dust]*rt.k_dust[i, kg_dust]
+                                               + rt.de_dust[i, kg_dust]*(rt.k_dust[i, kg_dust]*scale-1))
+                                              / (rt.k_dust[i, kg_dust]**2.)) \
+                                             - (np.exp(-rt.k_dust[i, kg_dust]*scale)
+                                                * ((rt.e_dust[i, kg_dust]
+                                                    * rt.k_dust[i, kg_dust]
+                                                    - rt.de_dust[i, kg_dust])
+                                                   / (rt.k_dust[i, kg_dust]**2.)
+                                                   + rt.intensity_dust[kg_dust]))
       
-            elif kEgDust.any():
+            if keg_dust.any():
                 if verbose:
-                    print('\na, b:\n', a_dust[i, :, :], '\n', b_dust[i, :, :])
-                a_error = np.array(list(Ereal(a_dust[i, kEgDust])))
-                b_error = np.array(list(Ereal(b_dust[i, kEgDust])))
-                rt.intensity_dust[kEgDust] = (rt.de_dust[i, kEgDust]/rt.dk_dust[i, kEgDust]*(1-np.exp(-rt.k_dust[i, kEgDust]*scale-0.5*rt.dk_dust[i, kEgDust]*scale**2.)) - (rt.e_dust[i, kEgDust]*rt.dk_dust[i, kEgDust]-rt.de_dust[i, kEgDust]*rt.k_dust[i, kEgDust])/rt.dk_dust[i, kEgDust] * np.sqrt(np.pi/(2.*abs(rt.dk_dust[i, kEgDust].astype(np.complex_)))) * (np.exp(a_dust[i, kEgDust]**2.-b_dust[i, kEgDust]**2.)*a_error-b_error) + rt.intensity_dust[kEgDust]*np.exp(-rt.k_dust[i, kEgDust]*scale-0.5*rt.dk_dust[i, kEgDust]*scale**2.)).real
+                    print('\na, b:\n', a_dust[i, :], '\n', b_dust[i, :])
+                a_error = np.array(list(e_real(a_dust[i, keg_dust].real)))
+                b_error = np.array(list(e_real(b_dust[i, keg_dust].real)))
+                rt.intensity_dust[keg_dust] = (rt.de_dust[i, keg_dust]/rt.dk_dust[i, keg_dust]
+                                               * (1-np.exp(-rt.k_dust[i, keg_dust]*scale
+                                                           - 0.5*rt.dk_dust[i, keg_dust]*scale**2.))
+                                               - (rt.e_dust[i, keg_dust]*rt.dk_dust[i, keg_dust]
+                                                  - rt.de_dust[i, keg_dust]*rt.k_dust[i, keg_dust])
+                                               / rt.dk_dust[i, keg_dust]
+                                               * np.sqrt(np.pi/(2.*np.abs(rt.dk_dust[i, keg_dust])))
+                                               * (np.exp(a_dust[i, keg_dust]**2.-b_dust[i, keg_dust]**2.).real*a_error
+                                                  - b_error)
+                                               + rt.intensity_dust[keg_dust]
+                                               * np.exp(-rt.k_dust[i, keg_dust]*scale
+                                                        - 0.5*rt.dk_dust[i, keg_dust]*scale**2.))
       
-            elif kElDust.any():
+            if kel_dust.any():
                 if verbose:
-                    print('\na, b:\n', a_dust[i, :, :], '\n', b_dust[i, :])
-                a_error = np.array(list(Eimag(a_dust[i, kElDust])))
-                b_error = np.array(list(Eimag(b_dust[i, kElDust])))
-                try:
-                    rt.intensity_dust[kElDust] = (rt.de_dust[i, kElDust]/rt.dk_dust[i, kElDust] * (1-np.exp(-rt.k_dust[i, kElDust]*scale - 0.5*rt.dk_dust[i, kElDust]*scale**2.)) - (rt.e_dust[i, kElDust] * rt.dk_dust[i, kElDust] - rt.de_dust[i, kElDust]*rt.k_dust[i, kElDust])/rt.dk_dust[i, kElDust] * np.sqrt(np.pi/(2.*abs(rt.dk_dust[i][kElDust].astype(np.complex_)))) * (np.exp(a_dust[i, kElDust]**2.-b_dust[i, kElDust]**2.)*a_error-b_error) + rt.intensity_dust[kElDust]*np.exp(-rt.k_dust[i, kElDust]*scale-0.5*rt.dk_dust[i, kElDust]*scale**2.)).real
-                except RuntimeWarning:
-                    print(rt.k_dust[-1, :][kElDust])
-                    print(rt.dk_dust[-1, kElDust])
-                    print(a_dust[i, kElDust]**2)
-                    print(b_dust[i, kElDust]**2)
-                    input()
+                    print('\na, b:\n', a_dust[i, :], '\n', b_dust[i, :])
+                a_error = np.array(list(e_imag(a_dust[i, kel_dust].imag)))
+                b_error = np.array(list(e_imag(b_dust[i, kel_dust].imag)))
+                rt.intensity_dust[kel_dust] = (rt.de_dust[i, kel_dust]/rt.dk_dust[i, kel_dust]
+                                               * (1-np.exp(-rt.k_dust[i, kel_dust]*scale
+                                                           - 0.5*rt.dk_dust[i, kel_dust]*scale**2.))
+                                               - (rt.e_dust[i, kel_dust] * rt.dk_dust[i, kel_dust]
+                                                  - rt.de_dust[i, kel_dust]*rt.k_dust[i, kel_dust])
+                                               / rt.dk_dust[i, kel_dust]
+                                               * np.sqrt(np.pi/(2.*np.abs(rt.dk_dust[i][kel_dust])))
+                                               * (np.exp(a_dust[i, kel_dust]**2.-b_dust[i, kel_dust]**2.).real*a_error
+                                                  - b_error)
+                                               + rt.intensity_dust[kel_dust]
+                                               * np.exp(-rt.k_dust[i, kel_dust]*scale
+                                                        - 0.5*rt.dk_dust[i, kel_dust]*scale**2.))
     
     if verbose:
         print('Species intensity shape:', np.shape(rt.intensity_species))
         print('Dust intensity shape:', np.shape(rt.intensity_dust))
         
-    if (rt.intensity_species > 10**10).any() or (rt.intensity_species < -1).any():
-        i = np.where((rt.intensity_species > 10) | (rt.intensity_species < 0))
-        print('\n\nSome of the species have either suspiciously large negative intensities...')
+    if (rt.intensity_species > 10**10).any() or (rt.intensity_species < -10**2).any():
+        i = np.where((rt.intensity_species > 10) | (rt.intensity_species < 0))[0]
+        print('\n\nSome of the species have either suspiciously large or negative intensities...')
         print('\n\nThe indices are:\n', i)
         print('\n\nScale:', scale)
         print('\n\nintensity:\n', rt.intensity_species[i])
@@ -833,34 +848,18 @@ def calculatert(scale=1, background_intensity=0., species=True, dust=True, verbo
         # print('\n\nb:\n', bSpecies[:, i])
         input()
   
-    # if species:
-    #   rt.intensity_species = intensity_species
-    #   rt.allintensity_species.append(intensity_species)
-    # if dust:
-    #   rt.intensity_dust = intensity_dust
-    #   rt.allintensity_dust.append(intensity_dust)
-  
     return  # (intensity_species, intensity_dust)
 
 
-def Ereal(x, verbose=False):
+def e_real(x, verbose=False):
   
     if verbose:
         print('E real input:', x)
   
-    '''
-    ## This is no longer needed if I have a complex matrix!
-    ir = (x.imag)
-    
-    if (x.imag==0).any(): x = x.real
-    # x should be a real number. remove imaginary party '0j' which
-    # prevents ordering
-    '''
-  
-    Er = np.zeros_like(x)
+    e_r = np.zeros_like(x)
   
     il = x < 0.01
-    ig = x > 8.0
+    ig = ~il & (x > 8.0)
     ib = ~(ig | il)
   
     if il.any():
@@ -868,39 +867,39 @@ def Ereal(x, verbose=False):
         if verbose:
             print('x less than grid')
     
-        Er[il] = (2*x[il]/np.sqrt(np.pi)).astype(np.complex_)
+        e_r[il] = (2*x[il]/np.sqrt(np.pi))
     
     if ig.any():
   
         if verbose:
             print('x greater than grid')
     
-        Er[ig] = (1/(np.sqrt(np.pi) * x[ig])).astype(np.complex_)
+        e_r[ig] = (1/(np.sqrt(np.pi) * x[ig]))
     
     if ib.any():
   
         if verbose:
             print('x interpolated')
     
-        Er[ib] = rt.eTildeReal(x[ib].real).astype(np.complex_)
+        e_r[ib] = rt.eTildeReal(x[ib])
   
-    return Er
+    return e_r
 
 
-def Eimag(x, verbose=False):
+def e_imag(x, verbose=False):
   
     if verbose:
         print('E imaginary input:', x)
   
-    Ei = np.zeros_like(x)
+    e_i = np.zeros_like(x)
   
-    im = x == abs(x)*1j
-    il = (abs(x) < 0.01) & ~im
-    ig = (abs(x) > 8.0) & ~im
+    im = x > 0
+    il = ~im & (np.abs(x) < 0.01)
+    ig = ~im & (np.abs(x) > 8.0)
     ib = ~(ig | il | im)
   
     # Force x to be a positive real value
-    x = abs(x)
+    # x = np.abs(x)
     
     if im.any():
   
@@ -908,82 +907,30 @@ def Eimag(x, verbose=False):
             print('Maser case')
     
         # MASER case: treat with linear approximation
-        Ei[im] = 1 + 2*x[im]/np.sqrt(np.pi)
+        e_i[im] = 1 + 2*np.abs(x[im])/np.sqrt(np.pi)
   
     if il.any():
   
         if verbose:
             print('x less than grid')
         
-        Ei[il] = (1 - 2*x[il]/np.sqrt(np.pi)).astype(np.complex_)
+        e_i[il] = (1 - 2*np.abs(x[il])/np.sqrt(np.pi))
   
     if ig.any():
       
         if verbose:
             print('x greater than grid')
         
-        Ei[ig] = (1/(np.sqrt(np.pi) * x[ig])).astype(np.complex_)
+        e_i[ig] = (1/(np.sqrt(np.pi) * np.abs(x[ig])))
   
     if ib.any():
       
         if verbose:
             print('x interpolated')
         
-        Ei[ib] = rt.eTildeImaginary(x[ib]).astype(np.complex_)
+        e_i[ib] = rt.eTildeImaginary(np.abs(x[ib]))
   
-    return Ei
-
-
-def debugEmission(sl, i):
-
-    k = rt.allK[sl][:, i]
-    e = rt.allE[sl][:, i]
-    kstep = rt.allKstep[sl][:, i]
-    estep = rt.allEstep[sl][:, i]
-    a = rt.allAreal[sl][:, i]
-    b = rt.allBreal[sl][:, i]
-    intensity = rt.allIntensity[sl][i]
-  
-    import pandas as pd
-  
-    d = {'kappa': k[:-1], 'dk': kstep, 'epsilon': e[:-1], 'de': estep, 'A': a, 'B': b, 'I': intensity, 'dI': 0}
-    df = pd.DataFrame(data=d)
-  
-    scale = constants.resolution*constants.pc*100  # pc should be in cm
-  
-    intensity = 0
-  
-    for i in range(a.size):
-      
-        if kstep[i] == 0 and (k[i]*scale) < 10**-10:
-            print('option 0')
-            df.loc[[i], ['dI']] = intensity + e[i]*scale + 0.5*estep[i]*scale**2
-        
-        elif k[i] > 10**3*abs(kstep[i])*scale:
-            print('option 1')
-            df.loc[[i], ['dI']] = (intensity*np.exp(-k[i]*scale) +
-                                   (e[i]*k[i]+estep[i]*(k[i]*scale-1))/k[i]**2 -
-                                   (e[i]*k[i]-estep[i])/k[i]**2*np.exp(-k[i]*scale))
-        
-        elif kstep[i] > 0:
-            print('option 2')
-            df.loc[[i], ['dI']] = (intensity*np.exp(-k[i]*scale-0.5*kstep[i]*scale**2) +
-                                   estep[i]/kstep[i]*(1-np.exp(-k[i]*scale-0.5*kstep[i]*scale**2)) -
-                                   (e[i]*kstep[i]-estep[i]*k[i])/kstep[i]*np.sqrt(np.pi/2/abs(kstep[i])) *
-                                   (np.exp(a[i]**2-b[i]**2)*rt.Ereal(np.array([a[i]]), verbose=True) -
-                                    rt.Ereal(np.array([b[i]]), verbose=True)).real)
-        
-        elif kstep[i] < 0:
-            print('option 3')
-            df.loc[[i], ['dI']] = (intensity*np.exp(-k[i]*scale-0.5*kstep[i]*scale**2) +
-                                   estep[i]/kstep[i]*(1-np.exp(-k[i]*scale-0.5*kstep[i]*scale**2)) -
-                                   (e[i]*kstep[i]-estep[i]*k[i])/kstep[i]*np.sqrt(np.pi/2/abs(kstep[i])) *
-                                   (np.exp(a[i]**2-b[i]**2)*rt.Eimag(np.array([a[i]]), verbose=True) -
-                                    rt.Eimag(np.array([b[i]]), verbose=True)).real)
-    
-        intensity = c.copy(df['dI'][i])
-  
-    return df
+    return e_i
 
 
 if __name__ == '__main__':
