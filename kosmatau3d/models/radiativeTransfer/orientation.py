@@ -772,19 +772,19 @@ def calculatert(scale=1, background_intensity=0., species=True, dust=True, verbo
             # Integrate using the required method
             if k0_dust.any():
                 rt.intensity_dust[k0_dust] = (rt.e_dust[i, k0_dust]*scale
-                                              + 0.5*rt.de_dust[i, k0_dust]*scale**2
+                                              + 0.5*rt.de_dust[i, k0_dust]*scale**2.
                                               + rt.intensity_dust[k0_dust])
         
             if kg_dust.any():
                 rt.intensity_dust[kg_dust] = ((rt.e_dust[i, kg_dust]*rt.k_dust[i, kg_dust]
-                                               + rt.de_dust[i, kg_dust]*(rt.k_dust[i, kg_dust]*scale-1))
+                                               + rt.de_dust[i, kg_dust]*(rt.k_dust[i, kg_dust]*scale-1.))
                                               / (rt.k_dust[i, kg_dust]**2.)) \
-                                             - (np.exp(-rt.k_dust[i, kg_dust]*scale)
-                                                * ((rt.e_dust[i, kg_dust]
-                                                    * rt.k_dust[i, kg_dust]
-                                                    - rt.de_dust[i, kg_dust])
-                                                   / (rt.k_dust[i, kg_dust]**2.)
-                                                   + rt.intensity_dust[kg_dust]))
+                                             - np.exp(-rt.k_dust[i, kg_dust]*scale) \
+                                             * ((rt.e_dust[i, kg_dust]*rt.k_dust[i, kg_dust]
+                                                 - rt.de_dust[i, kg_dust])
+                                                / (rt.k_dust[i, kg_dust]**2.)) \
+                                             + (rt.intensity_dust[kg_dust]
+                                                * np.exp(-rt.k_dust[i, kg_dust]*scale))
       
             if keg_dust.any():
                 if verbose:
@@ -792,12 +792,12 @@ def calculatert(scale=1, background_intensity=0., species=True, dust=True, verbo
                 a_error = np.array(list(e_real(a_dust[i, keg_dust].real)))
                 b_error = np.array(list(e_real(b_dust[i, keg_dust].real)))
                 rt.intensity_dust[keg_dust] = (rt.de_dust[i, keg_dust]/rt.dk_dust[i, keg_dust]
-                                               * (1-np.exp(-rt.k_dust[i, keg_dust]*scale
-                                                           - 0.5*rt.dk_dust[i, keg_dust]*scale**2.))
+                                               * (1.-np.exp(-rt.k_dust[i, keg_dust]*scale
+                                                            - 0.5*rt.dk_dust[i, keg_dust]*scale**2.))
                                                - (rt.e_dust[i, keg_dust]*rt.dk_dust[i, keg_dust]
-                                                  - rt.de_dust[i, keg_dust]*rt.k_dust[i, keg_dust])
+                                                  - rt.k_dust[i, keg_dust]*rt.de_dust[i, keg_dust])
                                                / rt.dk_dust[i, keg_dust]
-                                               * np.sqrt(np.pi/(2.*np.abs(rt.dk_dust[i, keg_dust])))
+                                               * np.sqrt(np.pi/2./np.abs(rt.dk_dust[i, keg_dust]))
                                                * (np.exp(a_dust[i, keg_dust]**2.-b_dust[i, keg_dust]**2.).real*a_error
                                                   - b_error)
                                                + rt.intensity_dust[keg_dust]
@@ -810,12 +810,12 @@ def calculatert(scale=1, background_intensity=0., species=True, dust=True, verbo
                 a_error = np.array(list(e_imag(a_dust[i, kel_dust].imag)))
                 b_error = np.array(list(e_imag(b_dust[i, kel_dust].imag)))
                 rt.intensity_dust[kel_dust] = (rt.de_dust[i, kel_dust]/rt.dk_dust[i, kel_dust]
-                                               * (1-np.exp(-rt.k_dust[i, kel_dust]*scale
-                                                           - 0.5*rt.dk_dust[i, kel_dust]*scale**2.))
+                                               * (1.-np.exp(-rt.k_dust[i, kel_dust]*scale
+                                                            - 0.5*rt.dk_dust[i, kel_dust]*scale**2.))
                                                - (rt.e_dust[i, kel_dust] * rt.dk_dust[i, kel_dust]
-                                                  - rt.de_dust[i, kel_dust]*rt.k_dust[i, kel_dust])
+                                                  - rt.k_dust[i, kel_dust]*rt.de_dust[i, kel_dust])
                                                / rt.dk_dust[i, kel_dust]
-                                               * np.sqrt(np.pi/(2.*np.abs(rt.dk_dust[i][kel_dust])))
+                                               * np.sqrt(np.pi/2./np.abs(rt.dk_dust[i][kel_dust]))
                                                * (np.exp(a_dust[i, kel_dust]**2.-b_dust[i, kel_dust]**2.).real*a_error
                                                   - b_error)
                                                + rt.intensity_dust[kel_dust]
@@ -826,8 +826,8 @@ def calculatert(scale=1, background_intensity=0., species=True, dust=True, verbo
         print('Species intensity shape:', np.shape(rt.intensity_species))
         print('Dust intensity shape:', np.shape(rt.intensity_dust))
         
-    if (rt.intensity_species > 10**10).any() or (rt.intensity_species < -10**2).any():
-        i = np.where((rt.intensity_species > 10) | (rt.intensity_species < 0))[0]
+    if (rt.intensity_species > 10**10).any() or (rt.intensity_species < -10).any():
+        i = np.where((rt.intensity_species > 10**10) | (rt.intensity_species < 0))[0]
         print('\n\nSome of the species have either suspiciously large or negative intensities...')
         print('\n\nThe indices are:\n', i)
         print('\n\nScale:', scale)
@@ -840,12 +840,6 @@ def calculatert(scale=1, background_intensity=0., species=True, dust=True, verbo
         np.save(dir+r'\dk.npy', rt.dk_species[:, i])
         np.save(dir+r'\a.npy', a_species[:, i])
         np.save(dir+r'\b.npy', b_species[:, i])
-        # print('\n\nepsilon:\n', rt.e_species[:, i])
-        # print('\n\ndepsilon:\n', rt.de_species[:, i])
-        # print('\n\nkappa:\n', rt.k_species[:, i])
-        # print('\n\ndkappa:\n', rt.dk_species[:, i])
-        # print('\n\na:\n', aSpecies[:, i])
-        # print('\n\nb:\n', bSpecies[:, i])
         input()
   
     return  # (intensity_species, intensity_dust)
