@@ -732,8 +732,8 @@ def calculatert(scale=1, background_intensity=0., species=True, dust=True, verbo
                                                         - rt.k_species[i, keg_species]*rt.de_species[i, keg_species])
                                                      / rt.dk_species[i, keg_species]
                                                      * np.sqrt(np.pi/2./np.abs(rt.dk_species[i, keg_species]))
-                                                     * (np.exp(a_species[i, keg_species]**2.
-                                                               - b_species[i, keg_species]**2.).real*a_error
+                                                     * (np.exp(a_species[i, keg_species].real**2.
+                                                               - b_species[i, keg_species].real**2.)*a_error
                                                         - b_error)
                                                      + rt.intensity_species[keg_species]
                                                      * np.exp(-rt.k_species[i, keg_species]*scale
@@ -751,8 +751,8 @@ def calculatert(scale=1, background_intensity=0., species=True, dust=True, verbo
                                                         - rt.k_species[i, kel_species]*rt.de_species[i, kel_species])
                                                      / rt.dk_species[i, kel_species]
                                                      * np.sqrt(np.pi/2./np.abs(rt.dk_species[i, kel_species]))
-                                                     * (np.exp(a_species[i, kel_species]**2.
-                                                               - b_species[i, kel_species]**2.).real*a_error
+                                                     * (np.exp(a_species[i, kel_species].imag**2.
+                                                               - b_species[i, kel_species].imag**2.)*a_error
                                                         - b_error)
                                                      + rt.intensity_species[kel_species]
                                                      * np.exp(-rt.k_species[i, kel_species]*scale
@@ -798,7 +798,8 @@ def calculatert(scale=1, background_intensity=0., species=True, dust=True, verbo
                                                   - rt.k_dust[i, keg_dust]*rt.de_dust[i, keg_dust])
                                                / rt.dk_dust[i, keg_dust]
                                                * np.sqrt(np.pi/2./np.abs(rt.dk_dust[i, keg_dust]))
-                                               * (np.exp(a_dust[i, keg_dust]**2.-b_dust[i, keg_dust]**2.).real*a_error
+                                               * (np.exp(a_dust[i, keg_dust].real**2.
+                                                         - b_dust[i, keg_dust].real**2.)*a_error
                                                   - b_error)
                                                + rt.intensity_dust[keg_dust]
                                                * np.exp(-rt.k_dust[i, keg_dust]*scale
@@ -816,7 +817,8 @@ def calculatert(scale=1, background_intensity=0., species=True, dust=True, verbo
                                                   - rt.k_dust[i, kel_dust]*rt.de_dust[i, kel_dust])
                                                / rt.dk_dust[i, kel_dust]
                                                * np.sqrt(np.pi/2./np.abs(rt.dk_dust[i][kel_dust]))
-                                               * (np.exp(a_dust[i, kel_dust]**2.-b_dust[i, kel_dust]**2.).real*a_error
+                                               * (np.exp(a_dust[i, kel_dust].imag**2.
+                                                         - b_dust[i, kel_dust].imag**2.)*a_error
                                                   - b_error)
                                                + rt.intensity_dust[kel_dust]
                                                * np.exp(-rt.k_dust[i, kel_dust]*scale
