@@ -835,13 +835,28 @@ def calculatert(scale=1, background_intensity=0., species=True, dust=True, verbo
         print('\n\nScale:', scale)
         print('\n\nintensity:\n', rt.intensity_species[i])
         dir = r'c:\users\cyani\KOSMA-tau^3\tests\full model'
-        np.save(dir+r'\I.npy', rt.intensity_species[i])
-        np.save(dir+r'\e.npy', rt.e_species[:, i])
-        np.save(dir+r'\de.npy', rt.de_species[:, i])
-        np.save(dir+r'\k.npy', rt.k_species[:, i])
-        np.save(dir+r'\dk.npy', rt.dk_species[:, i])
-        np.save(dir+r'\a.npy', a_species[:, i])
-        np.save(dir+r'\b.npy', b_species[:, i])
+        np.save(dir+r'\I_species.npy', rt.intensity_species[i])
+        np.save(dir+r'\e_species.npy', rt.e_species[:, i])
+        np.save(dir+r'\de_species.npy', rt.de_species[:, i])
+        np.save(dir+r'\k_species.npy', rt.k_species[:, i])
+        np.save(dir+r'\dk_species.npy', rt.dk_species[:, i])
+        np.save(dir+r'\a_species.npy', a_species[:, i])
+        np.save(dir+r'\b_species.npy', b_species[:, i])
+        
+    if (rt.intensity_dust > 10**10).any() or (rt.intensity_dust < -10).any():
+        i = np.where((rt.intensity_dust > 10**10) | (rt.intensity_dust < 0))[0]
+        print('\n\nSome of the dust has either suspiciously large or negative intensities...')
+        print('\n\nThe indices are:\n', i)
+        print('\n\nScale:', scale)
+        print('\n\nintensity:\n', rt.intensity_dust[i])
+        dir = r'c:\users\cyani\KOSMA-tau^3\tests\full model'
+        np.save(dir+r'\I_dust.npy', rt.intensity_dust[i])
+        np.save(dir+r'\e_dust.npy', rt.e_dust[:, i])
+        np.save(dir+r'\de_dust.npy', rt.de_dust[:, i])
+        np.save(dir+r'\k_dust.npy', rt.k_dust[:, i])
+        np.save(dir+r'\dk_dust.npy', rt.dk_dust[:, i])
+        np.save(dir+r'\a_dust.npy', a_dust[:, i])
+        np.save(dir+r'\b_dust.npy', b_dust[:, i])
         input()
   
     return  # (intensity_species, intensity_dust)
