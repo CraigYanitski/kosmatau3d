@@ -162,9 +162,9 @@ class VoxelGrid(object):
   
     def calculateEmission(self, index=0, debug=False, timed=False, verbose=False, multiprocessing=0):
         # This will initialise the grid of voxels and calculate their emission. This has to be
-        #done in succession for each voxel since the calculations are modular (the temporary
-        #voxel terms are changed when calculating different voxels). This can be rerun and it
-        #will reinitialise the grid.
+        # done in succession for each voxel since the calculations are modular (the temporary
+        # voxel terms are changed when calculating different voxels). This can be rerun and it
+        # will reinitialise the grid.
       
         if timed:
             t0 = time()
@@ -505,6 +505,12 @@ class VoxelGrid(object):
     def printVoxels(self):
         for voxel in self.__voxels:
             voxel.printVoxel()
+        return
+    
+    def voxelproperties(self, x, y, z):
+        # print the parameters passed to a particular voxel instance depending on x, y, z.
+        self.__calculateProperties(x, y, z)
+        print(self.__properties)
         return
   
     def shdu_header(self, name='', units='', molecules=False, dust=False, filename=None, velocity=False, dim=None):
