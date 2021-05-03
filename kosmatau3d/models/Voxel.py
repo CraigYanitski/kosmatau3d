@@ -229,8 +229,8 @@ class Voxel(object):
         if timed:
             t0 = time()
     
-        x, y = np.meshgrid(np.linspace(self.__x-.5*constants.voxel_size, self.__x+.5*constants.voxel_size,3), \
-                          np.linspace(self.__y-.5*constants.voxel_size, self.__y+.5*constants.voxel_size,3))
+        x, y = np.meshgrid(np.linspace(self.__x-.5*constants.voxel_size, self.__x+.5*constants.voxel_size, 3),
+                           np.linspace(self.__y-.5*constants.voxel_size, self.__y+.5*constants.voxel_size, 3))
         r = np.array([x.flatten(), y.flatten()]).T
         r = np.linalg.norm(r, axis=1)
     
@@ -444,20 +444,24 @@ class Voxel(object):
                     intensity = np.array([intensity*factor[ensemble.clumpIndeces[ens][i], j]
                                           for j in range(factor.shape[1])])
                     # shape (v_sys, v_obs, combination, wavelength)
-                    clumpIntensity[ens].append(np.array([(probability.prod(1)*intensity[j].T).T
+                    clumpIntensity[ens].append(np.array([(probability.prod(1)/probability.prod(1).sum(0) *
+                                                          intensity[j].T).T
                                                          for j in range(factor.shape[1])]))
                     # shape (combination, wavelength)
                     intensityDust = copy(combinations.clumpIntensity[ens][:, :iDust])
                     # shape (v_obs, combination, wavelength)
-                    clumpIntensityDust[ens].append((probability.prod(1)*intensityDust.T).T)
+                    clumpIntensityDust[ens].append((probability.prod(1)/probability.prod(1).sum(0)
+                                                    * intensityDust.T).T)
             
                     opticalDepth = copy(combinations.clumpOpticalDepth[ens][:, iDust:])
                     opticalDepth = np.array([opticalDepth*factor[ensemble.clumpIndeces[ens][i], j]
                                              for j in range(factor.shape[1])])
-                    clumpOpticalDepth[ens].append(np.array([(probability.prod(1)*np.exp(-opticalDepth[j].T)).T
+                    clumpOpticalDepth[ens].append(np.array([(probability.prod(1)/probability.prod(1).sum(0)
+                                                             * np.exp(-opticalDepth[j].T)).T
                                                             for j in range(factor.shape[1])]))
                     opticalDepthDust = copy(combinations.clumpOpticalDepth[ens][:, :iDust])
-                    clumpOpticalDepthDust[ens].append((probability.prod(1)*np.exp(-opticalDepthDust.T)).T)
+                    clumpOpticalDepthDust[ens].append((probability.prod(1)/probability.prod(1).sum(0)
+                                                       * np.exp(-opticalDepthDust.T)).T)
             
                     if timed:
                         t4 = time()
@@ -533,7 +537,7 @@ class Voxel(object):
         return np.asarray(self.__opticalDepthDust)/constants.voxel_size
   
     def getDustIntensity(self):
-        epsilon = self.getDustAbsorption()
+        epsilon = self.getDustEmissivity()
         kappa = self.getDustAbsorption()
         intensity = epsilon/kappa*(1-np.exp(-kappa*constants.voxel_size))
         i_nan = np.isnan(intensity)
@@ -672,17 +676,24 @@ class Voxel(object):
                 ax = axes
       
             vel = int(valueSpecies[ens].shape[0]/2)
-            dustInterp = interp1d(constants.wavelengths[constants.nDust], valueDust[ens][vel, :],
-                                  fill_value='extrapolate')
-      
-            ax.loglog(1e6*constants.wavelengths[constants.nDust], valueDust[ens][vel, :],
-                      ls='--', lw=0.5, c='xkcd:black')
+            
+            if valueDust[ens].shape[1] > 1:
+                dustInterp = interp1d(constants.wavelengths[constants.nDust], valueDust[ens][vel, :],
+                                      fill_value='extrapolate')
+                ax.loglog(1e6*constants.wavelengths[constants.nDust], valueDust[ens][vel, :],
+                          ls='--', lw=0.5, c='xkcd:black')
+            else:
+                dust_spectrum = np.full(2, valueDust[ens][vel, 0])
+                ax.loglog(1e6*constants.wavelengths[[0, 20]], dust_spectrum, ls='--', lw=0.5, c='xkcd:black')
             
             molecules = []
             colour = []
       
             for i, molecule in enumerate(species.molecules):
-                valTemp = dustInterp(species.moleculeWavelengths[i])
+                if valueDust[ens].shape[1] > 1:
+                    valTemp = dustInterp(species.moleculeWavelengths[i])
+                else:
+                    valTemp = valueDust[ens][vel, 0]
                 if not molecule.split()[0] in molecules:
                     colour.append(moleculeColour[molecule.split()[0]])
                     molecules.append(molecule.split()[0])
