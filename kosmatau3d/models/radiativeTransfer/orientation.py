@@ -828,13 +828,16 @@ def calculatert(scale=1, background_intensity=0., species=True, dust=True, verbo
         print('Species intensity shape:', np.shape(rt.intensity_species))
         print('Dust intensity shape:', np.shape(rt.intensity_dust))
         
-    if (rt.intensity_species > 10**10).any() or (rt.intensity_species < -10).any():
-        i = np.where((rt.intensity_species > 10**10) | (rt.intensity_species < 0))[0]
-        print('\n\nSome of the species have either suspiciously large or negative intensities...')
-        print('\n\nThe indices are:\n', i)
+    if (rt.intensity_species > 10**10).any() or (rt.intensity_species < 0).any() or \
+       (rt.intensity_dust > 10 ** 10).any() or (rt.intensity_dust < 0).any():
+        
+        print('\n\nSome of the species or dust have either suspiciously large or negative intensities...')
         print('\n\nScale:', scale)
-        print('\n\nintensity:\n', rt.intensity_species[i])
         dir = r'c:\users\cyani\KOSMA-tau^3\tests\full model'
+        
+        i = np.where((rt.intensity_species > 10**10) | (rt.intensity_species < 0))[0]
+        print('\n\nThe indices are:\n', i)
+        print('\n\nintensity:\n', rt.intensity_species[i])
         np.save(dir+r'\I_species.npy', rt.intensity_species[i])
         np.save(dir+r'\e_species.npy', rt.e_species[:, i])
         np.save(dir+r'\de_species.npy', rt.de_species[:, i])
@@ -843,13 +846,9 @@ def calculatert(scale=1, background_intensity=0., species=True, dust=True, verbo
         np.save(dir+r'\a_species.npy', a_species[:, i])
         np.save(dir+r'\b_species.npy', b_species[:, i])
         
-    if (rt.intensity_dust > 10**10).any() or (rt.intensity_dust < -10).any():
         i = np.where((rt.intensity_dust > 10**10) | (rt.intensity_dust < 0))[0]
-        print('\n\nSome of the dust has either suspiciously large or negative intensities...')
         print('\n\nThe indices are:\n', i)
-        print('\n\nScale:', scale)
         print('\n\nintensity:\n', rt.intensity_dust[i])
-        dir = r'c:\users\cyani\KOSMA-tau^3\tests\full model'
         np.save(dir+r'\I_dust.npy', rt.intensity_dust[i])
         np.save(dir+r'\e_dust.npy', rt.e_dust[:, i])
         np.save(dir+r'\de_dust.npy', rt.de_dust[:, i])
@@ -857,6 +856,7 @@ def calculatert(scale=1, background_intensity=0., species=True, dust=True, verbo
         np.save(dir+r'\dk_dust.npy', rt.dk_dust[:, i])
         np.save(dir+r'\a_dust.npy', a_dust[:, i])
         np.save(dir+r'\b_dust.npy', b_dust[:, i])
+        
         input()
   
     return  # (intensity_species, intensity_dust)
