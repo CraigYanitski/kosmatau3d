@@ -188,7 +188,7 @@ def plotModel(plot='total intensity', ce=[], ie=[], grid=None,
 
 
 def PVplot(directory='', file='/channel_intensity.fits', latRange=[-np.pi/9,np.pi/9], species=[], dust=[], newMap=[],
-           save=False, verbose=False):
+           save=False, verbose=False, title=''):
     # Plot the PV diagram for the selected latitude range.
   
     channelMap = fits.open(directory+file)
@@ -243,8 +243,11 @@ def PVplot(directory='', file='/channel_intensity.fits', latRange=[-np.pi/9,np.p
     
     for i, i_transition in enumerate(i_species):
   
-        fig, ax = plt.subplots(1, 1, figsize=(15, 10))
-        intensityMap = speciesMap[:, i_min:i_max, :, i_transition].sum(1)
+        fig, ax = plt.subplots(1, 1, figsize=(8, 5))
+        intensityMap = speciesMap[:, i_min:i_max, :, i_transition]
+        i_bg = np.where(speciesMap[:, i_min:i_max, :, i_transition] == channelMap[2].data[:, i_min:i_max, :, 0])
+        intensityMap[i_bg] = np.nan
+        intensityMap = intensityMap.sum(1)
         if verbose:
             print(np.shape(vel), np.shape(lon), np.shape(intensityMap))
     
@@ -271,12 +274,15 @@ def PVplot(directory='', file='/channel_intensity.fits', latRange=[-np.pi/9,np.p
         # cm = ax.pcolormesh(longitude*180/np.pi, velocity, intensityMap.T, shading='nearest',
         #                    norm=colors.BoundaryNorm(boundaries=bounds, ncolors=50), cmap='jet')
         # cb = fig.colorbar(cm, extend='max', ax=ax, fraction=0.02, ticks=[0.03, 0.5, 2.5, 6, 10])
-        cb.ax.set_ylabel(r'Intensity $log_{10} \left( K \right)$', fontsize=20, labelpad=20, rotation=270)
+        cb.ax.set_ylabel(r'Intensity $K$', fontsize=20, labelpad=20, rotation=270)
     
         ax.invert_xaxis()
         ax.set_xlabel(r'Longitude $\left( ^\circ \right)$', fontsize=20)
         ax.set_ylabel(r'Velocity $\left( \frac{km}{s} \right)$', fontsize=20)
-        ax.set_title(r'{} galactic position-velocity diagram'.format(species[i]), fontsize=26)
+        if title:
+            ax.set_title(title, fontsize=26)
+        else:
+            ax.set_title(r'{} galactic position-velocity diagram'.format(species[i]), fontsize=26)
         if save:
             plt.savefig(directory+r'/plots/{}_pv_plot.png'.format(species[i].replace(' ', '_')))
             plt.close()

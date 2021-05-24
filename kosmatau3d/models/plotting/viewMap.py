@@ -295,7 +295,10 @@ class ViewMap(QApplication):
         
         if spe < self.species_length:
             self.SPE.setText('Species: {}'.format(self.species[spe]))
-            self.updatePlot(self.file[1].data[:, lat, :, spe].T, 'PV {}'.format(self.species[spe]), **kwargs)
+            i_bg = np.where(self.file[1].data[:, lat, :, spe] == self.file[2].data[:, lat, :, 0])
+            data = self.file[1].data[:, lat, :, spe]
+            data[i_bg] = np.nan
+            self.updatePlot(data.T, 'PV {}'.format(self.species[spe]), **kwargs)
         else:
             dust = spe-self.species_length
             self.SPE.setText('Dust: {}'.format(self.dust[dust]))
