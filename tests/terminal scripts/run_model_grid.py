@@ -12,7 +12,7 @@ print('KOSMA-tau^3')
 # Edit these parameters according to the model you want to produce.
 parameters = {
               # Model information
-              'history_path': r'/media/yanitski/4,0 TB Hard Disk/yanitski/projects/pdr/KT3_history',
+              'history_path': r'/media/4,0 TB Hard Disk/yanitski/projects/pdr/KT3_history',
               'directory': r'/MilkyWay',
               'x': 36,
               'y': 36,
@@ -39,20 +39,22 @@ parameters = {
               'globalUV': 10
               }
 
-for f_mass1 in [4.0]: # [0.5,1.0,2.0,4.0]:
+for f_mass1 in [0.5,1.0,2.0,4.0]:
   for f_mass2 in [1.0, 2.0]:
-    for f_density in [2.0, 4.0]: # [0.5, 1.0, 2.0, 4.0]:
+    for f_density in [0.5, 1.0, 2.0, 4.0]:
       for f_uv in [10, 100]:
 
           parameters['clumpMassFactor'] = [f_mass1, f_mass2]
           parameters['densityFactor'] = f_density
           parameters['globalUV'] = f_uv
 
+          print('\n\nr{}_cm{}-{}_d{}_uv{}\n\n'.format(parameters['resolution'], f_mass1, f_mass2, f_density, f_uv))
+
           kosma = models.Model(**parameters)
-          kosma.calculateModel(timed=timed, debug=debug, multiprocessing=0)
+          # kosma.calculateModel(timed=timed, debug=debug, multiprocessing=0)
 
           directory = parameters['history_path'] + parameters['directory'] \
                       + '/r{}_cm{}-{}_d{}_uv{}'.format(parameters['resolution'], f_mass1, f_mass2, f_density, f_uv)
-          models.radiativeTransfer.calculateObservation(directory=directory, dim='spherical', multiprocessing=10,
-                                                        slRange=[(-np.pi, np.pi), (-np.pi/120, np.pi/120)],
-                                                        nsl=[360, 3], terminal=True, debug=False)
+          models.radiativeTransfer.calculateObservation(directory=directory, dim='spherical', multiprocessing=5,
+                                                        slRange=[(-np.pi, np.pi), (-np.pi/90, np.pi/90)],
+                                                        nsl=[361, 5], terminal=True, debug=False)
