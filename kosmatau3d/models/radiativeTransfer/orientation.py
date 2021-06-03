@@ -15,6 +15,7 @@ import matplotlib.pyplot as plt
 # mpl.use('Qt4Agg')
 import scipy.interpolate as interpolate
 import scipy.optimize as op
+from scipy.special import erfi, erfc
 from astropy.io import fits
 from tqdm import tqdm
 
@@ -551,8 +552,8 @@ def setLOS(x=0, y=0, z=0, lon=0, lat=0, i_vox=[], i_vel=0, i_spe=None, i_dust=No
         d_lon[(lat > 1.0) | (lat < -1.0)] = np.pi
         d_lat = 0.5*np.arctan(height/radGrid)
         d_lat[(lat > 1.0) | (lat < -1.0)] = np.pi/2.
-        # iLoS = np.where((abs(lonGrid-x1LoS)<=dLon)&(abs(latGrid-x2LoS)<=dLat)&rt.i_vox)[0]
-        i_los = np.where((abs(lonGrid-x1LoS) <= d_lon) & (abs(latGrid-x2LoS) <= d_lat))[0]
+        i_los = np.where((abs(lonGrid-x1LoS) <= d_lon) & (abs(latGrid-x2LoS) <= d_lat) & rt.i_vox)[0]
+        # i_los = np.where((abs(lonGrid-x1LoS) <= d_lon) & (abs(latGrid-x2LoS) <= d_lat))[0]
     
     elif 'disk' in dim:
         x1LoS = y
@@ -693,15 +694,11 @@ def calculatert(scale=1, background_intensity=0., species=True, dust=True, verbo
     with warnings.catch_warnings():
         warnings.simplefilter('ignore')
         if species:
-            a_species = (rt.k_species[:-1, :] /
-                        np.sqrt(2*rt.dk_species.astype(np.complex_)))
-            b_species = ((rt.k_species[:-1, :] + rt.dk_species*scale) /
-                        np.sqrt(2*rt.dk_species.astype(np.complex_)))
+            a_species = (rt.k_species[:-1, :] / np.sqrt(2*np.abs(rt.dk_species)))
+            b_species = ((rt.k_species[:-1, :] + rt.dk_species*scale) / np.sqrt(2*np.abs(rt.dk_species)))
         if dust:
-            a_dust = (rt.k_dust[:-1, :] /
-                     np.sqrt(2*rt.dk_dust.astype(np.complex_)))
-            b_dust = ((rt.k_dust[:-1, :] + rt.dk_dust*scale) /
-                     np.sqrt(2*rt.dk_dust.astype(np.complex_)))
+            a_dust = (rt.k_dust[:-1, :] / np.sqrt(2*np.abs(rt.dk_dust)))
+            b_dust = ((rt.k_dust[:-1, :] + rt.dk_dust*scale) / np.sqrt(2*np.abs(rt.dk_dust)))
     
     if verbose:
         print(rt.k_species.shape[0])
@@ -743,8 +740,8 @@ def calculatert(scale=1, background_intensity=0., species=True, dust=True, verbo
             if keg_species.any():
                 if verbose:
                     print('\na, b:\n', a_species[i, :], '\n', b_species[i, :])
-                a_error = e_real(a_species[i, keg_species].real)
-                b_error = e_real(b_species[i, keg_species].real)
+                a_error = erfi(a_species[i, keg_species])
+                b_error = erfi(b_species[i, keg_species])
                 rt.intensity_species[keg_species] = (rt.de_species[i, keg_species]/rt.dk_species[i, keg_species]
                                                      * (1.-np.exp(-rt.k_species[i, keg_species]*scale
                                                                   - 0.5*rt.dk_species[i, keg_species]*scale**2.))
@@ -752,9 +749,7 @@ def calculatert(scale=1, background_intensity=0., species=True, dust=True, verbo
                                                         - rt.k_species[i, keg_species]*rt.de_species[i, keg_species])
                                                      / rt.dk_species[i, keg_species]
                                                      * np.sqrt(np.pi/2./np.abs(rt.dk_species[i, keg_species]))
-                                                     * (np.exp(a_species[i, keg_species].real**2.
-                                                               - b_species[i, keg_species].real**2.)*a_error
-                                                        - b_error)
+                                                     * np.exp(-b_species[i, keg_species]**2.) * (a_error - b_error)
                                                      + rt.intensity_species[keg_species]
                                                      * np.exp(-rt.k_species[i, keg_species]*scale
                                                               - 0.5*rt.dk_species[i, keg_species]*scale**2.))
@@ -762,8 +757,8 @@ def calculatert(scale=1, background_intensity=0., species=True, dust=True, verbo
             if kel_species.any():
                 if verbose:
                     print('\na, b:\n', a_species[i, :], '\n', b_species[i, :])
-                a_error = e_imag(a_species[i, :][kel_species].imag)
-                b_error = e_imag(b_species[i, :][kel_species].imag)
+                a_error = erfc(a_species[i, :][kel_species])
+                b_error = erfc(b_species[i, :][kel_species])
                 rt.intensity_species[kel_species] = (rt.de_species[i, kel_species]/rt.dk_species[i, kel_species]
                                                      * (1.-np.exp(-rt.k_species[i, kel_species]*scale
                                                                   - 0.5*rt.dk_species[i, kel_species]*scale**2.))
@@ -771,9 +766,7 @@ def calculatert(scale=1, background_intensity=0., species=True, dust=True, verbo
                                                         - rt.k_species[i, kel_species]*rt.de_species[i, kel_species])
                                                      / rt.dk_species[i, kel_species]
                                                      * np.sqrt(np.pi/2./np.abs(rt.dk_species[i, kel_species]))
-                                                     * (np.exp(a_species[i, kel_species].imag**2.
-                                                               - b_species[i, kel_species].imag**2.)*a_error
-                                                        - b_error)
+                                                     * np.exp(b_species[i, kel_species]**2.) * (a_error - b_error)
                                                      + rt.intensity_species[kel_species]
                                                      * np.exp(-rt.k_species[i, kel_species]*scale
                                                               - 0.5*rt.dk_species[i, kel_species]*scale**2.))
@@ -809,8 +802,8 @@ def calculatert(scale=1, background_intensity=0., species=True, dust=True, verbo
             if keg_dust.any():
                 if verbose:
                     print('\na, b:\n', a_dust[i, :], '\n', b_dust[i, :])
-                a_error = np.array(list(e_real(a_dust[i, keg_dust].real)))
-                b_error = np.array(list(e_real(b_dust[i, keg_dust].real)))
+                a_error = erfi(a_dust[i, keg_dust])
+                b_error = erfi(b_dust[i, keg_dust])
                 rt.intensity_dust[keg_dust] = (rt.de_dust[i, keg_dust]/rt.dk_dust[i, keg_dust]
                                                * (1.-np.exp(-rt.k_dust[i, keg_dust]*scale
                                                             - 0.5*rt.dk_dust[i, keg_dust]*scale**2.))
@@ -818,9 +811,7 @@ def calculatert(scale=1, background_intensity=0., species=True, dust=True, verbo
                                                   - rt.k_dust[i, keg_dust]*rt.de_dust[i, keg_dust])
                                                / rt.dk_dust[i, keg_dust]
                                                * np.sqrt(np.pi/2./np.abs(rt.dk_dust[i, keg_dust]))
-                                               * (np.exp(a_dust[i, keg_dust].real**2.
-                                                         - b_dust[i, keg_dust].real**2.)*a_error
-                                                  - b_error)
+                                               * np.exp(-b_dust[i, keg_dust]**2.) * (a_error - b_error)
                                                + rt.intensity_dust[keg_dust]
                                                * np.exp(-rt.k_dust[i, keg_dust]*scale
                                                         - 0.5*rt.dk_dust[i, keg_dust]*scale**2.))
@@ -828,8 +819,8 @@ def calculatert(scale=1, background_intensity=0., species=True, dust=True, verbo
             if kel_dust.any():
                 if verbose:
                     print('\na, b:\n', a_dust[i, :], '\n', b_dust[i, :])
-                a_error = np.array(list(e_imag(a_dust[i, kel_dust].imag)))
-                b_error = np.array(list(e_imag(b_dust[i, kel_dust].imag)))
+                a_error = erfc(a_dust[i, kel_dust])
+                b_error = erfc(b_dust[i, kel_dust])
                 rt.intensity_dust[kel_dust] = (rt.de_dust[i, kel_dust]/rt.dk_dust[i, kel_dust]
                                                * (1.-np.exp(-rt.k_dust[i, kel_dust]*scale
                                                             - 0.5*rt.dk_dust[i, kel_dust]*scale**2.))
@@ -837,9 +828,7 @@ def calculatert(scale=1, background_intensity=0., species=True, dust=True, verbo
                                                   - rt.k_dust[i, kel_dust]*rt.de_dust[i, kel_dust])
                                                / rt.dk_dust[i, kel_dust]
                                                * np.sqrt(np.pi/2./np.abs(rt.dk_dust[i][kel_dust]))
-                                               * (np.exp(a_dust[i, kel_dust].imag**2.
-                                                         - b_dust[i, kel_dust].imag**2.)*a_error
-                                                  - b_error)
+                                               * np.exp(b_dust[i, kel_dust]**2.) * (a_error - b_error)
                                                + rt.intensity_dust[kel_dust]
                                                * np.exp(-rt.k_dust[i, kel_dust]*scale
                                                         - 0.5*rt.dk_dust[i, kel_dust]*scale**2.))
@@ -848,43 +837,43 @@ def calculatert(scale=1, background_intensity=0., species=True, dust=True, verbo
         print('Species intensity shape:', np.shape(rt.intensity_species))
         print('Dust intensity shape:', np.shape(rt.intensity_dust))
         
-    if (rt.intensity_species > 10**10).any() or (rt.intensity_species < 0).any():
-        
-        print('\n\nSome of the species have either suspiciously large or negative intensities...')
-
-        dir = r'c:\users\cyani\KOSMA-tau^3\tests\full model'
-        
-        i = np.where((rt.intensity_species > 10**10) | (rt.intensity_species < 0))[0]
-        print('The indices are:', i)
-        print('intensity:', rt.intensity_species[i])
-        print('\n')
-        np.save(dir+r'\ds_species.npy', scale)
-        np.save(dir+r'\I_species.npy', rt.intensity_species[i])
-        np.save(dir+r'\e_species.npy', rt.e_species[:, i])
-        np.save(dir+r'\de_species.npy', rt.de_species[:, i])
-        np.save(dir+r'\k_species.npy', rt.k_species[:, i])
-        np.save(dir+r'\dk_species.npy', rt.dk_species[:, i])
-        np.save(dir+r'\a_species.npy', a_species[:, i])
-        np.save(dir+r'\b_species.npy', b_species[:, i])
-
-    if (rt.intensity_dust > 10**10).any() or (rt.intensity_dust < 0).any():
-
-        print('\n\nSome of the dust has either suspiciously large or negative intensities...')
-
-        dir = r'c:\users\cyani\KOSMA-tau^3\tests\full model'
-        
-        i = np.where((rt.intensity_dust > 10**10) | (rt.intensity_dust < 0))[0]
-        print('The indices are:', i)
-        print('intensity:', rt.intensity_dust[i])
-        print('\n')
-        np.save(dir+r'\ds_dust.npy', scale)
-        np.save(dir+r'\I_dust.npy', rt.intensity_dust[i])
-        np.save(dir+r'\e_dust.npy', rt.e_dust[:, i])
-        np.save(dir+r'\de_dust.npy', rt.de_dust[:, i])
-        np.save(dir+r'\k_dust.npy', rt.k_dust[:, i])
-        np.save(dir+r'\dk_dust.npy', rt.dk_dust[:, i])
-        np.save(dir+r'\a_dust.npy', a_dust[:, i])
-        np.save(dir+r'\b_dust.npy', b_dust[:, i])
+    # if (rt.intensity_species > 10**10).any() or (rt.intensity_species < 0).any():
+    #
+    #     print('\n\nSome of the species have either suspiciously large or negative intensities...')
+    #
+    #     dir = r'c:\users\cyani\KOSMA-tau^3\tests\full model'
+    #
+    #     i = np.where((rt.intensity_species > 10**10) | (rt.intensity_species < 0))[0]
+    #     print('The indices are:', i)
+    #     print('intensity:', rt.intensity_species[i])
+    #     print('\n')
+    #     np.save(dir+r'\ds_species.npy', scale)
+    #     np.save(dir+r'\I_species.npy', rt.intensity_species[i])
+    #     np.save(dir+r'\e_species.npy', rt.e_species[:, i])
+    #     np.save(dir+r'\de_species.npy', rt.de_species[:, i])
+    #     np.save(dir+r'\k_species.npy', rt.k_species[:, i])
+    #     np.save(dir+r'\dk_species.npy', rt.dk_species[:, i])
+    #     np.save(dir+r'\a_species.npy', a_species[:, i])
+    #     np.save(dir+r'\b_species.npy', b_species[:, i])
+    #
+    # if (rt.intensity_dust > 10**10).any() or (rt.intensity_dust < 0).any():
+    #
+    #     print('\n\nSome of the dust has either suspiciously large or negative intensities...')
+    #
+    #     dir = r'c:\users\cyani\KOSMA-tau^3\tests\full model'
+    #
+    #     i = np.where((rt.intensity_dust > 10**10) | (rt.intensity_dust < 0))[0]
+    #     print('The indices are:', i)
+    #     print('intensity:', rt.intensity_dust[i])
+    #     print('\n')
+    #     np.save(dir+r'\ds_dust.npy', scale)
+    #     np.save(dir+r'\I_dust.npy', rt.intensity_dust[i])
+    #     np.save(dir+r'\e_dust.npy', rt.e_dust[:, i])
+    #     np.save(dir+r'\de_dust.npy', rt.de_dust[:, i])
+    #     np.save(dir+r'\k_dust.npy', rt.k_dust[:, i])
+    #     np.save(dir+r'\dk_dust.npy', rt.dk_dust[:, i])
+    #     np.save(dir+r'\a_dust.npy', a_dust[:, i])
+    #     np.save(dir+r'\b_dust.npy', b_dust[:, i])
   
     return  # (intensity_species, intensity_dust)
 
