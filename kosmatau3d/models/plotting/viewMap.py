@@ -75,7 +75,10 @@ class ViewMap(QApplication):
           num=self.file[1].header['NAXIS4'])
         self.lonGrid, self.latGrid = np.meshgrid(self.longitude, self.latitude)
         self.velPV, self.lonPV = np.meshgrid(self.velocity, self.longitude)
-        self.species_intensity_integrated = np.trapz(self.file[1].data, self.velocity, axis=0)
+        print(self.file[1].shape, self.file[2].shape)
+        self.species_intensity_integrated = np.trapz([self.file[1].data[:, :, :, i] - self.file[2].data[:, :, :, 0]
+                                                      for i in range(self.file[1].shape[3])],
+                                                     self.velocity, axis=1)
         self.dust_intensity_integrated = np.trapz(self.file[2].data, self.velocity, axis=0)
         self.species = self.file[1].header['SPECIES'].split(', ')
         self.species_length = len(self.species)
@@ -276,7 +279,7 @@ class ViewMap(QApplication):
         
         if spe < self.species_length:
             self.SPE.setText('Species: {}'.format(self.species[spe]))
-            self.updatePlot(self.species_intensity_integrated[:, :, spe], 'integrated {}'.format(self.species[spe]),
+            self.updatePlot(self.species_intensity_integrated[spe, :, :], 'integrated {}'.format(self.species[spe]),
                             **kwargs)
         else:
             dust = spe-self.species_length
@@ -331,12 +334,12 @@ class ViewMap(QApplication):
                 self.minI.setValue(vmin)
                 self.maxI.setValue(vmax)
             ax = self.fig.add_axes((0.1, 0.1, 0.8, 0.9))
-            cm = ax.pcolormesh(self.lonPV*180/np.pi, self.velPV, data,
-                               norm=colors.SymLogNorm(linthresh=0.1, vmin=vmin, vmax=vmax), cmap=self.cmappv)
+            cm = ax.pcolormesh(self.lonPV*180/np.pi, self.velPV, data, shading='auto',
+                               norm=colors.SymLogNorm(linthresh=0.1, vmin=vmin, vmax=vmax, base=10), cmap=self.cmappv)
         else:
             ax = self.fig.add_axes((0.1, 0.1, 0.8, 0.9), projection='mollweide')
-            cm = ax.pcolormesh(self.lonGrid, self.latGrid, data,
-                               norm=colors.SymLogNorm(linthresh=0.1, vmin=vmin, vmax=vmax), cmap=self.cmap)
+            cm = ax.pcolormesh(self.lonGrid, self.latGrid, data, shading='auto',
+                               norm=colors.SymLogNorm(linthresh=0.1, vmin=vmin, vmax=vmax, base=10), cmap=self.cmap)
         # cm = ax.imshow(data, extent=(-np.pi, np.pi, -np.pi/2, np.pi/2),
         #                norm=colors.SymLogNorm(linthresh=0.1, vmin=vmin, vmax=vmax), cmap='cubehelix')
         cb = self.fig.colorbar(cm, ax=ax, fraction=0.02)
