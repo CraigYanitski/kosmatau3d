@@ -12,7 +12,7 @@ print('KOSMA-tau^3')
 # Edit these parameters according to the model you want to produce.
 parameters = {
               # Model information
-              'history_path': r'/media/4,0 TB Hard Disk/yanitski/projects/pdr/KT3_history',
+              'history_path': r'/media/hpc_backup/yanitski/projects/pdr/KT3_history',
               'directory': r'/MilkyWay',
               'x': 36,
               'y': 36,
@@ -39,22 +39,33 @@ parameters = {
               'globalUV': 10
               }
 
-for f_mass1 in [0.5,1.0,2.0,4.0]:
-  for f_mass2 in [1.0, 2.0]:
-    for f_density in [0.5, 1.0, 2.0, 4.0]:
-      for f_uv in [10, 100]:
+f_mass1 = 1.0
+f_mass2 = 1.0
+f_density = 1.0
+f_uv = 10
+mass_cl = [0, 2]
+mass_icl = [-2]
 
-          parameters['clumpMassFactor'] = [f_mass1, f_mass2]
-          parameters['densityFactor'] = f_density
-          parameters['globalUV'] = f_uv
+for f_mass1 in [0.5, 1.0, 2.0, 4.0]:
+    for mass_cl in [[-1, 2], [-1, 3], [0, 2], [0, 3]]:
+  # for f_mass2 in [0.5, 1.0, 2.0, 4.0]:
+  #   for f_density in [0.5, 1.0, 2.0, 4.0]:
+  #     for f_uv in [10, 100]:
 
-          print('\n\nr{}_cm{}-{}_d{}_uv{}\n\n'.format(parameters['resolution'], f_mass1, f_mass2, f_density, f_uv))
+        parameters['clumpMassFactor'] = [f_mass1, f_mass2]
+        parameters['clumpMassRange'] = [mass_cl, mass_icl]
+        parameters['clumpMassNumber'] = [len(mass_cl), len(mass_icl)]
+        parameters['densityFactor'] = f_density
+        parameters['globalUV'] = f_uv
 
-          kosma = models.Model(**parameters)
-          # kosma.calculateModel(timed=timed, debug=debug, multiprocessing=0)
 
-          directory = parameters['history_path'] + parameters['directory'] \
-                      + '/r{}_cm{}-{}_d{}_uv{}'.format(parameters['resolution'], f_mass1, f_mass2, f_density, f_uv)
-          models.radiativeTransfer.calculateObservation(directory=directory, dim='spherical', multiprocessing=5,
-                                                        slRange=[(-np.pi, np.pi), (-np.pi/90, np.pi/90)],
-                                                        nsl=[361, 5], terminal=True, debug=False)
+        kosma = models.Model(**parameters)
+        models.constants.history = 'r{}_fcm{}_cm{}/'.format(int(models.constants.voxel_size),
+                                                            f_mass1, '_'.join(str(f) for f in mass_cl))
+        print('\n\n    Model {}\n\n'.format(models.constants.history))
+        kosma.calculateModel(timed=timed, debug=debug, multiprocessing=0)
+
+        directory = parameters['history_path'] + parameters['directory'] + '/' + models.constants.history
+        models.radiativeTransfer.calculateObservation(directory=directory, dim='spherical', multiprocessing=5,
+                                                      slRange=[(-np.pi, np.pi), (-2*np.pi/90, 2*np.pi/90)],
+                                                      nsl=[361, 5], terminal=True, debug=False)
