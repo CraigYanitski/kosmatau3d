@@ -45,6 +45,7 @@ class VoxelGrid(object):
     
         self.__voxelMass = []
         self.__voxelDensity = []
+        self.__voxelCRIR = []
         self.__voxelFUV = []
         self.__voxelFUVabsorption = []
         
@@ -132,7 +133,13 @@ class VoxelGrid(object):
     
         # FUV
         FUV = interpolations.interpolateFUVfield(rPol, Z)/constants.normUV*constants.globalUV
-        FUV = [np.clip(FUV, 1, None).mean(), 1]
+        FUV = [np.clip(FUV, 1, None).mean(), constants.fuv_ism]
+
+        # CRIR
+        if rPol.mean() >= constants.r_cmz:
+            crir = constants.zeta_sol
+        else:
+            crir = constants.zeta_cmz
         
         # Save the properties in private lists
         self.__voxelVelocities.append(velocity)
@@ -140,6 +147,7 @@ class VoxelGrid(object):
         self.__voxelMass.append(ensembleMass)
         self.__voxelDensity.append(ensembleDensity)
         self.__voxelFUV.append(FUV)
+        self.__voxelCRIR.append(crir)
     
         self.__properties = {
             # Model parameters
@@ -150,7 +158,8 @@ class VoxelGrid(object):
             'ensembleDispersion': ensembleDispersion,
             'ensembleMass': ensembleMass,
             'ensembleDensity': ensembleDensity,
-            'FUV': FUV
+            'FUV': FUV,
+            'crir': crir
             }
     
         return

@@ -150,7 +150,7 @@ class Voxel(object):
     def setProperties(self, voxel_size=1, molecules='all', dust='PAH', alpha=1.84, gamma=2.31, clumpMassNumber=[3,1],
                       clumpMassRange=[[0,2],[-2]], clumpNmax=[1, 100], velocityRange=[-10,10], velocityNumber=51,
                       ensembleMass=100, velocity=0., ensembleDispersion=1, volumeFactor=None,
-                      ensembleDensity=[15000, 1911], FUV=[20000, 1], fromGrid=False, timed=False):
+                      ensembleDensity=[15000, 1911], FUV=[20000, 1], crir=2e-16, fromGrid=False, timed=False):
         '''
           This method calculates the radii assuming an origin of (0,0). It then averages
          over a subgrid of 3x3. It might be improved later by having functionality to
@@ -215,6 +215,8 @@ class Voxel(object):
          FUV: The FUV field of the voxel. All clumps are isotropically radiated with this
               field. It is different from and overridden by any default FUV field specified
               in the constants module. The default is 20000 Draine units.
+         crir: The primary cosmic ray ionisation rate with respect to molecular hydrogen (zeta_H2). By default,
+               the local rate is used (2e-16).
     
          GENERAL FLAGS
     
@@ -297,6 +299,8 @@ class Voxel(object):
                 self.__FUV = FUV
             else:
                 self.__FUV = [FUV] * len(clumpMassNumber)
+
+            self.__crir = crir
       
             velocity = self.__velocity
     
@@ -307,7 +311,7 @@ class Voxel(object):
             # if density[i]=='auto': density[i] = self.__ensembleDensity
             # if fuv[i]==None: fuv[i] = self.__FUV
     
-        masspoints.setMasspointData(density=self.__ensembleDensity, FUV=self.__FUV)
+        masspoints.setMasspointData(density=self.__ensembleDensity, FUV=self.__FUV, crir=self.__crir)
         ensemble.initialise(ensembledispersion=self.__ensembleDispersion, ensemblemass=self.__ensembleMass)
         combinations.initialise(clumpcombination=[ensemble.clumpCombinations[ens][ensemble.clumpLargestIndex[ens]]
                                                   for ens in range(len(constants.clumpMassNumber))])
