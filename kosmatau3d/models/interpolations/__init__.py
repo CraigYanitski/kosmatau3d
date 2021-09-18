@@ -70,13 +70,13 @@ def interpolateIntensity(points, verbose=False):
                 if constants.interpolation == 'linear':
                     intensity[i] = (10**(intensityInterpolation[i](points)/10))
                 elif constants.interpolation == 'radial' or interpolation == 'cubic':
-                    intensity[i] = (10**(intensityInterpolation[i](points[0], points[1], points[2])/10))
+                    intensity[i] = (10**(intensityInterpolation[i](points[0], points[1], points[2], points[3])/10))
             
             else:
                 if constants.interpolation == 'linear':
                     intensity[i] = (10**intensityInterpolation[i](points))
                 elif constants.interpolation == 'radial' or interpolation == 'cubic':
-                    intensity[i] = (10**intensityInterpolation[i](points[0], points[1], points[2]))
+                    intensity[i] = (10**intensityInterpolation[i](points[0], points[1], points[2], points[3]))
             # if (np.isnan(intensity[i]) or intensity[i]==0):
             #   intensity[i] = 10**-100
             # intensity[i] *= 2*constants.kB/4/np.pi/species.moleculeWavelengths[i]**2/10**-26
@@ -103,13 +103,13 @@ def interpolateTau(points, verbose=False):
                 if constants.interpolation == 'linear':
                     tau[i] = (10**(tauInterpolation[i](points)/10))
                 elif constants.interpolation == 'radial' or interpolation == 'cubic':
-                    tau[i] = (10**(tauInterpolation[i](points[0], points[1], points[2])/10))
+                    tau[i] = (10**(tauInterpolation[i](points[0], points[1], points[2], points[3])/10))
             
             else:
                 if constants.interpolation == 'linear':
                     tau[i] = (10**tauInterpolation[i](points))
                 elif constants.interpolation == 'radial' or interpolation == 'cubic':
-                    tau[i] = (10**tauInterpolation[i](points[0], points[1], points[2]))
+                    tau[i] = (10**tauInterpolation[i](points[0], points[1], points[2], points[3]))
             # if np.isnan(tau[i]): tau[i] = 10**-100
             if (tau[i] <= 0):
                 # temp = tau[-1]
@@ -140,7 +140,7 @@ def interpolateDustIntensity(points, verbose=False):
                 intensity.append(10**(dust(points)[0]/10))
         
         elif constants.interpolation == 'radial' or interpolation == 'cubic':
-            intensity = (10**(dustIntensityInterpolation(points[0], points[1], points[2])/10))
+            intensity = (10**(dustIntensityInterpolation(points[0], points[1], points[2], points[3])/10))
     
     else:
         if constants.interpolation == 'linear':
@@ -149,7 +149,7 @@ def interpolateDustIntensity(points, verbose=False):
                 intensity.append(10**(dust(points)[0]))
     
         elif constants.interpolation == 'radial' or interpolation == 'cubic':
-            intensity = (10**dustIntensityInterpolation(points[0], points[1], points[2]))
+            intensity = (10**dustIntensityInterpolation(points[0], points[1], points[2], points[3]))
     
     intensity = np.asarray(intensity) * 10**-26 * constants.wavelengths[constants.nDust]**2/2/constants.kB
   
@@ -167,7 +167,7 @@ def interpolateDustTau(points, verbose=False):
                 tau.append(10**(dust(points)[0]/10))
   
         elif constants.interpolation == 'radial' or interpolation == 'cubic':
-            tau = (10**(dustTauInterpolation(points[0], points[1], points[2])/10))
+            tau = (10**(dustTauInterpolation(points[0], points[1], points[2], points[3])/10))
     
     else:
         if constants.interpolation == 'linear':
@@ -176,7 +176,7 @@ def interpolateDustTau(points, verbose=False):
                 tau.append(10**(dust(points)[0]))
     
         elif constants.interpolation == 'radial' or interpolation == 'cubic':
-            tau = (10**dustTauInterpolation(points[0], points[1], points[2]))
+            tau = (10**dustTauInterpolation(points[0], points[1], points[2], points[3]))
     # if np.isnan(tau[-1]): tau[-1] = 10**-100
     # elif tau[-1]<=0:
     #   temp = tau[-1]

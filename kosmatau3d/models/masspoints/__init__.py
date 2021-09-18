@@ -8,7 +8,7 @@ from kosmatau3d.models import constants
 
 # Properties
 
-
+logCRIR = 0
 logFUV = [0 for _ in range(len(constants.clumpMassNumber))]
 
 clumpLogDensity = [np.zeros(constants.clumpMassNumber[_]) for _ in range(len(constants.clumpMassNumber))]

@@ -20,11 +20,14 @@ an future update to perform the interpolation for all species at the same time.
 '''
 
 
-def setMasspointData(density=[], FUV=[0]):
+def setMasspointData(density=[], FUV=[0], crir=2e-16):
     '''
     This sets the information for the masspoints used in a given voxel. The density should be in units of
     cm^-3, and the FUV field should be in units of the Draine field (2.7 * 10^-3 erg cm^-2)
     '''
+
+    masspoints.logCRIR = np.log10(crir)
+
     for ens in range(constants.ensembles):
         masspoints.clumpLogDensity[ens] = np.log10(10.**(constants.clumpLogMass[ens]*(1-3./constants.gamma)) *
                                                    (10.**(constants.clumpLogMass[ens] *
@@ -114,7 +117,8 @@ def calculateEmission(tauFUV=0, timed=False):
     for ens in range(constants.ensembles):
         for i in range(constants.clumpLogMass[ens].size):
             t0 = time()
-            gridpoint = [masspoints.clumpLogDensity[ens][0, i],
+            gridpoint = [masspoints.logCRIR,
+                         masspoints.clumpLogDensity[ens][0, i],
                          constants.clumpLogMass[ens][0, i],
                          masspoints.logFUV[ens]]
             masspointEmission(gridpoint, ens, i)

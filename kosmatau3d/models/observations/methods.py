@@ -32,7 +32,7 @@ def initialise():
 # G R I D
 
 
-def tbCenterline(file='Tb_linecentre.dat'):
+def tbCenterline(file='clump_Tmb_LineCenter.dat'):
     # Open file for KOSMA-tau simulations of line intensities
     # FORMAT: n, M, UV, intensity[molecules then dust]
     header = []
@@ -46,15 +46,15 @@ def tbCenterline(file='Tb_linecentre.dat'):
             species.append('{} {}'.format(molecule.split(' ')[0], transition))
     constants.setupMolecules(np.array(species))
     tb = np.genfromtxt(constants.GRIDPATH+file)
-    observations.tbCenterline = (tb[:, :3], tb[:, 3:])
+    observations.tbCenterline = (tb[:, :4], tb[:, 4:])
     return
 
 
-def tauCenterline(file='tau_linecentre.dat'):
+def tauCenterline(file='clump_tau_LineCenter.dat'):
     # Open file for KOSMA-tau simulations of optical depths
     # FORMAT: n, M, UV, tau[molecules then dust]
     tau = np.genfromtxt(constants.GRIDPATH+file)
-    observations.tauCenterline = (tau[:, :3], tau[:, 3:])
+    observations.tauCenterline = (tau[:, :4], tau[:, 4:])
     return
 
 

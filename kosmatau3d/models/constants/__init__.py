@@ -37,6 +37,12 @@ clumpMassFactor = [1]
 densityFactor = [1]
 FUVFactor = [1]
 
+# CMZ cosmic ray ionisation rate (zeta_H2)
+r_cmz = 0
+zeta_cmz = 1e-14
+zeta_sol = 2e-16
+fuv_ism = 1
+
 # Standard constants
 massH = 1.007276466812*1.6605*10**-27  # in [kg]
 massSolar = 1.98852*10**30  # in [kg]

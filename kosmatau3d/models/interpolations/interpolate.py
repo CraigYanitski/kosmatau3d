@@ -45,8 +45,8 @@ def calculateGridInterpolation(verbose=False):
     '''
     np.seterr(divide='ignore', invalid='ignore')
     # indeces = species.molecules.getFileIndeces()
-    nmuvI,I = observations.tbCenterline
-    nmuvTau,Tau = observations.tauCenterline
+    crnmuvI, I = observations.tbCenterline
+    crnmuvTau, Tau = observations.tauCenterline
     intensityInterpolation = []
     tauInterpolation = []
     
@@ -65,41 +65,41 @@ def calculateGridInterpolation(verbose=False):
     
     else:
         # Begin 'decoding' the grid for interpolation
-        nmuvI /= 10.
-        nmuvTau /= 10.
+        crnmuvI /= 10.
+        crnmuvTau /= 10.
   
     if constants.interpolation == 'linear':
         if constants.dust:
             interpolations.dustIntensityInterpolation = []
             interpolations.dustTauInterpolation = []
             for i in np.where(constants.nDust)[0]:
-                interpolations.dustIntensityInterpolation.append(interpolate.LinearNDInterpolator(nmuvI,
+                interpolations.dustIntensityInterpolation.append(interpolate.LinearNDInterpolator(crnmuvI,
                                                                                                   logI[:, constants.moleculeNumber+i]))
-                interpolations.dustTauInterpolation.append(interpolate.LinearNDInterpolator(nmuvTau,
+                interpolations.dustTauInterpolation.append(interpolate.LinearNDInterpolator(crnmuvTau,
                                                                                             logTau[:, constants.moleculeNumber+i]))
         for index in species.moleculeIndeces:
             if verbose:
                 print('Creating intensity grid interpolation')
-            rInterpI = interpolate.LinearNDInterpolator(nmuvI, logI[:, index])
+            rInterpI = interpolate.LinearNDInterpolator(crnmuvI, logI[:, index])
             if verbose:
                 print('Creating tau grid interpolation')
-            rInterpTau = interpolate.LinearNDInterpolator(nmuvTau, logTau[:, index])
+            rInterpTau = interpolate.LinearNDInterpolator(crnmuvTau, logTau[:, index])
             intensityInterpolation.append(rInterpI)
             tauInterpolation.append(rInterpTau)
         return intensityInterpolation, tauInterpolation
   
     elif constants.interpolation == 'radial' or constants.interpolation == 'cubic':
         if constants.dust:
-            interpolations.dustIntensityInterpolation = interpolate.Rbf(nmuvI[:, 0], nmuvI[:, 1], nmuvI[:, 2],
+            interpolations.dustIntensityInterpolation = interpolate.Rbf(crnmuvI[:, 0], crnmuvI[:, 1], crnmuvI[:, 2], crnmuvI[:, 3],
                                                                         logI[:, constants.moleculeNumber:][:, constants.nDust])
-            interpolations.dustTauInterpolation = interpolate.Rbf(nmuvTau[:, 0], nmuvTau[:, 1], nmuvTau[:, 2], logTau[:, constants.moleculeNumber:][:, constants.nDust])
+            interpolations.dustTauInterpolation = interpolate.Rbf(crnmuvTau[:, 0], crnmuvTau[:, 1], crnmuvTau[:, 2], crnmuvTau[:, 3], logTau[:, constants.moleculeNumber:][:, constants.nDust])
         for index in species.moleculeIndeces:
             if verbose:
                 print('Creating intensity grid interpolation')
-            rInterpI = interpolate.Rbf(nmuvI[:, 0], nmuvI[:, 1], nmuvI[:, 2], logI[:, index])
+            rInterpI = interpolate.Rbf(crnmuvI[:, 0], crnmuvI[:, 1], crnmuvI[:, 2], crnmuvI[:, 3], logI[:, index])
             if verbose:
                 print('Creating tau grid interpolation')
-            rInterpTau = interpolate.Rbf(nmuvTau[:, 0], nmuvTau[:, 1], nmuvTau[:, 2], logTau[:, index])
+            rInterpTau = interpolate.Rbf(crnmuvTau[:, 0], crnmuvTau[:, 1], crnmuvTau[:, 2], crnmuvTau[:, 3], logTau[:, index])
             intensityInterpolation.append(rInterpI)
             tauInterpolation.append(rInterpTau)
         return intensityInterpolation, tauInterpolation
