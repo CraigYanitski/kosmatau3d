@@ -63,7 +63,7 @@ for folder,params in zip(folders, parameters):
         PRINT=True,
         )
 
-    plot_comparison(
+    comp.plot_comparison(
         file_format=folder.replace('/', ''),
         missions=mission,
         model_param=params,
