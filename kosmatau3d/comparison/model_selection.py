@@ -1542,6 +1542,14 @@ def plot_comparison(path='/mnt/hpc_backup/yanitski/projects/pdr/KT3_history/Milk
 
             transitions = os.listdir(path + survey + '/' + survey_file + '/')
 
+            transitions_skipped = []
+            for t in transitions:
+                if len(os.listdir(path + survey + '/' + survey_file + '/' + t + '/')) == 0:
+                    transitions.remove(t)
+                    transitions_skipped.append(t)
+            if len(transitions_skipped):
+                print('  transitions {} not available.'.format(', '.join(transitions_skipped)))
+
             for i in range(log_likelihood.shape[0]):
                 for j in range(log_likelihood.shape[1]):
 
