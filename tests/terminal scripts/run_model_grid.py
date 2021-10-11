@@ -12,8 +12,9 @@ print('KOSMA-tau^3')
 # Edit these parameters according to the model you want to produce.
 parameters = {
               # Model information
-              'history_path': r'/media/hpc_backup/yanitski/projects/pdr/KT3_history',
+              'history_path': r'/mnt/hpc_backup/yanitski/projects/pdr/KT3_history',
               'directory': r'/MilkyWay',
+              'folder': '',
               'x': 36,
               'y': 36,
               'z': 0,
@@ -37,7 +38,12 @@ parameters = {
               'FUVfactor': 1,
               'densityFactor': 1,
               'globalUV': 10,
-              'r_cmz': 0
+              'r_cmz': 0,
+
+              # Logging
+              'timed': False,
+              'debug': False,
+              'verbose': False
               }
 
 f_mass1 = 1.0
@@ -49,26 +55,33 @@ mass_icl = [-2]
 r_cmz = 0
 models.constants.fuv_ism = 2
 
-for r_cmz in np.arange(0, 3000, 200, dtype=np.int):
-    # for f_mass2 in [0.25, 0.5, 1.0, 2.0, 4.0]:
-    #     for f_mass2 in [0.5, 1.0, 2.0, 4.0]:
-    #         for f_density in [0.5, 1.0, 2.0, 4.0]:
-    #             for f_uv in [10, 100]:
+for resolution in [500]:
+        # for f_mass1 in [0.25, 0.5, 1.0, 2.0, 4.0]:
+        #     for f_mass2 in [0.25, 0.5, 1.0, 2.0, 4.0]:
+        # if (mass_icl == [-2]) and not (f_mass2 == 4.0):
+        #     continue
+        # for mass_cl in [[0, 2], [0, 3], [-1, 2], [-1, 3]]:
+        #     for mass_icl in [[-2], [-3, -2], [-3, -1], [-2, -1]]:
+        #         for r_cmz in np.arange(2200, 3001, 200, dtype=np.int):
+        #             for f_uv in [10, 50, 100]:
+        #                 for f_density in [0.5, 1.0, 2.0, 4.0]:
+        #                     for f_uv in [10, 100]:
 
+        parameters['resolution'] = resolution
         parameters['clumpMassFactor'] = [f_mass1, f_mass2]
         parameters['clumpMassRange'] = [mass_cl, mass_icl]
         parameters['clumpMassNumber'] = [len(mass_cl), len(mass_icl)]
         parameters['densityFactor'] = f_density
         parameters['globalUV'] = f_uv
         parameters['r_cmz'] = r_cmz
+        parameters['folder'] = 'r{}/'.format(int(resolution))
 
 
         kosma = models.Model(**parameters)
-        models.constants.history = 'r{}_rcmz{}/'.format(int(models.constants.voxel_size), r_cmz)
-        print('\n\n    Model {}\n\n'.format(models.constants.history))
-        kosma.calculateModel(timed=timed, debug=debug, multiprocessing=0)
+        print('    Model {}'.format(models.constants.history))
+        kosma.calculateModel(multiprocessing=0)
 
-        directory = parameters['history_path'] + parameters['directory'] + '/' + models.constants.history
-        models.radiativeTransfer.calculateObservation(directory=directory, dim='spherical', multiprocessing=8,
-                                                      slRange=[(-np.pi, np.pi), (-2*np.pi/90, 2*np.pi/90)],
+        directory = parameters['history_path'] + parameters['directory'] + '/' + parameters['folder']
+        models.radiativeTransfer.calculateObservation(directory=directory, dim='spherical', multiprocessing=6,
+                                                      slRange=[(-np.pi, np.pi), (-2*np.pi/180, 2*np.pi/180)],
                                                       nsl=[361, 5], terminal=True, debug=False)
