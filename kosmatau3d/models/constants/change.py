@@ -1,3 +1,4 @@
+import os
 import numpy as np
 from copy import copy
 
@@ -111,9 +112,17 @@ def changeMassFunctionParameters(alpha=1.84, gamma=2.31):
 
 
 def changeDirectory(direc):
+
     constants.directory = direc
     if constants.directory[-1] != '/':
         constants.directory = constants.directory + '/'
+
+    directory = constants.HISTORYPATH + constants.directory + constants.history
+
+    # os.chmod(constants.HISTORYPATH, 0o777)
+    if not os.path.exists(directory):
+        os.makedirs(directory)
+
     return
 
 

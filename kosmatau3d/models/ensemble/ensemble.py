@@ -176,7 +176,8 @@ def createCombinationObjects(ensembleDispersion, dtype=np.float64, verbose=False
                                            constants.voxel_size**2/normalise/renormalise)
         clumpSurfaceProbability[:, i_undef] = 0
         if (clumpSurfaceProbability >= 1).any():  # increase voxel size if the clumps are too large
-            print('resize')
+            if verbose:
+                print('resize')
             # Comment out to prevent strange rounding feature in self-absorption
             # resize = np.ceil(np.pi*masspoints.clumpRadius[ens].max()**2/constants.voxel_size**2/normalise)
             resize = np.array(np.pi*masspoints.clumpRadius[ens].max()**2/constants.voxel_size**2/normalise/renormalise)
@@ -407,7 +408,7 @@ def createCombinationObjects(ensembleDispersion, dtype=np.float64, verbose=False
                     print('Probability length:', len(probability), ', last element shape:', probability[-1].shape)
                     input()
             if (np.array(probability[-1]) == np.nan).any():
-                print('\nThere is an invalid probability:', probability[-1], '\n')
+                print('\n\nThere is an invalid probability:', probability[-1], '\n\n')
                 input()
             # print(probabilityList, probability)
             probabilityList.append(np.array(probability))

@@ -5,6 +5,7 @@ from time import time
 import numpy as np
 from numba import jit
 from scipy.interpolate import interp1d
+from logging import getLogger
 
 from kosmatau3d.models import (
   constants,
@@ -150,7 +151,8 @@ class Voxel(object):
     def setProperties(self, voxel_size=1, molecules='all', dust='PAH', alpha=1.84, gamma=2.31, clumpMassNumber=[3,1],
                       clumpMassRange=[[0,2],[-2]], clumpNmax=[1, 100], velocityRange=[-10,10], velocityNumber=51,
                       ensembleMass=100, velocity=0., ensembleDispersion=1, volumeFactor=None,
-                      ensembleDensity=[15000, 1911], FUV=[20000, 1], crir=2e-16, fromGrid=False, timed=False):
+                      ensembleDensity=[15000, 1911], FUV=[20000, 1], crir=2e-16, fromGrid=False,
+                      timed=False, verbose=False, debug=False):
         '''
           This method calculates the radii assuming an origin of (0,0). It then averages
          over a subgrid of 3x3. It might be improved later by having functionality to
@@ -227,6 +229,14 @@ class Voxel(object):
     
         '''
         # print('Voxel instance initialised')
+
+        self.__logger = getLogger(__name__)
+        if debug:
+            self.__logger.setLevel('DEBUG')
+        elif verbose:
+            self.__logger.setLevel('INFO')
+        else:
+            self.__logger.setLevel('WARNING')
         
         if timed:
             t0 = time()
@@ -266,7 +276,7 @@ class Voxel(object):
             
             if timed:
                 t1 = time()
-                print('Model setup:', t1-t0)
+                self.__logger.info('Model setup: {}'.format(t1-t0))
       
             masspoints.reinitialise()
             combinations.reinitialise()
@@ -318,14 +328,15 @@ class Voxel(object):
         
         if timed:
             t2 = time()
-            print('Modules initialised:', t2-t1)
+            self.__logger.info('Modules initialised:'.format(t2-t1))
     
         for ens in range(len(constants.clumpMassNumber)):
             self.__modelMass.append((ensemble.clumpDeltaNji[ens].sum(1)*10**constants.clumpLogMass[ens]).sum())
             self.__volumeFactor.append((ensemble.clumpNj[ens]*(masspoints.clumpRadius[ens]**3*4*np.pi/3)).sum() /
                                        constants.voxel_size**3)
             if abs(self.__modelMass[ens]-self.__ensembleMass[ens]) > 0.1*self.__ensembleMass[ens]:
-                print('ERROR: Voxel {} mass difference for clump set {} greater than 10%'.format(self.__index, ens+1))
+                self.__logger.error('ERROR: Voxel {} mass difference for clump set {} greater than 10%'
+                                    .format(self.__index, ens+1))
     
         # clumpAfuv,interclumpAfuv = combinations.getAfuv()
         # clumpAfuv *= ensemble.CLmaxProbability
@@ -353,8 +364,10 @@ class Voxel(object):
                          for ens in range(len(constants.clumpMassNumber))]
         
         if timed:
-            print('setProperties() time of execution:', time()-t0)
-        
+            self.__logger.info('setProperties() time of execution:'.format(time()-t0))
+
+        self.__logger.info('voxel initialised')
+
         return
   
     def getPosition(self):
@@ -391,13 +404,13 @@ class Voxel(object):
         
         if timed:
             t1 = time()
-            print('Masspoint emission calculated:', t1-t0)
+            self.__logger.info('Masspoint emission calculated:',format(t1-t0))
         
         combinations.calculateEmission()
         
         if timed:
             t2 = time()
-            print('Combination emission calculated:', t2-t1)
+            self.__logger.info('Combination emission calculated:'.format(t2-t1))
     
         clumpIntensity = [[] for _ in range(len(constants.clumpMassNumber))]
         clumpOpticalDepth = [[] for _ in range(len(constants.clumpMassNumber))]
@@ -441,7 +454,7 @@ class Voxel(object):
           
                     if timed:
                         t3 = time()
-                        print('Start I_xi calculation:', t3-t2)
+                        self.__logger.info('Start I_xi calculation:'.format(t3-t2))
             
                     intensity = copy(combinations.clumpIntensity[ens][:, iDust:])
                     # shape (v_obs, combination, wavelength)
@@ -469,7 +482,7 @@ class Voxel(object):
             
                     if timed:
                         t4 = time()
-                        print('End I_xi calculation:', t4-t3)
+                        self.__logger.info('End I_xi calculation:'.format(t4-t3))
           
                 # All of these have shape (velocity, wavelength)
                 self.__intensitySpecies[ens][nv, :] = self.__intensitySpecies[ens][nv, :] + \
@@ -510,13 +523,15 @@ class Voxel(object):
                         self.__opticalDepthSpecies[ens][:, i] += self.__opticalDepthDust[ens].max()
             
             else:
-                print('Voxel with velocity {} not within given observing velocity range.'.format(self.__velocity))
+                self.__logger.warning('Voxel with velocity {} not within given observing velocity range.'
+                                      .format(self.__velocity))
     
-        if verbose:
-            print('Voxel emission calculated.')
+        self.__logger.info('Voxel emission calculated.')
           
         if timed:
-            print('calculateEmission() time of execution:', time()-t0)
+            self.__logger.info('calculateEmission() time of execution:'.format(time()-t0))
+
+        self.__logger.info('voxel emission calculated')
         
         return
   
@@ -574,7 +589,7 @@ class Voxel(object):
             value = self.getSpeciesIntensity()
             ylabel = r'$I_{\lambda} \ \left( K \right)$'
         else:
-            print('Quantity {} not available.'.format(quantity))
+            self.__logger.warning('Quantity {} not available.'.format(quantity))
             return
     
         fig, axes = plt.subplots(len(value), figsize=(10, 5*len(value)))
@@ -593,7 +608,7 @@ class Voxel(object):
             for n, mol in enumerate(molecule):
       
                 if mol not in species.molecules:
-                    print('Species {} not in model.'.format(mol))
+                    self.__logger.warning('Species {} not in model.'.format(mol))
                     continue
         
                 i = np.where(mol == np.asarray(species.molecules))[0][0]
@@ -666,7 +681,7 @@ class Voxel(object):
             ylabel = r'$I_{\lambda} \ \left( K \right)$'
         
         else:
-            print('Quantity {} not available.'.format(quantity))
+            self.__logger.warning('Quantity {} not available.'.format(quantity))
             return
     
         fig, axes = plt.subplots(constants.ensembles, figsize=(10, 5*constants.ensembles))

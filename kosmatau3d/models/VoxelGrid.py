@@ -9,6 +9,7 @@ import matplotlib.pyplot as plt
 from tqdm import tqdm
 # import progressbar as pb
 from numba import jit
+from logging import getLogger
 
 from .Voxel import *
 from kosmatau3d.models import (
@@ -26,7 +27,7 @@ class VoxelGrid(object):
     
     # PRIVATE
   
-    def __init__(self, shape):
+    def __init__(self, shape, verbose=False, debug=False):
   
         self.__shape = shape
     
@@ -56,10 +57,21 @@ class VoxelGrid(object):
         self.__y = []
         self.__z = []
     
-        constants.history = 'r{}_cm{}_d{}_uv{}/'.format(int(constants.voxel_size),
-                                                        '-'.join(str(f) for f in constants.clumpMassFactor),
-                                                        constants.densityFactor,
-                                                        constants.globalUV)
+        # constants.history = 'r{}_cm{}_d{}_uv{}/'.format(int(constants.voxel_size),
+        #                                                 '-'.join(str(f) for f in constants.clumpMassFactor),
+        #                                                 constants.densityFactor,
+        #                                                 constants.globalUV)
+
+        self.__verbose = verbose
+        self.__debug = debug
+
+        self.__logger = getLogger(__name__)
+        if self.__debug:
+            self.__logger.setLevel('DEBUG')
+        elif self.__verbose:
+            self.__logger.setLevel('INFO')
+        else:
+            self.__logger.setLevel('WARNING')
     
         return
   
@@ -169,7 +181,7 @@ class VoxelGrid(object):
     def getDimensions(self):
         return self.__shape.getDimensions()
   
-    def calculateEmission(self, index=0, debug=False, timed=False, verbose=False, multiprocessing=0):
+    def calculateEmission(self, index=0, timed=False, verbose=False, debug=False, multiprocessing=0):
         # This will initialise the grid of voxels and calculate their emission. This has to be
         # done in succession for each voxel since the calculations are modular (the temporary
         # voxel terms are changed when calculating different voxels). This can be rerun and it
@@ -184,7 +196,7 @@ class VoxelGrid(object):
         
         if timed:
             t1 = time()
-            print('Grid initialised: {:.4f} s'.format(t1-t0))
+            self.__logger.info('Grid initialised: {:.4f} s'.format(t1-t0))
     
         print('\nCalculating Grid Emission...')
     
@@ -255,8 +267,7 @@ class VoxelGrid(object):
                 if timed:
                     t2 = time()
         
-                if verbose:
-                    print('\nMax X, Radius:', max(x), r[i], '\n')
+                self.__logger.info('Max X, Radius: {} {}'.format(max(x), r[i]))
                   
                 if not multiprocessing:
                     voxel = getProperties((i, voxel))
@@ -281,7 +292,7 @@ class VoxelGrid(object):
                 # ------------------------------------------------------
                 
                 if timed:
-                    print('\nVoxel initialised: {:.4f} s'.format(time()-t2))
+                    self.__logger.info('\nVoxel initialised: {:.4f} s'.format(time()-t2))
         
                 # this is likely unneeded now that I am directly writing to a fits file
                 self.__voxelFUVabsorption.append(voxel.getFUVabsorption())
@@ -324,8 +335,7 @@ class VoxelGrid(object):
                 # print(len(self.__voxels))
                 
                 if timed:
-                    print('Voxel calculated: {:.4f} s / {:.4f} s'.format(time()-t2, time()-t1))
-                    print()
+                    self.__logger.info('Voxel calculated: {:.4f} s / {:.4f} s'.format(time()-t2, time()-t1))
         
                 progress.update()
       
@@ -349,7 +359,7 @@ class VoxelGrid(object):
         # This will stream the model parameters and emission to FITS files in the corresponding
         #  directory for the model.
       
-        print('\nStreaming to fits files...')
+        print('\nStreaming to fits files...\n')
     
         if debug:
     

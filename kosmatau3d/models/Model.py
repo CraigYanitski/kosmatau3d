@@ -4,6 +4,7 @@ import sys
 import numpy as np
 import matplotlib.pyplot as plt
 # from mpl_toolkits.mplot3d import Axes3D
+from logging import getLogger, basicConfig, FileHandler, Formatter
 
 from kosmatau3d.models import shape  # import Shape
 # import statistics
@@ -19,10 +20,10 @@ class Model(object):
     '''
     # PRIVATE
   
-    def __init__(self, history_path='', directory='', x=0, y=0, z=0, modelType='', resolution=1000, molecules=[],
-                 dust='', clumpMassRange=[], clumpMassNumber=[], clumpNmax=[], velocityRange=[], velocityNumber=0,
-                 clumpMassFactor=[], FUVfactor=1, densityFactor=1, globalUV=10, r_cmz=0,
-                 zeta_cmz=1e-14, zeta_sol=2e-16, verbose=False):
+    def __init__(self, history_path='', directory='', folder='', x=0, y=0, z=0, modelType='', resolution=1000,
+                 molecules=[], dust='', clumpMassRange=[], clumpMassNumber=[], clumpNmax=[], velocityRange=[],
+                 velocityNumber=0, clumpMassFactor=[], FUVfactor=1, densityFactor=1, globalUV=10, r_cmz=0,
+                 zeta_cmz=1e-14, zeta_sol=2e-16, timed=False, verbose=False, debug=False):
       
         if not len(clumpMassRange):
             sys.exit('<<ERROR>> Define mass sets in argument.')
@@ -35,6 +36,7 @@ class Model(object):
         constants.type = modelType
         constants.voxel_size = float(resolution)
         constants.HISTORYPATH = history_path
+        constants.history = folder
         constants.changeDirectory(directory)
         
         # Factors
@@ -54,6 +56,9 @@ class Model(object):
         self.__addSpecies(molecules)
         constants.changeDustWavelengths(dust)
 
+        # Initialise logger
+        self.__logger = getLogger()
+
         # Shape() object to create the parameters for the grid of voxels
         self.__shape = shape.Shape(x, y, z, modelType=modelType)
         # VoxelGrid() object to build the model and calculate the emission
@@ -61,7 +66,9 @@ class Model(object):
         # Orientation() object to change the viewing angle and expected spectra
         # self.__orientation = Orientation(self.__shape.getDimensions())
         self.__speciesNames = []  # this is a list of the species names for easy printout
+        self.__timed = timed
         self.__verbose = verbose
+        self.__debug = debug
         self.__intensityMap = []
         self.__mapPositions = []
         return
@@ -121,11 +128,32 @@ class Model(object):
     #   return
   
     def calculateModel(self, **kwargs):
+        # Point logger to file
+        format_str = '\n\n%(levelname)s [%(name)s]: %(message)s\n\n'
+        filename = constants.HISTORYPATH + constants.directory + constants.history + 'log.txt'
+        filehandler = FileHandler(filename, mode='w')
+        if self.__debug:
+            basicConfig(format=format_str, level='DEBUG')
+            #self.__logger.setLevel('DEBUG')
+            #filehandler.setLevel('DEBUG')
+        elif self.__verbose:
+            basicConfig(format=format_str, level='INFO')
+            #self.__logger.setLevel('INFO')
+            #filehandler.setLevel('INFO')
+        else:
+            basicConfig(format=format_str, level='WARNING')
+            #self.__logger.setLevel('WARNING')
+            #filehandler.setLevel('WARNING')
+        #filehandler.setFormatter(Formatter(format_str))
+        #self.__logger.addHandler(filehandler)
+
+        # Calculate emission
         self.__grid.calculateEmission(**kwargs)
+
         return
   
-    def writeEmission(self, debug=False):
-        self.__grid.writeEmission(debug=debug)
+    def writeEmission(self):
+        self.__grid.writeEmission(verbose=self.__verbose, debug=self.__debug)
         return
   
     def getIntensityMap(self):
@@ -171,11 +199,11 @@ class Model(object):
         
         return
       
-    def plotModel(self, plot='total intensity', debug=False):
+    def plotModel(self, plot='total intensity'):
         positions = self.__grid.getVoxelPositions()
         limits = [positions.min(), positions.max()]
         if plot == 'total intensity':
-            if debug:
+            if self.__debug:
                 print(self.__grid.totalEmission().shape)
             weights = (self.__grid.totalEmission()[0]).max(2).sum(1)
             plot = r'$I \ (\chi)$'

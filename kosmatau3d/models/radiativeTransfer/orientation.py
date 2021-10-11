@@ -48,13 +48,13 @@ def calculateObservation(directory='', dim='xy', slRange=[(-np.pi,np.pi), (-np.p
     
     # print('Load data')
   
-    rt.voxelPositions = fits.open(directory+'/voxel_position.fits', mode='denywrite')
-    rt.voxelVelocities = fits.open(directory+'/voxel_velocity.fits', mode='denywrite')
+    rt.voxelPositions = fits.open(directory+'voxel_position.fits', mode='denywrite')
+    rt.voxelVelocities = fits.open(directory+'voxel_velocity.fits', mode='denywrite')
     # Emissivities in K/pc; absorptions in 1/pc
-    rt.tempSpeciesEmissivity = fits.open(directory+'/species_emissivity.fits', mode='denywrite')
-    rt.tempSpeciesAbsorption = fits.open(directory+'/species_absorption.fits', mode='denywrite')
-    rt.tempDustEmissivity = fits.open(directory+'/dust_emissivity.fits', mode='denywrite')
-    rt.tempDustAbsorption = fits.open(directory+'/dust_absorption.fits', mode='denywrite')
+    rt.tempSpeciesEmissivity = fits.open(directory+'species_emissivity.fits', mode='denywrite')
+    rt.tempSpeciesAbsorption = fits.open(directory+'species_absorption.fits', mode='denywrite')
+    rt.tempDustEmissivity = fits.open(directory+'dust_emissivity.fits', mode='denywrite')
+    rt.tempDustAbsorption = fits.open(directory+'dust_absorption.fits', mode='denywrite')
   
     nDust = rt.tempDustEmissivity[0].shape[2]
     if nDust > 1:
@@ -145,26 +145,26 @@ def calculateObservation(directory='', dim='xy', slRange=[(-np.pi,np.pi), (-np.p
         VintensityMapDust = np.array(VintensityMapDust)
     
         if verbose:
-            print('Map position shape:')
+            rt.logger.info('Map position shape:')
             if Vpositions.ndim > 1:
-                print(Vpositions.shape)
+                rt.logger.info(Vpositions.shape)
             else:
                 for p in VmapPositions:
-                    print(p.shape)
+                    rt.logger.info(p.shape)
               
-            print('Map intensity shapes:')
-            print('Species')
+            rt.logger.info('Map intensity shapes:')
+            rt.logger.info('Species')
             if VintensityMapSpecies.ndim > 1:
-                print(VintensityMapSpecies.shape)
+                rt.logger.info(VintensityMapSpecies.shape)
             else:
                 for intensity in intensityMapSpecies:
-                    print(intensity.shape)
-            print('Dust')
+                    rt.logger.info(intensity.shape)
+            rt.logger.info('Dust')
             if VintensityMapDust.ndim > 1:
-                print(VintensityMapDust.shape)
+                rt.logger.info(VintensityMapDust.shape)
             else:
                 for intensity in intensityMapDust:
-                    print(intensity.shape)
+                    rt.logger.info(intensity.shape)
     
         # Setup the data to be saved in a FITS file. It will create an HDU list with position, species, and dust HDUs.
         if not debug:
@@ -425,7 +425,7 @@ def calculateVelocityChannel(ivelocity, slRange=[(-np.pi,np.pi), (-np.pi/2,np.pi
             try:
                 result, vox = setLOS(lon=lon, lat=lat, i_vel=i_vel, dim=dim, debug=debug)
             except OSError:
-                print('OSError!!')
+                rt.logger.critical('OSError!!')
                 sys.exit()
       
             position.append([lon, lat])
@@ -453,7 +453,7 @@ def calculateVelocityChannel(ivelocity, slRange=[(-np.pi,np.pi), (-np.pi/2,np.pi
                 rt.slTqdm.update()
             
             if len(np.shape(positionintensity_species[-1])) > 1:
-                print('Error', np.shape(positionintensity_species[-1]))
+                rt.logger.error('Error {}'.format(np.shape(positionintensity_species[-1])))
                 input()
         
         # Save intensities for each latitude
@@ -576,11 +576,10 @@ def setLOS(x=0, y=0, z=0, lon=0, lat=0, i_vox=[], i_vel=0, i_spe=None, i_dust=No
         i_los = np.where((zGrid == z) & (yGrid == y))[0]
   
     else:
-        print('\nPlease enter valid dimensions.\n')
+        rt.logger.error('\nPlease enter valid dimensions.\n')
         return False
     
-    if verbose:
-        print(i_los)
+    rt.logger.info(i_los)
     
     if i_los.size == 1:
   
@@ -635,8 +634,7 @@ def setLOS(x=0, y=0, z=0, lon=0, lat=0, i_vox=[], i_vel=0, i_spe=None, i_dust=No
   
     vel = rt.voxelVelocities[0].data[i_los]
     
-    if verbose:
-        print('voxels:', i)
+    rt.logger.info('voxels:', i)
     
     return 2, vel.size
     # ,(e_species,de_species,k_species,dk_species,
@@ -700,8 +698,7 @@ def calculatert(scale=1, background_intensity=0., species=True, dust=True, verbo
             a_dust = (rt.k_dust[:-1, :] / np.sqrt(2*np.abs(rt.dk_dust)))
             b_dust = ((rt.k_dust[:-1, :] + rt.dk_dust*scale) / np.sqrt(2*np.abs(rt.dk_dust)))
     
-    if verbose:
-        print(rt.k_species.shape[0])
+    rt.logger.info(rt.k_species.shape[0])
         
     # if test:
     #     print(n_steps)
@@ -738,8 +735,7 @@ def calculatert(scale=1, background_intensity=0., species=True, dust=True, verbo
                                                      * np.exp(-rt.k_species[i, kg_species]*scale))
       
             if keg_species.any():
-                if verbose:
-                    print('\na, b:\n', a_species[i, :], '\n', b_species[i, :])
+                rt.logger.info('\na, b:\n{}\n{}'.format(a_dust[i, :], b_dust[i, :]))
                 a_error = erfi(a_species[i, keg_species])
                 b_error = erfi(b_species[i, keg_species])
                 rt.intensity_species[keg_species] = (rt.de_species[i, keg_species]/rt.dk_species[i, keg_species]
@@ -755,8 +751,7 @@ def calculatert(scale=1, background_intensity=0., species=True, dust=True, verbo
                                                               - 0.5*rt.dk_species[i, keg_species]*scale**2.))
       
             if kel_species.any():
-                if verbose:
-                    print('\na, b:\n', a_species[i, :], '\n', b_species[i, :])
+                rt.logger.info('\na, b:\n{}\n{}'.format(a_dust[i, :], b_dust[i, :]))
                 a_error = erfc(a_species[i, :][kel_species])
                 b_error = erfc(b_species[i, :][kel_species])
                 rt.intensity_species[kel_species] = (rt.de_species[i, kel_species]/rt.dk_species[i, kel_species]
@@ -800,8 +795,7 @@ def calculatert(scale=1, background_intensity=0., species=True, dust=True, verbo
                                                 * np.exp(-rt.k_dust[i, kg_dust]*scale))
       
             if keg_dust.any():
-                if verbose:
-                    print('\na, b:\n', a_dust[i, :], '\n', b_dust[i, :])
+                rt.logger.info('\na, b:\n{}\n{}'.format(a_dust[i, :], b_dust[i, :]))
                 a_error = erfi(a_dust[i, keg_dust])
                 b_error = erfi(b_dust[i, keg_dust])
                 rt.intensity_dust[keg_dust] = (rt.de_dust[i, keg_dust]/rt.dk_dust[i, keg_dust]
@@ -817,8 +811,7 @@ def calculatert(scale=1, background_intensity=0., species=True, dust=True, verbo
                                                         - 0.5*rt.dk_dust[i, keg_dust]*scale**2.))
       
             if kel_dust.any():
-                if verbose:
-                    print('\na, b:\n', a_dust[i, :], '\n', b_dust[i, :])
+                rt.logger.info('\na, b:\n{}\n{}'.format(a_dust[i, :], b_dust[i, :]))
                 a_error = erfc(a_dust[i, kel_dust])
                 b_error = erfc(b_dust[i, kel_dust])
                 rt.intensity_dust[kel_dust] = (rt.de_dust[i, kel_dust]/rt.dk_dust[i, kel_dust]
@@ -833,9 +826,8 @@ def calculatert(scale=1, background_intensity=0., species=True, dust=True, verbo
                                                * np.exp(-rt.k_dust[i, kel_dust]*scale
                                                         - 0.5*rt.dk_dust[i, kel_dust]*scale**2.))
     
-    if verbose:
-        print('Species intensity shape:', np.shape(rt.intensity_species))
-        print('Dust intensity shape:', np.shape(rt.intensity_dust))
+    rt.logger.info('Species intensity shape: {}'.format(np.shape(rt.intensity_species)))
+    rt.logger.info('Dust intensity shape: {}'.format(np.shape(rt.intensity_dust)))
         
     # if (rt.intensity_species > 10**10).any() or (rt.intensity_species < 0).any():
     #
@@ -880,8 +872,7 @@ def calculatert(scale=1, background_intensity=0., species=True, dust=True, verbo
 
 def e_real(x, verbose=False):
   
-    if verbose:
-        print('E real input:', x)
+    rt.logger.info('E real input: {}'.format(x))
   
     e_r = np.zeros_like(x)
   
@@ -891,22 +882,19 @@ def e_real(x, verbose=False):
   
     if il.any():
   
-        if verbose:
-            print('x less than grid')
+        rt.logger.info('x less than grid')
     
         e_r[il] = (2*x[il]/np.sqrt(np.pi))
     
     if ig.any():
   
-        if verbose:
-            print('x greater than grid')
+        rt.logger.info('x greater than grid')
     
         e_r[ig] = (1/(np.sqrt(np.pi) * x[ig]))
     
     if ib.any():
   
-        if verbose:
-            print('x interpolated')
+        rt.logger.info('x interpolated')
     
         e_r[ib] = rt.eTildeReal(x[ib])
   
@@ -915,8 +903,7 @@ def e_real(x, verbose=False):
 
 def e_imag(x, verbose=False):
   
-    if verbose:
-        print('E imaginary input:', x)
+    rt.logger.info('E imaginary input:'.format(x))
   
     e_i = np.zeros_like(x)
   
@@ -930,30 +917,26 @@ def e_imag(x, verbose=False):
     
     if im.any():
   
-        if verbose:
-            print('Maser case')
+        rt.logger.info('Maser case')
     
         # MASER case: treat with linear approximation
         e_i[im] = 1 + 2*np.abs(x[im])/np.sqrt(np.pi)
   
     if il.any():
   
-        if verbose:
-            print('x less than grid')
+        rt.logger.info('x less than grid')
         
         e_i[il] = (1 - 2*np.abs(x[il])/np.sqrt(np.pi))
   
     if ig.any():
       
-        if verbose:
-            print('x greater than grid')
+        rt.logger.info('x greater than grid')
         
         e_i[ig] = (1/(np.sqrt(np.pi) * np.abs(x[ig])))
   
     if ib.any():
       
-        if verbose:
-            print('x interpolated')
+        rt.logger.info('x interpolated')
         
         e_i[ib] = rt.eTildeImaginary(np.abs(x[ib]))
   
@@ -962,7 +945,7 @@ def e_imag(x, verbose=False):
 
 if __name__ == '__main__':
 
-    print('spawned process')
+    rt.logger.info('spawned process')
   
     directory = r'C:\Users\cyani\projects\pdr\KT3_history\MilkyWay\r250_cm1-1_d1_uv10'
   

@@ -4,10 +4,13 @@
 # from mpl_toolkits.mplot3d import Axes3D
 import scipy.interpolate as interpolate
 from scipy.stats import norm
+from logging import getLogger
 
 from .orientation import *
 from kosmatau3d.models import constants
 
+
+logger = getLogger(__name__)
 
 positions = []
 intensity_species = []
