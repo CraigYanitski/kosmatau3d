@@ -987,7 +987,7 @@ def view_observation(path='/mnt/hpc_backup/yanitski/projects/pdr/observational_d
     return
 
 
-def model_selection(path='/mnt/hpc_backup/yanitski/projects/pdr/KT3_history/MilkyWay', mission=None, lat=None,
+def model_selection(path='/mnt/hpc_backup/yanitski/projects/pdr/KT3_history/MilkyWay', missions=None, lat=None,
                     model_dir='', model_param=[[]], cmap='gist_ncar', PLOT=False, PRINT=False, debug=False):
     '''
     This function will compare the Milky Way models to the position-velocity observations depending on the
@@ -997,7 +997,7 @@ def model_selection(path='/mnt/hpc_backup/yanitski/projects/pdr/KT3_history/Milk
       :param model_dir: directory format for each model in the grid.
       :param model_param: a list of lists containing the parameter space of the models.
       :param resolution: the voxel size (in pc) of the models used in the comparison; used in model folder name.
-      :param mission: as this is setup for the Milky Way, the mission selection is
+      :param missions: as this is setup for the Milky Way, the mission selection is
              - COBE-FIRAS
              - COGAL
              - Mopra
@@ -1013,12 +1013,13 @@ def model_selection(path='/mnt/hpc_backup/yanitski/projects/pdr/KT3_history/Milk
       currently, this will look solely at the galactic plane.
     '''
 
-    if isinstance(mission, str):
-        mission = [mission]
-    elif isinstance(mission, list):
+    # Check that the missions are specified properly.
+    if missions == '' or missions == None or missions == []:
+        missions = os.listdir(path.replace('KT3_history', 'observational_data'))
+    elif isinstance(missions, str):
+        missions = [missions]
+    elif isinstance(missions, list):
         pass
-    elif mission == '' or mission == None:
-        mission = os.listdir(path.replace('KT3_history', 'observational_data'))
     else:
         print('Please specify a list of missions to compare the models.')
         return
@@ -1035,7 +1036,7 @@ def model_selection(path='/mnt/hpc_backup/yanitski/projects/pdr/KT3_history/Milk
     lon = []
     vel = []
 
-    for survey in mission:
+    for survey in missions:
 
         print('\n\n', survey)
 
@@ -1103,7 +1104,8 @@ def model_selection(path='/mnt/hpc_backup/yanitski/projects/pdr/KT3_history/Milk
                     lat_obs = np.array([0])
                 else:
                     obs_data = obs[0].data
-                    pprint(obs[0].header)
+                    if debug:
+                        pprint(obs[0].header)
                     # obs_error = obs[0].header['OBSERR'].split()
                     transitions = obs[0].header['TRANSL'].split(', ')
                     transition_indeces = obs[0].header['TRANSI'].split(', ')
@@ -1119,7 +1121,8 @@ def model_selection(path='/mnt/hpc_backup/yanitski/projects/pdr/KT3_history/Milk
                 vel = None
             elif survey == 'Planck':
                 obs_data = obs[0].data
-                pprint(obs[0].header)
+                if debug:
+                    pprint(obs[0].header)
                 # obs_error = obs[0].header['OBSERR'].split()
                 transitions = obs[0].header['TRANSL'].split(', ')
                 transition_indeces = obs[0].header['TRANSI'].split(', ')
@@ -1135,7 +1138,8 @@ def model_selection(path='/mnt/hpc_backup/yanitski/projects/pdr/KT3_history/Milk
                 vel = None
             else:
                 obs_data = obs[0].data
-                pprint(obs[0].header)
+                if debug:
+                    pprint(obs[0].header)
                 # obs_error = obs[0].header['OBSERR']
                 transitions = obs[0].header['TRANSL'].split(', ')
                 transition_indeces = obs[0].header['TRANSI'].split(', ')
@@ -1271,11 +1275,11 @@ def model_selection(path='/mnt/hpc_backup/yanitski/projects/pdr/KT3_history/Milk
                         # print(vel_model)
                         # print(lon_model)
 
-                        print(vel_model.shape,
-                              model[1].data[:, i_lat_model, :, i_spec].shape,
-                              model[2].data[:, i_lat_model, :, 0].shape,
-                              obs_data[:, i_lat_obs, :].shape,
-                              np.swapaxes(obs_data[:, i_lat_obs, :], 0, 1).shape)
+                        # print(vel_model.shape,
+                        #       model[1].data[:, i_lat_model, :, i_spec].shape,
+                        #       model[2].data[:, i_lat_model, :, 0].shape,
+                        #       obs_data[:, i_lat_obs, :].shape,
+                        #       np.swapaxes(obs_data[:, i_lat_obs, :], 0, 1).shape)
                         model_interp = (model[1].data[:, i_lat_model, :, i_spec]
                                         - model[2].data[:, i_lat_model, :, 0])
                         obs_data_temp = np.swapaxes(obs_data[:, i_lat_obs, :], 0, 1)
@@ -1502,15 +1506,20 @@ def model_selection(path='/mnt/hpc_backup/yanitski/projects/pdr/KT3_history/Milk
 
 
 def plot_comparison(path='/mnt/hpc_backup/yanitski/projects/pdr/KT3_history/MilkyWay/fit_results/', file_format='',
-                    model_param=[[]], missions=[], i_x=0, i_y=1,
-                    xlabel='', ylabel='', clabel='', title='', fontsize=16, save_plot=False):
+                    model_param=[[]], missions=[], i_x=0, i_y=1, log=False, normalise=False,
+                    contour=True, levels=10, fraction=0.1, aspect=20, cmap='viridis',
+                    xlabel='', ylabel='', supxlabel='', supylabel='', clabel='', clabel_xa=0.98, clabel_ha='left',
+                    title='', fontsize=20,
+                    pad=1.0, pad_left=0, pad_right=0.125, pad_bottom=0, pad_top=0.12, wspace=0, hspace=0,
+                    figsize=None, save_plot=False, output_file='', output_format='png', transparent=False,
+                    verbose=False, debug=False):
     #
 
     # Check that the missions are specified properly.
-    if isinstance(missions, str):
-        mission = [missions]
-    elif missions == '' or missions == None or missions == []:
+    if missions == '' or missions == None or missions == []:
         missions = os.listdir(path)
+    elif isinstance(missions, str):
+        missions = [missions]
     elif isinstance(missions, list):
         pass
     else:
@@ -1522,61 +1531,187 @@ def plot_comparison(path='/mnt/hpc_backup/yanitski/projects/pdr/KT3_history/Milk
         return
 
     dimensions = len(model_param)
-    naxis = np.zeros(dimensions)
-    naxis[[i_x, i_y]] = 1
-    lenaxis = [len(arr) for arr in model_param]
+    naxis = np.zeros((dimensions), dtype=bool)
+    naxis[[i_x, i_y]] = True
+    lenaxis = np.asarray([len(arr) for arr in model_param])
 
-    model_param_grid = np.meshgrid(*model_param)
-    x_grid = model_param_grid[i_x]
-    y_grid = model_param_grid[i_y]
+    model_param_grid = np.meshgrid(*np.asarray(model_param, dtype=object)[naxis])
+    if i_x < i_y:
+        x_grid = model_param_grid[0]
+        y_grid = model_param_grid[1]
+    else:
+        x_grid = model_param_grid[1]
+        y_grid = model_param_grid[0]
     # model_params = zip(np.transpose([model_params[n].flatten() for n in range(len(model_param))]))
     # model_params = np.transpose([model_params[n].flatten() for n in range(len(model_params))])
 
+    if naxis.size == 2:
+        sub_params = zip([0], [0])
+    elif naxis.size == 3:
+        sub_params = zip(np.asarray(model_param, dtype=object)[~naxis])
+    else:
+        sub_params = zip(*tuple(p.flatten() for p in np.meshgrid(*np.asarray(model_param, dtype=object)[~naxis])))
+
+    # Detemine the size of the subplot grid, for now allow a maximum of 2 additional parameters.
+    if naxis.size == 2:
+        sub_x, sub_y = (1, 1)
+    elif naxis.size == 3:
+        sub_x = lenaxis[~naxis]
+        sub_y =1
+    elif naxis.size == 4:
+        sub_x, sub_y = lenaxis[~naxis]
+    else:
+        print('Too many dimensions in grid.')
+        return
+
     for survey in missions:
+
+        # if verbose:
+        print('\n  {}\n'.format(survey))
 
         survey_files = os.listdir(path + survey + '/')
 
-        log_likelihood = np.zeros(x_grid.shape)
+        if debug:
+            print('survey files: {}\n'.format(survey_files))
 
-        for survey_file in survey_files:
-
-            transitions = os.listdir(path + survey + '/' + survey_file + '/')
-
-            transitions_skipped = []
-            for t in transitions:
-                if len(os.listdir(path + survey + '/' + survey_file + '/' + t + '/')) == 0:
-                    transitions.remove(t)
-                    transitions_skipped.append(t)
-            if len(transitions_skipped):
-                print('  transitions {} not available.'.format(', '.join(transitions_skipped)))
-
-            for i in range(log_likelihood.shape[0]):
-                for j in range(log_likelihood.shape[1]):
-
-                    filename = file_format.format(x_grid[i, j], y_grid[i, j]) + '_loglikelihood.npy'
-                    param_log_likelihood = [np.load(path + survey + '/' + survey_file + '/' + t + '/' + filename)
-                                            for t in transitions]
-                    log_likelihood[i, j] = log_likelihood[i_x, i_y] + np.nansum(param_log_likelihood)
-
-        fig, axes = plt.subplots(1, 1, figsize=(10, 10))
+        if not figsize:
+            subgrid_aspect = sub_x/sub_y
+            figsize = (subgrid_aspect*10, 10)
+        fig, axes = plt.subplots(sub_y, sub_x, figsize=figsize)
         if not isinstance(axes, np.ndarray):
-            axes = np.asarray([axes])
+            axes = np.asarray([[axes]])
+        elif axes.ndim == 1:
+            axes.resize(-1, 1)
 
-        cm = axes[0].imshow(log_likelihood, extent=[0, lenaxis[i_x], 0, lenaxis[i_y]])
-        axes[0].set_aspect(lenaxis[i_x]/lenaxis[i_y])
-        cb = fig.colorbar(cm, ax=axes[0], fraction=0.1, aspect=20)
+        for param in deepcopy(sub_params):
 
-        axes[0].set_xticks(np.arange(lenaxis[i_x])+0.5)
-        axes[0].set_xticklabels([str(param) for param in model_param[i_x]])
-        axes[0].set_yticks(np.arange(lenaxis[i_y])+0.5)
-        axes[0].set_yticklabels([str(param) for param in model_param[i_y][::-1]])
+            # Calculate likelihood
+            # --------------------
 
-        axes[0].set_xlabel(xlabel, fontsize=fontsize)
-        axes[0].set_ylabel(ylabel, fontsize=fontsize)
-        cb.ax.set_ylabel(clabel, fontsize=fontsize)
+            if debug:
+                print(param)
+
+            log_likelihood = np.zeros(x_grid.shape)
+
+            for survey_file in survey_files:
+
+                if '.png' in survey_file or 'Plots' in survey_file:
+                    continue
+
+                if verbose:
+                    print(survey_file)
+
+                transitions = os.listdir(path + survey + '/' + survey_file + '/')
+
+                transitions_skipped = []
+                for t in copy(transitions):
+                    if debug:
+                        print(t)
+                    if (len(os.listdir(path + survey + '/' + survey_file + '/' + t + '/')) < 369):
+                        transitions.remove(t)
+                        transitions_skipped.append(t)
+                    if debug:
+                        print(transitions, transitions_skipped)
+                if len(transitions_skipped) and verbose:
+                    print('  transitions {} not available.'.format(', '.join(transitions_skipped)))
+
+                for i in range(log_likelihood.shape[0]):
+                    for j in range(log_likelihood.shape[1]):
+
+                        if naxis.size > 2:
+                            filename = file_format.format(x_grid[i, j], y_grid[i, j], *param) + '_loglikelihood.npy'
+                        else:
+                            filename = file_format.format(x_grid[i, j], y_grid[i, j]) + '_loglikelihood.npy'
+                        param_log_likelihood = [np.load(path + survey + '/' + survey_file + '/' + t + '/' + filename)
+                                                for t in transitions]
+                        log_likelihood[i, j] = log_likelihood[i, j] + np.nansum(param_log_likelihood)
+
+            if normalise:
+                if (log_likelihood<0).all():
+                    log_likelihood = log_likelihood.max() / log_likelihood
+                else:
+                    log_likelihood = log_likelihood / log_likelihood.max()
+            if log:
+                if (log_likelihood<0).all():
+                    log_likelihood = np.log10(-1/log_likelihood)
+                else:
+                    log_likelihood = np.log10(log_likelihood)
+
+            # Plot subplot
+            # ------------
+
+            if len(param) == 1:
+                sub_indeces = (0, np.asarray(model_param, dtype=object)[~naxis].index(param))
+                x_param = param[0]
+                y_param = ''
+            elif axes.size > 1:
+                sub_indeces = tuple(arr.index(param[i]) for i,arr in enumerate(np.asarray(model_param, dtype=object)[~naxis]))[::-1]
+                x_param = param[1]
+                y_param = param[0]
+            else:
+                sub_indeces = (0, 0)
+                x_param = ''
+                y_param = ''
+
+            if contour:
+                cm = axes[sub_indeces].contourf(log_likelihood, levels=levels, cmap=cmap)
+            else:
+                cm = axes[sub_indeces].imshow(log_likelihood, extent=[0, lenaxis[i_x], 0, lenaxis[i_y]], cmap=cmap)
+            axes[sub_indeces].set_aspect(lenaxis[i_x]/lenaxis[i_y])
+            cb = fig.colorbar(cm, ax=axes[sub_indeces], fraction=fraction, aspect=aspect)
+
+            if contour:
+                axes[sub_indeces].set_xticks(np.arange(lenaxis[i_x]))
+                axes[sub_indeces].set_xticklabels([str(param) for param in model_param[i_x]])
+                axes[sub_indeces].set_yticks(np.arange(lenaxis[i_y]))
+                axes[sub_indeces].set_yticklabels([str(param) for param in model_param[i_y]])
+            else:
+                axes[sub_indeces].set_xticks(np.arange(lenaxis[i_x])+0.5)
+                axes[sub_indeces].set_xticklabels([str(param) for param in model_param[i_x]])
+                axes[sub_indeces].set_yticks(np.arange(lenaxis[i_y])+0.5)
+                axes[sub_indeces].set_yticklabels([str(param) for param in model_param[i_y][::-1]])
+
+            axes[sub_indeces].set_xlabel(xlabel, fontsize=fontsize-4)
+            axes[sub_indeces].set_ylabel(ylabel, fontsize=fontsize-4)
+            if axes.size > 1:
+                axes[sub_indeces].set_title('{} {}, {} {}'.format(supylabel, y_param, supxlabel, x_param),
+                                            fontsize=fontsize-4)
+            # cb.ax.set_ylabel(clabel, fontsize=fontsize-4)
+
         if title == '':
-            axes[0].set_title(survey, fontsize=fontsize)
+            suptitle = survey + ' likelihood'
+            if normalise:
+                suptitle += ', normalised'
+            if log:
+                suptitle += ', logged'
+        else:
+            suptitle = copy(title)
 
-        plt.show()
+        fig.suptitle(suptitle, fontsize=fontsize)
+        # if supxlabel != '':
+        #     fig.supxlabel(supxlabel, fontsize=fontsize)
+        # if supylabel != '':
+        #     fig.supylabel(supylabel, fontsize=fontsize)
+        fig.supylabel(clabel, x=clabel_xa, ha=clabel_ha, fontsize=fontsize)
+
+        if suptitle:
+            fig_top = 1 - pad*pad_top
+        if clabel:
+            fig_right = 1 - pad*pad_right
+        fig.subplots_adjust(left=pad*pad_left, right=fig_right, bottom=pad*pad_bottom, top=fig_top,
+                            wspace=wspace, hspace=hspace)
+        # fig.tight_layout(pad=pad)
+
+        if save_plot:
+            if not 'Plots' in survey_files:
+                os.mkdir(path + survey + '/Plots/')
+            if output_file == None or output_file == '':
+                output_file = file_format
+            plt.savefig(path + survey + '/Plots/{}_loglikelihood.{}'.format(output_file, output_format),
+                        format=output_format, transparent=transparent)
+        else:
+            plt.show()
+
+        plt.close()
 
     return
