@@ -55,8 +55,8 @@ def changeClumpMassRange(massRange):
         constants.clumpLogMassRange = copy(massRange)
         constants.clumpLogMass = [[] for _ in range(len(massRange))]
         for i in range(len(massRange)):
-            constants.clumpLogMass[i] = np.linspace(constants.clumpLogMassRange[i][0],
-                                                    constants.clumpLogMassRange[i][-1],
+            constants.clumpLogMass[i] = np.linspace(min(constants.clumpLogMassRange[i]),
+                                                    max(constants.clumpLogMassRange[i]),
                                                     num=constants.clumpMassNumber[i])
             constants.clumpLogMass[i].resize(1, constants.clumpMassNumber[i])
     return
@@ -79,8 +79,8 @@ def addClumps(massRange=[], num=0, Nmax=1, reset=False):
         constants.clumpMassNumber.append(num[i])
         constants.clumpMaxIndeces.append(0)
         constants.clumpNmax.append(Nmax[i])
-        constants.clumpLogMass.append(np.resize(np.linspace(massRange[i][0],
-                                                            massRange[i][-1],
+        constants.clumpLogMass.append(np.resize(np.linspace(min(massRange[i]),
+                                                            max(massRange[i]),
                                                             num=num[i]),
                                                 (1,num[i])))
         constants.ensembles = len(num)
