@@ -8,6 +8,7 @@ from astropy.convolution import Gaussian1DKernel, Gaussian2DKernel, convolve
 from astropy.visualization.wcsaxes.frame import EllipticalFrame
 from scipy.interpolate import interp1d, interp2d
 from scipy.integrate import trapz
+from scipy.io import readsav
 import matplotlib.pyplot as plt
 import matplotlib.colors as colors
 from functools import lru_cache
@@ -988,7 +989,8 @@ def view_observation(path='/mnt/hpc_backup/yanitski/projects/pdr/observational_d
 
 
 def model_selection(path='/mnt/hpc_backup/yanitski/projects/pdr/KT3_history/MilkyWay', missions=None, lat=None,
-                    model_dir='', model_param=[[]], cmap='gist_ncar', PLOT=False, PRINT=False, debug=False):
+                    model_dir='', model_param=[[]], comp_type='pv', log_comp=True, cmap='gist_ncar',
+                    PLOT=False, PRINT=False, debug=False):
     '''
     This function will compare the Milky Way models to the position-velocity observations depending on the
       dataset. It will utilise the sightlines of the dataset.
@@ -1032,13 +1034,19 @@ def model_selection(path='/mnt/hpc_backup/yanitski/projects/pdr/KT3_history/Milk
     # model_params = zip(np.transpose([model_params[n].flatten() for n in range(len(model_param))]))
     model_params = np.transpose([model_params[n].flatten() for n in range(len(model_param))])
 
+    if log_comp:
+        comp = comp_type + '_logT'
+    else:
+        comp = comp_type
+
     obs_data = []
     lon = []
     vel = []
 
     for survey in missions:
 
-        print('\n\n', survey)
+        print('\n\n  {}'.format(survey))
+        print('  ' + '-'*len(survey))
 
         if survey == 'HiGAL':
             continue
@@ -1057,7 +1065,7 @@ def model_selection(path='/mnt/hpc_backup/yanitski/projects/pdr/KT3_history/Milk
         # for i_obs in range(len(obs_data)):
         for file in files:
 
-            if not '.fits' in file or 'error' in file:
+            if not ('.fits' in file or '.idl' in file) or 'error' in file:
                 continue
 
             # print(file)
@@ -1074,35 +1082,26 @@ def model_selection(path='/mnt/hpc_backup/yanitski/projects/pdr/KT3_history/Milk
                 continue
 
             if survey == 'COBE' or survey == 'COBE-FIRAS':
-                # if 'HIGH' in file.split('.')[0]:
-                #     transitions = ['C 2', 'C+ 1']   #'CO 6', 'O 2'
-                #     transition_indeces = [1, 5]   #0, 6
-                # elif 'HRES' in file.split('.')[0]:
-                #     transitions = ['CO 1', 'CO 2', 'CO 3', 'CO 4', 'C 1', 'CO 5']
-                #     transition_indeces = [0, 1, 2, 4, 5, 7]
-                # elif 'LOWF' in file.split('.')[0]:
-                #     transitions = ['CO 1', 'CO 2', 'CO 3', 'CO 4', 'C 1', 'CO 5']
-                #     transition_indeces = [0, 1, 2, 4, 5, 7]
-                # obs = fits.open(directory + file)
-                # linfrq = np.array([obs[0].header[key] for key in obs[0].header.keys() if 'LINFRQ' in key])
-                # obs_data = obs[1].data['LINE_FLU'] * (2.9979**3) / (linfrq**3) / 2 / 1.38 * 10 ** 8
-                # obs_error = obs[1].data['LINE_FL2'] * (2.9979**3) / (linfrq**3) / 2 / 1.38 * 10 ** 8
-                # lon = obs[1].data['GAL_LON']
-                # lat = obs[1].data['GAL_LAT']
-                # vel = None
-                # sightline_indeces = np.abs(lat) <= 2
                 if file == 'craig.idl':
-                    # these values are manually coded-in since the data is not in the file
+
+                    # This file requires a comparison to the galactic plane
+                    # lat = 0
+
+                    # these values are hard-coded since the data is not in the file
                     linfrq = np.array([115.3, 230.5, 345.8, 424.8, 461.0, 492.2, 556.9, 576.3, 691.5, 808.1,
                                        1113, 1460, 2226, 1901, 2060, 2311, 2459, 2589, 921.8])
-                    transitions = np.array(['CO 1', 'CO 2', 'CO 3', 'CO 4', 'C 3', 'CO 5', 'CO 6', 'CO 7 + C 1', 'C+ 1', 'O 1', 'CO 8'])
+                    transitions = np.array(['CO 1', 'CO 2', 'CO 3', 'CO 4', 'C 3', 'CO 5',
+                                            'CO 6', 'CO 7 + C 1', 'C+ 1', 'O 1', 'CO 8'])
                     transition_indeces = np.array([0, 1, 2, 4, 5, 7, 8, 9, 13, 14, 18])
 
                     obs_data = obs['amplitude'] / (2.9979**3) * (linfrq**3) * 2 * 1.38 / 10 ** 8
                     obs_error = obs['sigma'] / (2.9979**3) * (linfrq**3) * 2 * 1.38 / 10 ** 8
                     lon_obs = obs['long']
                     lat_obs = np.array([0])
+                    i_lat_obs_init = np.ones(1, dtype=bool)
+
                 else:
+
                     obs_data = obs[0].data
                     if debug:
                         pprint(obs[0].header)
@@ -1117,8 +1116,9 @@ def model_selection(path='/mnt/hpc_backup/yanitski/projects/pdr/KT3_history/Milk
                                           obs[0].header['CRVAL2'] + obs[0].header['CDELT2'] * (
                                                       obs[0].header['NAXIS2'] - obs[0].header['CRPIX2']),
                                           num=obs[0].header['NAXIS2'])
-                i_lat_obs_init = obs_data.any(0).any(1)
+                    i_lat_obs_init = obs_data.any(0).any(1)
                 vel = None
+
             elif survey == 'Planck':
                 obs_data = obs[0].data
                 if debug:
@@ -1170,10 +1170,14 @@ def model_selection(path='/mnt/hpc_backup/yanitski/projects/pdr/KT3_history/Milk
                     os.makedirs(path + 'fit_results/{}/{}/{}/'.format(survey, file.replace('.fits', ''), transition))
 
                 if (survey == 'COBE') or (survey == 'COBE-FIRAS'):
-                    vmin = obs_data[int(transition_indeces[i]), :, :].min()
-                    vmax = obs_data[int(transition_indeces[i]), :, :].max()
-                    print(transition)
-                    print(vmin, vmax)
+                    if '.idl' in file:
+                        vmin = obs_data[:, int(transition_indeces[i])].min()
+                        vmax = obs_data[:, int(transition_indeces[i])].max()
+                    else:
+                        vmin = obs_data[int(transition_indeces[i]), :, :].min()
+                        vmax = obs_data[int(transition_indeces[i]), :, :].max()
+                    # print(transition)
+                    # print(vmin, vmax)
                 else:
                     vmin = np.nanmin(obs_data)
                     vmax = np.nanmax(obs_data)
@@ -1181,7 +1185,7 @@ def model_selection(path='/mnt/hpc_backup/yanitski/projects/pdr/KT3_history/Milk
                 for param in model_params:
 
                     if PRINT:
-                        print(model_dir.format(*param))
+                        print('  ' + model_dir.format(*param) + '    \r', end='')
 
                     # Check existance of model
                     dir_model = model_dir.format(*param) + 'channel_intensity.fits'
@@ -1200,10 +1204,10 @@ def model_selection(path='/mnt/hpc_backup/yanitski/projects/pdr/KT3_history/Milk
                     else:
                         i_spec = np.where(np.asarray(model[1].header['SPECIES'].split(', ')) == transition)[0]
                     if i_spec.size == 0:
-                        print('{} not in model.'.format(transition))
-                        continue
-                    else:
-                        i_spec = i_spec[0]
+                        print('  {} not in model.            '.format(transition))
+                        break
+                    # else:
+                    #     i_spec = i_spec[0]
 
                     # Create arrays for the longitude and velocity axes
                     lat_model = np.linspace(
@@ -1229,13 +1233,16 @@ def model_selection(path='/mnt/hpc_backup/yanitski/projects/pdr/KT3_history/Milk
                     # breakpoint()
 
                     # Identify the common latitudes between the observations and the model
-                    if isinstance(lat, int) or isinstance(lat, float):
+                    if ((isinstance(lat, int) or isinstance(lat, float)) and comp_type == 'pv' and
+                        not (survey == 'COBE-FIRAS' or survey == 'Planck')):
                         lat_min = lat
                         lat_max = lat
                     else:
                         lat_min = lat_obs[i_lat_obs_init].min()
                         lat_max = lat_obs[i_lat_obs_init].max()
-                    if survey == 'COBE-FIRAS' or survey =='Planck':
+
+                    if survey == 'COBE-FIRAS' or survey == 'Planck':
+                        i_lon_model = np.linspace(0, lon_model.size-1, num=lon_obs.size, dtype=int)
                         i_lat_model = (lat_model >= lat_min) \
                                       & (lat_model <= lat_max)
                         i_lat_obs = (lat_obs >= lat_model[i_lat_model].min()) \
@@ -1247,74 +1254,59 @@ def model_selection(path='/mnt/hpc_backup/yanitski/projects/pdr/KT3_history/Milk
                                     & (lat_obs <= lat_model[i_lat_model].max())
 
                     # Interpolate at the observational axes
-                    # print('grid shape:', model[1].data[:, i_lat, :, i_spec].shape)
-                    # print('axes shape:', vel_model.size, lon_model.size)
                     if (survey == 'COBE') or (survey == 'COBE-FIRAS'):
+                        idx_t = np.ix_(np.arange(vel_model.size), i_lat_model, i_lon_model, i_spec)
+                        idx_d = np.ix_(np.arange(vel_model.size), i_lat_model, i_lon_model, [0])
+                        # print(i_lat_model.size, i_lon_model.size)
                         # print(vel_model.shape,
-                        #       model[1].data[:, i_lat_model, :, i_spec].shape,
-                        #       model[2].data[:, i_lat_model, :, 0].shape,
+                        #       model[1].data[idx_t].shape,
+                        #       model[2].data[idx_d].shape,
                         #       i_lat_obs.size)
-                        model_interp = trapz(model[1].data[:, i_lat_model, :, i_spec]
-                                             - model[2].data[:, i_lat_model, :, 0],
-                                             vel_model, axis=1)
-                        # f_model_interp = interp2d(lon_model, lat_model, model_int[:, :, i_spec])
-                        # model_interp = []
-                        # for _ in range(len(lat)):
-                        #     model_interp.append(f_model_interp(lon[_], lat[_]))
-                        # model_interp = copy(obs_data[:, int(transition)])
-                        #     print(model_interp[-1])
-                        # print(model_interp)
-                        # input()
+                        model_data = model[1].data[idx_t] \
+                                     - model[2].data[idx_d]
+                        model_interp = trapz(model_data, vel_model, axis=model_data.shape.index(vel_model.size))
+                        if '.idl' in file:
+                            idx_obs = np.ix_(np.arange(obs_data.shape[0]), [int(transition_indeces[i])])
+                            obs_data_final = obs_data[idx_obs].reshape(-1)#[:, int(transition_indeces[i])]
+                            obs_error_final = obs_error[idx_obs].reshape(-1)#[:, int(transition_indeces[i])]
+                            model_interp = model_interp.reshape(-1)
+                        else:
+                            idx_obs = np.ix_([int(transition_indeces[i])], i_lat_obs, np.arange(obs_data.shape[2]))
+                            obs_data_final = obs_data[idx_obs][0, :, :]#[int(transition_indeces[i]), i_lat_obs, :]
+                            obs_error_final = obs_error[idx_obs][0, :, :]#[int(transition_indeces[i]), i_lat_obs, :]
+                            model_interp = model_interp[:, :, 0]
+                        # print(model_interp.shape, obs_data_final.shape)
 
                     elif survey == 'Planck':
-                        model_interp = model[2].data[0, i_lat_model, :, i_spec]
+                        idx_d = np.ix_([0], i_lat_model, np.arange(lon_model.size), [0])
+                        model_interp = model[2].data[idx_d][0, :, :, 0]#[0, i_lat_model, :, i_spec]
+                        idx_obs = np.ix_(i_lat_obs, np.arange(obs_data.shape[1]))
+                        obs_data_final = obs_data[idx_obs]#[i_lat_obs, :]
+                        obs_error_final = obs_error[idx_obs]#[i_lat_obs, :]
+                        # print(model_interp.shape, obs_data_final.shape)
 
                     else:
-                        # print(vel)
-                        # print(lon)
-                        # print(vel_model)
-                        # print(lon_model)
-
                         # print(vel_model.shape,
                         #       model[1].data[:, i_lat_model, :, i_spec].shape,
                         #       model[2].data[:, i_lat_model, :, 0].shape,
                         #       obs_data[:, i_lat_obs, :].shape,
                         #       np.swapaxes(obs_data[:, i_lat_obs, :], 0, 1).shape)
-                        model_interp = (model[1].data[:, i_lat_model, :, i_spec]
+                        # input()
+                        model_data = (model[1].data[:, i_lat_model, :, i_spec]
                                         - model[2].data[:, i_lat_model, :, 0])
                         obs_data_temp = np.swapaxes(obs_data[:, i_lat_obs, :], 0, 1)
-                        obs_error_temp = np.swapaxes([obs_error[i_lat_obs, :]]*obs_data_temp.shape[1],
-                                                     0, 1)
-
-                        # if (mission == 'SEDIGISM') and (lon.mean() < 0.5):
-                        #     lon_model[-10:] -= 360
-                        # elif (mission == 'SEDIGISM') and (lon.mean() > 359.5):
-                        #     lon_model[:10] += 360
-                        #
-                        # i_sort = np.argsort(lon_model)
-                        # lon_model = lon_model[i_sort]
-                        # model_data = model_data[:, i_sort]
-                        #
-                        # #print(vel_model[450], 'km/s', lon_model[80], 'deg', model_data[450, 80])
-                        #
-                        # f_model_interp = interp2d(lon_model, vel_model, model_data, kind='linear')
-                        #
-                        # #print(vel_model[450], 'km/s', lon_model[80], 'deg', f_model_interp(lon_model[80], vel_model[450]))
-                        # model_data[model_data == 0] = np.nan
-                        #
-                        # # print(f_model_interp(100, -25))
-                        # # print(f_model_interp(100, 25))
-                        #
-                        # #print(vel[0], 'km/s', lon[0], 'deg')
-                        # model_interp = f_model_interp(lon, vel)
-                        #
-                        # # reverse longitude dimension, which was sorted when interpolated
-                        # if lon[0]>lon[-1]:
-                        #     model_interp = model_interp[:, ::-1]
-                        #
-                        # # reverse velocity dimension, which was sorted when interpolated
-                        # if vel[0]>vel[-1]:
-                        #     model_interp = model_interp[::-1, :]
+                        if comp_type == 'integrated':
+                            model_interp = np.trapz(model_data, vel_model, axis=model_data.shape.index(vel_model.size))
+                            obs_data_final = np.trapz(obs_data_temp, vel_obs, axis=obs_data_temp.shape.index(vel_obs.size))
+                            obs_error_final = obs_error[i_lat_obs, :]
+                        elif comp_type == 'pv':
+                            model_interp = deepcopy(model_data)
+                            obs_error_final = np.swapaxes([obs_error[i_lat_obs, :]]*obs_data_temp.shape[1],
+                                                          0, 1)
+                        else:
+                            print('ERROR >> Comparison type {} not valid; '.format(comp_type) +
+                                  'please choose "pv" or "integrated"')
+                            return 1
 
                         model_interp[model_interp == 0] = np.nan
 
@@ -1357,46 +1349,65 @@ def model_selection(path='/mnt/hpc_backup/yanitski/projects/pdr/KT3_history/Milk
                             plt.contour(lon, vel, obs_data_smoothed, levels=[0.25*vmax, 0.5*vmax], colors='black')
                             plt.show(block=True)
 
+                    if log_comp:
+                        obs_error_final = obs_error_final / np.log(10) / obs_data_final
+                        obs_data_final = np.log10(obs_data_final)
+                        model_interp = np.log10(model_interp)
+
                     # Calculate the chi**2 and overall likelihood
-                    if ((survey == 'COBE') or (survey == 'COBE-FIRAS')) and '.fits' in file:
-                        chi2 = (obs_data[int(transition_indeces[i]), i_lat_obs, :] - model_interp) ** 2 / \
-                                obs_error[int(transition_indeces[i]), i_lat_obs, :] ** 2
-                        likelihood = np.exp(-chi2 / 2) / \
-                                     np.sqrt(2 * np.pi * obs_error[int(transition_indeces[i]), i_lat_obs, :])
-                    elif ((survey == 'COBE') or (survey == 'COBE-FIRAS')) and ('.idl' in file or '.sav' in file):
-                        chi2 = (obs_data[int(transition_indeces[i])] - model_interp) ** 2 / \
-                                obs_error[int(transition_indeces[i])] ** 2
-                        likelihood = np.exp(-chi2 / 2) / \
-                                     np.sqrt(2 * np.pi * obs_error[i_lat_obs, :])
-                    elif survey == 'Planck':
-                        chi2 = (obs_data[i_lat_obs, :] - model_interp) ** 2 / \
-                                obs_error[i_lat_obs, :] ** 2
-                        likelihood = np.exp(-chi2 / 2) / \
-                                     np.sqrt(2 * np.pi * obs_error[i_lat_obs, :])
+                    chi2 = np.zeros_like(model_interp)
+                    loglikelihood = np.zeros_like(model_interp)
+                    # if ((survey == 'COBE') or (survey == 'COBE-FIRAS')):
+                    if '.idl' in file:
+                        i_signal = np.where(obs_data_final >= obs_data_final.min())
                     else:
-                        chi2 = (obs_data_temp - model_interp) ** 2 / obs_error_temp ** 2
-                        likelihood = np.exp(-chi2 / 2) / np.sqrt(2 * np.pi * obs_error_temp)
+                        i_signal = np.where(obs_data_final > obs_error_final)
+                        # print(model_interp.shape,
+                        #       obs_data_final.shape,
+                        #       obs_error_final.shape,
+                        #       model_interp[i_signal].shape,
+                        #       obs_data_final[i_signal].shape,
+                        #       obs_error_final[i_signal].shape
+                        #       )
+                    chi2[i_signal] = (obs_data_final[i_signal] - model_interp[i_signal]) ** 2 / \
+                                     obs_error_final[i_signal] ** 2
+                    loglikelihood[i_signal] = -chi2[i_signal] / 2 \
+                                              - 0.5 * np.log10(np.sqrt(2 * np.pi) * obs_error_final[i_signal])
+                    # elif survey == 'Planck':
+                    #     i_signal = np.where(obs_data_final > obs_error_final)
+                    #     chi2[i_signal] = (obs_data_final[i_signal] - model_interp[i_signal]) ** 2 / \
+                    #                      obs_error_final[i_signal] ** 2
+                    #     loglikelihood[i_signal] = -chi2[i_signal] / 2 \
+                    #                               - 0.5 * np.log10(np.sqrt(2 * np.pi) * obs_error_final[i_signal])
+                    # else:
+                    #     # i_signal = np.where(obs_data_temp >= obs_data_temp.min())
+                    #     i_signal = np.where(obs_data_final > obs_error_final)
+                    #     chi2[i_signal] = (obs_data_final[i_signal] - model_interp[i_signal]) ** 2 \
+                    #                      / obs_error_final[i_signal] ** 2
+                    #     loglikelihood[i_signal] = -chi2[i_signal] / 2 \
+                    #                               - 0.5 * np.log10(np.sqrt(2 * np.pi) * obs_error_final[i_signal])
 
                     # print(model_interp)
                     # print(obs_data[~np.isnan(obs_data)])
                     # print(chi2)
                     chi2 = np.nan_to_num(chi2, nan=0)
-                    likelihood = np.nan_to_num(likelihood, nan=1)
-                    likelihood[likelihood == 0] = 1e-100
+                    loglikelihood = np.nan_to_num(loglikelihood, nan=0)
+                    # likelihood[likelihood == 0] = 1e10
                     # input()
                     np.save(path + 'fit_results/{}/{}/{}/{}_chi2.npy'.format(survey, file.replace('.fits', ''),
                                                                              transition, dir_model.replace('/', '')
-                                                                             .replace('channel_intensity.fits', '')),
+                                                                             .replace('channel_intensity.fits', '')
+                                                                             + '_' + comp),
                             chi2)
                     np.save(path + 'fit_results/{}/{}/{}/{}_loglikelihood.npy'.format(survey, file.replace('.fits', ''),
                                                                                       transition,
                                                                                       dir_model.replace('/', '')
                                                                                       .replace('channel_intensity.fits',
-                                                                                               '')),
-                            np.log10(likelihood))
+                                                                                               '') + '_' + comp),
+                            loglikelihood)
 
                     chi2_grid.append(chi2.sum())
-                    loglikelihood_grid.append(np.log10(likelihood).sum())
+                    loglikelihood_grid.append(loglikelihood.sum())
                     #                             print('  ', likelihood.min())
 
                     # print(obs_data.min(), obs_data.max())
@@ -1464,7 +1475,7 @@ def model_selection(path='/mnt/hpc_backup/yanitski/projects/pdr/KT3_history/Milk
                     # del f_model_interp
                     del model_interp
                     del chi2
-                    del likelihood
+                    del loglikelihood
                     del lon_model
                     del lat_model
                     del vel_model
@@ -1475,27 +1486,31 @@ def model_selection(path='/mnt/hpc_backup/yanitski/projects/pdr/KT3_history/Milk
 
                 i_bestfit2 = np.where(loglikelihood_grid == np.max(loglikelihood_grid))[0][0]
                 # print(i_bestfit2)
-                print('The best-fitting model for {} with transition {}\n'.format(file.replace('.fits', ''), transition) +
+                print('\n    The best-fitting model for {} with transition {}\n'.format(file.replace('.fits', ''), transition) +
                       '  has parameters ' + model_dir.format(*params[i_bestfit2]))
 
-                np.save(path + 'fit_results/{}/{}/{}/chi2.npy'.format(survey, file.replace('.fits', ''), transition),
+                np.save(path + 'fit_results/{}/{}/{}/{}_chi2.npy'.format(survey, file.replace('.fits', ''),
+                                                                         transition, comp),
                         chi2_grid)
-                np.save(path + 'fit_results/{}/{}/{}/loglikelihood.npy'.format(survey, file.replace('.fits', ''), transition),
+                np.save(path + 'fit_results/{}/{}/{}/{}_loglikelihood.npy'.format(survey, file.replace('.fits', ''),
+                                                                                  transition, comp),
                         loglikelihood_grid)
-                np.save(path + 'fit_results/{}/{}/{}/parameters.npy'.format(survey, file.replace('.fits', ''), transition),
+                np.save(path + 'fit_results/{}/{}/{}/{}_parameters.npy'.format(survey, file.replace('.fits', ''),
+                                                                               transition, comp),
                         params)
 
-            obs.close()
+            if '.fits' in file:
+                obs.close()
             del obs_data
             del obs_error
             del lon_obs
             del lat_obs
-            if not vel is None:
-                del vel
+            # if not vel is None:
+            #     del vel
 
         try:
             i_bestfit1 = np.where(chi2_grid == np.min(chi2_grid))[0][0]
-            print('The best-fitting model has parameters' +
+            print('  The best-fitting model has parameters' +
                   model_dir.format(*params[i_bestfit1]))
         except ValueError:
             pass
@@ -1506,7 +1521,8 @@ def model_selection(path='/mnt/hpc_backup/yanitski/projects/pdr/KT3_history/Milk
 
 
 def plot_comparison(path='/mnt/hpc_backup/yanitski/projects/pdr/KT3_history/MilkyWay/fit_results/', file_format='',
-                    model_param=[[]], missions=[], i_x=0, i_y=1, log=False, normalise=False,
+                    missions=[], model_param=[[]], i_x=0, i_y=1,
+                    comp_type='pv', log_comp=True, likelihood=True, log=False, normalise=False,
                     contour=True, levels=10, fraction=0.1, aspect=20, cmap='viridis',
                     xlabel='', ylabel='', supxlabel='', supylabel='', clabel='', clabel_xa=0.98, clabel_ha='left',
                     title='', fontsize=20,
@@ -1530,6 +1546,11 @@ def plot_comparison(path='/mnt/hpc_backup/yanitski/projects/pdr/KT3_history/Milk
         print('Please specify both file_format and model_param.')
         return
 
+    if log_comp:
+        comp = comp_type + '_logT'
+    else:
+        comp = comp_type
+
     dimensions = len(model_param)
     naxis = np.zeros((dimensions), dtype=bool)
     naxis[[i_x, i_y]] = True
@@ -1542,8 +1563,6 @@ def plot_comparison(path='/mnt/hpc_backup/yanitski/projects/pdr/KT3_history/Milk
     else:
         x_grid = model_param_grid[1]
         y_grid = model_param_grid[0]
-    # model_params = zip(np.transpose([model_params[n].flatten() for n in range(len(model_param))]))
-    # model_params = np.transpose([model_params[n].flatten() for n in range(len(model_params))])
 
     if naxis.size == 2:
         sub_params = zip([0], [0])
@@ -1564,7 +1583,18 @@ def plot_comparison(path='/mnt/hpc_backup/yanitski/projects/pdr/KT3_history/Milk
         print('Too many dimensions in grid.')
         return
 
+    # Initialise likelihood and figure for plot analysing all missions
+    loglikelihood_overall = np.zeros((*x_grid.shape, sub_x, sub_y))
+    fig_overall, axes_overall = plt.subplots(sub_y, sub_x, figsize=figsize)
+    if not isinstance(axes_overall, np.ndarray):
+        axes_overall = np.asarray([[axes_overall]])
+    elif axes_overall.ndim == 1:
+        axes_overall.resize(-1, 1)
+
     for survey in missions:
+
+        if survey == 'Plots':
+            continue
 
         # if verbose:
         print('\n  {}\n'.format(survey))
@@ -1615,43 +1645,84 @@ def plot_comparison(path='/mnt/hpc_backup/yanitski/projects/pdr/KT3_history/Milk
                 if len(transitions_skipped) and verbose:
                     print('  transitions {} not available.'.format(', '.join(transitions_skipped)))
 
+                transition_plots = []
+                transition_log_likelihood = []
+                for _ in transitions:
+                    t_fig, t_axes = plt.subplots(sub_y, sub_x, figsize=figsize)
+                    if not isinstance(t_axes, np.ndarray):
+                        t_axes = np.asarray([[t_axes]])
+                    elif t_axes.ndim == 1:
+                        t_axes.resize(-1, 1)
+                    transition_plots.append((copy(t_fig), copy(t_axes)))
+                    transition_log_likelihood.append(np.zeros(x_grid.shape))
+                    plt.close(t_fig)
+
                 for i in range(log_likelihood.shape[0]):
                     for j in range(log_likelihood.shape[1]):
 
+                        file_format_param = np.zeros(naxis.size, dtype=object)
+                        file_format_param[i_x] = x_grid[i, j]
+                        file_format_param[i_y] = y_grid[i, j]
                         if naxis.size > 2:
-                            filename = file_format.format(x_grid[i, j], y_grid[i, j], *param) + '_loglikelihood.npy'
+                            file_format_param[~naxis] = param
+                        if likelihood:
+                            filename = file_format.format(*file_format_param) \
+                                       + '_{}_loglikelihood.npy'.format(comp_type)
                         else:
-                            filename = file_format.format(x_grid[i, j], y_grid[i, j]) + '_loglikelihood.npy'
-                        param_log_likelihood = [np.load(path + survey + '/' + survey_file + '/' + t + '/' + filename)
-                                                for t in transitions]
+                            filename = file_format.format(*file_format_param) \
+                                       + '_{}_chi2.npy'.format(comp_type)
+                            # filename = file_format.format(x_grid[i, j], y_grid[i, j]) \
+                            #            + '_{}_loglikelihood.npy'.format(comp_type)
+                        param_log_likelihood = [np.load(path + survey + '/' + survey_file + '/' +
+                                                            t + '/' + filename) for t in transitions]
                         log_likelihood[i, j] = log_likelihood[i, j] + np.nansum(param_log_likelihood)
+                        for t in range(len(transitions)):
+                            transition_log_likelihood[t][i, j] = transition_log_likelihood[t][i, j] \
+                                                                 + np.nansum(param_log_likelihood[t])
 
             if normalise:
                 if (log_likelihood<0).all():
                     log_likelihood = log_likelihood.max() / log_likelihood
                 else:
                     log_likelihood = log_likelihood / log_likelihood.max()
+                for t in range(len(transitions)):
+                    if (log_likelihood<0).all():
+                        transition_log_likelihood[t] = transition_log_likelihood[t].max() \
+                                                       / transition_log_likelihood[t]
+                    else:
+                        transition_log_likelihood[t] = transition_log_likelihood[t] \
+                                                       / transition_log_likelihood[t].max()
             if log:
                 if (log_likelihood<0).all():
-                    log_likelihood = np.log10(-1/log_likelihood)
+                    log_likelihood = np.log10(-log_likelihood)
                 else:
                     log_likelihood = np.log10(log_likelihood)
+                for t in range(len(transitions)):
+                    if (transition_log_likelihood[t]<0).all():
+                        transition_log_likelihood[t] = np.log10(-transition_log_likelihood[t])
+                    else:
+                        transition_log_likelihood[t] = np.log10(transition_log_likelihood[t])
 
-            # Plot subplot
-            # ------------
+            # Plot subplots
+            # -------------
 
             if len(param) == 1:
                 sub_indeces = (0, np.asarray(model_param, dtype=object)[~naxis].index(param))
                 x_param = param[0]
                 y_param = ''
             elif axes.size > 1:
-                sub_indeces = tuple(arr.index(param[i]) for i,arr in enumerate(np.asarray(model_param, dtype=object)[~naxis]))[::-1]
+                sub_indeces = tuple(arr.index(param[i]) for i,arr in
+                                    enumerate(np.asarray(model_param, dtype=object)[~naxis]))[::-1]
                 x_param = param[1]
                 y_param = param[0]
             else:
                 sub_indeces = (0, 0)
                 x_param = ''
                 y_param = ''
+
+            # Add likelihood in overall array
+            loglikelihood_overall[:, :, sub_indeces[0], sub_indeces[1]] \
+                = loglikelihood_overall[:, :, sub_indeces[0], sub_indeces[1]] + log_likelihood
 
             if contour:
                 cm = axes[sub_indeces].contourf(log_likelihood, levels=levels, cmap=cmap)
@@ -1678,8 +1749,46 @@ def plot_comparison(path='/mnt/hpc_backup/yanitski/projects/pdr/KT3_history/Milk
                                             fontsize=fontsize-4)
             # cb.ax.set_ylabel(clabel, fontsize=fontsize-4)
 
+            for t in range(len(transitions)):
+
+                if contour:
+                    cm = transition_plots[t][1][sub_indeces].contourf(transition_log_likelihood[t],
+                                                                      levels=levels, cmap=cmap)
+                else:
+                    cm = transition_plots[t][1][sub_indeces].imshow(log_likelihood, extent=[0, lenaxis[i_x],
+                                                                                            0, lenaxis[i_y]],
+                                                                    cmap=cmap)
+                transition_plots[t][1][sub_indeces].set_aspect(lenaxis[i_x]/lenaxis[i_y])
+                cb = transition_plots[t][0].colorbar(cm, ax=transition_plots[t][1][sub_indeces],
+                                                     fraction=fraction, aspect=aspect)
+
+                if contour:
+                    transition_plots[t][1][sub_indeces].set_xticks(np.arange(lenaxis[i_x]))
+                    transition_plots[t][1][sub_indeces].set_xticklabels([str(param) for
+                                                                         param in model_param[i_x]])
+                    transition_plots[t][1][sub_indeces].set_yticks(np.arange(lenaxis[i_y]))
+                    transition_plots[t][1][sub_indeces].set_yticklabels([str(param) for
+                                                                         param in model_param[i_y]])
+                else:
+                    transition_plots[t][1][sub_indeces].set_xticks(np.arange(lenaxis[i_x])+0.5)
+                    transition_plots[t][1][sub_indeces].set_xticklabels([str(param) for
+                                                                         param in model_param[i_x]])
+                    transition_plots[t][1][sub_indeces].set_yticks(np.arange(lenaxis[i_y])+0.5)
+                    transition_plots[t][1][sub_indeces].set_yticklabels([str(param) for
+                                                                         param in model_param[i_y][::-1]])
+
+                transition_plots[t][1][sub_indeces].set_xlabel(xlabel, fontsize=fontsize-4)
+                transition_plots[t][1][sub_indeces].set_ylabel(ylabel, fontsize=fontsize-4)
+                if transition_plots[t][1].size > 1:
+                    transition_plots[t][1][sub_indeces].set_title('{} {}, {} {}'.format(supylabel, y_param,
+                                                                                        supxlabel, x_param),
+                                                                  fontsize=fontsize-4)
+
         if title == '':
-            suptitle = survey + ' likelihood'
+            if likelihood:
+                suptitle = survey + ' likelihood'
+            else:
+                suptitle = survey + r' $\chi^2$'
             if normalise:
                 suptitle += ', normalised'
             if log:
@@ -1687,11 +1796,10 @@ def plot_comparison(path='/mnt/hpc_backup/yanitski/projects/pdr/KT3_history/Milk
         else:
             suptitle = copy(title)
 
-        fig.suptitle(suptitle, fontsize=fontsize)
-        # if supxlabel != '':
-        #     fig.supxlabel(supxlabel, fontsize=fontsize)
-        # if supylabel != '':
-        #     fig.supylabel(supylabel, fontsize=fontsize)
+        if isinstance(suptitle, str):
+            fig.suptitle(suptitle, fontsize=fontsize)
+        if clabel == '' or clabel == None:
+            clabel = 'Value'
         fig.supylabel(clabel, x=clabel_xa, ha=clabel_ha, fontsize=fontsize)
 
         if suptitle:
@@ -1702,16 +1810,158 @@ def plot_comparison(path='/mnt/hpc_backup/yanitski/projects/pdr/KT3_history/Milk
                             wspace=wspace, hspace=hspace)
         # fig.tight_layout(pad=pad)
 
+        plt.figure(fig)
         if save_plot:
             if not 'Plots' in survey_files:
                 os.mkdir(path + survey + '/Plots/')
             if output_file == None or output_file == '':
                 output_file = file_format
-            plt.savefig(path + survey + '/Plots/{}_loglikelihood.{}'.format(output_file, output_format),
-                        format=output_format, transparent=transparent)
+            if likelihood:
+                plt.savefig(path + survey + '/Plots/{}_{}_loglikelihood.{}'.format(output_file, comp, output_format),
+                            format=output_format, transparent=transparent)
+            else:
+                plt.savefig(path + survey + '/Plots/{}_{}_chi2.{}'.format(output_file, comp, output_format),
+                            format=output_format, transparent=transparent)
         else:
             plt.show()
 
-        plt.close()
+        plt.close(fig)
+
+        for t in range(len(transitions)):
+
+            if title == '':
+                if likelihood:
+                    suptitle = survey + ' ' + transitions[t] + ' likelihood'
+                else:
+                    suptitle = survey + ' ' + transitions[t] + r' $\chi^2$'
+                if normalise:
+                    suptitle += ', normalised'
+                if log:
+                    suptitle += ', logged'
+            else:
+                suptitle = copy(title)
+
+            if isinstance(suptitle, str):
+                transition_plots[t][0].suptitle(suptitle, fontsize=fontsize)
+            if clabel == '' or clabel == None:
+                clabel = 'Value'
+            transition_plots[t][0].supylabel(clabel, x=clabel_xa, ha=clabel_ha, fontsize=fontsize)
+
+            if suptitle:
+                fig_top = 1 - pad*pad_top
+            if clabel:
+                fig_right = 1 - pad*pad_right
+            transition_plots[t][0].subplots_adjust(left=pad*pad_left, right=fig_right,
+                                                   bottom=pad*pad_bottom, top=fig_top,
+                                                   wspace=wspace, hspace=hspace)
+            # transition_plots[t][0].tight_layout(pad=pad)
+
+            plt.figure(transition_plots[t][0])
+            if save_plot:
+                if not 'Plots' in survey_files:
+                    os.mkdir(path + survey + '/Plots/')
+                if output_file == None or output_file == '':
+                    output_file = file_format
+                if likelihood:
+                    plt.savefig(path + survey + '/Plots/{}_{}_{}_loglikelihood.{}'.format(output_file,
+                                                                                          transitions[t].replace(' ', '-'),
+                                                                                          comp,
+                                                                                          output_format),
+                                format=output_format, transparent=transparent)
+                else:
+                    plt.savefig(path + survey + '/Plots/{}_{}_{}_chi2.{}'.format(output_file,
+                                                                                 transitions[t].replace(' ', '-'),
+                                                                                 comp,
+                                                                                 output_format),
+                                format=output_format, transparent=transparent)
+            else:
+                plt.show()
+
+            plt.close(transition_plots[t][0])
+
+    for param in deepcopy(sub_params):
+
+        if len(param) == 1:
+            sub_indeces = (0, np.asarray(model_param, dtype=object)[~naxis].index(param))
+            x_param = param[0]
+            y_param = ''
+        elif axes.size > 1:
+            sub_indeces = tuple(
+                arr.index(param[i]) for i, arr in enumerate(np.asarray(model_param, dtype=object)[~naxis]))[::-1]
+            x_param = param[1]
+            y_param = param[0]
+        else:
+            sub_indeces = (0, 0)
+            x_param = ''
+            y_param = ''
+
+        if contour:
+            cm = axes_overall[sub_indeces].contourf(loglikelihood_overall[:, :, sub_indeces[0], sub_indeces[1]],
+                                                    levels=levels, cmap=cmap)
+        else:
+            cm = axes_overall[sub_indeces].imshow(loglikelihood_overall[:, :, sub_indeces[0], sub_indeces[1]],
+                                                  extent=[0, lenaxis[i_x], 0, lenaxis[i_y]], cmap=cmap)
+        axes_overall[sub_indeces].set_aspect(lenaxis[i_x] / lenaxis[i_y])
+        cb = fig_overall.colorbar(cm, ax=axes_overall[sub_indeces], fraction=fraction, aspect=aspect)
+
+        if contour:
+            axes_overall[sub_indeces].set_xticks(np.arange(lenaxis[i_x]))
+            axes_overall[sub_indeces].set_xticklabels([str(param) for param in model_param[i_x]])
+            axes_overall[sub_indeces].set_yticks(np.arange(lenaxis[i_y]))
+            axes_overall[sub_indeces].set_yticklabels([str(param) for param in model_param[i_y]])
+        else:
+            axes_overall[sub_indeces].set_xticks(np.arange(lenaxis[i_x]) + 0.5)
+            axes_overall[sub_indeces].set_xticklabels([str(param) for param in model_param[i_x]])
+            axes_overall[sub_indeces].set_yticks(np.arange(lenaxis[i_y]) + 0.5)
+            axes_overall[sub_indeces].set_yticklabels([str(param) for param in model_param[i_y][::-1]])
+
+        axes_overall[sub_indeces].set_xlabel(xlabel, fontsize=fontsize - 4)
+        axes_overall[sub_indeces].set_ylabel(ylabel, fontsize=fontsize - 4)
+        if axes_overall.size > 1:
+            axes_overall[sub_indeces].set_title('{} {}, {} {}'.format(supylabel, y_param, supxlabel, x_param),
+                                                fontsize=fontsize - 4)
+
+    if title == '':
+        if likelihood:
+            suptitle = 'Total (all lines/missions) likelihood'
+        else:
+            suptitle = 'Total (all lines/missions) ' + r'$\chi^2$'
+        if normalise:
+            suptitle += ', normalised'
+        if log:
+            suptitle += ', logged'
+    else:
+        suptitle = copy(title)
+
+    if isinstance(suptitle, str):
+        fig_overall.suptitle(suptitle, fontsize=fontsize)
+    if clabel == '' or clabel == None:
+        clabel = 'Value'
+    fig_overall.supylabel(clabel, x=clabel_xa, ha=clabel_ha, fontsize=fontsize)
+
+    if suptitle:
+        fig_top = 1 - pad * pad_top
+    if clabel:
+        fig_right = 1 - pad * pad_right
+    fig_overall.subplots_adjust(left=pad * pad_left, right=fig_right, bottom=pad * pad_bottom, top=fig_top,
+                                wspace=wspace, hspace=hspace)
+    # fig_overall.tight_layout(pad=pad)
+
+    plt.figure(fig_overall)
+    if save_plot:
+        if not 'Plots' in survey_files:
+            os.mkdir(path + '/Plots/')
+        if output_file == None or output_file == '':
+            output_file = file_format
+        if likelihood:
+            plt.savefig(path + '/Plots/{}_{}_loglikelihood.{}'.format(output_file, comp, output_format),
+                        format=output_format, transparent=transparent)
+        else:
+            plt.savefig(path + '/Plots/{}_{}_chi2.{}'.format(output_file, comp, output_format),
+                        format=output_format, transparent=transparent)
+    else:
+        plt.show()
+
+    plt.close(fig_overall)
 
     return
