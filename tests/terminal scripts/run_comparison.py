@@ -32,19 +32,22 @@ parameters = [[[0.5, 1.0, 2.0, 4.0], [1.0, 2.0], [0.5, 1.0, 2.0, 4.0], [10, 100]
               [[0.25, 0.5, 1.0, 2.0, 4.0], ['-1_2', '-1_3', '0_2', '0_3']],
               [[0.25, 0.5, 1.0, 2.0, 4.0], ['-2', '-2_-1', '-3_-1', '-3_-2']],
               [np.arange(0, 3001, 200), [10, 50, 100]]]
-plot_kwargs = [{'log' : True,
+plot_kwargs = [{'i_x' : 0,
+                'i_y' : 2,
+                'log' : False,
                 'normalise' : False,
-                'figsize' : (30, 10),
+                'figsize' : (10, 10),
                 'xlabel' : r'$f_{clump}$',
-                'ylabel' : r'$f_{interclump}$',
+                'ylabel' : r'$f_{\rho}$',
                 'supxlabel' : r'$f_{FUV}$',
-                'supylabel' : r'$f_{\rho}$',
-                'clabel_xa' : 0.98,
+                'supylabel' : r'$f_{interclump}$',
+                'clabel_xa' : 0.96,
                 'pad_left' : 0.03,
                 'pad_right' : 0.05,
-                'pad_bottom' : 0.03,
-                'pad_top' : 0.05,
-                'wspace' : 0.3,
+                'pad_bottom' : 0.05,
+                'pad_top' : 0.1,
+                'wspace' : 0.5,
+                'hspace' : 0.5,
                 'fraction' : 0.031,
                 'output_file' : 'Mcm-Micm-rho-FUV'},
                {'xlabel' : r'$f_{clump}$',
@@ -55,7 +58,7 @@ plot_kwargs = [{'log' : True,
                 'output_file' : 'Mcm-mcl'},
                {'xlabel' : r'$f_{interclump}$',
                 'ylabel' : r'$m_{interclump}$',
-                'output_file' : 'Micm-micl'},
+                'output_file' : 'Micm-micl_lat0'},
                {'xlabel' : r'$R_{CMZ}$',
                 'ylabel' : r'$f_{FUV}$',
                 'output_file' : 'Rcmz-FUV'}]
@@ -90,18 +93,25 @@ target_kernel = (
     kernel_sigma/2,
 )
 
-# List of survey missions to work on
-missions = None#['COGAL', 'SEDIGISM', 'Mopra', 'ThrUMMS']
+# List of survey missions to work on (None select all available surveys)
+missions = None#['COGAL', 'Mopra', 'ThrUMMS', 'SEDIGISM']
 
 # Colour map for the plots
 cmap = 'gist_ncar'
+
+# The type of comparison for the spectroscopic surveys
+comp_type = 'integrated'
+
+# Specify whether the logged intensity is compared
+log_comp = False
 
 # Dictionary with the default kwargs for the comparison functions
 default_comp_kwargs = {'lat' : None,
                        'PRINT' : True,
                        'PLOT' : False,
                        'debug' : False}
-default_plot_kwargs = {'normalise' : True,
+default_plot_kwargs = {'normalise' : False,
+                       'likelihood' : False,
                        'levels' : 100,
                        'clabel' : r'$log_{10}(\mathcal{L})$',
                        'clabel_xa' : 0.95,
@@ -118,19 +128,28 @@ default_plot_kwargs = {'normalise' : True,
 
 
 for folder,params,plot_kwargs_adj in zip(folders, parameters, plot_kwargs):
+
+    # Uncomment this to avoid the grids with more than two parameters
     # print(len(params))
     # if len(params) > 2:
     #     continue
-    print('Comparing {}'.format(folder))
+
+    print('\nComparing {}'.format(folder))
 
     # kwargs that are common between the comparison functions
-    kwargs_common = {'missions':missions, 'model_param':params, 'cmap':cmap}
+    kwargs_common = {'missions':missions,
+                     'model_param':params,
+                     'cmap':cmap,
+                     'comp_type':comp_type,
+                     'log_comp':log_comp}
 
     # Compare models to observations
     kwargs = deepcopy(kwargs_common)
     kwargs.update({'model_dir':folder})
     kwargs.update(default_comp_kwargs)
-    # comp.model_selection(**kwargs)
+    comp.model_selection(**kwargs)
+
+    print('\nPlotting {}'.format(folder))
 
     # Plot the results
     kwargs = deepcopy(kwargs_common)
