@@ -10,6 +10,7 @@ from tqdm import tqdm
 # import progressbar as pb
 from numba import jit
 from logging import getLogger
+from copy import copy
 
 from .Voxel import *
 from kosmatau3d.models import (
@@ -96,11 +97,6 @@ class VoxelGrid(object):
         rPol = np.array([x.flatten(), y.flatten()]).T
         rPol = np.linalg.norm(rPol, axis=1)
     
-        # Mass
-        ensembleMass = [interpolations.interpolateClumpMass(rPol), interpolations.interpolateInterclumpMass(rPol)]
-        ensembleMass = [constants.clumpMassFactor[ens]*np.asarray(ensembleMass).mean(1)[ens]
-                        for ens in range(len(constants.clumpMassNumber))]
-    
         # Velocity
         velocity = interpolations.interpolateRotationalVelocity(rPol)
         
@@ -138,14 +134,38 @@ class VoxelGrid(object):
         # ensembleDispersion = interpolations.interpolateVelocityDispersion(rPol)
         #
         # ensembleDispersion = ensembleDispersion.mean()
-    
-        # Ensemble density
+
+        # # Mass (old)
+        # ensembleMass = [interpolations.interpolateClumpMass(rPol), interpolations.interpolateInterclumpMass(rPol)]
+        # ensembleMass = [constants.clumpMassFactor[ens]*np.asarray(ensembleMass).mean(1)[ens]
+        #                 for ens in range(len(constants.clumpMassNumber))]
+        # Mass (corrected)
+        ensembleMass = interpolations.interpolateClumpMass(rPol) + interpolations.interpolateInterclumpMass(rPol)
+        ensembleMass = np.asarray(ensembleMass).mean()
+
+        # # Ensemble density (old)
+        # ensembleDensity = interpolations.interpolateDensity(rPol)
+        # ensembleDensity = [constants.densityFactor*ensembleDensity.mean(), constants.interclumpDensity]
+        # Ensemble density (corrected)
         ensembleDensity = interpolations.interpolateDensity(rPol)
-        ensembleDensity = [constants.densityFactor*ensembleDensity.mean(), 1911]
+        ensembleDensity = constants.densityFactor*ensembleDensity.mean()
+
+        clump_fillingfactor = ensembleMass * constants.massSolar / constants.massH \
+                              / ensembleDensity / (constants.voxel_size*constants.pc*100)**3
+        if constants.interclump_fillingfactor == None:
+            constants.interclump_fillingfactor = 1 - clump_fillingfactor
+        ensembleDensity = [ensembleDensity, np.max([0.01*ensembleDensity, constants.interclumpDensity])]
+        ensembleMass = [constants.clumpMassFactor[0] * ensembleMass,
+                        constants.interclump_fillingfactor * constants.massH/constants.massSolar
+                        * (constants.pc*100)**3 * ensembleDensity[1] * constants.clumpMassFactor[1]]
     
         # FUV
-        FUV = interpolations.interpolateFUVfield(rPol, Z)/constants.normUV*constants.globalUV
-        FUV = [np.clip(FUV, 1, None).mean(), constants.fuv_ism]
+        FUV = constants.FUVFactor * interpolations.interpolateFUVfield(rPol, Z)
+        FUV = np.clip(FUV, 1, None).mean()
+        if constants.interclumpLogFUV:
+            FUV = [copy(FUV), constants.interclumpLogFUV]
+        else:
+            FUV = [copy(FUV), copy(FUV)]
 
         # CRIR
         if rPol.mean() >= constants.r_cmz:
@@ -341,7 +361,7 @@ class VoxelGrid(object):
       
             progress.close()
       
-            print('\nEmission calculated successfully.')
+            print('Emission calculated successfully.')
         
         return
     
