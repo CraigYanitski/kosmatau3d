@@ -204,10 +204,13 @@ def interpolateFUVfield(verbose=False):
         if verbose:
             print('Creating FUV interpolation')
         fuv = observations.FUVfield
+        lam = np.array([912, 1350, 1500, 1650, 2000, 2200, 2500, 2800, 3650])
+        wav = np.linspace(912, 2066, num=1000)
+        f = interpolate.interp1d(lam, fuv[2], axis=1)
         if constants.interpolation == 'linear':
-            return interpolate.LinearNDInterpolator(fuv[0], fuv[1])
+            return interpolate.LinearNDInterpolator(fuv[0], np.trapz(f(wav), wav))
         elif constants.interpolation == 'cubic' or constants.interpolation == 'radial':
-            return interpolate.Rbf(fuv[0], fuv[1])
+            return interpolate.Rbf(fuv[0][:, 0], fuv[0][:, 1], np.trapz(f(wav), wav))
         else:
             sys.exit('<<ERROR>>: There is no such method as {} to interpolate '.format(interpolation) +
                      'the KOSMA-tau grid.\n\nExitting...\n\n')

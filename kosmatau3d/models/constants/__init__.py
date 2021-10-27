@@ -91,8 +91,9 @@ clumpNmax = [1, 100]
 clumpDensity = [None, 1911]  # use None to take the voxel density
 # clumpFUV = [None, 10]  #use None to take the voxel FUV field
 
+interclump_fillingfactor = None
 interclumpDensity = 1911  # as defined in the old version of this code
-interclumpLogFUV = 1
+interclumpLogFUV = None
 interclumpMassNumber = 1
 interclumpLogMassRange = [-2]
 interclumpLogMass = np.linspace(interclumpLogMassRange[0], interclumpLogMassRange[-1], num=interclumpMassNumber)
@@ -119,7 +120,8 @@ massLimits = [-3, 3]
 uvLimits = [0, 6]
 
 # UV adjustment
-normUV = 2.89433*10**39
+u_draine0 = 8.950674e-14 # erg/cm^-3 #2.89433*10**39 # erg/pc^3 #
+normUV = 1 # used to normalise the FUV distribution used
 globalUV = 10
 
 # Interpolation

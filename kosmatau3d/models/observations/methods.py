@@ -129,7 +129,8 @@ def FUVfield(file='galactic_FUV_complete.dat'):
         fuv = np.loadtxt(constants.INPUTPATH+constants.directory+file)
         # r = np.arange(0,20000,50)
         # fuv = 50/4/np.pi/r**2
-        observations.FUVfield = (fuv[:, :2], constants.FUVFactor*fuv[:, 2], fuv[:, 3:])
+        observations.FUVfield = (fuv[:, :2], fuv[:, 2] * constants.normUV/(constants.pc*100)**3/constants.u_draine0,
+                                 fuv[:, 3:] * constants.normUV/(constants.pc*100)**3/constants.u_draine0)
         # return (r,fuv)
     return
 
