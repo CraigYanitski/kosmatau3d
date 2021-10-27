@@ -22,8 +22,9 @@ class Model(object):
   
     def __init__(self, history_path='', directory='', folder='', x=0, y=0, z=0, modelType='', resolution=1000,
                  molecules=[], dust='', clumpMassRange=[], clumpMassNumber=[], clumpNmax=[], velocityRange=[],
-                 velocityNumber=0, clumpMassFactor=[], FUVfactor=1, densityFactor=1, globalUV=10, r_cmz=0,
-                 zeta_cmz=1e-14, zeta_sol=2e-16, timed=False, verbose=False, debug=False):
+                 velocityNumber=0, clumpMassFactor=[], interclump_fillingfactor=None, interclumpLogFUV=None,
+                 FUVfactor=1, densityFactor=1, globalUV=10, r_cmz=0, zeta_cmz=1e-14, zeta_sol=2e-16,
+                 timed=False, verbose=False, debug=False):
       
         if not len(clumpMassRange):
             sys.exit('<<ERROR>> Define mass sets in argument.')
@@ -41,16 +42,19 @@ class Model(object):
         
         # Factors
         constants.clumpMassFactor = clumpMassFactor
-        constants.FUVFactor = FUVfactor
         constants.densityFactor = densityFactor
+        constants.FUVFactor = FUVfactor
         constants.globalUV = globalUV
+        constants.interclumpLogFUV = interclumpLogFUV
         constants.r_cmz = r_cmz
         constants.zeta_cmz = zeta_cmz
         constants.zeta_sol = zeta_sol
 
+        # Clump properties
         constants.changeVelocityRange(velocityRange)
         constants.changeVelocityNumber(velocityNumber)
         constants.addClumps(massRange=clumpMassRange, num=clumpMassNumber, Nmax=clumpNmax, reset=True)
+        constants.interclump_fillingfactor = interclump_fillingfactor
         
         observations.methods.initialise()
         self.__addSpecies(molecules)
