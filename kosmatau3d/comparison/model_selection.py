@@ -1301,6 +1301,7 @@ def model_selection(path='/mnt/hpc_backup/yanitski/projects/pdr/KT3_history/Milk
                             obs_error_final = obs_error[i_lat_obs, :]
                         elif comp_type == 'pv':
                             model_interp = deepcopy(model_data)
+                            obs_data_final = copy(model_data)
                             obs_error_final = np.swapaxes([obs_error[i_lat_obs, :]]*obs_data_temp.shape[1],
                                                           0, 1)
                         else:
