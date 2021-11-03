@@ -1,5 +1,5 @@
 import importlib as il
-from copy import copy
+from copy import copy, deepcopy
 from time import time
 
 import numpy as np
@@ -357,6 +357,11 @@ class Voxel(object):
         self.__opticalDepthDust = [np.zeros((constants.velocityRange.size,
                                              constants.wavelengths[constants.nDust].size), dtype=np.float64)
                                    for _ in range(constants.ensembles)]
+
+        self.__emissivity_species = deepcopy(self.__intensitySpecies)
+        self.__absorption_species = deepcopy(self.__opticalDepthSpecies)
+        self.__emissivity_dust = deepcopy(self.__intensityDust)
+        self.__absorption_dust = deepcopy(self.__opticalDepthDust)
     
         # This gives an error if there are too many clumps in a line-of-sight; tau_FUV is too large for this equation...
         Afuv = combinations.getAfuv()
@@ -395,7 +400,7 @@ class Voxel(object):
         return self.__tauFUV
   
     # @jit
-    def calculateEmission(self, verbose=False, timed=False):
+    def calculateEmission(self, test_calc=False, test_opacity=False, test_pexp=False, verbose=False, timed=False):
       
         if timed:
             t0 = time()
@@ -406,7 +411,7 @@ class Voxel(object):
             t1 = time()
             self.__logger.info('Masspoint emission calculated:',format(t1-t0))
         
-        combinations.calculateEmission()
+        combinations.calculateEmission(test_calc=test_calc, test_opacity=test_opacity)
         
         if timed:
             t2 = time()
@@ -473,12 +478,19 @@ class Voxel(object):
                     opticalDepth = copy(combinations.clumpOpticalDepth[ens][:, iDust:])
                     opticalDepth = np.array([opticalDepth*factor[ensemble.clumpIndeces[ens][i], j]
                                              for j in range(factor.shape[1])])
-                    clumpOpticalDepth[ens].append(np.array([(probability.prod(1)/probability.prod(1).sum(0)
-                                                             * np.exp(-opticalDepth[j].T)).T
-                                                            for j in range(factor.shape[1])]))
                     opticalDepthDust = copy(combinations.clumpOpticalDepth[ens][:, :iDust])
-                    clumpOpticalDepthDust[ens].append((probability.prod(1)/probability.prod(1).sum(0)
-                                                       * np.exp(-opticalDepthDust.T)).T)
+                    if test_pexp:
+                        clumpOpticalDepthDust[ens].append((probability.prod(1)/probability.prod(1).sum(0)
+                                                           * opticalDepthDust.T).T)
+                        clumpOpticalDepth[ens].append(np.array([(probability.prod(1)/probability.prod(1).sum(0)
+                                                                 * opticalDepth[j].T).T
+                                                                for j in range(factor.shape[1])]))
+                    else:
+                        clumpOpticalDepthDust[ens].append((probability.prod(1)/probability.prod(1).sum(0)
+                                                           * np.exp(-opticalDepthDust.T)).T)
+                        clumpOpticalDepth[ens].append(np.array([(probability.prod(1)/probability.prod(1).sum(0)
+                                                                 * np.exp(-opticalDepth[j].T)).T
+                                                                for j in range(factor.shape[1])]))
             
                     if timed:
                         t4 = time()
@@ -488,9 +500,6 @@ class Voxel(object):
                 self.__intensitySpecies[ens][nv, :] = self.__intensitySpecies[ens][nv, :] + \
                                                       (np.array(clumpIntensity[ens]).sum(2)
                                                        ).sum(0).astype(constants.dtype)
-                self.__opticalDepthSpecies[ens][nv, :] = self.__opticalDepthSpecies[ens][nv, :] + \
-                                                         (-np.log(np.array(clumpOpticalDepth[ens]).sum(2))
-                                                          ).sum(0).astype(constants.dtype)
                 # self.__intensityDust[ens][:,:] = self.__intensityDust[ens][:,:] +
                 #                                  np.array([np.array(clumpIntensityDust[ens]).sum(1).sum(0)
                 #                                  for _ in range(factor.shape[1])]).astype(constants.dtype)
@@ -502,11 +511,23 @@ class Voxel(object):
                                                    np.array([np.array(clumpIntensityDust[ens]).sum(1).sum(0)
                                                              for _ in range(self.__intensityDust[ens].shape[0])
                                                              ]).astype(constants.dtype))
-                self.__opticalDepthDust[ens][:, :] = (self.__opticalDepthDust[ens][:, :] +
-                                                      np.array([-np.log(np.array(clumpOpticalDepthDust[ens]).sum(1)
-                                                                        ).sum(0)
-                                                                for _ in range(self.__opticalDepthDust[ens].shape[0])
-                                                                ]).astype(constants.dtype))
+                if test_pexp:
+                    self.__opticalDepthSpecies[ens][nv, :] = self.__opticalDepthSpecies[ens][nv, :] + \
+                                                             (np.array(clumpOpticalDepth[ens]).sum(2)
+                                                              ).sum(0).astype(constants.dtype)
+                    self.__opticalDepthDust[ens][:, :] = (self.__opticalDepthDust[ens][:, :] +
+                                                          np.array([np.array(clumpOpticalDepthDust[ens]).sum(1).sum(0)
+                                                                    for _ in range(self.__opticalDepthDust[ens].shape[0])
+                                                                    ]).astype(constants.dtype))
+                else:
+                    self.__opticalDepthSpecies[ens][nv, :] = self.__opticalDepthSpecies[ens][nv, :] + \
+                                                             (-np.log(np.array(clumpOpticalDepth[ens]).sum(2))
+                                                              ).sum(0).astype(constants.dtype)
+                    self.__opticalDepthDust[ens][:, :] = (self.__opticalDepthDust[ens][:, :] +
+                                                          np.array([-np.log(np.array(clumpOpticalDepthDust[ens]).sum(1)
+                                                                            ).sum(0)
+                                                                    for _ in range(self.__opticalDepthDust[ens].shape[0])
+                                                                    ]).astype(constants.dtype))
           
                 if iDust > 1:
                     intensityDustInterp = interp1d(constants.wavelengths[constants.nDust],
@@ -525,21 +546,36 @@ class Voxel(object):
             else:
                 self.__logger.warning('Voxel with velocity {} not within given observing velocity range.'
                                       .format(self.__velocity))
+
+        if test_calc:
+            self.__emissivity_species = deepcopy(self.__intensitySpecies)
+            self.__emissivity_dust = deepcopy(self.__intensityDust)
+        else:
+            self.__emissivity_species = [self.__intensitySpecies[ens]/constants.voxel_size
+                                         for ens in range(len(constants.clumpMassNumber))]
+            self.__emissivity_dust = [self.__intensityDust[ens]/constants.voxel_size
+                                      for ens in range(len(constants.clumpMassNumber))]
+        if test_opacity:
+            self.__absorption_species = deepcopy(self.__opticalDepthSpecies)
+            self.__absorption_dust = deepcopy(self.__opticalDepthDust)
+        else:
+            self.__absorption_species = [self.__opticalDepthSpecies[ens]/constants.voxel_size
+                                         for ens in range(len(constants.clumpMassNumber))]
+            self.__absorption_dust = [self.__opticalDepthDust[ens]/constants.voxel_size
+                                      for ens in range(len(constants.clumpMassNumber))]
     
         self.__logger.info('Voxel emission calculated.')
           
         if timed:
             self.__logger.info('calculateEmission() time of execution:'.format(time()-t0))
-
-        self.__logger.info('voxel emission calculated')
         
         return
   
     def getSpeciesEmissivity(self):
-        return np.asarray(self.__intensitySpecies)/constants.voxel_size
+        return np.asarray(self.__emissivity_species)
   
     def getSpeciesAbsorption(self):
-        return np.asarray(self.__opticalDepthSpecies)/constants.voxel_size
+        return np.asarray(self.__absorption_species)
   
     def getSpeciesIntensity(self):
         epsilon = self.getSpeciesEmissivity()
@@ -550,10 +586,10 @@ class Voxel(object):
         return intensity
   
     def getDustEmissivity(self):
-        return np.asarray(self.__intensityDust)/constants.voxel_size
+        return np.asarray(self.__emissivity_dust)
   
     def getDustAbsorption(self):
-        return np.asarray(self.__opticalDepthDust)/constants.voxel_size
+        return np.asarray(self.__absorption_dust)
   
     def getDustIntensity(self):
         epsilon = self.getDustEmissivity()

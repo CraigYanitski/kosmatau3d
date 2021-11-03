@@ -33,7 +33,7 @@ def getAfuv(verbose=False):
     return [np.exp(-afuv[ens].sum(1)) for ens in range(len(afuv))]
 
 
-def calculateEmission(probability=1, debug=False, test=False):
+def calculateEmission(test_calc=False, test_opacity=False, probability=1, debug=False, test=False):
     '''
     This retrieves the emission from the masspoints, with dimensions (masspoints,species,velocity,velocity). It
     sums over the masspoint dimension. The probability will remain dormant until it is further-developed.
@@ -44,8 +44,18 @@ def calculateEmission(probability=1, debug=False, test=False):
     for ens in range(len(constants.clumpMassNumber)):
       
         for c in combinations.clumpCombination[ens]:
-            intensitylist[ens].append((c*masspoints.clumpIntensity[ens].T).T)
-            opticaldepthlist[ens].append((c*masspoints.clumpOpticalDepth[ens].T).T)
+            if test_calc:
+                intensitylist[ens].append((c * (masspoints.clumpIntensity[ens]*(masspoints.clumpOpticalDepth[ens]
+                                                *4*np.pi*masspoints.clumpRadius[ens].T**2)
+                                                /(1-np.exp(-masspoints.clumpOpticalDepth[ens]))
+                                                /constants.voxel_size**3).T).T)
+            else:
+                intensitylist[ens].append((c*masspoints.clumpIntensity[ens].T).T)
+            if test_opacity:
+                opticaldepthlist[ens].append((c * (masspoints.clumpOpticalDepth[ens]*4*np.pi
+                                                   *masspoints.clumpRadius[ens].T**2/constants.voxel_size**3).T).T)
+            else:
+                opticaldepthlist[ens].append((c*masspoints.clumpOpticalDepth[ens].T).T)
         
         combinations.clumpIntensity[ens] = np.array(intensitylist[ens]).sum(1)
         combinations.clumpOpticalDepth[ens] = np.array(opticaldepthlist[ens]).sum(1)
