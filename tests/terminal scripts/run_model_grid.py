@@ -56,10 +56,10 @@ r_cmz = 0
 models.constants.fuv_ism = 2
 
 for resolution in [500]:
-  for f_uv in 10**np.linspace(1.5, 2.5, num=5):
-    for r_cmz in np.arange(0, 3001, 500, dtype=int):
-        # for f_mass1 in [0.25, 0.5, 1.0, 2.0, 4.0]:
-        #     for f_mass2 in [0.25, 0.5, 1.0, 2.0, 4.0]:
+    for f_mass1 in [0.25, 0.5, 1.0, 2.0, 4.0]:
+        for f_mass2 in [0.25, 0.5, 1.0, 2.0, 4.0]:
+        # for f_uv in 10**np.linspace(1.5, 2.5, num=5):
+        #     for r_cmz in np.arange(0, 3001, 500, dtype=int):
         # if (mass_icl == [-2]) and not (f_mass2 == 4.0):
         #     continue
         # for mass_cl in [[0, 2], [0, 3], [-1, 2], [-1, 3]]:
@@ -68,22 +68,22 @@ for resolution in [500]:
         #                 for f_density in [0.5, 1.0, 2.0, 4.0]:
         #                     for f_uv in [10, 100]:
 
-        parameters['resolution'] = resolution
-        parameters['clumpMassFactor'] = [f_mass1, f_mass2]
-        parameters['clumpMassRange'] = [mass_cl, mass_icl]
-        parameters['clumpMassNumber'] = [len(mass_cl), len(mass_icl)]
-        parameters['densityFactor'] = f_density
-        parameters['FUVfactor'] = f_uv
-        parameters['r_cmz'] = r_cmz
-        parameters['folder'] = 'r{}_rcmz{}_fuv{}/'.format(int(resolution), int(r_cmz), int(f_uv))
+            parameters['resolution'] = resolution
+            parameters['clumpMassFactor'] = [f_mass1, f_mass2]
+            parameters['clumpMassRange'] = [mass_cl, mass_icl]
+            parameters['clumpMassNumber'] = [len(mass_cl), len(mass_icl)]
+            parameters['densityFactor'] = f_density
+            parameters['FUVfactor'] = f_uv
+            parameters['r_cmz'] = r_cmz
+            parameters['folder'] = 'r{}_fcm{}_fim{}/'.format(int(resolution), f_mass1, f_mass2)
 
 
-        kosma = models.Model(**parameters)
-        print('\n    -> Model {}'.format(models.constants.history))
-        print('       ' + '-'*len('Model {}'.format(models.constants.history)))
-        kosma.calculateModel(multiprocessing=0)
+            kosma = models.Model(**parameters)
+            print('\n    -> Model {}'.format(models.constants.history))
+            print('       ' + '-'*len('Model {}'.format(models.constants.history)))
+            kosma.calculateModel(multiprocessing=0)
 
-        directory = parameters['history_path'] + parameters['directory'] + '/' + parameters['folder']
-        models.radiativeTransfer.calculateObservation(directory=directory, dim='spherical', multiprocessing=6,
-                                                      slRange=[(-np.pi, np.pi), (-2*np.pi/180, 2*np.pi/180)],
-                                                      nsl=[361, 5], terminal=True, debug=False)
+            directory = parameters['history_path'] + parameters['directory'] + '/' + parameters['folder']
+            models.radiativeTransfer.calculateObservation(directory=directory, dim='spherical', multiprocessing=6,
+                                                          slRange=[(-np.pi, np.pi), (-2*np.pi/180, 2*np.pi/180)],
+                                                          nsl=[361, 5], terminal=True, debug=False)

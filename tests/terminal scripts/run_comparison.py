@@ -22,46 +22,56 @@ from kosmatau3d import comparison as comp
 
 
 # Folders and parameters of models
-folders = ['/r400_cm{}-{}_d{}_uv{:.0f}/',
-           '/r400_fcm{}_ficm{}/',
-           '/r400_fcm{}_cm{}/',
-           '/r400_ficm{}_icm{}/',
-           '/r400_rcmz{:.0f}_uv{}/']
-parameters = [[[0.5, 1.0, 2.0, 4.0], [1.0, 2.0], [0.5, 1.0, 2.0, 4.0], [10, 100]],
-              [[0.25, 0.5, 1.0, 2.0, 4.0], [0.25, 0.5, 1.0, 2.0, 4.0]],
-              [[0.25, 0.5, 1.0, 2.0, 4.0], ['-1_2', '-1_3', '0_2', '0_3']],
-              [[0.25, 0.5, 1.0, 2.0, 4.0], ['-2', '-2_-1', '-3_-1', '-3_-2']],
-              [np.arange(0, 3001, 200), [10, 50, 100]]]
-plot_kwargs = [{'i_x' : 0,
-                'i_y' : 2,
-                'log' : False,
-                'normalise' : False,
-                'figsize' : (10, 10),
-                'xlabel' : r'$f_{clump}$',
-                'ylabel' : r'$f_{\rho}$',
-                'supxlabel' : r'$f_{FUV}$',
-                'supylabel' : r'$f_{interclump}$',
-                'clabel_xa' : 0.96,
-                'pad_left' : 0.03,
-                'pad_right' : 0.05,
-                'pad_bottom' : 0.05,
-                'pad_top' : 0.1,
-                'wspace' : 0.5,
-                'hspace' : 0.5,
-                'fraction' : 0.031,
-                'output_file' : 'Mcm-Micm-rho-FUV'},
-               {'xlabel' : r'$f_{clump}$',
-                'ylabel' : r'$f_{interclump}$',
-                'output_file' : 'Mcm-Micm'},
-               {'xlabel' : r'$f_{clump}$',
-                'ylabel' : r'$m_{clump}$',
-                'output_file' : 'Mcm-mcl'},
-               {'xlabel' : r'$f_{interclump}$',
-                'ylabel' : r'$m_{interclump}$',
-                'output_file' : 'Micm-micl_lat0'},
-               {'xlabel' : r'$R_{CMZ}$',
+folders = ['/r500_rcmz{}_fuv{}/',
+           '/r500_fcm{}_fim{}/']
+          # ['/r400_cm{}-{}_d{}_uv{:.0f}/',
+          #  '/r400_fcm{}_ficm{}/',
+          #  '/r400_fcm{}_cm{}/',
+          #  '/r400_ficm{}_icm{}/',
+          #  '/r400_rcmz{:.0f}_uv{}/']
+parameters = [[np.arange(0, 3001, 500), (10**np.linspace(1.5, 2.5, num=5)).astype(int)],
+              [[0.25, 0.5, 1.0, 2.0, 4.0], [0.25, 0.5, 1.0, 2.0, 4.0]]]
+             # [[[0.5, 1.0, 2.0, 4.0], [1.0, 2.0], [0.5, 1.0, 2.0, 4.0], [10, 100]],
+             #  [[0.25, 0.5, 1.0, 2.0, 4.0], [0.25, 0.5, 1.0, 2.0, 4.0]],
+             #  [[0.25, 0.5, 1.0, 2.0, 4.0], ['-1_2', '-1_3', '0_2', '0_3']],
+             #  [[0.25, 0.5, 1.0, 2.0, 4.0], ['-2', '-2_-1', '-3_-1', '-3_-2']],
+             #  [np.arange(0, 3001, 200), [10, 50, 100]]]
+plot_kwargs = [{'xlabel' : r'$R_{CMZ}$',
                 'ylabel' : r'$f_{FUV}$',
-                'output_file' : 'Rcmz-FUV'}]
+                'output_file' : 'r500-Rcmz-fFUV'},
+               {'xlabel' : r'$f_{M_{cl}}$',
+                'ylabel' : r'$f_{M_{icl}}$',
+                'output_file' : 'r500-fcl-ficl'}]
+               # {'i_x' : 0,
+               #  'i_y' : 2,
+               #  'log' : False,
+               #  'normalise' : False,
+               #  'figsize' : (10, 10),
+               #  'xlabel' : r'$f_{clump}$',
+               #  'ylabel' : r'$f_{\rho}$',
+               #  'supxlabel' : r'$f_{FUV}$',
+               #  'supylabel' : r'$f_{interclump}$',
+               #  'clabel_xa' : 0.96,
+               #  'pad_left' : 0.03,
+               #  'pad_right' : 0.05,
+               #  'pad_bottom' : 0.05,
+               #  'pad_top' : 0.1,
+               #  'wspace' : 0.5,
+               #  'hspace' : 0.5,
+               #  'fraction' : 0.031,
+               #  'output_file' : 'Mcm-Micm-rho-FUV'},
+               # {'xlabel' : r'$f_{clump}$',
+               #  'ylabel' : r'$f_{interclump}$',
+               #  'output_file' : 'Mcm-Micm'},
+               # {'xlabel' : r'$f_{clump}$',
+               #  'ylabel' : r'$m_{clump}$',
+               #  'output_file' : 'Mcm-mcl'},
+               # {'xlabel' : r'$f_{interclump}$',
+               #  'ylabel' : r'$m_{interclump}$',
+               #  'output_file' : 'Micm-micl_lat0'},
+               # {'xlabel' : r'$R_{CMZ}$',
+               #  'ylabel' : r'$f_{FUV}$',
+               #  'output_file' : 'Rcmz-FUV'}]
 
 # Path to observational data survey folders
 path = '/mnt/hpc_backup/yanitski/projects/pdr/observational_data/MilkyWay/'
@@ -100,7 +110,7 @@ missions = None#['COGAL', 'Mopra', 'ThrUMMS', 'SEDIGISM']
 cmap = 'gist_ncar'
 
 # The type of comparison for the spectroscopic surveys
-comp_type = 'integrated'
+comp_type = 'pv'
 
 # Specify whether the logged intensity is compared
 log_comp = False
@@ -111,7 +121,7 @@ default_comp_kwargs = {'lat' : None,
                        'PLOT' : False,
                        'debug' : False}
 default_plot_kwargs = {'normalise' : False,
-                       'likelihood' : False,
+                       'likelihood' : True,
                        'levels' : 100,
                        'clabel' : r'$log_{10}(\mathcal{L})$',
                        'clabel_xa' : 0.95,
