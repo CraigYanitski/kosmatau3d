@@ -116,7 +116,7 @@ comp_type = 'pv'
 log_comp = False
 
 # Dictionary with the default kwargs for the comparison functions
-default_comp_kwargs = {'lat' : None,
+default_comp_kwargs = {'lat' : 0,
                        'PRINT' : True,
                        'PLOT' : False,
                        'debug' : False}
