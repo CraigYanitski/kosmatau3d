@@ -22,7 +22,8 @@ class Model(object):
   
     def __init__(self, history_path='', directory='', folder='', x=0, y=0, z=0, modelType='', resolution=1000,
                  molecules=[], dust='', clumpMassRange=[], clumpMassNumber=[], clumpNmax=[], velocityRange=[],
-                 velocityNumber=0, clumpMassFactor=[], interclump_fillingfactor=None, interclumpLogFUV=None,
+                 velocityNumber=0, clumpMassFactor=[], interclump_hifactor=1,
+                 interclump_fillingfactor=None, interclumpLogFUV=None,
                  FUVfactor=1, densityFactor=1, globalUV=10, r_cmz=0, zeta_cmz=1e-14, zeta_sol=2e-16,
                  timed=False, verbose=False, debug=False):
       
@@ -42,6 +43,8 @@ class Model(object):
         
         # Factors
         constants.clumpMassFactor = clumpMassFactor
+        constants.interclump_hifactor = interclump_hifactor
+        constants.interclump_fillingfactor = interclump_fillingfactor
         constants.densityFactor = densityFactor
         constants.FUVFactor = FUVfactor
         constants.globalUV = globalUV
@@ -54,7 +57,6 @@ class Model(object):
         constants.changeVelocityRange(velocityRange)
         constants.changeVelocityNumber(velocityNumber)
         constants.addClumps(massRange=clumpMassRange, num=clumpMassNumber, Nmax=clumpNmax, reset=True)
-        constants.interclump_fillingfactor = interclump_fillingfactor
         
         observations.methods.initialise()
         self.__addSpecies(molecules)

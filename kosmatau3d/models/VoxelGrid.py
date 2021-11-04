@@ -135,29 +135,33 @@ class VoxelGrid(object):
         #
         # ensembleDispersion = ensembleDispersion.mean()
 
-        # # Mass (old)
-        # ensembleMass = [interpolations.interpolateClumpMass(rPol), interpolations.interpolateInterclumpMass(rPol)]
-        # ensembleMass = [constants.clumpMassFactor[ens]*np.asarray(ensembleMass).mean(1)[ens]
-        #                 for ens in range(len(constants.clumpMassNumber))]
-        # Mass (corrected)
-        ensembleMass = interpolations.interpolateClumpMass(rPol) + interpolations.interpolateInterclumpMass(rPol)
-        ensembleMass = np.asarray(ensembleMass).mean()
+        # # Mass (clump mass MH2+(1-f)*MHI, interclump mass f*MHI)
+        ensembleMass = [interpolations.interpolateClumpMass(rPol)
+                        + (1-constants.interclump_hifactor) * interpolations.interpolateInterclumpMass(rPol),
+                        constants.interclump_hifactor * interpolations.interpolateInterclumpMass(rPol)]
+        ensembleMass = [constants.clumpMassFactor[ens]*np.asarray(ensembleMass).mean(1)[ens]
+                        for ens in range(len(constants.clumpMassNumber))]
+        # Mass (clump mass MH2+MHI, interclump mass determined by voxel size and filling factor)
+        # ensembleMass = interpolations.interpolateClumpMass(rPol) + interpolations.interpolateInterclumpMass(rPol)
+        # ensembleMass = np.asarray(ensembleMass).mean()
 
-        # # Ensemble density (old)
+        # # Ensemble density (specified constant interclump density)
         # ensembleDensity = interpolations.interpolateDensity(rPol)
         # ensembleDensity = [constants.densityFactor*ensembleDensity.mean(), constants.interclumpDensity]
-        # Ensemble density (corrected)
+        # Ensemble density (interclump density determined by maximum 0.01*n_cl and constant interclump density value)
         ensembleDensity = interpolations.interpolateDensity(rPol)
         ensembleDensity = constants.densityFactor*ensembleDensity.mean()
 
-        clump_fillingfactor = ensembleMass * constants.massSolar / constants.massH \
-                              / ensembleDensity / (constants.voxel_size*constants.pc*100)**3
-        if constants.interclump_fillingfactor == None:
-            constants.interclump_fillingfactor = 1 - clump_fillingfactor
+        # clump_fillingfactor = ensembleMass * constants.massSolar / constants.massH \
+        #                       / ensembleDensity / (constants.voxel_size*constants.pc*100)**3
+        # if constants.interclump_fillingfactor == None:
+        #     constants.interclump_fillingfactor = 1 - clump_fillingfactor
         ensembleDensity = [ensembleDensity, np.max([0.01*ensembleDensity, constants.interclumpDensity])]
-        ensembleMass = [constants.clumpMassFactor[0] * ensembleMass,
-                        constants.interclump_fillingfactor * constants.massH/constants.massSolar
-                        * (constants.pc*100)**3 * ensembleDensity[1] * constants.clumpMassFactor[1]]
+
+        # Mass (clump mass MH2+MHI, interclump mass determined by voxel size and filling factor)
+        # ensembleMass = [constants.clumpMassFactor[0] * ensembleMass,
+        #                 constants.interclump_fillingfactor * constants.massH/constants.massSolar
+        #                 * (constants.pc*100)**3 * ensembleDensity[1] * constants.clumpMassFactor[1]]
     
         # FUV
         FUV = constants.FUVFactor * interpolations.interpolateFUVfield(rPol, Z)

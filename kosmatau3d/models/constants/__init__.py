@@ -91,6 +91,7 @@ clumpNmax = [1, 100]
 clumpDensity = [None, 1911]  # use None to take the voxel density
 # clumpFUV = [None, 10]  #use None to take the voxel FUV field
 
+interclump_hifactor = 1
 interclump_fillingfactor = None
 interclumpDensity = 1911  # as defined in the old version of this code
 interclumpLogFUV = None
