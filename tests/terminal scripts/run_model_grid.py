@@ -48,6 +48,7 @@ parameters = {
 
 f_mass1 = 1.0
 f_mass2 = 1.0
+f_hi = 1
 f_density = 1.0
 f_uv = 1
 mass_cl = [0, 2]
@@ -55,27 +56,30 @@ mass_icl = [-2]
 r_cmz = 0
 models.constants.fuv_ism = 2
 
-for resolution in [500]:
-    for f_mass1 in [0.25, 0.5, 1.0, 2.0, 4.0]:
-        for f_mass2 in [0.25, 0.5, 1.0, 2.0, 4.0]:
-        # for f_uv in 10**np.linspace(1.5, 2.5, num=5):
-        #     for r_cmz in np.arange(0, 3001, 500, dtype=int):
-        # if (mass_icl == [-2]) and not (f_mass2 == 4.0):
-        #     continue
-        # for mass_cl in [[0, 2], [0, 3], [-1, 2], [-1, 3]]:
-        #     for mass_icl in [[-2], [-3, -2], [-3, -1], [-2, -1]]:
-        #             for f_uv in [10, 50, 100]:
-        #                 for f_density in [0.5, 1.0, 2.0, 4.0]:
-        #                     for f_uv in [10, 100]:
+for resolution in [400]:
+    for f_hi in [1.0, 0.8, 0.6, 0.4]:
+        for f_uv in 10**np.linspace(1, 3, num=5):
+            # for f_mass1 in [0.25, 0.5, 1.0, 2.0, 4.0]:
+            #     for f_mass2 in [0.25, 0.5, 1.0, 2.0, 4.0]:
+            # for f_uv in 10**np.linspace(1.5, 2.5, num=5):
+            #     for r_cmz in np.arange(0, 3001, 500, dtype=int):
+            # if (mass_icl == [-2]) and not (f_mass2 == 4.0):
+            #     continue
+            # for mass_cl in [[0, 2], [0, 3], [-1, 2], [-1, 3]]:
+            #     for mass_icl in [[-2], [-3, -2], [-3, -1], [-2, -1]]:
+            #             for f_uv in [10, 50, 100]:
+            #                 for f_density in [0.5, 1.0, 2.0, 4.0]:
+            #                     for f_uv in [10, 100]:
 
             parameters['resolution'] = resolution
             parameters['clumpMassFactor'] = [f_mass1, f_mass2]
+            parameters['interclump_hifactor'] = f_hi
             parameters['clumpMassRange'] = [mass_cl, mass_icl]
             parameters['clumpMassNumber'] = [len(mass_cl), len(mass_icl)]
             parameters['densityFactor'] = f_density
             parameters['FUVfactor'] = f_uv
             parameters['r_cmz'] = r_cmz
-            parameters['folder'] = 'r{}_fcm{}_fim{}/'.format(int(resolution), f_mass1, f_mass2)
+            parameters['folder'] = 'r{}_fhi{}_fuv{}/'.format(int(resolution), f_hi, int(f_uv))
 
 
             kosma = models.Model(**parameters)
@@ -84,6 +88,6 @@ for resolution in [500]:
             kosma.calculateModel(multiprocessing=0)
 
             directory = parameters['history_path'] + parameters['directory'] + '/' + parameters['folder']
-            models.radiativeTransfer.calculateObservation(directory=directory, dim='spherical', multiprocessing=6,
+            models.radiativeTransfer.calculateObservation(directory=directory, dim='spherical', multiprocessing=8,
                                                           slRange=[(-np.pi, np.pi), (-2*np.pi/180, 2*np.pi/180)],
                                                           nsl=[361, 5], terminal=True, debug=False)
