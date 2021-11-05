@@ -33,7 +33,7 @@ def getAfuv(verbose=False):
     return [np.exp(-afuv[ens].sum(1)) for ens in range(len(afuv))]
 
 
-def calculateEmission(test_calc=False, test_opacity=False, probability=1, debug=False, test=False):
+def calculateEmission(test_calc=False, test_opacity=False, test_fv=False, f_v=None, probability=1, debug=False, test=False):
     '''
     This retrieves the emission from the masspoints, with dimensions (masspoints,species,velocity,velocity). It
     sums over the masspoint dimension. The probability will remain dormant until it is further-developed.
@@ -42,18 +42,23 @@ def calculateEmission(test_calc=False, test_opacity=False, probability=1, debug=
     opticaldepthlist = [[] for _ in range(len(constants.clumpMassNumber))]
   
     for ens in range(len(constants.clumpMassNumber)):
+
+        if test_fv:
+            f_ds = np.maximum(f_v[ens], 1)
+        else:
+            f_ds = 1
       
         for c in combinations.clumpCombination[ens]:
             if test_calc:
                 intensitylist[ens].append((c * (masspoints.clumpIntensity[ens]*(masspoints.clumpOpticalDepth[ens]
                                                 *4*np.pi*masspoints.clumpRadius[ens].T**2)
                                                 /(1-np.exp(-masspoints.clumpOpticalDepth[ens]))
-                                                /constants.voxel_size**3).T).T)
+                                                /constants.voxel_size**3/f_ds).T).T)
             else:
                 intensitylist[ens].append((c*masspoints.clumpIntensity[ens].T).T)
             if test_opacity:
                 opticaldepthlist[ens].append((c * (masspoints.clumpOpticalDepth[ens]*4*np.pi
-                                                   *masspoints.clumpRadius[ens].T**2/constants.voxel_size**3).T).T)
+                                                   *masspoints.clumpRadius[ens].T**2/constants.voxel_size**3/f_ds).T).T)
             else:
                 opticaldepthlist[ens].append((c*masspoints.clumpOpticalDepth[ens].T).T)
         

@@ -57,7 +57,13 @@ class Voxel(object):
         
         self.__r = 0
         self.__phi = 0
-        
+
+        # testing flags
+        self.test_calc = False
+        self.test_opacity = False
+        self.test_pexp = False
+        self.test_fv = False
+
         return
   
     def __setMass(self):
@@ -400,8 +406,14 @@ class Voxel(object):
         return self.__tauFUV
   
     # @jit
-    def calculateEmission(self, test_calc=False, test_opacity=False, test_pexp=False, verbose=False, timed=False):
-      
+    def calculateEmission(self, test_calc=False, test_opacity=False, test_pexp=False, test_fv=False,
+                          verbose=False, timed=False):
+
+        self.test_calc = test_calc
+        self.test_opacity = test_opacity
+        self.test_pexp = test_pexp
+        self.test_fv = test_fv
+
         if timed:
             t0 = time()
         
@@ -411,7 +423,8 @@ class Voxel(object):
             t1 = time()
             self.__logger.info('Masspoint emission calculated:',format(t1-t0))
         
-        combinations.calculateEmission(test_calc=test_calc, test_opacity=test_opacity)
+        combinations.calculateEmission(test_calc=test_calc, test_opacity=test_opacity,
+                                       test_fv=test_fv, f_v=self.__volumeFactor)
         
         if timed:
             t2 = time()
@@ -479,7 +492,7 @@ class Voxel(object):
                     opticalDepth = np.array([opticalDepth*factor[ensemble.clumpIndeces[ens][i], j]
                                              for j in range(factor.shape[1])])
                     opticalDepthDust = copy(combinations.clumpOpticalDepth[ens][:, :iDust])
-                    if test_pexp:
+                    if self.test_pexp:
                         clumpOpticalDepthDust[ens].append((probability.prod(1)/probability.prod(1).sum(0)
                                                            * opticalDepthDust.T).T)
                         clumpOpticalDepth[ens].append(np.array([(probability.prod(1)/probability.prod(1).sum(0)
@@ -511,7 +524,7 @@ class Voxel(object):
                                                    np.array([np.array(clumpIntensityDust[ens]).sum(1).sum(0)
                                                              for _ in range(self.__intensityDust[ens].shape[0])
                                                              ]).astype(constants.dtype))
-                if test_pexp:
+                if self.test_pexp:
                     self.__opticalDepthSpecies[ens][nv, :] = self.__opticalDepthSpecies[ens][nv, :] + \
                                                              (np.array(clumpOpticalDepth[ens]).sum(2)
                                                               ).sum(0).astype(constants.dtype)
@@ -547,17 +560,29 @@ class Voxel(object):
                 self.__logger.warning('Voxel with velocity {} not within given observing velocity range.'
                                       .format(self.__velocity))
 
-        if test_calc:
+        if self.test_calc:
             self.__emissivity_species = deepcopy(self.__intensitySpecies)
             self.__emissivity_dust = deepcopy(self.__intensityDust)
+        elif self.test_fv:
+            f_ds = [np.maximum(1, self.__volumeFactor[ens]) for ens in range(len(constants.clumpMassNumber))]
+            self.__emissivity_species = [self.__intensitySpecies[ens]/constants.voxel_size/f_ds[ens]
+                                         for ens in range(len(constants.clumpMassNumber))]
+            self.__emissivity_dust = [self.__intensityDust[ens]/constants.voxel_size/f_ds[ens]
+                                      for ens in range(len(constants.clumpMassNumber))]
         else:
             self.__emissivity_species = [self.__intensitySpecies[ens]/constants.voxel_size
                                          for ens in range(len(constants.clumpMassNumber))]
             self.__emissivity_dust = [self.__intensityDust[ens]/constants.voxel_size
                                       for ens in range(len(constants.clumpMassNumber))]
-        if test_opacity:
+        if self.test_opacity:
             self.__absorption_species = deepcopy(self.__opticalDepthSpecies)
             self.__absorption_dust = deepcopy(self.__opticalDepthDust)
+        elif self.test_fv:
+            f_ds = [np.maximum(1, self.__volumeFactor[ens]) for ens in range(len(constants.clumpMassNumber))]
+            self.__absorption_species = [self.__opticalDepthSpecies[ens]/constants.voxel_size/f_ds[ens]
+                                         for ens in range(len(constants.clumpMassNumber))]
+            self.__absorption_dust = [self.__opticalDepthDust[ens]/constants.voxel_size/f_ds[ens]
+                                      for ens in range(len(constants.clumpMassNumber))]
         else:
             self.__absorption_species = [self.__opticalDepthSpecies[ens]/constants.voxel_size
                                          for ens in range(len(constants.clumpMassNumber))]
@@ -580,9 +605,15 @@ class Voxel(object):
     def getSpeciesIntensity(self):
         epsilon = self.getSpeciesEmissivity()
         kappa = self.getSpeciesAbsorption()
-        intensity = epsilon/kappa*(1-np.exp(-kappa*constants.voxel_size))
-        i_nan = np.isnan(intensity)
-        intensity[i_nan] = epsilon[i_nan]
+        intensity = np.zeros_like(epsilon)
+        for ens in range(len(constants.clumpMassNumber)):
+            if self.__volumeFactor[ens] > 1 and self.test_fv:
+                ds = self.__volumeFactor[ens]*constants.voxel_size
+            else:
+                ds = constants.voxel_size
+            intensity[ens] = epsilon[ens]/kappa[ens]*(1-np.exp(-kappa[ens]*ds))
+            i_nan = np.isnan(intensity[ens])
+            intensity[ens][i_nan] = epsilon[ens][i_nan]
         return intensity
   
     def getDustEmissivity(self):
@@ -594,9 +625,15 @@ class Voxel(object):
     def getDustIntensity(self):
         epsilon = self.getDustEmissivity()
         kappa = self.getDustAbsorption()
-        intensity = epsilon/kappa*(1-np.exp(-kappa*constants.voxel_size))
-        i_nan = np.isnan(intensity)
-        intensity[i_nan] = epsilon[i_nan]
+        intensity = np.zeros_like(epsilon)
+        for ens in range(len(constants.clumpMassNumber)):
+            if self.__volumeFactor[ens] > 1 and self.test_fv:
+                ds = self.__volumeFactor[ens]*constants.voxel_size
+            else:
+                ds = constants.voxel_size
+            intensity[ens] = epsilon[ens]/kappa[ens]*(1-np.exp(-kappa[ens]*constants.voxel_size*ds))
+            i_nan = np.isnan(intensity[ens])
+            intensity[ens][i_nan] = epsilon[ens][i_nan]
         return intensity
   
     def plotMolecule(self, molecule='', quantity='intensity', moleculeName='', title='', logscale=False):
