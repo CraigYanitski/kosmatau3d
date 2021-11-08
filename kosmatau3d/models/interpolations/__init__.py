@@ -22,6 +22,7 @@ warnings.simplefilter('ignore', category=NumbaDeprecationWarning)
 warnings.simplefilter('ignore', category=NumbaPendingDeprecationWarning)
 
 
+initialised = False
 intensityInterpolation = None
 tauInterpolation = None
 dustIntensityInterpolation = None

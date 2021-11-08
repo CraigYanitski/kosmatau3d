@@ -11,6 +11,8 @@ in the folder 'grid'.
 '''
 
 
+initialised = False
+
 # Grid
 tbCenterline = None
 tauCenterline = None

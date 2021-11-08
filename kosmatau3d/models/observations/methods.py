@@ -25,6 +25,8 @@ def initialise():
     densityProfile()
     FUVfield()
     rotationProfile()
+
+    observations.initialised = True
     
     return
 
