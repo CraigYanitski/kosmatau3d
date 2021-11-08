@@ -157,7 +157,8 @@ class Voxel(object):
     def setProperties(self, voxel_size=1, molecules='all', dust='PAH', alpha=1.84, gamma=2.31, clumpMassNumber=[3,1],
                       clumpMassRange=[[0,2],[-2]], clumpNmax=[1, 100], velocityRange=[-10,10], velocityNumber=51,
                       ensembleMass=100, velocity=0., ensembleDispersion=1, volumeFactor=None,
-                      ensembleDensity=[15000, 1911], FUV=[20000, 1], crir=2e-16, fromGrid=False,
+                      ensembleDensity=[15000, 1911], FUV=[20000, 1], crir=2e-16,
+                      from_grid=False, new_grid=False, change_interpolation=False,
                       timed=False, verbose=False, debug=False):
         '''
           This method calculates the radii assuming an origin of (0,0). It then averages
@@ -268,13 +269,23 @@ class Voxel(object):
         #     velocity = np.linalg.norm(self.__velocity)
     
         if True:
-    
-            if not fromGrid:
+
+            if constants.voxel_size != voxel_size:
                 constants.voxel_size = voxel_size
+
+            if constants.alpha != alpha or constants.gamma != gamma:
                 constants.changeMassFunctionParameters(alpha=alpha, gamma=gamma)
+
+            if constants.velocityBin != velocityRange or constants.velocityNumber != velocityNumber:
                 constants.changeVelocityRange(velocityRange)
                 constants.changeVelocityNumber(velocityNumber)
+
+            if constants.clumpLogMassRange != clumpMassRange or constants.clumpMassNumber != clumpMassNumber\
+                    or constants.clumpNmax != clumpNmax:
                 constants.addClumps(massRange=clumpMassRange, num=clumpMassNumber, Nmax=clumpNmax, reset=True)
+    
+            if new_grid or change_interpolation or \
+                    not interpolations.initialised or not observations.initialised:
                 constants.changeDustWavelengths(dust)
                 observations.methods.initialise()
                 species.addMolecules(molecules)
