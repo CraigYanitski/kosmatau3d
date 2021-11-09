@@ -109,7 +109,7 @@ target_kernel = (
 )
 
 # List of survey missions to work on (None select all available surveys)
-missions = None#['COGAL', 'Mopra', 'ThrUMMS', 'SEDIGISM']
+missions = 'COGAL'#['COGAL', 'Mopra', 'ThrUMMS', 'SEDIGISM']
 
 # Colour map for the plots
 cmap = 'gist_ncar'
@@ -118,7 +118,7 @@ cmap = 'gist_ncar'
 comp_type = 'pv'
 
 # Specify whether the logged intensity is compared
-log_comp = True
+log_comp = False
 
 # Dictionary with the default kwargs for the comparison functions
 default_comp_kwargs = {'lat' : 0,
@@ -126,7 +126,7 @@ default_comp_kwargs = {'lat' : 0,
                        'PLOT' : False,
                        'debug' : False}
 default_plot_kwargs = {'normalise' : False,
-                       'likelihood' : True,
+                       'likelihood' : False,
                        'levels' : 100,
                        'clabel' : r'$log_{10}(\mathcal{L})$',
                        'clabel_xa' : 0.95,

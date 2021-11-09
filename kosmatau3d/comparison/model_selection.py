@@ -1352,7 +1352,9 @@ def model_selection(path='/mnt/hpc_backup/yanitski/projects/pdr/KT3_history/Milk
 
                     if log_comp:
                         obs_error_final = obs_error_final / np.log(10) / obs_data_final
+                        obs_data_final[obs_data_final <= 0] = 1e-100
                         obs_data_final = np.log10(obs_data_final)
+                        model_interp[model_interp <= 0] = 1e-100
                         model_interp = np.log10(model_interp)
 
                     # Calculate the chi**2 and overall likelihood
@@ -1370,10 +1372,14 @@ def model_selection(path='/mnt/hpc_backup/yanitski/projects/pdr/KT3_history/Milk
                         #       obs_data_final[i_signal].shape,
                         #       obs_error_final[i_signal].shape
                         #       )
+                    print(obs_data_final[i_signal].size - len(param))
+                    print(obs_data_final[i_signal] - model_interp[i_signal])
+                    print(((obs_data_final[i_signal] - model_interp[i_signal])** 2 / \
+                                     obs_error_final[i_signal] ** 2).max())
                     chi2[i_signal] = (obs_data_final[i_signal] - model_interp[i_signal]) ** 2 / \
                                      obs_error_final[i_signal] ** 2 / (obs_data_final[i_signal].size - len(param))
                     loglikelihood[i_signal] = -chi2[i_signal] / 2 \
-                                              - 0.5 * np.log10(np.sqrt(2 * np.pi) * obs_error_final[i_signal])
+                                              - 0.5 * np.log(np.sqrt(2 * np.pi) * obs_error_final[i_signal])
                     # elif survey == 'Planck':
                     #     i_signal = np.where(obs_data_final > obs_error_final)
                     #     chi2[i_signal] = (obs_data_final[i_signal] - model_interp[i_signal]) ** 2 / \
