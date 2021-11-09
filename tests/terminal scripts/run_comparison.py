@@ -22,26 +22,31 @@ from kosmatau3d import comparison as comp
 
 
 # Folders and parameters of models
-folders = ['/r500_rcmz{}_fuv{}/',
-           '/r500_fcm{}_fim{}/']
+folders = ['/r400_fhi{}_fuv{:.0f}/', '']
+          # ['/r500_rcmz{}_fuv{}/',
+          #  '/r500_fcm{}_fim{}/']
           # ['/r400_cm{}-{}_d{}_uv{:.0f}/',
           #  '/r400_fcm{}_ficm{}/',
           #  '/r400_fcm{}_cm{}/',
           #  '/r400_ficm{}_icm{}/',
           #  '/r400_rcmz{:.0f}_uv{}/']
-parameters = [[np.arange(0, 3001, 500), (10**np.linspace(1.5, 2.5, num=5)).astype(int)],
-              [[0.25, 0.5, 1.0, 2.0, 4.0], [0.25, 0.5, 1.0, 2.0, 4.0]]]
+parameters = [[[1.0, 0.8, 0.6, 0.4], (10**np.linspace(1, 3, num=5)).astype(int)], [[]]]
+             # [[[np.arange(0, 3001, 500), (10**np.linspace(1.5, 2.5, num=5)).astype(int)],
+             #  [[0.25, 0.5, 1.0, 2.0, 4.0], [0.25, 0.5, 1.0, 2.0, 4.0]]]
              # [[[0.5, 1.0, 2.0, 4.0], [1.0, 2.0], [0.5, 1.0, 2.0, 4.0], [10, 100]],
              #  [[0.25, 0.5, 1.0, 2.0, 4.0], [0.25, 0.5, 1.0, 2.0, 4.0]],
              #  [[0.25, 0.5, 1.0, 2.0, 4.0], ['-1_2', '-1_3', '0_2', '0_3']],
              #  [[0.25, 0.5, 1.0, 2.0, 4.0], ['-2', '-2_-1', '-3_-1', '-3_-2']],
              #  [np.arange(0, 3001, 200), [10, 50, 100]]]
-plot_kwargs = [{'xlabel' : r'$R_{CMZ}$',
+plot_kwargs = [{'xlabel' : r'$f_{HI}$',
                 'ylabel' : r'$f_{FUV}$',
-                'output_file' : 'r500-Rcmz-fFUV'},
-               {'xlabel' : r'$f_{M_{cl}}$',
-                'ylabel' : r'$f_{M_{icl}}$',
-                'output_file' : 'r500-fcl-ficl'}]
+                'output_file' : 'r400-fHI-fFUV'}, {}]
+               # {'xlabel' : r'$R_{CMZ}$',
+               #  'ylabel' : r'$f_{FUV}$',
+               #  'output_file' : 'r500-Rcmz-fFUV'},
+               # {'xlabel' : r'$f_{M_{cl}}$',
+               #  'ylabel' : r'$f_{M_{icl}}$',
+               #  'output_file' : 'r500-fcl-ficl'}]
                # {'i_x' : 0,
                #  'i_y' : 2,
                #  'log' : False,
@@ -113,7 +118,7 @@ cmap = 'gist_ncar'
 comp_type = 'pv'
 
 # Specify whether the logged intensity is compared
-log_comp = False
+log_comp = True
 
 # Dictionary with the default kwargs for the comparison functions
 default_comp_kwargs = {'lat' : 0,
@@ -159,7 +164,7 @@ for folder,params,plot_kwargs_adj in zip(folders, parameters, plot_kwargs):
     kwargs.update(default_comp_kwargs)
     comp.model_selection(**kwargs)
 
-    print('\nPlotting {}'.format(folder))
+    print('\n\nPlotting {}'.format(folder))
 
     # Plot the results
     kwargs = deepcopy(kwargs_common)
