@@ -450,6 +450,7 @@ class Voxel(object):
         # interclumpOpticalDepth = []
     
         iDust = constants.wavelengths[constants.nDust].size
+        f_ds = [np.maximum(1, self.__volumeFactor[ens]) for ens in range(len(constants.clumpMassNumber))]
     
         # Clump
         for ens in range(constants.ensembles):
@@ -508,6 +509,14 @@ class Voxel(object):
                                                            * opticalDepthDust.T).T)
                         clumpOpticalDepth[ens].append(np.array([(probability.prod(1)/probability.prod(1).sum(0)
                                                                  * opticalDepth[j].T).T
+                                                                for j in range(factor.shape[1])]))
+                    elif self.test_opacity:
+                        clumpOpticalDepthDust[ens].append((probability.prod(1)/probability.prod(1).sum(0)
+                                                           * np.exp(-opticalDepthDust.T
+                                                                    *constants.voxel_size*f_ds[ens])).T)
+                        clumpOpticalDepth[ens].append(np.array([(probability.prod(1)/probability.prod(1).sum(0)
+                                                                 * np.exp(-opticalDepth[j].T
+                                                                          *constants.voxel_size*f_ds[ens])).T
                                                                 for j in range(factor.shape[1])]))
                     else:
                         clumpOpticalDepthDust[ens].append((probability.prod(1)/probability.prod(1).sum(0)
