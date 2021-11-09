@@ -108,6 +108,8 @@
     I_{\mathrm{vox},\nu} (v_{obs}) = \frac{\epsilon_\nu (v_{obs})}{\kappa_\nu (v_{obs})} \left( 1 - e^{-\kappa_\nu (v_{obs}) \Delta s} \right) + I_{bg} e^{-\kappa_\nu (v_{obs}) \Delta s}
     \]
 
+    \pagebreak
+
     \section{Calculation error}
 
     There is clearly some issue with the single voxel calculation, since there is an absorption feature that should not be present.
@@ -154,10 +156,11 @@
     This should not be working since the probabilistic approach should work on the attenuation (\(e^{-\tau}\)).
     In any case, this is included for a test.
     The final flag, \texttt{test\_fv}, tests a form of the calculation that should have been in the code from the beginning.
-    Since only partially- to fully-filled voxels are considered in the 3D models, all of the computations depend on the extent of the voxel, \(\Delta s\).
-    This is not true in the case of an over-filled voxel, where the excess clumps are assumed to be located just behind the voxel.
+    Since only partially- to fully-filled voxels are considered in the 3D models (\(f_V \leq 1\)), all of the computations depend on the extent of the voxel, \(\Delta s\).
+    This is not true in the case of an over-filled voxel (\(f_V > 1\)), where the excess clumps are assumed to be located just behind the voxel.
     In this case of an over-filled voxel, the calculations are modified to ensure it is still physically correct.
-    As a crude approximation, this changes equations such as the voxel-averaged opacity to \(<\kappa_\nu> = \frac{<\tau_\nu>}{f_V \Delta s}\), where \(f_V > 1\).
+    (ie. The voxel essentially becomes a column, with the voxel size \(\Delta s\) determining the observed area and the depth adjusted by \(f_C \equiv \mathrm{max}(1, f_V)\).)
+    As a crude approximation, this changes equations such as the voxel-averaged opacity to \(<\kappa_\nu> = \frac{<\tau_\nu>}{f_C \Delta s}\).
     This ensures all of the clumps are contained in the voxel being calculated.
     In the case of an over-filled voxel, the voxel calculated is actually a rectangle.
 
@@ -211,5 +214,62 @@
     This also correctly results in the desired plateaux, but the relative intensities are different (since C\textsc{ii} is now larger than O\textsc{i}).
 
     \includegraphics*[width=\linewidth]{voxel_error_fv-calc-opacity-pexp.png}
+
+    \subsection{Summary}
+
+    As shown in the previous subsections, the calculations which correctly model the saturation plateaux features apply the probabilistic calculation directly to the opacity \(\kappa_\nu\), rather than \(e^{-\kappa_\nu \Delta s}\).
+    These models differ, at least in these examples, by the relative intensities of the transitions.
+    Notable the C\(\mathsc{ii}\) and C\(\mathsc{i}\) lines differ.
+    What remains is determining which calculation is correct.
+
+    \pagebreak
+
+    \section{Convergence test}
+
+    An initial test notebook was created to explain how the single-voxel object functions.
+    The example was a voxel with side length \(\Delta s = 1 pc\), clump mass \(M_{cl} = 10 M_\odot\), ensemble mass \(M_{ens} = 10 M_\odot\), ensemble dispersion \(\sigma_{ens} = 0 \frac{km}{s}\), hydrogen number density \(n_{H\mathsc{i}} = 10^{5} cm^{-3}\), and far-UV radiation \(\chi = 10^{4} \chi_0\).
+    It is essentially a voxel containing one clump with no added velocity dispersion.
+    This will be used as a benchmark result, and we will examine the two settings that worked on the over-filled voxel.
+    The correction for an over-filled voxel is not necessary in this case since the model is partially filled.
+
+    \includegraphics*[width=\linewidth]{voxel_convergence_original.png}
+
+    This model should contain just one clump of mass \(10 M_\odot\).
+    The intensity of this clump (after calculating the radiative transfer equation) is given below.
+
+    \includegraphics*[width=\linewidth]{voxel_single-clump.png}
+
+    \subsection{Setting \texttt{test\_pexp}}
+
+    We first look at the intensity of the voxel with the adjusted probabilistic calculation of the voxel-averaged opacity \(<\kappa_\nu>_vox\).
+    The result is the same as the benchmark plot.
+
+    \includegraphics*[width=\linewidth]{voxel_convergence_fv-pexp.png}
+
+    We also look into the result for a voxel area with a comparable area to the projected area of the clump, which is a voxel with side length \(\Delta s = 0.16 pc\).
+    This should result in the same plot as the clump intensity plot.
+
+    \includegraphics*[width=\linewidth]{voxel_single-clump_fv-pexp.png}
+
+    \subsection{Setting \texttt{test\_calc}, \texttt{test\_opacity}, and \texttt{test\_pexp}}
+
+    Now the \(1 pc\) voxel with the suggested calculation correction results in an intensity plot that is lower by a factor of 4.
+    The relative intensities of the various transitions are also different.
+
+    \includegraphics*[width=\linewidth]{voxel_convergence_fv-calc-opacity-pexp.png}
+
+    Finally the \(0.16 pc\) voxel, which should have an intensity profile similar to the benchmark profile of a single clump, is greater by about a factor of 4.
+    There are also different transitions that are saturated ().
+
+    \includegraphics*[width=\linewidth]{voxel_single-clump_fv-calc-opacity-pexp.png}
+
+    \subsection{Summary/Issues}
+
+    In the end the implementation that appears successful is the original calculation, but including the correction for over-filled voxels and applying the probabilities to \(\kappa\) rather than \(e^{-\kappa \Delta s}\).
+    This is not the end of the issue, though.
+    As noted by Markus, the intensity value used in the plots is the integrated intensity.
+    That means the intensity profile of the single clump used in the calculation is incorrect.
+    It could very-well be that the proposed corrected voxel-averaged calculations would work if the code uses the correct clump emissivity/opacity.
+    To that end, I guess I have a question for Markus: is it possible to get the maximum emissivity/opacity of the clumps in the grid (which is assumed to be the peak of a Gaussian with \(\sigma_{cl} \approx 0.71 \frac{km}{s}\))?
 
 \end{document}
