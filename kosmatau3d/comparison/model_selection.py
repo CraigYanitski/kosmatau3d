@@ -1371,7 +1371,7 @@ def model_selection(path='/mnt/hpc_backup/yanitski/projects/pdr/KT3_history/Milk
                         #       obs_error_final[i_signal].shape
                         #       )
                     chi2[i_signal] = (obs_data_final[i_signal] - model_interp[i_signal]) ** 2 / \
-                                     obs_error_final[i_signal] ** 2
+                                     obs_error_final[i_signal] ** 2 / (obs_data_final[i_signal].size - len(param))
                     loglikelihood[i_signal] = -chi2[i_signal] / 2 \
                                               - 0.5 * np.log10(np.sqrt(2 * np.pi) * obs_error_final[i_signal])
                     # elif survey == 'Planck':
