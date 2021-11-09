@@ -1,5 +1,5 @@
 \documentclass[a4paper]{article}
-\usepackage{graphicx, hyperref, amsmath, amsfonts, hhline, booktabs}
+\usepackage{graphicx, hyperref, amsmath, amsfonts, amssymb, hhline, booktabs}
 %\usepackage[fleqn,tbtags]{amsmath}
 \usepackage[flushleft]{threeparttable}
 \usepackage{mathtools}
@@ -147,15 +147,69 @@
 
     At least this is how the intended modification to the code should work.
     Its implementation tries to remain as faithful to this description as possible, but it was noted that there are still a couple errors.
-    Therefore some flags were added to choose the type of implementation: \texttt{test\_calc}, \texttt{test\_pexp}, and \texttt{test\_opacity}.
+    Therefore some flags were added to choose the type of implementation: \texttt{test\_calc}, \texttt{test\_pexp}, \texttt{test\_opacity}, and \texttt{test\_fv}.
     \texttt{test\_calc} chooses whether or not the test calculation is used, and it will definitely affect the emissivity.
     \texttt{test\_opacity} is a flag to use either the original definition of opacity or to use the modified version given above.
-    Finally, \texttt{test\_pexp} was a test to see how the calculation of opacity changes if one considers how the result is changed if one applies the probabilistic approach to \(\kappa\) rather than \(e^{-\kappa}\).
-    This final one should not be working since the probabilistic approach should work on the attenuation (\(e^{-\tau}\)).
-    In any case, these are the parameters that will be varied in the following investigation.
+    \texttt{test\_pexp} is a test to see how the calculation of opacity changes if one considers how the result is changed if one applies the probabilistic approach to \(\kappa\) rather than \(e^{-\kappa}\).
+    This should not be working since the probabilistic approach should work on the attenuation (\(e^{-\tau}\)).
+    In any case, this is included for a test.
+    The final flag, \texttt{test\_fv}, tests a form of the calculation that should have been in the code from the beginning.
+    Since only partially- to fully-filled voxels are considered in the 3D models, all of the computations depend on the extent of the voxel, \(\Delta s\).
+    This is not true in the case of an over-filled voxel, where the excess clumps are assumed to be located just behind the voxel.
+    In this case of an over-filled voxel, the calculations are modified to ensure it is still physically correct.
+    As a crude approximation, this changes equations such as the voxel-averaged opacity to \(<\kappa_\nu> = \frac{<\tau_\nu>}{f_V \Delta s}\), where \(f_V > 1\).
+    This ensures all of the clumps are contained in the voxel being calculated.
+    In the case of an over-filled voxel, the voxel calculated is actually a rectangle.
+
+    For the following tests in this section, we will use the same parameters used to identify the issue.
+    This used four clump masses \(M_{cl} \in [10^{-3}, 10^{-2}, 10^{-1}, 10^{0}] M_\odot\),
+    voxel size \(\Delta s = 0.1 pc\),
+    hydrogen number density \(n_H = 10^{4.8} cm^{-3}\),
+    total mass \(M_{vox} = 10^{0.8} M_\odot\),
+    and far-UV radiation \(\chi = 10^{1.7} \chi_0\).
 
     \subsection{Standard calculation}
 
+    Setting all flags to false will perform the original calculation, which for a partially-filled voxel acts as a benchmark.
+    The issue noted by Yoko, however, was for a voxel with \(f_V \gtrsim 4\).
+    This case is thus included to show how the error was identified.
+    The absorption feature in C\(\mathsc{ii}\) is the error that we will be tracking.
 
+    \includegraphics*[width=\linewidth]{voxel_error_original.png}
+
+    \subsection{Using the correct \(f_V\)}
+
+    In this model we set \texttt{test\_fv} True while keeping the other flags False.
+    This should be the correct calculation of an over-filled voxel using the old calculation.
+
+    \includegraphics*[width=\linewidth]{voxel_error_fv.png}
+
+    \subsection{Setting \texttt{test\_fv} and \texttt{test\_pexp}}
+
+    Here I test the validity of the way the probability approach is applied to the opacity.
+    This test uses the probability on the \(\tau_\nu\) rather than \(e^{-\tau_\nu}\).
+    It can be seen that this test correctly removes the absorption features, however it is at the expense of a slightly-reduced intensity.
+    The slightly-reduced intensity is understandable considering the result without setting \texttt{test\_fv} was not physically correct.
+
+    \includegraphics*[width=\linewidth]{voxel_error_fv-pexp.png}
+
+    \subsection{Setting \texttt{test\_fv}, \texttt{test\_calc}, and \texttt{test\_opacity}}
+
+    Here we test the new calculation applied to both \(\epsilon_\nu\) and \(\kappa_\nu\).
+
+    \includegraphics*[width=\linewidth]{voxel_error_fv-calc-opacity.png}
+
+    \subsection{Setting \texttt{test\_fv} and \texttt{test\_calc}}
+
+    Here we test the new calculation applied just to \(\epsilon_\nu\), but \(<\kappa_\nu>\) is still calculated from \(<\tau_\nu>\) like in the old calculation.
+
+    \includegraphics*[width=\linewidth]{voxel_error_fv-calc-opacity.png}
+
+    \subsection{Setting \texttt{test\_fv}, \texttt{test\_calc}, \texttt{test\_opacity}, and \texttt{test\_pexp}}
+
+    Finally we calculate a model setting all of the flags.
+    This also correctly results in the desired plateaux, but the relative intensities are different (since C\textsc{ii} is now larger than O\textsc{i}).
+
+    \includegraphics*[width=\linewidth]{voxel_error_fv-calc-opacity-pexp.png}
 
 \end{document}
