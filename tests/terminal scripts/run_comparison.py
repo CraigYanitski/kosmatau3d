@@ -22,7 +22,7 @@ from kosmatau3d import comparison as comp
 
 
 # Folders and parameters of models
-folders = ['/r400_fhi{}_fuv{:.0f}/', '']
+folders = ['/r400_fhi{}_fuv{:.0f}/']
           # ['/r500_rcmz{}_fuv{}/',
           #  '/r500_fcm{}_fim{}/']
           # ['/r400_cm{}-{}_d{}_uv{:.0f}/',
@@ -30,7 +30,7 @@ folders = ['/r400_fhi{}_fuv{:.0f}/', '']
           #  '/r400_fcm{}_cm{}/',
           #  '/r400_ficm{}_icm{}/',
           #  '/r400_rcmz{:.0f}_uv{}/']
-parameters = [[[1.0, 0.8, 0.6, 0.4], (10**np.linspace(1, 3, num=5)).astype(int)], [[]]]
+parameters = [[[1.0, 0.8, 0.6, 0.4], (10**np.linspace(1, 3, num=5)).astype(int)]]
              # [[[np.arange(0, 3001, 500), (10**np.linspace(1.5, 2.5, num=5)).astype(int)],
              #  [[0.25, 0.5, 1.0, 2.0, 4.0], [0.25, 0.5, 1.0, 2.0, 4.0]]]
              # [[[0.5, 1.0, 2.0, 4.0], [1.0, 2.0], [0.5, 1.0, 2.0, 4.0], [10, 100]],
@@ -40,7 +40,7 @@ parameters = [[[1.0, 0.8, 0.6, 0.4], (10**np.linspace(1, 3, num=5)).astype(int)]
              #  [np.arange(0, 3001, 200), [10, 50, 100]]]
 plot_kwargs = [{'xlabel' : r'$f_{HI}$',
                 'ylabel' : r'$f_{FUV}$',
-                'output_file' : 'r400-fHI-fFUV'}, {}]
+                'output_file' : 'r400-fHI-fFUV'}]
                # {'xlabel' : r'$R_{CMZ}$',
                #  'ylabel' : r'$f_{FUV}$',
                #  'output_file' : 'r500-Rcmz-fFUV'},
@@ -109,7 +109,7 @@ target_kernel = (
 )
 
 # List of survey missions to work on (None select all available surveys)
-missions = 'COGAL'#['COGAL', 'Mopra', 'ThrUMMS', 'SEDIGISM']
+missions = None#['COGAL', 'Mopra', 'ThrUMMS', 'SEDIGISM']
 
 # Colour map for the plots
 cmap = 'gist_ncar'
@@ -159,10 +159,10 @@ for folder,params,plot_kwargs_adj in zip(folders, parameters, plot_kwargs):
                      'log_comp':log_comp}
 
     # Compare models to observations
-    kwargs = deepcopy(kwargs_common)
-    kwargs.update({'model_dir':folder})
-    kwargs.update(default_comp_kwargs)
-    comp.model_selection(**kwargs)
+    # kwargs = deepcopy(kwargs_common)
+    # kwargs.update({'model_dir':folder})
+    # kwargs.update(default_comp_kwargs)
+    # comp.model_selection(**kwargs)
 
     print('\n\nPlotting {}'.format(folder))
 
