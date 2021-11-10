@@ -1607,6 +1607,14 @@ def plot_comparison(path='/mnt/hpc_backup/yanitski/projects/pdr/KT3_history/Milk
         print('\n  {}\n'.format(survey))
 
         survey_files = os.listdir(path + survey + '/')
+        if 'Plots' in survey_files:
+            survey_files.remove('Plots')
+        else:
+            os.mkdir(path + survey + '/Plots/')
+
+        file_transitions = []
+        file_transition_plots = []
+        file_transition_log_likelihood = []
 
         if debug:
             print('survey files: {}\n'.format(survey_files))
@@ -1649,6 +1657,7 @@ def plot_comparison(path='/mnt/hpc_backup/yanitski/projects/pdr/KT3_history/Milk
                         transitions_skipped.append(t)
                     if debug:
                         print(transitions, transitions_skipped)
+                file_transitions.append(copy(transitions))
                 if len(transitions_skipped) and verbose:
                     print('  transitions {} not available.'.format(', '.join(transitions_skipped)))
 
@@ -1687,28 +1696,33 @@ def plot_comparison(path='/mnt/hpc_backup/yanitski/projects/pdr/KT3_history/Milk
                             transition_log_likelihood[t][i, j] = transition_log_likelihood[t][i, j] \
                                                                  + np.nansum(param_log_likelihood[t])
 
+                file_transition_plots.append(copy(transition_plots))
+                file_transition_log_likelihood.append(deepcopy(transition_log_likelihood))
+
             if normalise:
                 if (log_likelihood<0).all():
                     log_likelihood = log_likelihood.max() / log_likelihood
                 else:
                     log_likelihood = log_likelihood / log_likelihood.max()
-                for t in range(len(transitions)):
-                    if (log_likelihood<0).all():
-                        transition_log_likelihood[t] = transition_log_likelihood[t].max() \
-                                                       / transition_log_likelihood[t]
-                    else:
-                        transition_log_likelihood[t] = transition_log_likelihood[t] \
-                                                       / transition_log_likelihood[t].max()
+                for f in range(len(survey_files)):
+                    for t in range(len(file_transitions[f])):
+                        if (log_likelihood<0).all():
+                            file_transition_log_likelihood[f][t] = file_transition_log_likelihood[f][t].max() \
+                                                                   / file_transition_log_likelihood[f][t]
+                        else:
+                            file_transition_log_likelihood[f][t] = file_transition_log_likelihood[f][t] \
+                                                                   / file_transition_log_likelihood[f][t].max()
             if log:
                 if (log_likelihood<0).all():
                     log_likelihood = np.log10(-log_likelihood)
                 else:
                     log_likelihood = np.log10(log_likelihood)
-                for t in range(len(transitions)):
-                    if (transition_log_likelihood[t]<0).all():
-                        transition_log_likelihood[t] = np.log10(-transition_log_likelihood[t])
-                    else:
-                        transition_log_likelihood[t] = np.log10(transition_log_likelihood[t])
+                for f in range(len(survey_files)):
+                    for t in range(len(file_transitions[f])):
+                        if (file_transition_log_likelihood[f][t]<0).all():
+                            file_transition_log_likelihood[f][t] = np.log10(-file_transition_log_likelihood[f][t])
+                        else:
+                            file_transition_log_likelihood[f][t] = np.log10(file_transition_log_likelihood[f][t])
 
             # Plot subplots
             # -------------
@@ -1756,40 +1770,42 @@ def plot_comparison(path='/mnt/hpc_backup/yanitski/projects/pdr/KT3_history/Milk
                                             fontsize=fontsize-4)
             # cb.ax.set_ylabel(clabel, fontsize=fontsize-4)
 
-            for t in range(len(transitions)):
+            for f in range(len(survey_files)):
+                for t in range(len(file_transitions[f])):
 
-                if contour:
-                    cm = transition_plots[t][1][sub_indeces].contourf(transition_log_likelihood[t],
-                                                                      levels=levels, cmap=cmap)
-                else:
-                    cm = transition_plots[t][1][sub_indeces].imshow(log_likelihood, extent=[0, lenaxis[i_x],
-                                                                                            0, lenaxis[i_y]],
-                                                                    cmap=cmap)
-                transition_plots[t][1][sub_indeces].set_aspect(lenaxis[i_x]/lenaxis[i_y])
-                cb = transition_plots[t][0].colorbar(cm, ax=transition_plots[t][1][sub_indeces],
-                                                     fraction=fraction, aspect=aspect)
+                    if contour:
+                        cm = file_transition_plots[f][t][1][sub_indeces].contourf(file_transition_log_likelihood[f][t],
+                                                                                  levels=levels, cmap=cmap)
+                    else:
+                        cm = file_transition_plots[f][t][1][sub_indeces].imshow(file_transition_log_likelihood[f][t],
+                                                                                extent=[0, lenaxis[i_x],
+                                                                                        0, lenaxis[i_y]],
+                                                                                cmap=cmap)
+                    file_transition_plots[f][t][1][sub_indeces].set_aspect(lenaxis[i_x]/lenaxis[i_y])
+                    cb = file_transition_plots[f][t][0].colorbar(cm, ax=file_transition_plots[f][t][1][sub_indeces],
+                                                         fraction=fraction, aspect=aspect)
 
-                if contour:
-                    transition_plots[t][1][sub_indeces].set_xticks(np.arange(lenaxis[i_x]))
-                    transition_plots[t][1][sub_indeces].set_xticklabels([str(param) for
-                                                                         param in model_param[i_x]])
-                    transition_plots[t][1][sub_indeces].set_yticks(np.arange(lenaxis[i_y]))
-                    transition_plots[t][1][sub_indeces].set_yticklabels([str(param) for
-                                                                         param in model_param[i_y]])
-                else:
-                    transition_plots[t][1][sub_indeces].set_xticks(np.arange(lenaxis[i_x])+0.5)
-                    transition_plots[t][1][sub_indeces].set_xticklabels([str(param) for
-                                                                         param in model_param[i_x]])
-                    transition_plots[t][1][sub_indeces].set_yticks(np.arange(lenaxis[i_y])+0.5)
-                    transition_plots[t][1][sub_indeces].set_yticklabels([str(param) for
-                                                                         param in model_param[i_y][::-1]])
+                    if contour:
+                        file_transition_plots[f][t][1][sub_indeces].set_xticks(np.arange(lenaxis[i_x]))
+                        file_transition_plots[f][t][1][sub_indeces].set_xticklabels([str(param) for
+                                                                                     param in model_param[i_x]])
+                        file_transition_plots[f][t][1][sub_indeces].set_yticks(np.arange(lenaxis[i_y]))
+                        file_transition_plots[f][t][1][sub_indeces].set_yticklabels([str(param) for
+                                                                                     param in model_param[i_y]])
+                    else:
+                        file_transition_plots[f][t][1][sub_indeces].set_xticks(np.arange(lenaxis[i_x])+0.5)
+                        file_transition_plots[f][t][1][sub_indeces].set_xticklabels([str(param) for
+                                                                                     param in model_param[i_x]])
+                        file_transition_plots[f][t][1][sub_indeces].set_yticks(np.arange(lenaxis[i_y])+0.5)
+                        file_transition_plots[f][t][1][sub_indeces].set_yticklabels([str(param) for
+                                                                                     param in model_param[i_y][::-1]])
 
-                transition_plots[t][1][sub_indeces].set_xlabel(xlabel, fontsize=fontsize-4)
-                transition_plots[t][1][sub_indeces].set_ylabel(ylabel, fontsize=fontsize-4)
-                if transition_plots[t][1].size > 1:
-                    transition_plots[t][1][sub_indeces].set_title('{} {}, {} {}'.format(supylabel, y_param,
-                                                                                        supxlabel, x_param),
-                                                                  fontsize=fontsize-4)
+                    file_transition_plots[f][t][1][sub_indeces].set_xlabel(xlabel, fontsize=fontsize-4)
+                    file_transition_plots[f][t][1][sub_indeces].set_ylabel(ylabel, fontsize=fontsize-4)
+                    if file_transition_plots[f][t][1].size > 1:
+                        file_transition_plots[f][t][1][sub_indeces].set_title('{} {}, {} {}'.format(supylabel, y_param,
+                                                                                                    supxlabel, x_param),
+                                                                              fontsize=fontsize-4)
 
         if title == '':
             if likelihood:
@@ -1819,8 +1835,6 @@ def plot_comparison(path='/mnt/hpc_backup/yanitski/projects/pdr/KT3_history/Milk
 
         plt.figure(fig)
         if save_plot:
-            if not 'Plots' in survey_files:
-                os.mkdir(path + survey + '/Plots/')
             if output_file == None or output_file == '':
                 output_file = file_format
             if likelihood:
@@ -1834,57 +1848,54 @@ def plot_comparison(path='/mnt/hpc_backup/yanitski/projects/pdr/KT3_history/Milk
 
         plt.close(fig)
 
-        for t in range(len(transitions)):
+        for f,file in enumerate(survey_files):
+            for t in range(len(file_transitions[f])):
 
-            if title == '':
-                if likelihood:
-                    suptitle = survey + ' ' + transitions[t] + ' likelihood'
+                if title == '':
+                    if likelihood:
+                        suptitle = survey + ' ' + file_transitions[f][t] + ' likelihood'
+                    else:
+                        suptitle = survey + ' ' + file_transitions[f][t] + r' $\chi^2$'
+                    if normalise:
+                        suptitle += ', normalised'
+                    if log:
+                        suptitle += ', logged'
                 else:
-                    suptitle = survey + ' ' + transitions[t] + r' $\chi^2$'
-                if normalise:
-                    suptitle += ', normalised'
-                if log:
-                    suptitle += ', logged'
-            else:
-                suptitle = copy(title)
+                    suptitle = copy(title)
 
-            if isinstance(suptitle, str):
-                transition_plots[t][0].suptitle(suptitle, fontsize=fontsize)
-            if clabel == '' or clabel == None:
-                clabel = 'Value'
-            transition_plots[t][0].supylabel(clabel, x=clabel_xa, ha=clabel_ha, fontsize=fontsize)
+                if isinstance(suptitle, str):
+                    file_transition_plots[f][t][0].suptitle(suptitle, fontsize=fontsize)
+                if clabel == '' or clabel == None:
+                    clabel = 'Value'
+                file_transition_plots[f][t][0].supylabel(clabel, x=clabel_xa, ha=clabel_ha, fontsize=fontsize)
 
-            if suptitle:
-                fig_top = 1 - pad*pad_top
-            if clabel:
-                fig_right = 1 - pad*pad_right
-            transition_plots[t][0].subplots_adjust(left=pad*pad_left, right=fig_right,
-                                                   bottom=pad*pad_bottom, top=fig_top,
-                                                   wspace=wspace, hspace=hspace)
-            # transition_plots[t][0].tight_layout(pad=pad)
+                if suptitle:
+                    fig_top = 1 - pad*pad_top
+                if clabel:
+                    fig_right = 1 - pad*pad_right
+                file_transition_plots[f][t][0].subplots_adjust(left=pad*pad_left, right=fig_right,
+                                                               bottom=pad*pad_bottom, top=fig_top,
+                                                               wspace=wspace, hspace=hspace)
+                # transition_plots[t][0].tight_layout(pad=pad)
 
-            plt.figure(transition_plots[t][0])
-            if save_plot:
-                if not 'Plots' in survey_files:
-                    os.mkdir(path + survey + '/Plots/')
-                if output_file == None or output_file == '':
-                    output_file = file_format
-                if likelihood:
-                    plt.savefig(path + survey + '/Plots/{}_{}_{}_loglikelihood.{}'.format(output_file,
-                                                                                          transitions[t].replace(' ', '-'),
-                                                                                          comp,
-                                                                                          output_format),
-                                format=output_format, transparent=transparent)
+                plt.figure(file_transition_plots[f][t][0])
+                if save_plot:
+                    if output_file == None or output_file == '':
+                        output_file = file_format
+                    if likelihood:
+                        plt.savefig(path + survey + '/Plots/{}_{}-{}_{}_loglikelihood.{}'
+                                    .format(output_file, file, file_transitions[f][t].replace(' ', '-'),
+                                            comp, output_format),
+                                    format=output_format, transparent=transparent)
+                    else:
+                        plt.savefig(path + survey + '/Plots/{}_{}-{}_{}_chi2.{}'
+                                    .format(output_file, file, file_transitions[f][t].replace(' ', '-'),
+                                            comp, output_format),
+                                    format=output_format, transparent=transparent)
                 else:
-                    plt.savefig(path + survey + '/Plots/{}_{}_{}_chi2.{}'.format(output_file,
-                                                                                 transitions[t].replace(' ', '-'),
-                                                                                 comp,
-                                                                                 output_format),
-                                format=output_format, transparent=transparent)
-            else:
-                plt.show()
+                    plt.show()
 
-            plt.close(transition_plots[t][0])
+                plt.close(file_transition_plots[f][t][0])
 
     for param in deepcopy(sub_params):
 
@@ -1956,7 +1967,7 @@ def plot_comparison(path='/mnt/hpc_backup/yanitski/projects/pdr/KT3_history/Milk
 
     plt.figure(fig_overall)
     if save_plot:
-        if not 'Plots' in survey_files:
+        if not 'Plots' in os.listdir(path):
             os.mkdir(path + '/Plots/')
         if output_file == None or output_file == '':
             output_file = file_format
