@@ -1248,10 +1248,10 @@ def model_selection(path='/mnt/hpc_backup/yanitski/projects/pdr/KT3_history/Milk
                         i_lat_obs = (lat_obs >= lat_model[i_lat_model].min()) \
                                     & (lat_obs <= lat_model[i_lat_model].max())
                     else:
-                        i_lat_model = (lat_model >= lat_min) \
-                                      & (lat_model <= lat_max)
-                        i_lat_obs = (lat_obs >= lat_model[i_lat_model].min()) \
-                                    & (lat_obs <= lat_model[i_lat_model].max())
+                        i_lat_model = np.where((lat_model >= lat_min)
+                                               & (lat_model <= lat_max))[0]
+                        i_lat_obs = np.where((lat_obs >= lat_model[i_lat_model].min())
+                                             & (lat_obs <= lat_model[i_lat_model].max()))[0]
 
                     # Interpolate at the observational axes
                     if (survey == 'COBE') or (survey == 'COBE-FIRAS'):
@@ -1300,10 +1300,10 @@ def model_selection(path='/mnt/hpc_backup/yanitski/projects/pdr/KT3_history/Milk
                             obs_data_final = np.trapz(obs_data_temp, vel_obs, axis=obs_data_temp.shape.index(vel_obs.size))
                             obs_error_final = obs_error[i_lat_obs, :]
                         elif comp_type == 'pv':
-                            model_interp = deepcopy(model_data)
-                            obs_data_final = copy(model_data)
-                            obs_error_final = np.swapaxes([obs_error[i_lat_obs, :]]*obs_data_temp.shape[1],
-                                                          0, 1)
+                            model_interp = np.swapaxes(model_data, 0, 1)
+                            obs_data_final = copy(obs_data[:, i_lat_obs, :])
+                            obs_error_final = np.asarray([obs_error[i_lat_obs, :]]*obs_data_temp.shape[1])
+                            # obs_error_final = np.swapaxes([obs_error[i_lat_obs, :]]*obs_data_temp.shape[1], 0, 1)
                         else:
                             print('ERROR >> Comparison type {} not valid; '.format(comp_type) +
                                   'please choose "pv" or "integrated"')
@@ -1372,10 +1372,10 @@ def model_selection(path='/mnt/hpc_backup/yanitski/projects/pdr/KT3_history/Milk
                         #       obs_data_final[i_signal].shape,
                         #       obs_error_final[i_signal].shape
                         #       )
-                    print(obs_data_final[i_signal].size - len(param))
-                    print(obs_data_final[i_signal] - model_interp[i_signal])
-                    print(((obs_data_final[i_signal] - model_interp[i_signal])** 2 / \
-                                     obs_error_final[i_signal] ** 2).max())
+                    # print(obs_data_final[i_signal].size - len(param))
+                    # print((obs_data_final[i_signal] - model_interp[i_signal]).any())
+                    # print(((obs_data_final[i_signal] - model_interp[i_signal])** 2 / \
+                    #                  obs_error_final[i_signal] ** 2).max())
                     chi2[i_signal] = (obs_data_final[i_signal] - model_interp[i_signal]) ** 2 / \
                                      obs_error_final[i_signal] ** 2 / (obs_data_final[i_signal].size - len(param))
                     loglikelihood[i_signal] = -chi2[i_signal] / 2 \
