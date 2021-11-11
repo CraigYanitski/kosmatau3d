@@ -719,6 +719,7 @@ def regrid_observations(path='/media/hpc_backup/yanitski/projects/pdr/observatio
 
     return 0
 
+
 def combine_regridded(path=None, regridded_path=None, target_header=None,
                       target_kernel=None, target_vel=None, output_file=None):
 
@@ -1592,6 +1593,7 @@ def plot_comparison(path='/mnt/hpc_backup/yanitski/projects/pdr/KT3_history/Milk
 
     # Initialise likelihood and figure for plot analysing all missions
     loglikelihood_overall = np.zeros((*x_grid.shape, sub_x, sub_y))
+    overall_dof = 0
     fig_overall, axes_overall = plt.subplots(sub_y, sub_x, figsize=figsize)
     if not isinstance(axes_overall, np.ndarray):
         axes_overall = np.asarray([[axes_overall]])
@@ -1611,7 +1613,6 @@ def plot_comparison(path='/mnt/hpc_backup/yanitski/projects/pdr/KT3_history/Milk
             survey_files.remove('Plots')
         else:
             os.mkdir(path + survey + '/Plots/')
-
         file_transitions = []
         file_transition_plots = []
         file_transition_log_likelihood = []
@@ -1627,8 +1628,11 @@ def plot_comparison(path='/mnt/hpc_backup/yanitski/projects/pdr/KT3_history/Milk
             axes = np.asarray([[axes]])
         elif axes.ndim == 1:
             axes.resize(-1, 1)
+            
+        survey_dof = 0
+        file_dof = [0] * len(sub_params)
 
-        for param in deepcopy(sub_params):
+        for f,param in enumerate(deepcopy(sub_params)):
 
             # Calculate likelihood
             # --------------------
@@ -1658,6 +1662,8 @@ def plot_comparison(path='/mnt/hpc_backup/yanitski/projects/pdr/KT3_history/Milk
                     if debug:
                         print(transitions, transitions_skipped)
                 file_transitions.append(copy(transitions))
+                survey_dof += len(transitions)
+                file_dof[f] = len(transitions)
                 if len(transitions_skipped) and verbose:
                     print('  transitions {} not available.'.format(', '.join(transitions_skipped)))
 
@@ -1744,11 +1750,15 @@ def plot_comparison(path='/mnt/hpc_backup/yanitski/projects/pdr/KT3_history/Milk
             # Add likelihood in overall array
             loglikelihood_overall[:, :, sub_indeces[0], sub_indeces[1]] \
                 = loglikelihood_overall[:, :, sub_indeces[0], sub_indeces[1]] + log_likelihood
+            
+            # Update overall degrees of freedom
+            overall_dof += file_dof[-1]
 
             if contour:
-                cm = axes[sub_indeces].contourf(log_likelihood, levels=levels, cmap=cmap)
+                cm = axes[sub_indeces].contourf(log_likelihood/file_dof[-1], levels=levels, cmap=cmap)
             else:
-                cm = axes[sub_indeces].imshow(log_likelihood, extent=[0, lenaxis[i_x], 0, lenaxis[i_y]], cmap=cmap)
+                cm = axes[sub_indeces].imshow(log_likelihood/file_dof[-1],
+                                              extent=[0, lenaxis[i_x], 0, lenaxis[i_y]], cmap=cmap)
             axes[sub_indeces].set_aspect(lenaxis[i_x]/lenaxis[i_y])
             cb = fig.colorbar(cm, ax=axes[sub_indeces], fraction=fraction, aspect=aspect)
 
