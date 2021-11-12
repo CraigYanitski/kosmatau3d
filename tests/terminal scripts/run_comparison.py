@@ -112,7 +112,7 @@ target_kernel = (
 missions = None#['COGAL', 'Mopra', 'ThrUMMS', 'SEDIGISM']
 
 # Colour map for the plots
-cmap = 'gist_ncar'
+cmap = 'magma'
 
 # The type of comparison for the spectroscopic surveys
 comp_type = 'pv'
@@ -121,14 +121,13 @@ comp_type = 'pv'
 log_comp = False
 
 # Dictionary with the default kwargs for the comparison functions
-default_comp_kwargs = {'lat' : 0,
+default_comp_kwargs = {'lat' : None,
                        'PRINT' : True,
                        'PLOT' : False,
                        'debug' : False}
 default_plot_kwargs = {'normalise' : False,
                        'likelihood' : True,
                        'levels' : 100,
-                       'clabel' : r'$log_{10}(\mathcal{L})$',
                        'clabel_xa' : 0.95,
                        'fraction' : 0.045,
                        'pad' : 1,
@@ -159,10 +158,10 @@ for folder,params,plot_kwargs_adj in zip(folders, parameters, plot_kwargs):
                      'log_comp':log_comp}
 
     # Compare models to observations
-    # kwargs = deepcopy(kwargs_common)
-    # kwargs.update({'model_dir':folder})
-    # kwargs.update(default_comp_kwargs)
-    # comp.model_selection(**kwargs)
+    kwargs = deepcopy(kwargs_common)
+    kwargs.update({'model_dir':folder})
+    kwargs.update(default_comp_kwargs)
+    comp.model_selection(**kwargs)
 
     print('\n\nPlotting {}'.format(folder))
 
