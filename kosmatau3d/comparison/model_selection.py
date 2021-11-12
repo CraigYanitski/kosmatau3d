@@ -1559,6 +1559,11 @@ def plot_comparison(path='/mnt/hpc_backup/yanitski/projects/pdr/KT3_history/Milk
     else:
         comp = comp_type
 
+    if likelihood:
+        clabel = r'$log_{10}(\mathcal{L})$'
+    else:
+        clabel = r'$\chi^2_r$'
+
     dimensions = len(model_param)
     naxis = np.zeros((dimensions), dtype=bool)
     naxis[[i_x, i_y]] = True
