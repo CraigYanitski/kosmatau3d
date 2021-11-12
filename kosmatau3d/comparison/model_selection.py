@@ -1629,7 +1629,7 @@ def plot_comparison(path='/mnt/hpc_backup/yanitski/projects/pdr/KT3_history/Milk
         elif axes.ndim == 1:
             axes.resize(-1, 1)
 
-        for f,param in enumerate(deepcopy(sub_params)):
+        for param in deepcopy(sub_params):
 
             # Calculate likelihood
             # --------------------
@@ -1638,11 +1638,11 @@ def plot_comparison(path='/mnt/hpc_backup/yanitski/projects/pdr/KT3_history/Milk
                 print(param)
 
             survey_dof = 0
-            file_dof = [0] * len(list(deepcopy(sub_params)))
+            file_dof = [0] * len(survey_files)
 
             log_likelihood = np.zeros(x_grid.shape)
 
-            for survey_file in survey_files:
+            for f,survey_file in enumerate(survey_files):
 
                 if '.png' in survey_file or 'Plots' in survey_file:
                     continue
@@ -1752,7 +1752,7 @@ def plot_comparison(path='/mnt/hpc_backup/yanitski/projects/pdr/KT3_history/Milk
                 = loglikelihood_overall[:, :, sub_indeces[0], sub_indeces[1]] + log_likelihood
             
             # Update overall degrees of freedom
-            overall_dof += file_dof[-1]
+            overall_dof += np.sum(file_dof)
 
             if contour:
                 cm = axes[sub_indeces].contourf(log_likelihood/np.sum(file_dof), levels=levels, cmap=cmap)

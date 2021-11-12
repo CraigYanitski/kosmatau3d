@@ -126,7 +126,7 @@ default_comp_kwargs = {'lat' : 0,
                        'PLOT' : False,
                        'debug' : False}
 default_plot_kwargs = {'normalise' : False,
-                       'likelihood' : False,
+                       'likelihood' : True,
                        'levels' : 100,
                        'clabel' : r'$log_{10}(\mathcal{L})$',
                        'clabel_xa' : 0.95,
