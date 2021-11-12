@@ -1628,9 +1628,6 @@ def plot_comparison(path='/mnt/hpc_backup/yanitski/projects/pdr/KT3_history/Milk
             axes = np.asarray([[axes]])
         elif axes.ndim == 1:
             axes.resize(-1, 1)
-            
-        survey_dof = 0
-        file_dof = [0] * len(sub_params)
 
         for f,param in enumerate(deepcopy(sub_params)):
 
@@ -1639,6 +1636,9 @@ def plot_comparison(path='/mnt/hpc_backup/yanitski/projects/pdr/KT3_history/Milk
 
             if debug:
                 print(param)
+
+            survey_dof = 0
+            file_dof = [0] * len(list(deepcopy(sub_params)))
 
             log_likelihood = np.zeros(x_grid.shape)
 
@@ -1755,9 +1755,9 @@ def plot_comparison(path='/mnt/hpc_backup/yanitski/projects/pdr/KT3_history/Milk
             overall_dof += file_dof[-1]
 
             if contour:
-                cm = axes[sub_indeces].contourf(log_likelihood/file_dof[-1], levels=levels, cmap=cmap)
+                cm = axes[sub_indeces].contourf(log_likelihood/np.sum(file_dof), levels=levels, cmap=cmap)
             else:
-                cm = axes[sub_indeces].imshow(log_likelihood/file_dof[-1],
+                cm = axes[sub_indeces].imshow(log_likelihood/np.sum(file_dof),
                                               extent=[0, lenaxis[i_x], 0, lenaxis[i_y]], cmap=cmap)
             axes[sub_indeces].set_aspect(lenaxis[i_x]/lenaxis[i_y])
             cb = fig.colorbar(cm, ax=axes[sub_indeces], fraction=fraction, aspect=aspect)
@@ -1924,11 +1924,11 @@ def plot_comparison(path='/mnt/hpc_backup/yanitski/projects/pdr/KT3_history/Milk
             y_param = ''
 
         if contour:
-            cm = axes_overall[sub_indeces].contourf(loglikelihood_overall[:, :, sub_indeces[0], sub_indeces[1]],
-                                                    levels=levels, cmap=cmap)
+            cm = axes_overall[sub_indeces].contourf(loglikelihood_overall[:, :, sub_indeces[0], sub_indeces[1]]
+                                                    / overall_dof, levels=levels, cmap=cmap)
         else:
-            cm = axes_overall[sub_indeces].imshow(loglikelihood_overall[:, :, sub_indeces[0], sub_indeces[1]],
-                                                  extent=[0, lenaxis[i_x], 0, lenaxis[i_y]], cmap=cmap)
+            cm = axes_overall[sub_indeces].imshow(loglikelihood_overall[:, :, sub_indeces[0], sub_indeces[1]]
+                                                  / overall_dof, extent=[0, lenaxis[i_x], 0, lenaxis[i_y]], cmap=cmap)
         axes_overall[sub_indeces].set_aspect(lenaxis[i_x] / lenaxis[i_y])
         cb = fig_overall.colorbar(cm, ax=axes_overall[sub_indeces], fraction=fraction, aspect=aspect)
 
