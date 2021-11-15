@@ -126,7 +126,7 @@ default_comp_kwargs = {'lat' : None,
                        'PLOT' : False,
                        'debug' : False}
 default_plot_kwargs = {'normalise' : False,
-                       'likelihood' : True,
+                       'likelihood' : False,
                        'levels' : 100,
                        'clabel_xa' : 0.95,
                        'fraction' : 0.045,
