@@ -613,7 +613,8 @@ def regrid_observations(path='/media/hpc_backup/yanitski/projects/pdr/observatio
                 #            / (linfrq**3) / 2 / 1.38 * 10 ** 8
                 # obs_data = np.nan_to_num(obs[1].data['LINE_FLU'], nan=0) / (2.9979**3) \
                 #            * (linfrq**3) * 2 * 1.38 / 10 ** 8
-                obs_data = obs[1].data['LINE_FLU']
+                obs_data = (np.nan_to_num(obs[1].data['LINE_FLU'], nan=0) * (2.9979**3) / (linfrq**3) / 2
+                            / 1.38 * 10 ** 8)
                 obs_error = (np.nan_to_num(obs[1].data['LINE_FL2'], nan=0) * (2.9979**3) / (linfrq**3) / 2
                              / 1.38 * 10 ** 8)
 
@@ -1166,10 +1167,6 @@ def model_selection(path='/mnt/hpc_backup/yanitski/projects/pdr/KT3_history/Milk
                 loglikelihood_grid = []
                 params = []
 
-                if os.path.isdir(
-                        path + 'fit_results/{}/{}/{}/'.format(survey, file.replace('.fits', ''), transition)) == False:
-                    os.makedirs(path + 'fit_results/{}/{}/{}/'.format(survey, file.replace('.fits', ''), transition))
-
                 if (survey == 'COBE') or (survey == 'COBE-FIRAS'):
                     if '.idl' in file:
                         vmin = obs_data[:, int(transition_indeces[i])].min()
@@ -1209,6 +1206,11 @@ def model_selection(path='/mnt/hpc_backup/yanitski/projects/pdr/KT3_history/Milk
                         break
                     # else:
                     #     i_spec = i_spec[0]
+
+                    if os.path.isdir(path + 'fit_results/{}/'.format(survey)
+                                     + '{}/{}/'.format(file.replace('.fits', ''), transition)) == False:
+                        os.makedirs(path + 'fit_results/{}/'.format(survey)
+                                    + '{}/{}/'.format(file.replace('.fits', ''), transition))
 
                     # Create arrays for the longitude and velocity axes
                     lat_model = np.linspace(
@@ -1380,7 +1382,7 @@ def model_selection(path='/mnt/hpc_backup/yanitski/projects/pdr/KT3_history/Milk
                     chi2[i_signal] = (obs_data_final[i_signal] - model_interp[i_signal]) ** 2 / \
                                      obs_error_final[i_signal] ** 2 / (obs_data_final[i_signal].size - len(param))
                     loglikelihood[i_signal] = -chi2[i_signal] / 2 \
-                                              - 0.5 * np.log(np.sqrt(2 * np.pi) * obs_error_final[i_signal])
+                                              - 0.5 * np.log(2 * np.pi * obs_error_final[i_signal]**2)
                     # elif survey == 'Planck':
                     #     i_signal = np.where(obs_data_final > obs_error_final)
                     #     chi2[i_signal] = (obs_data_final[i_signal] - model_interp[i_signal]) ** 2 / \
