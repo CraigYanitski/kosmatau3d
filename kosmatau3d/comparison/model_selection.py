@@ -264,6 +264,14 @@ def regrid_observations(path='/media/hpc_backup/yanitski/projects/pdr/observatio
             survey = 'COBE-FIRAS'
 
         temp_header = copy(target_header)
+        twod_header = copy(target_header)
+        if 'CDELT3' in twod_header.keys():
+            twod_header['NAXIS'] = 2
+            del twod_header['NAXIS3']
+            del twod_header['CTYPE3']
+            del twod_header['CDELT3']
+            del twod_header['CRVAL3']
+            del twod_header['CRPIX3']
 
         print(survey)
 
@@ -278,35 +286,35 @@ def regrid_observations(path='/media/hpc_backup/yanitski/projects/pdr/observatio
         if survey == 'COGAL':
             co1_gridder = cygrid.WcsGrid(target_header)
             co1_gridder.set_kernel(*target_kernel)
-            co1_gridder_err = cygrid.WcsGrid(target_header)
+            co1_gridder_err = cygrid.WcsGrid(twod_header)
             co1_gridder_err.set_kernel(*target_kernel)
             CO1 = True
         elif survey == 'Mopra':
             co1_gridder = cygrid.WcsGrid(target_header)
             co1_gridder.set_kernel(*target_kernel)
-            co1_gridder_err = cygrid.WcsGrid(target_header)
+            co1_gridder_err = cygrid.WcsGrid(twod_header)
             co1_gridder_err.set_kernel(*target_kernel)
             CO1 = True
             ico1_gridder = cygrid.WcsGrid(target_header)
             ico1_gridder.set_kernel(*target_kernel)
-            ico1_gridder_err = cygrid.WcsGrid(target_header)
+            ico1_gridder_err = cygrid.WcsGrid(twod_header)
             ico1_gridder_err.set_kernel(*target_kernel)
             iCO1 = True
         elif survey == 'ThrUMMS':
             co1_gridder = cygrid.WcsGrid(target_header)
             co1_gridder.set_kernel(*target_kernel)
-            co1_gridder_err = cygrid.WcsGrid(target_header)
+            co1_gridder_err = cygrid.WcsGrid(twod_header)
             co1_gridder_err.set_kernel(*target_kernel)
             CO1 = True
             ico1_gridder = cygrid.WcsGrid(target_header)
             ico1_gridder.set_kernel(*target_kernel)
-            ico1_gridder_err = cygrid.WcsGrid(target_header)
+            ico1_gridder_err = cygrid.WcsGrid(twod_header)
             ico1_gridder_err.set_kernel(*target_kernel)
             iCO1 = True
         elif survey == 'SEDIGISM':
             ico2_gridder = cygrid.WcsGrid(target_header)
             ico2_gridder.set_kernel(*target_kernel)
-            ico2_gridder_err = cygrid.WcsGrid(target_header)
+            ico2_gridder_err = cygrid.WcsGrid(twod_header)
             ico2_gridder_err.set_kernel(*target_kernel)
             iCO2 = True
         elif survey == 'Planck':
@@ -427,10 +435,12 @@ def regrid_observations(path='/media/hpc_backup/yanitski/projects/pdr/observatio
                 lon_mesh, lat_mesh = np.meshgrid(lon, lat)
                 if '12CO' in transition:
                     co1_gridder.grid(lon_mesh.flatten(), lat_mesh.flatten(), obs_data)
-                    co1_gridder_err.grid(lon_mesh.flatten()[~i_nan.flatten()], lat_mesh.flatten()[~i_nan.flatten()], obs_error[~i_nan])
+                    co1_gridder_err.grid(lon_mesh.flatten()[~i_nan.flatten()], lat_mesh.flatten()[~i_nan.flatten()],
+                                         obs_error[~i_nan])
                 elif '13CO' in transition:
                     ico1_gridder.grid(lon_mesh.flatten(), lat_mesh.flatten(), obs_data)
-                    ico1_gridder_err.grid(lon_mesh.flatten()[~i_nan.flatten()], lat_mesh.flatten()[~i_nan.flatten()], obs_error[i_nan])
+                    ico1_gridder_err.grid(lon_mesh.flatten()[~i_nan.flatten()], lat_mesh.flatten()[~i_nan.flatten()],
+                                          obs_error[~i_nan])
 
                 if vel.min() < min_vel:
                     min_vel = vel.min()
@@ -667,7 +677,7 @@ def regrid_observations(path='/media/hpc_backup/yanitski/projects/pdr/observatio
             temp_header['TRANSL'] = 'CO 1'
             temp_header['TRANSI'] = '0'
             grid_hdu = fits.PrimaryHDU(data=co1_gridder.get_datacube(), header=fits.Header(temp_header))
-            grid_hdu_err = fits.PrimaryHDU(data=co1_gridder_err.get_datacube(), header=fits.Header(temp_header))
+            grid_hdu_err = fits.PrimaryHDU(data=co1_gridder_err.get_datacube(), header=fits.Header(twod_header))
             grid_hdu.writeto(path + survey + '/regridded/temp/' +
                              'co1_test_regridded.fits', overwrite=True, output_verify='ignore')
             grid_hdu_err.writeto(path + survey + '/regridded/temp/' +
@@ -676,7 +686,7 @@ def regrid_observations(path='/media/hpc_backup/yanitski/projects/pdr/observatio
             temp_header['TRANSL'] = 'CO 2'
             temp_header['TRANSI'] = '0'
             grid_hdu = fits.PrimaryHDU(data=co2_gridder.get_datacube(), header=fits.Header(temp_header))
-            grid_hdu_err = fits.PrimaryHDU(data=co2_gridder_err.get_datacube(), header=fits.Header(temp_header))
+            grid_hdu_err = fits.PrimaryHDU(data=co2_gridder_err.get_datacube(), header=fits.Header(twod_header))
             grid_hdu.writeto(path + survey + '/regridded/temp/' +
                              'co2_test_regridded.fits', overwrite=True, output_verify='ignore')
             grid_hdu_err.writeto(path + survey + '/regridded/temp/' +
@@ -685,7 +695,7 @@ def regrid_observations(path='/media/hpc_backup/yanitski/projects/pdr/observatio
             temp_header['TRANSL'] = '13CO 1'
             temp_header['TRANSI'] = '0'
             grid_hdu = fits.PrimaryHDU(data=ico1_gridder.get_datacube(), header=fits.Header(temp_header))
-            grid_hdu_err = fits.PrimaryHDU(data=ico1_gridder_err.get_datacube(), header=fits.Header(temp_header))
+            grid_hdu_err = fits.PrimaryHDU(data=ico1_gridder_err.get_datacube(), header=fits.Header(twod_header))
             grid_hdu.writeto(path + survey + '/regridded/temp/' +
                              '13co1_test_regridded.fits', overwrite=True, output_verify='ignore')
             grid_hdu_err.writeto(path + survey + '/regridded/temp/' +
@@ -694,7 +704,7 @@ def regrid_observations(path='/media/hpc_backup/yanitski/projects/pdr/observatio
             temp_header['TRANSL'] = '13CO 2'
             temp_header['TRANSI'] = '0'
             grid_hdu = fits.PrimaryHDU(data=ico2_gridder.get_datacube(), header=fits.Header(temp_header))
-            grid_hdu_err = fits.PrimaryHDU(data=ico2_gridder_err.get_datacube(), header=fits.Header(temp_header))
+            grid_hdu_err = fits.PrimaryHDU(data=ico2_gridder_err.get_datacube(), header=fits.Header(twod_header))
             grid_hdu.writeto(path + survey + '/regridded/temp/' +
                              '13co2_test_regridded.fits', overwrite=True, output_verify='ignore')
             grid_hdu_err.writeto(path + survey + '/regridded/temp/' +
@@ -703,7 +713,7 @@ def regrid_observations(path='/media/hpc_backup/yanitski/projects/pdr/observatio
             temp_header['TRANSL'] = 'Dust'
             temp_header['TRANSI'] = '0'
             grid_hdu = fits.PrimaryHDU(data=dust_gridder.get_datacube(), header=fits.Header(temp_header))
-            grid_hdu_err = fits.PrimaryHDU(data=dust_gridder_err.get_datacube(), header=fits.Header(temp_header))
+            grid_hdu_err = fits.PrimaryHDU(data=dust_gridder_err.get_datacube(), header=fits.Header(twod_header))
             grid_hdu.writeto(path + survey + '/regridded/temp/' + 'planck_dust_regridded.fits',
                              overwrite=True, output_verify='ignore')
             grid_hdu_err.writeto(path + survey + '/regridded/temp/' + 'planck_dust_regridded_error.fits',
