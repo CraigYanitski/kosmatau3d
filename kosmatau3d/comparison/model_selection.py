@@ -1085,10 +1085,7 @@ def model_selection(path='/mnt/hpc_backup/yanitski/projects/pdr/KT3_history/Milk
 
             if '.fits' in file:
                 obs = fits.open(directory + file)
-                if survey == 'COGAL' or survey == 'ThrUMMS':
-                    obs_error = fits.open(directory + file.replace('.fits', '_error.fits'))[0].data[0, :, :]
-                else:
-                    obs_error = fits.open(directory + file.replace('.fits', '_error.fits'))[0].data
+                obs_error = fits.open(directory + file.replace('.fits', '_error.fits'))[0].data
             elif '.sav' in file or '.idl' in file:
                 obs = readsav(directory + file)
             else:
