@@ -147,10 +147,8 @@ def determine_rms(hdul, mission='', file=''):
             if not (attribute == ''):
                 if (attribute[-1] == '3'):
                     del hdul_rms[0].header[attribute]
-                elif (attribute == 'WCSAXES'):
-                    hdul_rms[0].header['WCSAXES'] = 2
-
-        hdul_rms[0].header['NAXIS']=2
+                elif (attribute == 'NAXIS'):
+                    hdul_rms[0].header['NAXIS'] = 2
 
         if mean:
             med = np.nanmean(cube_co_fix[0].data, axis=0)
@@ -158,7 +156,7 @@ def determine_rms(hdul, mission='', file=''):
         else:
             med = np.nanmedian(cube_co_fix[0].data, axis=0)
         #     print('median', med, 'K')
-        print('std for data < median:', cube_co_fix[0].data[cube_co_fix[0].data < med.reshape(1, *med.shape)].std(), 'K')
+        # print('std for data < median:', cube_co_fix[0].data[cube_co_fix[0].data < med.reshape(1, *med.shape)].std(), 'K')
 
         clean_noise = deepcopy(np.nan_to_num(cube_co_fix[0].data, nan=0))
 
@@ -366,16 +364,17 @@ def regrid_observations(path='/media/hpc_backup/yanitski/projects/pdr/observatio
                 temp_header['CDELT3'] = target_header['CDELT3']
                 temp_header['CRPIX3'] = target_header['CRPIX3']
 
-                obs_data = spectres(target_vel, vel, np.nan_to_num(obs[0].data, nan=0), fill=0)
+                obs_data = spectres(target_vel, vel, np.nan_to_num(obs[0].data, nan=0), fill=0, verbose=False)
                 obs_data = np.nan_to_num(obs_data.reshape(-1, obs_data.shape[-1]), nan=0)
                 obs_error = determine_rms(obs, mission=survey)[0].data.reshape(-1, 1)
+                print(obs_error.shape)
                 # obs_error = np.swapaxes(obs_error, 0, 2)
                 # obs_error = np.swapaxes(obs_error, 0, 1)
 
                 # Grid
                 lon_mesh, lat_mesh = np.meshgrid(lon, lat)
                 co1_gridder.grid(lon_mesh.flatten(), lat_mesh.flatten(), obs_data)
-                co1_gridder_err.grid(lon_mesh.flatten(), lat_mesh.flatten(), obs_error)
+                co1_gridder_err.grid(lon_mesh.flatten(), lat_mesh.flatten(), obs_error[:, 0])
 
                 if vel.min() < min_vel:
                     min_vel = vel.min()
@@ -425,9 +424,9 @@ def regrid_observations(path='/media/hpc_backup/yanitski/projects/pdr/observatio
                 # Grid
                 obs_data = np.swapaxes(obs[0].data, 0, 2)
                 obs_data = np.swapaxes(obs_data, 0, 1)
-                obs_data = spectres(target_vel, vel, np.nan_to_num(obs[0].data.T, nan=0), fill=0)
+                obs_data = spectres(target_vel, vel, np.nan_to_num(obs[0].data.T, nan=0), fill=0, verbose=False)
                 obs_data = obs_data.reshape(-1, obs_data.shape[-1])
-                obs_error = fits.open(path + survey + '/' + file.replace('_Vfull', '.sigma'))[0].data.reshape(-1, 1)
+                obs_error = fits.open(path + survey + '/' + file.replace('_Vfull', '.sigma'))[0].data.reshape(-1)
                 i_nan = np.isnan(obs_error)
                 del obs
 
@@ -490,12 +489,14 @@ def regrid_observations(path='/media/hpc_backup/yanitski/projects/pdr/observatio
 
                 obs_data = np.swapaxes(obs[0].data, 0, 2)
                 obs_data = np.swapaxes(obs_data, 0, 1)
-                obs_data = spectres(target_vel, vel, np.nan_to_num(obs_data, nan=0), fill=0)
+                obs_data = spectres(target_vel, vel, np.nan_to_num(obs_data, nan=0), fill=0, verbose=False)
                 obs_data = obs_data.reshape(-1, obs_data.shape[-1])
                 if '12' in transition:
-                    obs_error = np.full(obs_data.shape, 1.3)  # from Barnes et al. (2015)
+                    # from Barnes et al. (2015)
+                    obs_error = np.full((obs_data.shape[0]), 1.3)
                 elif '13' in transition:
-                    obs_error = np.full(obs_data.shape, 0.7)  # from Barnes et al. (2015)
+                    # from Barnes et al. (2015)
+                    obs_error = np.full((obs_data.shape[0]), 0.7)
                 del obs
 
                 # Grid
@@ -549,7 +550,7 @@ def regrid_observations(path='/media/hpc_backup/yanitski/projects/pdr/observatio
 
                 obs_data = np.swapaxes(obs[0].data, 0, 2)
                 obs_data = np.swapaxes(obs_data, 0, 1)
-                obs_data = spectres(target_vel, vel, np.nan_to_num(obs_data, nan=0), fill=0)
+                obs_data = spectres(target_vel, vel, np.nan_to_num(obs_data, nan=0), fill=0, verbose=False)
                 obs_data = obs_data.reshape(-1, obs_data.shape[-1])
                 obs_error = determine_rms(obs, mission=survey, file=file)[0].data.reshape(-1, 1)
                 i_nan = np.isnan(obs_error)
