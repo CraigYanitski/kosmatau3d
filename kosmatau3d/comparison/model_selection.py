@@ -1723,11 +1723,12 @@ def plot_comparison(path='/mnt/hpc_backup/yanitski/projects/pdr/KT3_history/Milk
                 for t in copy(transitions):
                     if debug:
                         print(t)
-                    if (len(os.listdir(path + survey + '/' + survey_file + '/' + t + '/')) < 369):
+                    if (len(os.listdir(path + survey + '/' + survey_file + '/' + t + '/')) == 0):
                         transitions.remove(t)
                         transitions_skipped.append(t)
                     if debug:
-                        print(transitions, transitions_skipped)
+                        print('  transitions compared: {}\n  transitions skipped: {}'.format(transitions,
+                                                                                             transitions_skipped))
                 file_transitions.append(copy(transitions))
                 survey_dof += len(transitions)
                 file_dof[f] = len(transitions)
@@ -1846,6 +1847,9 @@ def plot_comparison(path='/mnt/hpc_backup/yanitski/projects/pdr/KT3_history/Milk
                 axes[sub_indeces].set_title('{} {}, {} {}'.format(supylabel, y_param, supxlabel, x_param),
                                             fontsize=fontsize-4)
             # cb.ax.set_ylabel(clabel, fontsize=fontsize-4)
+
+            if debug:
+                print('File transitions: {}'.format(file_transitions))
 
             for f in range(len(survey_files)):
                 for t in range(len(file_transitions[f])):
