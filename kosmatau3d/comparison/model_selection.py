@@ -578,10 +578,24 @@ def regrid_observations(path='/media/hpc_backup/yanitski/projects/pdr/observatio
 
                 # Open file and get data
                 obs = fits.open(path + survey + '/' + file)
-                obs_data = obs[1].data['I_ML'] * 1e-6
-                obs_error = obs[1].data['I_RMS'] * 1e-6
 
-                nside = 256
+                if obs[1].header['ORDERING'] == 'NESTED':
+                    nest = True
+                else:
+                    nest = False
+
+                if 'commander' in file:
+                    obs_data = obs[1].data['I_ML'] * 1e-6
+                    obs_error = obs[1].data['I_RMS'] * 1e-6
+                elif 'GNILC' in file:
+                    freq = int(file.split('F')[1].split('_')[0])
+                    obs_data = obs[1].data['I'] * 32.56 / freq ** 2
+                    obs_error = np.full_like(obs_data, obs_data.min())
+                else:
+                    print('File {} not available in survey {}'.format(file, survey))
+                    continue
+
+                nside = obs[1].header['NSIDE']
                 npix = hp.nside2npix(nside)
 
                 # fix header
@@ -594,7 +608,7 @@ def regrid_observations(path='/media/hpc_backup/yanitski/projects/pdr/observatio
                     del temp_header['CRPIX3']
 
                 # Grid
-                lat_mesh, lon_mesh = np.degrees(hp.pix2ang(nside=nside, ipix=np.arange(npix), nest='True'))
+                lat_mesh, lon_mesh = np.degrees(hp.pix2ang(nside=nside, ipix=np.arange(npix), nest=nest))
                 lat_mesh = 90 - lat_mesh
                 dust_gridder = cygrid.WcsGrid(temp_header)
                 dust_gridder.set_kernel(*target_kernel)
@@ -602,6 +616,15 @@ def regrid_observations(path='/media/hpc_backup/yanitski/projects/pdr/observatio
                 dust_gridder_err = cygrid.WcsGrid(temp_header)
                 dust_gridder_err.set_kernel(*target_kernel)
                 dust_gridder_err.grid(lon_mesh, lat_mesh, obs_error)
+
+                temp_header['TRANSL'] = 'Dust'
+                temp_header['TRANSI'] = '0'
+                grid_hdu = fits.PrimaryHDU(data=dust_gridder.get_datacube(), header=fits.Header(temp_header))
+                grid_hdu_err = fits.PrimaryHDU(data=dust_gridder_err.get_datacube(), header=fits.Header(twod_header))
+                grid_hdu.writeto(path + survey + '/regridded/temp/planck_' + file.split('_')[2] + '_regridded.fits',
+                                 overwrite=True, output_verify='ignore')
+                grid_hdu_err.writeto(path + survey + '/regridded/temp/planck_' + file.split('_')[2]
+                                     + '_regridded_error.fits', overwrite=True, output_verify='ignore')
             elif survey == 'COBE-FIRAS':
 
                 print(file)
@@ -710,15 +733,15 @@ def regrid_observations(path='/media/hpc_backup/yanitski/projects/pdr/observatio
                              '13co2_test_regridded.fits', overwrite=True, output_verify='ignore')
             grid_hdu_err.writeto(path + survey + '/regridded/temp/' +
                                  '13co2_test_regridded_error.fits', overwrite=True, output_verify='ignore')
-        if dust:
-            temp_header['TRANSL'] = 'Dust'
-            temp_header['TRANSI'] = '0'
-            grid_hdu = fits.PrimaryHDU(data=dust_gridder.get_datacube(), header=fits.Header(temp_header))
-            grid_hdu_err = fits.PrimaryHDU(data=dust_gridder_err.get_datacube(), header=fits.Header(twod_header))
-            grid_hdu.writeto(path + survey + '/regridded/temp/' + 'planck_dust_regridded.fits',
-                             overwrite=True, output_verify='ignore')
-            grid_hdu_err.writeto(path + survey + '/regridded/temp/' + 'planck_dust_regridded_error.fits',
-                                 overwrite=True, output_verify='ignore')
+        # if dust:
+        #     temp_header['TRANSL'] = 'Dust'
+        #     temp_header['TRANSI'] = '0'
+        #     grid_hdu = fits.PrimaryHDU(data=dust_gridder.get_datacube(), header=fits.Header(temp_header))
+        #     grid_hdu_err = fits.PrimaryHDU(data=dust_gridder_err.get_datacube(), header=fits.Header(twod_header))
+        #     grid_hdu.writeto(path + survey + '/regridded/temp/planck_dust_' + file + '_regridded.fits',
+        #                      overwrite=True, output_verify='ignore')
+        #     grid_hdu_err.writeto(path + survey + '/regridded/temp/' + 'planck_dust_regridded_error.fits',
+        #                          overwrite=True, output_verify='ignore')
 
         CO1 = False
         CO2 = False
@@ -1546,7 +1569,7 @@ def plot_comparison(path='/mnt/hpc_backup/yanitski/projects/pdr/KT3_history/Milk
                     title='', fontsize=20,
                     pad=1.0, pad_left=0, pad_right=0.125, pad_bottom=0, pad_top=0.12, wspace=0, hspace=0,
                     figsize=None, save_plot=False, output_file='', output_format='png', transparent=False,
-                    verbose=False, debug=False):
+                    verbose=False, debug=False, **kwargs):
     #
 
     # Check that the missions are specified properly.
@@ -1623,11 +1646,23 @@ def plot_comparison(path='/mnt/hpc_backup/yanitski/projects/pdr/KT3_history/Milk
         # if verbose:
         print('\n  {}\n'.format(survey))
 
-        survey_files = os.listdir(path + survey + '/')
+        if (survey + '_files') in kwargs.keys():
+            if isinstance(kwargs[survey + '_files'], list):
+                survey_files = kwargs[survey + '_files']
+            elif isinstance(kwargs[survey + '_files'], str):
+                survey_files = [kwargs[survey + '_files']]
+            else:
+                print('Incorrect files specified for survey {}'.format(survey))
+                continue
+        else:
+            survey_files = os.listdir(path + survey + '/')
+
         if 'Plots' in survey_files:
             survey_files.remove('Plots')
-        else:
+
+        if not 'Plots' in os.listdir(path + survey + '/'):
             os.mkdir(path + survey + '/Plots/')
+
         file_transitions = []
         file_transition_plots = []
         file_transition_log_likelihood = []
@@ -1660,6 +1695,9 @@ def plot_comparison(path='/mnt/hpc_backup/yanitski/projects/pdr/KT3_history/Milk
             for f,survey_file in enumerate(survey_files):
 
                 if '.png' in survey_file or 'Plots' in survey_file:
+                    continue
+                if not survey_file in os.listdir(path + survey + '/'):
+                    print('File {} not available for survey {}'.format(survey_file, survey))
                     continue
 
                 if verbose:
