@@ -109,7 +109,7 @@ target_kernel = (
 )
 
 # List of survey missions to work on (None select all available surveys)
-missions = None#['COGAL', 'Mopra', 'ThrUMMS', 'SEDIGISM']
+missions = 'Planck'#['COBE-FIRAS', 'COGAL', 'Mopra', 'ThrUMMS', 'SEDIGISM']
 
 # Colour map for the plots
 cmap = 'magma'
@@ -121,11 +121,12 @@ comp_type = 'pv'
 log_comp = False
 
 # Dictionary with the default kwargs for the comparison functions
-default_comp_kwargs = {'lat' : None,
+default_comp_kwargs = {'lat' : 0,
                        'PRINT' : True,
                        'PLOT' : False,
                        'debug' : False}
 default_plot_kwargs = {'normalise' : False,
+                       'log' : False,
                        'likelihood' : False,
                        'levels' : 100,
                        'clabel_xa' : 0.95,
@@ -138,7 +139,13 @@ default_plot_kwargs = {'normalise' : False,
                        'fontsize' : 24,
                        'save_plot' : True,
                        'output_format' : 'png',
-                       'transparent' : True}
+                       'transparent' : True,
+                       'debug' : False,
+                       'COBE-FIRAS_files': ['FIRAS_LINE_EMISSION_MAP_HIGH_regridded',
+                                            'FIRAS_LINE_EMISSION_MAP_HRES_regridded'],
+                       'Planck_files' : ['planck_Dust-GNILC-F353_regridded',
+                                         'planck_Dust-GNILC-F545_regridded',
+                                         'planck_Dust-GNILC-F857_regridded']}
 
 
 for folder,params,plot_kwargs_adj in zip(folders, parameters, plot_kwargs):
@@ -151,11 +158,11 @@ for folder,params,plot_kwargs_adj in zip(folders, parameters, plot_kwargs):
     print('\nComparing {}'.format(folder))
 
     # kwargs that are common between the comparison functions
-    kwargs_common = {'missions':missions,
-                     'model_param':params,
-                     'cmap':cmap,
-                     'comp_type':comp_type,
-                     'log_comp':log_comp}
+    kwargs_common = {'missions' : missions,
+                     'model_param' : params,
+                     'cmap' : cmap,
+                     'comp_type' : comp_type,
+                     'log_comp' : log_comp}
 
     # Compare models to observations
     kwargs = deepcopy(kwargs_common)
