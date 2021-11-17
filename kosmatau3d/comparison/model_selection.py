@@ -607,16 +607,27 @@ def regrid_observations(path='/media/hpc_backup/yanitski/projects/pdr/observatio
                     del temp_header['CRVAL3']
                     del temp_header['CRPIX3']
 
-                # Grid
+                # Gridding parameters (split large files into multiple chuncks)
+                chunck = 1000000
+                n_chuncks = int(np.ceil(obs_data.size/chunck))
                 lat_mesh, lon_mesh = np.degrees(hp.pix2ang(nside=nside, ipix=np.arange(npix), nest=nest))
                 lat_mesh = 90 - lat_mesh
+
+                # Grid
                 dust_gridder = cygrid.WcsGrid(temp_header)
                 dust_gridder.set_kernel(*target_kernel)
-                dust_gridder.grid(lon_mesh, lat_mesh, obs_data)
+                for _ in range(n_chuncks):
+                    dust_gridder.grid(lon_mesh[_*chunck:(_+1)*chunck],
+                                      lat_mesh[_*chunck:(_+1)*chunck],
+                                      obs_data[_*chunck:(_+1)*chunck])
                 dust_gridder_err = cygrid.WcsGrid(temp_header)
                 dust_gridder_err.set_kernel(*target_kernel)
-                dust_gridder_err.grid(lon_mesh, lat_mesh, obs_error)
+                for _ in range(n_chuncks):
+                    dust_gridder_err.grid(lon_mesh[_*chunck:(_+1)*chunck],
+                                          lat_mesh[_*chunck:(_+1)*chunck],
+                                          obs_error[_*chunck:(_+1)*chunck])
 
+                print('save file')
                 temp_header['TRANSL'] = 'Dust'
                 temp_header['TRANSI'] = '0'
                 grid_hdu = fits.PrimaryHDU(data=dust_gridder.get_datacube(), header=fits.Header(temp_header))
@@ -625,6 +636,9 @@ def regrid_observations(path='/media/hpc_backup/yanitski/projects/pdr/observatio
                                  overwrite=True, output_verify='ignore')
                 grid_hdu_err.writeto(path + survey + '/regridded/temp/planck_' + file.split('_')[2]
                                      + '_regridded_error.fits', overwrite=True, output_verify='ignore')
+                del obs_data
+                del obs_error
+                del obs
             elif survey == 'COBE-FIRAS':
 
                 print(file)
