@@ -133,7 +133,8 @@ def calculateEmission(tauFUV=0, timed=False):
     return
 
 
-def plotIntensity(molecule='all', quantity='intensity', n_cl=[], title='', velocity=None, logscale=None):
+def plotIntensity(molecule='all', quantity='intensity', n_cl=[], title='', velocity=None, logscale=None,
+                  test_calc=False):
 
     if isinstance(molecule, str) and molecule in species.molecules:
         molecule = [molecule]
@@ -188,13 +189,27 @@ def plotIntensity(molecule='all', quantity='intensity', n_cl=[], title='', veloc
                 Icl = masspoints.clumpIntensity[ens][clump, i]*profile
                 tcl = masspoints.clumpOpticalDepth[ens][clump, i]*profile
                 intensity = Icl/tcl*(1-np.exp(-tcl))
+                if test_calc:
+                    ds = constants.voxel_size
+                    rcl = masspoints.clumpRadius[ens][clump, 0]
+                    eps = Icl * tcl/(1-np.exp(-tcl)) * 2*np.pi*rcl**2/ds**3
+                    kap = tcl * 2*np.pi*rcl**2/ds**3
         
                 if quantity == 'emissivity':
-                    value = n_cl[clump]*Icl/masspoints.clumpRadius[ens][0, clump]/2
+                    if test_calc:
+                        value = eps
+                    else:
+                        value = n_cl[clump]*Icl/masspoints.clumpRadius[ens][0, clump]/2
                 elif quantity == 'absorption':
-                    value = n_cl[clump]*tcl/masspoints.clumpRadius[ens][0, clump]/2
+                    if test_calc:
+                        value = kap
+                    else:
+                        value = n_cl[clump]*tcl/masspoints.clumpRadius[ens][0, clump]/2
                 elif quantity == 'intensity':
-                    value = Icl/tcl * (1-np.exp(-n_cl[clump]*tcl))
+                    if test_calc:
+                        value = eps/kap * (1-np.exp(-kap*ds))
+                    else:
+                        value = Icl/tcl * (1-np.exp(-n_cl[clump]*tcl))
         
                 if logscale:
                     ax[clump].semilogy(velocity, value, ls='-', lw=2)
