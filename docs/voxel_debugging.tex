@@ -71,10 +71,12 @@
     Now the number of clumps with a particular radial velocity \(v_{j,i}\) is determined by the number of clumps of a particular mass \(N_j\) and velocity distribution of the ensemble \(\sigma_{ens,j}\).
 
     \[
-    \Delta N_{j,i} = \frac{N_j}{\sqrt{2 \pi} \sigma_{ens}} \ \mathrm{exp} \left( -\frac{(v_{vox}-v_{j,i})^2}{2 \sigma_{ens, j}} \right) \Delta v,
+    \Delta N_{j,i} = \frac{N_j}{\sqrt{2 \pi} \sigma_{ens,j}} \ \mathrm{exp} \left( -\frac{(v_{vox}-v_{j,i})^2}{2 \sigma_{ens, j}} \right) \Delta v_j,
     \]
 
-    where \(\Delta v\) is the step size in \(v_i\) (\(\Delta v \equiv v_{i+1} - v_i\)).
+    where \(\Delta v\) is the step size in \(v_{j,i}\) (\(\Delta v_j \equiv v_{j,i+1} - v_{j,i}\)).
+    This step size is necessarily smaller than \(\sigma_{cl,j}\) to ensure the velocity distribution is adequately sampled in the ensemble.
+    (ie. One should not be able to see the contributions of different internal velocities in the emission).
     The probability \(p_{j,i}\) of having \(k_{j,i}\) clumps in a line-of-sight observed at velocity \(v_i\) is determined by Binomial distribution of the number of clumps at that velocity:
 
     \[
@@ -139,19 +141,19 @@
     The proposed fix for this is to modify the equation for \(I_{\nu, j, i} (v_{obs})\) to calculate instead \(\epsilon_{\nu, j, i} (v_{obs})\):
 
     \[
-    \epsilon_{\nu,j,i} (v_{obs}) = I_{\nu,j,i} \frac{\tau_{\nu,j,i}} {L_{j}} / [ 1 - \exp(-\tau_{\nu,j,i}) ] \times \mathrm{exp}(\frac{(vi - v_{obs})^2}{2 \sigma_{cl,j}^2}).
+    \epsilon_{\nu,j,i} (v_{obs}) = \frac{k_{j,i} I_{\nu,j} \tau_{\nu,j}}{\left[ 1 - \exp(- \tau_{\nu,j}) \right]} \frac{2 \pi R_{cl,j}^2}{V_{j}} \mathrm{exp} \left( \frac{(v_i-v_{obs})^2}{2\sigma_{cl,j}^2} \right).
     \]
 
     This leads to a voxel-averaged emissivity of,
 
     \[
-    \left< \epsilon_\nu \right>_{vox} (v_{obs}) = \sum_i \left( \prod_j p_{j,i}(k_{j,i}) \right) \left( \sum_j k_{j,i} \epsilon_{\nu,j,i} (v_{obs}) \right).
+    \left< \epsilon_\nu \right>_{vox} (v_{obs}) = \sum_i \bigg[ \Big( \prod_j p_{j,i}(k_{j,i}) \Big) \Big( \sum_j \epsilon_{\nu,j,i} (v_{obs}) \Big) \bigg].
     \]
 
     The corresponding modification for the optical depth in terms of opacity is,
 
     \[
-    \left< \kappa_\nu \right>_{vox} (v_{obs}) = -\mathrm{ln} \left[ \sum_i \left( \prod_j p_{j,i}(k_{j,i}) \right) \ \mathrm{exp} \left( - \sum_j \frac{k_{j,i} \tau_{\nu,j,i} (v_{obs}) \times A_{j}}{V_{voxel}} \Delta s \right) \right].
+    \left< \kappa_\nu \right>_{vox} (v_{obs}) = -\mathrm{ln} \Bigg\{ \sum_i \bigg[ \Big( \prod_j p_{j,i}(k_{j,i}) \Big) \ \mathrm{exp} \Big( - \sum_j \tau_{\nu,j,i} (v_{obs}) \times \frac{2 \pi R_{cl,j}^2}{V_{voxel}} \times \Delta s \Big) \bigg] \Bigg\}.
     \]
 
     At least this is how the intended modification to the code should work.
