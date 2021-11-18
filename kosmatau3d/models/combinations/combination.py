@@ -51,13 +51,13 @@ def calculateEmission(test_calc=False, test_opacity=False, test_fv=False, f_v=No
         for c in combinations.clumpCombination[ens]:
             if test_calc:
                 intensitylist[ens].append((c * (masspoints.clumpIntensity[ens]*(masspoints.clumpOpticalDepth[ens]
-                                                *4*np.pi*masspoints.clumpRadius[ens].T**2)
+                                                *2*np.pi*masspoints.clumpRadius[ens].T**2)
                                                 /(1-np.exp(-masspoints.clumpOpticalDepth[ens]))
                                                 /constants.voxel_size**3/f_ds).T).T)
             else:
                 intensitylist[ens].append((c*masspoints.clumpIntensity[ens].T).T)
             if test_opacity:
-                opticaldepthlist[ens].append((c * (masspoints.clumpOpticalDepth[ens]*4*np.pi
+                opticaldepthlist[ens].append((c * (masspoints.clumpOpticalDepth[ens]*2*np.pi
                                                    *masspoints.clumpRadius[ens].T**2/constants.voxel_size**3/f_ds).T).T)
             else:
                 opticaldepthlist[ens].append((c*masspoints.clumpOpticalDepth[ens].T).T)
