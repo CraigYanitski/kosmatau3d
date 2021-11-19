@@ -109,7 +109,7 @@ target_kernel = (
 )
 
 # List of survey missions to work on (None select all available surveys)
-missions = 'COGAL'#['COBE-FIRAS', 'COGAL', 'Mopra', 'ThrUMMS', 'SEDIGISM']
+missions = 'Planck'#['COBE-FIRAS', 'COGAL', 'Mopra', 'ThrUMMS', 'SEDIGISM']
 
 # Colour map for the plots
 cmap = 'magma'
@@ -143,9 +143,10 @@ default_plot_kwargs = {'normalise' : False,
                        'debug' : False,
                        'COBE-FIRAS_files': ['FIRAS_LINE_EMISSION_MAP_HIGH_regridded',
                                             'FIRAS_LINE_EMISSION_MAP_HRES_regridded'],
-                       'Planck_files' : ['planck_Dust-GNILC-F353_regridded',
-                                         'planck_Dust-GNILC-F545_regridded',
-                                         'planck_Dust-GNILC-F857_regridded']}
+                       'Planck_files' : ['planck_dust-commander_regridded']}
+                                         # 'planck_Dust-GNILC-F353_regridded',
+                                         # 'planck_Dust-GNILC-F545_regridded',
+                                         # 'planck_Dust-GNILC-F857_regridded']}
 
 
 for folder,params,plot_kwargs_adj in zip(folders, parameters, plot_kwargs):
