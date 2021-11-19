@@ -109,7 +109,7 @@ target_kernel = (
 )
 
 # List of survey missions to work on (None select all available surveys)
-missions = 'Planck'#['COBE-FIRAS', 'COGAL', 'Mopra', 'ThrUMMS', 'SEDIGISM']
+missions = 'COGAL'#['COBE-FIRAS', 'COGAL', 'Mopra', 'ThrUMMS', 'SEDIGISM']
 
 # Colour map for the plots
 cmap = 'magma'
