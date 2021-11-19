@@ -1038,6 +1038,48 @@ def view_observation(path='/mnt/hpc_backup/yanitski/projects/pdr/observational_d
     return
 
 
+def error_correction(data, conf=''):
+
+    if data.shape[0] == 1 and data.ndim == 3:
+        data_copy = data[0]
+    else:
+        data_copy = deepcopy(data)
+    correction = np.zeros_like(data)
+
+    if conf == 'axisymmetric':
+
+        if data_copy.ndim == 1:
+            for i in range(int(np.ceil(data_copy.shape[0]/2))):
+                idx = np.ix_([i, -1-i])
+                avg = np.mean(data_copy[idx])
+                err = np.sqrt(((data_copy[idx]-avg)**2).sum())
+                correction[idx] = err / np.sqrt(2)
+        elif data_copy.ndim == 2:
+            for i in range(int(np.ceil(data_copy.shape[0]/2))):
+                for j in range(int(np.ceil(data_copy.shape[1]/2))):
+                    idx = np.ix_([i, i, -1-i, -1-i], [j, -1-j, j, -1-j])
+                    if np.isnan(data_copy[idx]).all():
+                        continue
+                    avg = np.nanmean(data_copy[idx])
+                    err = np.sqrt(((data_copy[idx]-avg)**2).sum()/3)
+                    correction[idx] = err/np.sqrt(4)
+        elif data_copy.ndim == 3:
+            for i in range(int(np.ceil(data_copy.shape[0]/2))):
+                for j in range(int(np.ceil(data_copy.shape[1]/2))):
+                    for k in range(int(data_copy.shape[2])):
+                        idx = np.ix_([i, i, -1-i, -1-i], [j, -1-j, j, -1-j], [k, k, -1-k, -1-k])
+                        if np.isnan(data_copy[idx]).all():
+                            continue
+                        avg = np.nanmean(data_copy[idx])
+                        err = np.sqrt(((data_copy[idx]-avg)**2).sum()/3)
+                        correction[idx] = err/np.sqrt(4)
+
+    if data.shape != data_copy.shape:
+        correction = np.asarray([correction])
+
+    return correction
+
+
 def model_selection(path='/mnt/hpc_backup/yanitski/projects/pdr/KT3_history/MilkyWay', missions=None, lat=None,
                     model_dir='', model_param=[[]], comp_type='pv', log_comp=True, cmap='gist_ncar',
                     PLOT=False, PRINT=False, debug=False):
@@ -1214,16 +1256,24 @@ def model_selection(path='/mnt/hpc_backup/yanitski/projects/pdr/KT3_history/Milk
 
                 if (survey == 'COBE') or (survey == 'COBE-FIRAS'):
                     if '.idl' in file:
+                        obs_error_conf = error_correction(obs_data[i, int(transition_indeces[i])],
+                                                          conf='axisymmetric')
                         vmin = obs_data[:, int(transition_indeces[i])].min()
                         vmax = obs_data[:, int(transition_indeces[i])].max()
                     else:
+                        obs_error_conf = error_correction(obs_data[int(transition_indeces[i]), :, :],
+                                                          conf='axisymmetric')
                         vmin = obs_data[int(transition_indeces[i]), :, :].min()
                         vmax = obs_data[int(transition_indeces[i]), :, :].max()
                     # print(transition)
                     # print(vmin, vmax)
                 else:
+                    obs_error_conf = error_correction(obs_data, conf='axisymmetric')
                     vmin = np.nanmin(obs_data)
                     vmax = np.nanmax(obs_data)
+
+                print('Average error in observation: {}'.format(obs_error.mean()))
+                print('Correction due to axisymmetry: {}'.format(obs_error_conf.mean()))
 
                 for param in model_params:
 
@@ -1316,12 +1366,12 @@ def model_selection(path='/mnt/hpc_backup/yanitski/projects/pdr/KT3_history/Milk
                         if '.idl' in file:
                             idx_obs = np.ix_(np.arange(obs_data.shape[0]), [int(transition_indeces[i])])
                             obs_data_final = obs_data[idx_obs].reshape(-1)#[:, int(transition_indeces[i])]
-                            obs_error_final = obs_error[idx_obs].reshape(-1)#[:, int(transition_indeces[i])]
+                            obs_error_final = np.sqrt(obs_error**2+obs_error_conf**2)[idx_obs].reshape(-1)#[:, int(transition_indeces[i])]
                             model_interp = model_interp.reshape(-1)
                         else:
                             idx_obs = np.ix_([int(transition_indeces[i])], i_lat_obs, np.arange(obs_data.shape[2]))
                             obs_data_final = obs_data[idx_obs][0, :, :]#[int(transition_indeces[i]), i_lat_obs, :]
-                            obs_error_final = obs_error[idx_obs][0, :, :]#[int(transition_indeces[i]), i_lat_obs, :]
+                            obs_error_final = np.sqrt(obs_error**2+obs_error_conf**2)[idx_obs][0, :, :]#[int(transition_indeces[i]), i_lat_obs, :]
                             model_interp = model_interp[:, :, 0]
                         # print(model_interp.shape, obs_data_final.shape)
 
@@ -1330,7 +1380,7 @@ def model_selection(path='/mnt/hpc_backup/yanitski/projects/pdr/KT3_history/Milk
                         model_interp = model[2].data[idx_d][0, :, :, 0]#[0, i_lat_model, :, i_spec]
                         idx_obs = np.ix_(i_lat_obs, np.arange(obs_data.shape[1]))
                         obs_data_final = obs_data[idx_obs]#[i_lat_obs, :]
-                        obs_error_final = obs_error[idx_obs]#[i_lat_obs, :]
+                        obs_error_final = np.sqrt(obs_error**2+obs_error_conf**2)[idx_obs]#[i_lat_obs, :]
                         # print(model_interp.shape, obs_data_final.shape)
 
                     else:
@@ -1346,11 +1396,12 @@ def model_selection(path='/mnt/hpc_backup/yanitski/projects/pdr/KT3_history/Milk
                         if comp_type == 'integrated':
                             model_interp = np.trapz(model_data, vel_model, axis=model_data.shape.index(vel_model.size))
                             obs_data_final = np.trapz(obs_data_temp, vel_obs, axis=obs_data_temp.shape.index(vel_obs.size))
-                            obs_error_final = obs_error[i_lat_obs, :]
+                            obs_error_final = len(vel_obs)*np.sqrt(obs_error**2+obs_error_conf**2)[i_lat_obs, :]
                         elif comp_type == 'pv':
                             model_interp = np.swapaxes(model_data, 0, 1)
                             obs_data_final = copy(obs_data[:, i_lat_obs, :])
-                            obs_error_final = np.asarray([obs_error[i_lat_obs, :]]*obs_data_temp.shape[1])
+                            obs_error_final = np.asarray([np.sqrt(obs_error**2+obs_error_conf**2)[i_lat_obs, :]]
+                                                         *obs_data_temp.shape[1])
                             # obs_error_final = np.swapaxes([obs_error[i_lat_obs, :]]*obs_data_temp.shape[1], 0, 1)
                         else:
                             print('ERROR >> Comparison type {} not valid; '.format(comp_type) +
