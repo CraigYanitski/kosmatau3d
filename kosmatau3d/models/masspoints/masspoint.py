@@ -192,8 +192,8 @@ def plotIntensity(molecule='all', quantity='intensity', n_cl=[], title='', veloc
                 if test_calc:
                     ds = constants.voxel_size
                     rcl = masspoints.clumpRadius[ens][clump, 0]
-                    eps = Icl * tcl/(1-np.exp(-tcl)) * 2*np.pi*rcl**2/ds**3
-                    kap = tcl * 2*np.pi*rcl**2/ds**3
+                    eps = Icl * tcl/(1-np.exp(-tcl)) / ds
+                    kap = tcl / ds
         
                 if quantity == 'emissivity':
                     if test_calc:
