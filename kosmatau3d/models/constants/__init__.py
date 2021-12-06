@@ -70,6 +70,7 @@ dust = True
 
 # Model characteristics
 nSigma = 3
+velocity_resolution = 3
 voxel_size = 1000
 velocityNumber = 1000
 velocityBin = [-300, 300]
