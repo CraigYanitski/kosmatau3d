@@ -134,7 +134,8 @@ def createCombinationObjects(ensembleDispersion, dtype=np.float64, verbose=False
             print('velocity, mean, dispersion', self.__velocity, self.__velocity.mean(), self.__velocityDispersion)
         
         if ensembleDispersion[ens] > constants.clumpDispersion:
-            velocityStep = np.minimum(ensembleDispersion[ens]/3, constants.clumpDispersion/3)
+            velocityStep = np.minimum(ensembleDispersion[ens]/constants.velocity_resolution,
+                                      constants.clumpDispersion/constants.velocity_resolution)
             # ensemble.clumpVelocities[ens] = np.linspace(-3*ensembleDispersion[ens], 3*ensembleDispersion[ens],
             #                                             num=np.round(6*ensembleDispersion[ens] /
             #                                                          velocityStep).astype(np.int)+1)
