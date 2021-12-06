@@ -141,7 +141,7 @@
     The proposed fix for this is to modify the equation for \(I_{\nu, j, i} (v_{obs})\) to calculate instead \(\epsilon_{\nu, j, i} (v_{obs})\):
 
     \[
-    \epsilon_{\nu,j,i} (v_{obs}) = \frac{k_{j,i} I_{\nu,j} \tau_{\nu,j}}{\left[ 1 - \exp(- \tau_{\nu,j}) \right]} \frac{2 \pi R_{cl,j}^2}{V_{j}} \mathrm{exp} \left( \frac{(v_i-v_{obs})^2}{2\sigma_{cl,j}^2} \right).
+    \epsilon_{\nu,j,i} (v_{obs}) = \frac{k_{j,i} I_{\nu,j} \tau_{\nu,j}}{\left[ 1 - \exp(- \tau_{\nu,j}) \right]} \frac{\pi R_{cl,j}^2}{V_{j}} \mathrm{exp} \left( \frac{(v_i-v_{obs})^2}{2\sigma_{cl,j}^2} \right).
     \]
 
     This leads to a voxel-averaged emissivity of,
@@ -153,7 +153,7 @@
     The corresponding modification for the optical depth in terms of opacity is,
 
     \[
-    \left< \kappa_\nu \right>_{vox} (v_{obs}) = -\mathrm{ln} \Bigg\{ \sum_i \bigg[ \Big( \prod_j p_{j,i}(k_{j,i}) \Big) \ \mathrm{exp} \Big( - \sum_j \tau_{\nu,j,i} (v_{obs}) \times \frac{2 \pi R_{cl,j}^2}{V_{voxel}} \times \Delta s \Big) \bigg] \Bigg\}.
+    \left< \kappa_\nu \right>_{vox} (v_{obs}) = -\mathrm{ln} \Bigg\{ \sum_i \bigg[ \Big( \prod_j p_{j,i}(k_{j,i}) \Big) \ \mathrm{exp} \Big( - \sum_j \tau_{\nu,j,i} (v_{obs}) \times \frac{\pi R_{cl,j}^2}{V_{voxel}} \times \Delta s \Big) \bigg] \Bigg\}.
     \]
 
     At least this is how the intended modification to the code should work.
