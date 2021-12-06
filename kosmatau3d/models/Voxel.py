@@ -156,7 +156,7 @@ class Voxel(object):
   
     def setProperties(self, voxel_size=1, molecules='all', dust='PAH', alpha=1.84, gamma=2.31, clumpMassNumber=[3,1],
                       clumpMassRange=[[0,2],[-2]], clumpNmax=[1, 100], velocityRange=[-10,10], velocityNumber=51,
-                      ensembleMass=100, velocity=0., ensembleDispersion=1, volumeFactor=None,
+                      ensembleMass=100, velocity=0., ensembleDispersion=1, velocity_resolution=3, volumeFactor=None,
                       ensembleDensity=[15000, 1911], FUV=[20000, 1], crir=2e-16,
                       from_grid=False, new_grid=False, change_interpolation=False,
                       timed=False, verbose=False, debug=False):
@@ -252,84 +252,70 @@ class Voxel(object):
                            np.linspace(self.__y-.5*constants.voxel_size, self.__y+.5*constants.voxel_size, 3))
         r = np.array([x.flatten(), y.flatten()]).T
         r = np.linalg.norm(r, axis=1)
-    
-        # if fromFile:
-    
-        #   self.__setClumpMass(r)
-        #   self.__setMass()
-        #   self.__setVelocity(r)
-        #   self.__setEnsembleDensity(r)
-        #   #self.__setExtinction()
-        #   self.__setFUV(self.__r, self.__z)
-    
-        #   # This can convert the velocity from Cartesian to radial. It is assumed a scalar value is a radial velocity.
-        #   if isinstance(self.__velocity, float):
-        #     velocity = self.__velocity
-        #   else:
-        #     velocity = np.linalg.norm(self.__velocity)
-    
-        if True:
 
-            if constants.voxel_size != voxel_size:
-                constants.voxel_size = voxel_size
+        if constants.voxel_size != voxel_size:
+            constants.voxel_size = voxel_size
 
-            if constants.alpha != alpha or constants.gamma != gamma:
-                constants.changeMassFunctionParameters(alpha=alpha, gamma=gamma)
+        if constants.alpha != alpha or constants.gamma != gamma:
+            constants.changeMassFunctionParameters(alpha=alpha, gamma=gamma)
 
-            if constants.velocityBin != velocityRange or constants.velocityNumber != velocityNumber:
-                constants.changeVelocityRange(velocityRange)
-                constants.changeVelocityNumber(velocityNumber)
+        if constants.velocityBin != velocityRange or constants.velocityNumber != velocityNumber:
+            constants.changeVelocityRange(velocityRange)
+            constants.changeVelocityNumber(velocityNumber)
 
-            if constants.clumpLogMassRange != clumpMassRange or constants.clumpMassNumber != clumpMassNumber\
-                    or constants.clumpNmax != clumpNmax:
-                constants.addClumps(massRange=clumpMassRange, num=clumpMassNumber, Nmax=clumpNmax, reset=True)
-    
-            if new_grid or change_interpolation or \
-                    not interpolations.initialised or not observations.initialised:
-                constants.changeDustWavelengths(dust)
-                observations.methods.initialise()
-                species.addMolecules(molecules)
-                interpolations.initialise()
-            
-            if timed:
-                t1 = time()
-                self.__logger.info('Model setup: {}'.format(t1-t0))
-      
-            masspoints.reinitialise()
-            combinations.reinitialise()
-            ensemble.reinitialise()
-            
-            self.__velocity = velocity
-      
-            if isinstance(ensembleMass, list) or isinstance(ensembleMass, np.ndarray):
-                self.__ensembleMass = ensembleMass
-            else:
-                self.__ensembleMass = [ensembleMass] * len(constants.clumpMassNumber)
-            
-            if isinstance(ensembleDispersion, list) or isinstance(ensembleDispersion, np.ndarray):
-                self.__ensembleDispersion = ensembleDispersion
-            else:
-                self.__ensembleDispersion = [ensembleDispersion] * len(constants.clumpMassNumber)
-      
-            if isinstance(volumeFactor, float) or isinstance(volumeFactor, int):
-                volumeFactor = [volumeFactor] * len(constants.clumpMassNumber)
-            if volumeFactor:
-                ensembleDensity = [ensembleMass[ens]*constants.massSolar/constants.massH/volumeFactor[ens] /
-                                   constants.voxel_size**3/constants.pc**3/100**3
-                                   for ens in range(len(constants.clumpMassNumber))]
-            if isinstance(ensembleDensity, list) or isinstance(ensembleDensity, np.ndarray):
-                self.__ensembleDensity = ensembleDensity
-            else:
-                self.__ensembleDensity = [ensembleDensity] * len(constants.clumpMassNumber)
-      
-            if isinstance(FUV, list) or isinstance(FUV, np.ndarray):
-                self.__FUV = FUV
-            else:
-                self.__FUV = [FUV] * len(clumpMassNumber)
+        if constants.velocity_resolution != velocity_resolution:
+            constants.velocity_resolution = velocity_resolution
 
-            self.__crir = crir
-      
-            velocity = self.__velocity
+        if constants.clumpLogMassRange != clumpMassRange or constants.clumpMassNumber != clumpMassNumber\
+                or constants.clumpNmax != clumpNmax:
+            constants.addClumps(massRange=clumpMassRange, num=clumpMassNumber, Nmax=clumpNmax, reset=True)
+
+        if new_grid or change_interpolation or \
+                not interpolations.initialised or not observations.initialised:
+            constants.changeDustWavelengths(dust)
+            observations.methods.initialise()
+            species.addMolecules(molecules)
+            interpolations.initialise()
+
+        if timed:
+            t1 = time()
+            self.__logger.info('Model setup: {}'.format(t1-t0))
+
+        masspoints.reinitialise()
+        combinations.reinitialise()
+        ensemble.reinitialise()
+
+        self.__velocity = velocity
+
+        if isinstance(ensembleMass, list) or isinstance(ensembleMass, np.ndarray):
+            self.__ensembleMass = ensembleMass
+        else:
+            self.__ensembleMass = [ensembleMass] * len(constants.clumpMassNumber)
+
+        if isinstance(ensembleDispersion, list) or isinstance(ensembleDispersion, np.ndarray):
+            self.__ensembleDispersion = ensembleDispersion
+        else:
+            self.__ensembleDispersion = [ensembleDispersion] * len(constants.clumpMassNumber)
+
+        if isinstance(volumeFactor, float) or isinstance(volumeFactor, int):
+            volumeFactor = [volumeFactor] * len(constants.clumpMassNumber)
+        if volumeFactor:
+            ensembleDensity = [ensembleMass[ens]*constants.massSolar/constants.massH/volumeFactor[ens] /
+                               constants.voxel_size**3/constants.pc**3/100**3
+                               for ens in range(len(constants.clumpMassNumber))]
+        if isinstance(ensembleDensity, list) or isinstance(ensembleDensity, np.ndarray):
+            self.__ensembleDensity = ensembleDensity
+        else:
+            self.__ensembleDensity = [ensembleDensity] * len(constants.clumpMassNumber)
+
+        if isinstance(FUV, list) or isinstance(FUV, np.ndarray):
+            self.__FUV = FUV
+        else:
+            self.__FUV = [FUV] * len(clumpMassNumber)
+
+        self.__crir = crir
+
+        velocity = self.__velocity
     
         # This will allow the code to reuse the standard clump density constants for voxel sets (ie. do not alter the model constants)
         # density = copy(constants.clumpDensity)
@@ -616,15 +602,39 @@ class Voxel(object):
         
         return
   
-    def getSpeciesEmissivity(self):
-        return np.asarray(self.__emissivity_species)
+    def getSpeciesEmissivity(self, include_dust=False):
+        epsilon_species = deepcopy(self.__emissivity_species)
+        if include_dust:
+            epsilon_dust = self.__emissivity_dust
+            for ens in range(len(constants.clumpMassNumber)):
+                if epsilon_dust[ens].shape[1] > 1:
+                    epsilon_dust_interp = interp1d(constants.wavelengths[constants.nDust],
+                                                   epsilon_dust[ens].max(0), fill_value='extrapolate')
+                for i, transition in enumerate(species.moleculeWavelengths):
+                    if epsilon_dust[ens].shape[1] > 1:
+                        epsilon_species[ens][:, i] -= epsilon_dust_interp(transition)
+                else:
+                    epsilon_species[ens] -= epsilon_dust[ens]
+        return np.asarray(epsilon_species)
   
-    def getSpeciesAbsorption(self):
-        return np.asarray(self.__absorption_species)
+    def getSpeciesAbsorption(self, include_dust=False):
+        kappa_species = deepcopy(self.__absorption_species)
+        if include_dust:
+            kappa_dust = self.__absorption_dust
+            for ens in range(len(constants.clumpMassNumber)):
+                if kappa_dust[ens].shape[1] > 1:
+                    kappa_dust_interp = interp1d(constants.wavelengths[constants.nDust],
+                                                   kappa_dust[ens].max(0), fill_value='extrapolate')
+                    for i, transition in enumerate(species.moleculeWavelengths):
+                        if kappa_dust[ens].shape[1] > 1:
+                            kappa_species[ens][:, i] -= kappa_dust_interp(transition)
+                else:
+                    kappa_species[ens] -= kappa_dust[ens]
+        return np.asarray(kappa_species)
   
-    def getSpeciesIntensity(self):
-        epsilon = self.getSpeciesEmissivity()
-        kappa = self.getSpeciesAbsorption()
+    def getSpeciesIntensity(self, integrated=False, include_dust=False):
+        epsilon = self.getSpeciesEmissivity(include_dust=include_dust)
+        kappa = self.getSpeciesAbsorption(include_dust=include_dust)
         intensity = np.zeros_like(epsilon)
         for ens in range(len(constants.clumpMassNumber)):
             if self.__volumeFactor[ens] > 1 and self.test_fv:
@@ -634,7 +644,13 @@ class Voxel(object):
             intensity[ens] = epsilon[ens]/kappa[ens]*(1-np.exp(-kappa[ens]*ds))
             i_nan = np.isnan(intensity[ens])
             intensity[ens][i_nan] = epsilon[ens][i_nan]
-        return intensity
+        if integrated:
+            intensity_final = np.zeros((intensity.shape[0], intensity.shape[2]))
+            for ens in range(len(constants.clumpMassNumber)):
+                intensity_final[ens] = np.trapz(intensity[ens], constants.velocityRange, axis=0)
+        else:
+            intensity_final = intensity
+        return intensity_final
   
     def getDustEmissivity(self):
         return np.asarray(self.__emissivity_dust)
