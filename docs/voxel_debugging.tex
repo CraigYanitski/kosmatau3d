@@ -41,7 +41,7 @@
     \end{equation}
 
     we can assume \(\kappa\) and \(\epsilon\) (the absorption and emissivity coefficients, respectively) are constant in the voxel.
-    Therefore they are calculated using the voxel-averaged emmision:
+    Therefore they are calculated using the voxel-averaged emission:
 
     \begin{equation}
     \label{voxel-averaged emissivity}
@@ -70,7 +70,7 @@
 
     \begin{itemize}
         \item \(v_{vox}\): The average radial velocity of the gas in the voxel. For testing purposes, this is set to zero. (ie. The observed intensities should follow a Gaussian centered at 0.)
-        \item \(v_{j,i}\): The internal velocities in the voxel. This is used for the radial velocity of the modeled clumps in the ensemble. This is calculated on-the-fly using \(v_{j,i} \in [v_{vox} - 3 \sigma_{ens,j}, v_{vox} + 3 \sigma_{ens,j}]\) with step size \(\frac{\sigma_{ens,j}}{n_{velocity}}\). Initial testing had shown that \(n_{velocity} = 3\) is sufficient. \(j\) refers to a clump mass in the ensemble (which may have a different intrinsic velocity dispersion \(\sigma_{cl,j}\)) while \(i\) refers to the internal velocity. The number of internal velocities are \(6 \sigma_j n_{velocity} + 1\).
+        \item \(v_{j,i}\): The internal velocities in the voxel. This is used for the radial velocity of the modeled clumps in the ensemble. This is calculated on-the-fly using \(v_{j,i} \in [v_{vox} - 3 \sigma_{ens,j}, v_{vox} + 3 \sigma_{ens,j}]\) with step size \(\delta v_{j}\frac{\sigma_{ens,j}}{n_{velocity}}\). Initial testing had shown that \(n_{velocity} = 3\) is sufficient. \(j\) refers to a clump mass in the ensemble (which may have a different intrinsic velocity dispersion \(\sigma_{cl,j}\)) while \(i\) refers to the internal velocity. The number of internal velocities are \(6 n_{velocity} + 1\).
         \item \(v_{obs}\): The observing velocities of the emission. This is required as an argument to the voxel initialisation, and it is independent of the step size chosen for \(v_{obs}\).
     \end{itemize}
 
@@ -84,12 +84,12 @@
 
     \begin{equation}
     \label{delta Nji}
-    \Delta N_{j,i} = \frac{N_j}{\sqrt{2 \pi} \sigma_{ens,j}} \ \mathrm{exp} \left( -\frac{(v_{vox}-v_{j,i})^2}{2 \sigma_{ens, j}} \right) \Delta v_j,
+    \Delta N_{j,i} = \frac{N_j}{\sqrt{2 \pi} \sigma_{ens,j}} \ \mathrm{exp} \left( -\frac{(v_{vox}-v_{j,i})^2}{2 \sigma_{ens, j}} \right) \delta v_j,
     \end{equation}
 
-    where \(\Delta v_j\) is the step size in \(v_{j,i}\) (\(\Delta v_j \equiv v_{j,i+1} - v_{j,i}\)).
-    This step size is necessarily smaller than \(\sigma_{cl,j}\) to ensure the velocity distribution is adequately sampled in the ensemble.
-    (ie. One should not be able to see the contributions of different internal velocities in the emission).
+    where \(\delta v_j\) is the aforementioned step size in \(v_{j,i}\).
+%    This step size is necessarily smaller than \(\sigma_{cl,j}\) to ensure the velocity distribution is adequately sampled in the ensemble.
+%    (ie. One should not be able to see the contributions of different internal velocities in the emission).
     The probability \(p_{j,i}\) of having \(k_{j,i}\) clumps in a line-of-sight observed at velocity \(v_i\) is determined by Binomial distribution of the number of clumps at that velocity:
 
     \begin{equation}
@@ -100,17 +100,18 @@
     where \(p_j\) is equivalent to the area-filling factor of clump \(j\) (\(p_j = \frac{\pi R_{j}^2}{\Delta s^2}\)).
     If \(p_j N_{j,i}>5\), then a Gaussian expression is used with \(\mu_{j,i} = p_j N_{j,i}\) and \(\sigma_{j,i} = \sqrt{N_{j,i} p_j (1-p_j)}\).
 
-    For having \(k_{j,i}\) clumps in a line-of-sight, the intensity and optical depth (\(I_{\nu,j,i}\) \& \(\tau_{\nu,j,i}\)) can be calculated.
+    For having \(k_{j,i}\) clumps in a line-of-sight, the intensity and optical depth (\(I_{\nu,j,i}\) \& \(\tau_{\nu,j,i}\)) can be calculated.\footnote{
+        This is incorrect as stated, but it is presented as such to agree with Andree-Labsch et al. (2015) as well as the corresponding code. For correctness, it is better to calculate \(\epsilon_{\nu,j,i}\) rather than \(I_{\nu,j,i}\). In the original implementation, the equation used is \(\epsilon_{\nu,j,i} = \frac{I_{\nu,j,i}}{\Delta s}\).}
     Here the subscript \(\nu\) means the properties refer to a particular transition (which is what we obtain from the \kosmatau \ grid).
 
     \begin{equation}
     \label{los intensity}
-    I_{\nu,j,i} (v_{obs}) = k_{j,i} I_{cl,j} \mathrm{exp} \left( \frac{(v_i-v_{obs})^2}{2\sigma_{cl, j}^2} \right),
+    I_{\nu,j,i} (v_{obs}) = k_{j,i} I_{cl,\nu,j} \mathrm{exp} \left( \frac{(v_i-v_{obs})^2}{2\sigma_{cl, j}^2} \right),
     \end{equation}
 
     \begin{equation}
     \label{los optical depth}
-    \tau_{\nu,j,i} (v_{obs}) = k_{j,i} \tau_{cl,j} \mathrm{exp} \left( \frac{(v_i-v_{obs})^2}{2\sigma_{cl, j}^2} \right),
+    \tau_{\nu,j,i} (v_{obs}) = k_{j,i} \tau_{cl,\nu,j} \mathrm{exp} \left( \frac{(v_i-v_{obs})^2}{2\sigma_{cl, j}^2} \right),
     \end{equation}
 
     where the factor \(\mathrm{exp}(\frac{(v_{j,i} - v_{obs})^2}{2 \sigma_{cl, j}^2})\) accounts for the contribution of the clumps with radial velocity \(v_{j,i}\) at observing velocity \(v_{obs}\).
@@ -161,7 +162,7 @@
 
     \begin{equation}
     \label{corrected emissivity}
-    \epsilon_{\nu,j,i} (v_{obs}) = k_{j,i} \left( \frac{I_{\nu,j}}{L_{vox}} \right) \left(\frac{\tau_{\nu,j}}{\left[ 1 - \exp(- \tau_{\nu,j}) \right]} \right) \mathrm{exp} \left( \frac{(v_{j,i}-v_{obs})^2}{2\sigma_{cl,j}^2} \right).
+    \epsilon_{\nu,j,i} (v_{obs}) = k_{j,i} \left( \frac{I_{cl,\nu,j}}{L_{vox}} \right) \left(\frac{\tau_{cl,\nu,j}}{\left[ 1 - \exp(- \tau_{cl,\nu,j}) \right]} \right) \mathrm{exp} \left( \frac{(v_{j,i}-v_{obs})^2}{2\sigma_{cl,j}^2} \right).
     \end{equation}
 
     \(L_{vox}\) in this equation is the line-of-sight length of the voxel. An over-filled voxel will thus have \(L_{vox} = f_V \Delta s\). This leads to a voxel-averaged emissivity of,
@@ -329,31 +330,48 @@
 %    It could very-well be that the proposed corrected voxel-averaged calculations would work if the code uses the correct clump emissivity/opacity.
 %    To that end, I guess I have a question for Markus: is it possible to get the maximum emissivity/opacity of the clumps in the grid (which is assumed to be the peak of a Gaussian with \(\sigma_{cl} \approx 0.71 \frac{km}{s}\))?
 %
-    \subsection{Original calculation}
+    \newpage
 
+    \subsection{Original calculation} \label{original calc}
     Here we will see the original form of the calculation, which tries to treat clump intensities as additive. As seen, there is a strange absorption feature for the C\textsc{ii} \(1 \rightarrow 0\) and O\textsc{i} 163 \(\mu\)m transitions.
 
-    \includegraphics*[width=\linewidth]{voxel_single-clump_fv_new.png}
+    \includegraphics*[width=\linewidth]{voxel_single-clump_fv_new.png} \\
 
-    \subsection{Revised calculation}
-
+    \subsection{Revised calculation} \label{revised calc}
     Fixing the calculation to correctly treat the clump emissivities as additive, we see that the self-absorption features are still apparent for the C\textsc{ii} \(1 \rightarrow 0\) and O\textsc{i} 163 \(\mu\)m transitions.
 
-    \includegraphics*[width=\linewidth]{voxel_single-clump_fv-calc_new.png}
+    \includegraphics*[width=\linewidth]{voxel_single-clump_fv-calc_new.png} \\
 
-    \subsection{Convergence test}
+    \newpage
 
-    Another issue that might exist is that the internal velocity grid is too coarse. To this end, I implemented an option to change \(n_{velocity}\), which affects the internal velocity grid spacing calculation (\(\delta v = \frac{\sigma_{ens,j}}{n_{velocity}}\)). The results for a few transitions are show below.
+    \subsection{Convergence test} \label{convergence}
+    Another issue that might exist is that the internal velocity grid is too coarse.
+    To this end, I implemented an option to change \(n_{velocity}\), which affects the internal velocity grid spacing calculation (\(\delta v = \frac{\sigma_{ens,j}}{n_{velocity}}\)).
+    Below I show the convergence of the integrated intensity \(\varpi\) for a few transitions. \\
 
-    \includegraphics*[width=\linewidth]{voxel_convergence_n_velocity.png}
+    \includegraphics*[width=\linewidth]{voxel_convergence_n_velocity.png} \\
+
+    \includegraphics*[width=\linewidth]{voxel_convergence_n_velocity2.png} \\
+
+    Clearly there should be a smaller step size for the internal velocity grid (\(n_{velocity} = 10\) seems sufficient).
+    What is quite alarming is the difference in the converged \(\varpi\) for the new calculation and the old calculation.
+    We can now recalculate the voxels in \S \ref{original calc} and \S \ref{revised calc}.
+
+
+    \includegraphics*[width=\linewidth]{voxel_single-clump_fv_n10.png} \\
+
+    \includegraphics*[width=\linewidth]{voxel_single-clump_fv-calc_n10.png} \\
 
     \subsection{Summary/Issues}
 
-    In the end the implementation that appears successful is the original calculation, but including the correction for over-filled voxels and applying the probabilities to \(\kappa\) rather than \(e^{-\kappa \Delta s}\).
+%    In the end the implementation that appears successful is the original calculation, but including the correction for over-filled voxels and applying the probabilities to \(\kappa\) rather than \(e^{-\kappa \Delta s}\).
+    The issue appears to be in the internal velocity grid spacing \(\delta v_j\).
+    This fixes the self-absorption effect in both the original and the revised calculations.
+    The issue is now that the new calculations give a much higher intensity for the transitions that had these self-absorption features.
     This is not the end of the issue, though.
-    As noted by Markus, the intensity value used in the plots is the integrated intensity.
+    As noted by Markus a month ago, the intensity value used in the plots is the integrated intensity.
     That means the intensity profile of the single clump used in the calculation is incorrect.
-    It could very-well be that the proposed corrected voxel-averaged calculations would work if the code uses the correct clump emissivity/opacity.
-    To that end, I guess I have a question for Markus: is it possible to get the maximum emissivity/opacity of the clumps in the grid (which is assumed to be the peak of a Gaussian with \(\sigma_{cl} \approx 0.71 \frac{km}{s}\))?
+    It could very-well be that the difference between these calculations would decrease if the code uses the correct clump emissivity/opacity.
+    To that end, I guess I have a question for Markus: is it possible to get the maximum emissivity/opacity of the clumps in the grid (which is assumed to be the peak of a Gaussian with velocity dispersion \(\sigma_{cl} \approx 0.71 \frac{km}{s}\))?
 
 \end{document}
