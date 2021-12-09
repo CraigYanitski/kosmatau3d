@@ -88,8 +88,9 @@ clumpLogMass = [np.resize(np.linspace(clumpLogMassRange[i][0],
 # clumpLogMass[0].resize(1,clumpMassNumber[0])
 clumpMaxIndeces = [0, 0]
 clumpNmax = [1, 100]
+clump_fillingfactor = None
 clumpDensity = [None, 1911]  # use None to take the voxel density
-# clumpFUV = [None, 10]  #use None to take the voxel FUV field
+clumpLogFUV = None
 
 interclump_hifactor = 1
 interclump_fillingfactor = None

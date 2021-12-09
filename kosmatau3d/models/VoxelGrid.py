@@ -164,12 +164,16 @@ class VoxelGrid(object):
         #                 * (constants.pc*100)**3 * ensembleDensity[1] * constants.clumpMassFactor[1]]
     
         # FUV
-        FUV = constants.FUVFactor * interpolations.interpolateFUVfield(rPol, Z)
-        FUV = np.clip(FUV, 1, None).mean()
-        if constants.interclumpLogFUV:
-            FUV = [copy(FUV), constants.interclumpLogFUV]
+        fuv = constants.FUVFactor * interpolations.interpolateFUVfield(rPol, Z)
+        if constants.clumpLogFUV:
+            clump_fuv = 10**constants.clumpLogFUV
         else:
-            FUV = [copy(FUV), copy(FUV)]
+            clump_fuv = np.clip(fuv, 1, None).mean()
+        if constants.interclumpLogFUV:
+            interclump_fuv = 10**constants.clumpLogFUV
+        else:
+            interclump_fuv = np.clip(fuv, 1, None).mean()
+        FUV = [copy(clump_fuv), copy(interclump_fuv)]
 
         # CRIR
         if rPol.mean() >= constants.r_cmz:
