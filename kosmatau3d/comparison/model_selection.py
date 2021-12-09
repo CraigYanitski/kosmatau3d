@@ -1794,7 +1794,7 @@ def plot_comparison(path='/mnt/hpc_backup/yanitski/projects/pdr/KT3_history/Milk
                         t_axes = np.asarray([[t_axes]])
                     elif t_axes.ndim == 1:
                         t_axes.resize(-1, 1)
-                    transition_plots.append((copy(t_fig), copy(t_axes)))
+                    transition_plots.append((deepcopy(t_fig), deepcopy(t_axes)))
                     transition_log_likelihood.append(np.zeros(x_grid.shape))
                     plt.close(t_fig)
 
@@ -1902,6 +1902,7 @@ def plot_comparison(path='/mnt/hpc_backup/yanitski/projects/pdr/KT3_history/Milk
             if debug:
                 print('File transitions: {}'.format(file_transitions))
 
+            # For parameter comparisons split by transition and survey
             for f in range(len(survey_files)):
                 for t in range(len(file_transitions[f])):
 
@@ -1980,6 +1981,7 @@ def plot_comparison(path='/mnt/hpc_backup/yanitski/projects/pdr/KT3_history/Milk
 
         plt.close(fig)
 
+        # For parameter comparisons split by transition and survey
         for f,file in enumerate(survey_files):
             for t in range(len(file_transitions[f])):
 
@@ -2029,6 +2031,7 @@ def plot_comparison(path='/mnt/hpc_backup/yanitski/projects/pdr/KT3_history/Milk
 
                 plt.close(file_transition_plots[f][t][0])
 
+    # For parameter comparisons including all transitions/surveys
     for param in deepcopy(sub_params):
 
         if len(param) == 1:
