@@ -21,7 +21,7 @@ parameters = {
               'modelType': 'disk',
 
               # Model parameters
-              'resolution': 400,
+              'resolution': 500,
               # 'molecules': 'all',
               'molecules': ['C+ 1', 'C 1', 'C 2', 'CO 1', 'CO 2', 'CO 3', 'CO 4', 'CO 5', 'CO 6', 'CO 7', 'CO 8',
                             '13C+ 1', '13C 1', '13C 2', '13CO 1', '13CO 2', '13CO 3', '13CO 4', '13CO 5', '13CO 6',
@@ -31,6 +31,8 @@ parameters = {
               'clumpMassRange': [[0, 2], [-2]],
               'clumpMassNumber': [3, 1],
               'clumpNmax': [1, 100],
+              'clumpLogFUV' : None,
+              'interclumpLogFUV' : None,
               'velocityRange': [-350, 350],
               'velocityNumber': 701,
 
@@ -56,9 +58,11 @@ mass_icl = [-2]
 r_cmz = 0
 models.constants.fuv_ism = 2
 
-for resolution in [400]:
-    for f_hi in [1.0, 0.8, 0.6, 0.4]:
-        for f_uv in 10**np.linspace(1, 3, num=5):
+for resolution in [450]:
+    for fuv in [1.4, 1.6, 2.0]:
+        for f_hi in [1.0, 0.8, 0.6]:
+    # for f_hi in [1.0, 0.8, 0.6, 0.4]:
+    #     for f_uv in 10**np.linspace(1, 3, num=5):
             # for f_mass1 in [0.25, 0.5, 1.0, 2.0, 4.0]:
             #     for f_mass2 in [0.25, 0.5, 1.0, 2.0, 4.0]:
             # for f_uv in 10**np.linspace(1.5, 2.5, num=5):
@@ -76,10 +80,12 @@ for resolution in [400]:
             parameters['interclump_hifactor'] = f_hi
             parameters['clumpMassRange'] = [mass_cl, mass_icl]
             parameters['clumpMassNumber'] = [len(mass_cl), len(mass_icl)]
+            parameters['clumpLogFUV'] = fuv
+            parameters['interclumpLogFUV'] = fuv
             parameters['densityFactor'] = f_density
             parameters['FUVfactor'] = f_uv
             parameters['r_cmz'] = r_cmz
-            parameters['folder'] = 'r{}_fhi{}_fuv{}/'.format(int(resolution), f_hi, int(f_uv))
+            parameters['folder'] = 'r{}_hi{}_const-fuv{}/'.format(int(resolution), f_hi, fuv)
 
 
             kosma = models.Model(**parameters)
