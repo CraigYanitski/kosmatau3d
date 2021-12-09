@@ -446,8 +446,9 @@ class Voxel(object):
             # print(vel.shape, clumpVel.shape)
             nv = np.abs(vel-self.__velocity) <= 4*np.maximum(self.__ensembleDispersion[ens],
                                                              constants.clumpDispersion)
-            factor = np.exp(-(vel[nv].reshape(1, -1)-clumpVel.reshape(-1, 1)-self.__velocity)**2
-                            /2/constants.clumpDispersion**2)
+            factor = 1/np.sqrt(2*np.pi*constants.clumpDispersion**2) \
+                     * np.exp(-(vel[nv].reshape(1, -1)-clumpVel.reshape(-1, 1)-self.__velocity)**2
+                              /2/constants.clumpDispersion**2)
             
             # clumpIntensity[ens] = np.zeros((ensemble.clumpVelocities[ens].size,
             #                                 constants.velocityRange.size,
