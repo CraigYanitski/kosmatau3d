@@ -70,7 +70,9 @@
 
     \begin{itemize}
         \item \(v_{vox}\): The average radial velocity of the gas in the voxel. For testing purposes, this is set to zero. (ie. The observed intensities should follow a Gaussian centered at 0.)
-        \item \(v_{j,i}\): The internal velocities in the voxel. This is used for the radial velocity of the modeled clumps in the ensemble. This is calculated on-the-fly using \(v_{j,i} \in [v_{vox} - 3 \sigma_{ens,j}, v_{vox} + 3 \sigma_{ens,j}]\) with step size \(\delta v_{j}\frac{\sigma_{ens,j}}{n_{velocity}}\). Initial testing had shown that \(n_{velocity} = 3\) is sufficient. \(j\) refers to a clump mass in the ensemble (which may have a different intrinsic velocity dispersion \(\sigma_{cl,j}\)) while \(i\) refers to the internal velocity. The number of internal velocities are \(6 n_{velocity} + 1\).
+        \item \(v_{j,i}\): The internal velocities in the voxel. This is used for the radial velocity of the modeled clumps in the ensemble. This is calculated on-the-fly using \(v_{j,i} \in [v_{vox} - 3 \sigma_{ens,j}, v_{vox} + 3 \sigma_{ens,j}]\) with step size, \\
+        \[\delta v = \mathrm{min} \left( \frac{\sigma_{ens}}{n_{velocity}}, \frac{\sigma_{cl}}{n_{velocity}} \right).\]\\
+         Initial testing had shown that \(n_{velocity} = 3\) is sufficient. \(j\) refers to a clump mass in the ensemble (which may have a different intrinsic velocity dispersion \(\sigma_{cl,j}\)) while \(i\) refers to the internal velocity. The number of internal velocities are \(\geq 6 n_{velocity} + 1\).
         \item \(v_{obs}\): The observing velocities of the emission. This is required as an argument to the voxel initialisation, and it is independent of the step size chosen for \(v_{obs}\).
     \end{itemize}
 
@@ -84,7 +86,7 @@
 
     \begin{equation}
     \label{delta Nji}
-    \Delta N_{j,i} = \frac{N_j}{\sqrt{2 \pi} \sigma_{ens,j}} \ \mathrm{exp} \left( -\frac{(v_{vox}-v_{j,i})^2}{2 \sigma_{ens, j}} \right) \delta v_j,
+    \Delta N_{j,i} = \frac{N_j}{\sqrt{2 \pi} \sigma_{ens,j}} \ \mathrm{exp} \left( -\frac{(v_{vox}-v_{j,i})^2}{2 \sigma_{ens, j}^2} \right) \delta v_j,
     \end{equation}
 
     where \(\delta v_j\) is the aforementioned step size in \(v_{j,i}\).
@@ -118,13 +120,25 @@
     Finally the intensity and optical depth can be averaged over the voxel using all possible combinations and their corresponding probabilities.
 
     \begin{equation}
+    \label{velocity-dependent averaged intensity}
+    \left< I_\nu \right>_{i} (v_{obs}) = \sum_k \bigg[ \Big( \prod_j p_{j,i}(k_{j,i}) \Big) \Big( \sum_j I_{\nu,j,i} (v_{obs}) \Big) \bigg],
+    \end{equation}
+
+    \begin{equation}
+    \label{velocity-dependent averaged optical depth}
+    \left< \tau_\nu \right>_{i} (v_{obs}) = -\mathrm{ln} \Bigg\{ \sum_k \bigg[ \Big( \prod_j p_{j,i}(k_{j,i}) \Big) \ \mathrm{exp} \Big( - \sum_j \tau_{\nu,j,i} (v_{obs}) \Big) \bigg] \Bigg\},
+    \end{equation}
+
+    and finally summing over the contributions of the clumps at all velocities:
+
+    \begin{equation}
     \label{voxel-averaged intensity}
-    \left< I_\nu \right>_{vox} (v_{obs}) = \sum_i \bigg[ \Big( \prod_j p_{j,i}(k_{j,i}) \Big) \Big( \sum_j I_{\nu,j,i} (v_{obs}) \Big) \bigg],
+    \left< I_\nu \right>_{vox} (v_{obs}) = \sum_i \left< I_\nu \right>_{i} (v_{obs}),
     \end{equation}
 
     \begin{equation}
     \label{voxel-averaged optical depth}
-    \left< \tau_\nu \right>_{vox} (v_{obs}) = -\mathrm{ln} \Bigg\{ \sum_i \bigg[ \Big( \prod_j p_{j,i}(k_{j,i}) \Big) \ \mathrm{exp} \Big( - \sum_j \tau_{\nu,j,i} (v_{obs}) \Big) \bigg] \Bigg\}.
+    \left< \tau_\nu \right>_{vox} (v_{obs}) = \sum_i \left< \tau_\nu \right>_{i} (v_{obs}).
     \end{equation}
 
     Here the sums and products ensure we consider contributions from all clump masses at all radial velocities, since there is a velocity dispersion to each clump's intensity and optical depth.
@@ -169,7 +183,7 @@
 
     \begin{equation}
     \label{corrected voxel-averaged emissivity}
-    \left< \epsilon_\nu \right>_{vox} (v_{obs}) = \sum_i \bigg[ \Big( \prod_j p_{j,i}(k_{j,i}) \Big) \Big( \sum_j \epsilon_{\nu,j,i} (v_{obs}) \Big) \bigg].
+    \left< \epsilon_\nu \right>_{i} (v_{obs}) = \sum_i \bigg[ \Big( \prod_j p_{j,i}(k_{j,i}) \Big) \Big( \sum_j \epsilon_{\nu,j,i} (v_{obs}) \Big) \bigg].
     \end{equation}
 
     The corresponding modification for the optical depth in terms of opacity is,
@@ -181,7 +195,7 @@
 
     \begin{equation}
     \label{corrected voxel-averaged opacity}
-    \left< \kappa_\nu \right>_{vox} (v_{obs}) = -\mathrm{ln} \Bigg\{ \sum_i \bigg[ \Big( \prod_j p_{j,i}(k_{j,i}) \Big) \ \mathrm{exp} \Big( - \sum_j \kappa_{\nu,j,i} (v_{obs}) \times \Delta s \Big) \bigg] \Bigg\},
+    \left< \kappa_\nu \right>_{i} (v_{obs}) = -\mathrm{ln} \Bigg\{ \sum_i \bigg[ \Big( \prod_j p_{j,i}(k_{j,i}) \Big) \ \mathrm{exp} \Big( - \sum_j \kappa_{\nu,j,i} (v_{obs}) \times \Delta s \Big) \bigg] \Bigg\},
     \end{equation}
 
     though this is essentially just the same calculation as before.
