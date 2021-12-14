@@ -170,7 +170,7 @@ class VoxelGrid(object):
         else:
             clump_fuv = np.clip(fuv, 1, None).mean()
         if constants.interclumpLogFUV:
-            interclump_fuv = 10**constants.clumpLogFUV
+            interclump_fuv = 10**constants.interclumpLogFUV
         else:
             interclump_fuv = np.clip(fuv, 1, None).mean()
         FUV = [copy(clump_fuv), copy(interclump_fuv)]
