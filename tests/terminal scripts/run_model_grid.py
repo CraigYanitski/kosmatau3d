@@ -59,7 +59,7 @@ r_cmz = 0
 models.constants.fuv_ism = 2
 
 for resolution in [450]:
-    for fuv in [1.4, 1.6, 2.0]:
+    for fuv in [1.4, 1.6, 1.8, 2.0]:
         for f_hi in [1.0, 0.8, 0.6]:
     # for f_hi in [1.0, 0.8, 0.6, 0.4]:
     #     for f_uv in 10**np.linspace(1, 3, num=5):
