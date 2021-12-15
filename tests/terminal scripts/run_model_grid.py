@@ -62,6 +62,9 @@ for resolution in [400]:
     for f_hi in [1.0, 0.8, 0.6, 0.4]:
         for f_uv in 10**np.linspace(-1, 3, num=5):
             for fuv in [1.0, 1.4, 1.8, 2.2]:
+                # for f_hi in [1.0, 0.8, 0.6, 0.4]:
+                #     for f_uv in 10**np.linspace(-1, 3, num=5):
+                #         for fuv in [1.0, 1.4, 1.8, 2.2]:
                 # for fuv in [1.4, 1.6, 1.8, 2.0]:
                 #     for f_hi in [1.0, 0.8, 0.6]:
                 # for f_mass1 in [0.25, 0.5, 1.0, 2.0, 4.0]:
@@ -75,6 +78,9 @@ for resolution in [400]:
                 #             for f_uv in [10, 50, 100]:
                 #                 for f_density in [0.5, 1.0, 2.0, 4.0]:
                 #                     for f_uv in [10, 100]:
+
+                if f_hi == 1.0 and f_uv < 10:
+                    continue
 
                 parameters['resolution'] = resolution
                 parameters['clumpMassFactor'] = [f_mass1, f_mass2]
