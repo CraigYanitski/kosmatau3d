@@ -168,10 +168,12 @@ class VoxelGrid(object):
         if constants.clumpLogFUV:
             clump_fuv = 10**constants.clumpLogFUV
         else:
+            # clump_fuv = np.clip(fuv, np.max((1, 10**constants.interclumpLogFUV)), None).mean()
             clump_fuv = np.clip(fuv, 1, None).mean()
         if constants.interclumpLogFUV:
             interclump_fuv = 10**constants.interclumpLogFUV
         else:
+            # interclump_fuv = np.clip(fuv, np.max((1, 10**constants.clumpLogFUV)), None).mean()
             interclump_fuv = np.clip(fuv, 1, None).mean()
         FUV = [copy(clump_fuv), copy(interclump_fuv)]
 
