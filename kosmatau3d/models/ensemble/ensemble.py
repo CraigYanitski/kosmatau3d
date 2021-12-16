@@ -132,23 +132,39 @@ def createCombinationObjects(ensembleDispersion, dtype=np.float64, verbose=False
         
         if verbose:
             print('velocity, mean, dispersion', self.__velocity, self.__velocity.mean(), self.__velocityDispersion)
-        
-        if ensembleDispersion[ens] > constants.clumpDispersion:
-            velocityStep = np.minimum(ensembleDispersion[ens]/3, constants.clumpDispersion/3)
-            # ensemble.clumpVelocities[ens] = np.linspace(-3*ensembleDispersion[ens], 3*ensembleDispersion[ens],
-            #                                             num=np.round(6*ensembleDispersion[ens] /
-            #                                                          velocityStep).astype(np.int)+1)
-            ensemble.clumpVelocities[ens] = np.linspace(-3*ensembleDispersion[ens], 3*ensembleDispersion[ens],
-                                                        num=np.round(2*ensembleDispersion[ens] /
-                                                                     velocityStep).astype(np.int)+1)
-            # print(ensemble.clumpVelocities[ens].size)
-            velocityStep = ensemble.clumpVelocities[ens][1]-ensemble.clumpVelocities[ens][0]
-            ensemble.clumpDeltaNji[ens] = (np.array(ensemble.clumpNj[ens]).T/np.sqrt(2*np.pi)/ensembleDispersion[ens] *
-                                           (np.exp(-0.5*(ensemble.clumpVelocities[ens]/ensembleDispersion[ens])**2)).T *
-                                           velocityStep)
-        else:
-            ensemble.clumpVelocities[ens] = np.zeros(1)
-            ensemble.clumpDeltaNji[ens] = ensemble.clumpNj[ens].T
+
+        system_dispersion = np.sqrt(np.abs(ensembleDispersion[ens]**2 - constants.clumpDispersion**2))
+        velocityStep = np.minimum(system_dispersion/constants.velocity_resolution,
+                                  constants.clumpDispersion/constants.velocity_resolution)
+        # ensemble.clumpVelocities[ens] = np.linspace(-3*ensembleDispersion[ens], 3*ensembleDispersion[ens],
+        #                                             num=np.round(6*ensembleDispersion[ens] /
+        #                                                          velocityStep).astype(np.int)+1)
+        ensemble.clumpVelocities[ens] = np.linspace(-constants.n_sigma*system_dispersion,
+                                                    constants.n_sigma*system_dispersion,
+                                                    num=np.round(2*constants.n_sigma*system_dispersion /
+                                                                 velocityStep).astype(np.int)+1)
+        # print(ensemble.clumpVelocities[ens].size)
+        velocityStep = ensemble.clumpVelocities[ens][1]-ensemble.clumpVelocities[ens][0]
+        ensemble.clumpDeltaNji[ens] = (np.array(ensemble.clumpNj[ens]).T/np.sqrt(2*np.pi)/system_dispersion *
+                                       (np.exp(-0.5*(ensemble.clumpVelocities[ens]/system_dispersion)**2)).T *
+                                       velocityStep)
+
+        # if ensembleDispersion[ens] > constants.clumpDispersion:
+        #     velocityStep = np.minimum(ensembleDispersion[ens]/3, constants.clumpDispersion/3)
+        #     # ensemble.clumpVelocities[ens] = np.linspace(-3*ensembleDispersion[ens], 3*ensembleDispersion[ens],
+        #     #                                             num=np.round(6*ensembleDispersion[ens] /
+        #     #                                                          velocityStep).astype(np.int)+1)
+        #     ensemble.clumpVelocities[ens] = np.linspace(-3*ensembleDispersion[ens], 3*ensembleDispersion[ens],
+        #                                                 num=np.round(2*ensembleDispersion[ens] /
+        #                                                              velocityStep).astype(np.int)+1)
+        #     # print(ensemble.clumpVelocities[ens].size)
+        #     velocityStep = ensemble.clumpVelocities[ens][1]-ensemble.clumpVelocities[ens][0]
+        #     ensemble.clumpDeltaNji[ens] = (np.array(ensemble.clumpNj[ens]).T/np.sqrt(2*np.pi)/ensembleDispersion[ens] *
+        #                                    (np.exp(-0.5*(ensemble.clumpVelocities[ens]/ensembleDispersion[ens])**2)).T *
+        #                                    velocityStep)
+        # else:
+        #     ensemble.clumpVelocities[ens] = np.zeros(1)
+        #     ensemble.clumpDeltaNji[ens] = ensemble.clumpNj[ens].T
         
         # self.__deltaNji = np.array([self.__deltaNji]).T
         
@@ -245,13 +261,13 @@ def createCombinationObjects(ensembleDispersion, dtype=np.float64, verbose=False
     
         lower = np.zeros([constants.clumpLogMass[ens].size, 1])
         clumpLower = np.maximum(lower,
-                                np.floor(clumpProbableNumber-constants.nSigma*clumpStandardDeviation))
+                                np.floor(clumpProbableNumber-constants.n_sigma*clumpStandardDeviation))
         clumpUpper = np.minimum(ensemble.clumpNormalisedDeltaNji[ens],
-                                np.ceil(clumpProbableNumber+constants.nSigma*clumpStandardDeviation))
+                                np.ceil(clumpProbableNumber+constants.n_sigma*clumpStandardDeviation))
         CLmaxLower = np.maximum(np.zeros([constants.clumpLogMass[ens].size, 1]),
-                                np.floor(CLmaxProbableNumber-constants.nSigma*CLmaxStandardDeviation))
+                                np.floor(CLmaxProbableNumber-constants.n_sigma*CLmaxStandardDeviation))
         CLmaxUpper = np.minimum(ensemble.clumpNormalisedNj[ens],
-                                np.ceil(CLmaxProbableNumber+constants.nSigma*CLmaxStandardDeviation))
+                                np.ceil(CLmaxProbableNumber+constants.n_sigma*CLmaxStandardDeviation))
         if verbose:
             print('\nupper,lower:\n', clumpUpper, '\n', clumpLower)
         
