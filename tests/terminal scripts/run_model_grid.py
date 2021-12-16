@@ -79,8 +79,10 @@ for resolution in [400]:
                 #                 for f_density in [0.5, 1.0, 2.0, 4.0]:
                 #                     for f_uv in [10, 100]:
 
-                if f_hi == 1.0 and f_uv < 10:
-                    continue
+                # if f_hi == 1.0 and f_uv < 1000:
+                #     continue
+                # if fuv < 1.8:
+                #     continue
 
                 parameters['resolution'] = resolution
                 parameters['clumpMassFactor'] = [f_mass1, f_mass2]
