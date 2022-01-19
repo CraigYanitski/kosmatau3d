@@ -615,7 +615,7 @@ class Voxel(object):
                         if epsilon_dust[ens].shape[1] > 1:
                             epsilon_species[ens][:, i] -= epsilon_dust_interp(transition)
                 else:
-                    epsilon_species[ens] -= epsilon_dust[ens]
+                    epsilon_species[ens] -= epsilon_dust[ens].max(0)
         return np.asarray(epsilon_species)
   
     def getSpeciesAbsorption(self, include_dust=False):
@@ -630,13 +630,16 @@ class Voxel(object):
                         if kappa_dust[ens].shape[1] > 1:
                             kappa_species[ens][:, i] -= kappa_dust_interp(transition)
                 else:
-                    kappa_species[ens] -= kappa_dust[ens]
+                    kappa_species[ens] -= kappa_dust[ens].max(0)
         return np.asarray(kappa_species)
   
     def getSpeciesIntensity(self, integrated=False, include_dust=False):
-        epsilon = self.getSpeciesEmissivity(include_dust=include_dust)
-        kappa = self.getSpeciesAbsorption(include_dust=include_dust)
+
+        epsilon = self.getSpeciesEmissivity(include_dust=True)
+        kappa = self.getSpeciesAbsorption(include_dust=True)
+        intensity_dust = self.getDustIntensity()
         intensity = np.zeros_like(epsilon)
+
         for ens in range(len(constants.clumpMassNumber)):
             if self.__volumeFactor[ens] > 1 and self.test_fv:
                 ds = self.__volumeFactor[ens]*constants.voxel_size
@@ -645,12 +648,24 @@ class Voxel(object):
             intensity[ens] = epsilon[ens]/kappa[ens]*(1-np.exp(-kappa[ens]*ds))
             i_nan = np.isnan(intensity[ens])
             intensity[ens][i_nan] = epsilon[ens][i_nan]
+
+            if not include_dust:
+                if intensity_dust[ens].shape[1] > 1:
+                    intensity_dust_interp = interp1d(constants.wavelengths[constants.nDust],
+                                                   intensity_dust[ens].max(0), fill_value='extrapolate')
+                    for i, transition in enumerate(species.moleculeWavelengths):
+                        if intensity_dust[ens].shape[1] > 1:
+                            intensity[ens][:, i] -= intensity_dust_interp(transition)
+                else:
+                    intensity[ens] -= intensity_dust[ens].max(0)
+
         if integrated:
             intensity_final = np.zeros((intensity.shape[0], intensity.shape[2]))
             for ens in range(len(constants.clumpMassNumber)):
                 intensity_final[ens] = np.trapz(intensity[ens], constants.velocityRange, axis=0)
         else:
             intensity_final = intensity
+
         return intensity_final
   
     def getDustEmissivity(self):
@@ -752,7 +767,7 @@ class Voxel(object):
     
         return
   
-    def plotSpectrum(self, quantity='intensity', title=''):
+    def plotSpectrum(self, quantity='intensity', vel=None, title=''):
         # Plot the either the intesity or optical depth spectrum at the voxel velocity (the velocity with the largest
         #  ensemble).
 
@@ -806,8 +821,9 @@ class Voxel(object):
       
             else:
                 ax = axes
-      
-            vel = int(valueSpecies[ens].shape[0]/2)
+
+            if vel==None:
+                vel = int(valueSpecies[ens].shape[0]/2)
             
             if valueDust[ens].shape[1] > 1:
                 dustInterp = interp1d(constants.wavelengths[constants.nDust], valueDust[ens][vel, :],
