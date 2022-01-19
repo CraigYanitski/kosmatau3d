@@ -668,7 +668,7 @@ class Voxel(object):
                 ds = self.__volumeFactor[ens]*constants.voxel_size
             else:
                 ds = constants.voxel_size
-            intensity[ens] = epsilon[ens]/kappa[ens]*(1-np.exp(-kappa[ens]*constants.voxel_size*ds))
+            intensity[ens] = epsilon[ens]/kappa[ens]*(1-np.exp(-kappa[ens]*ds))
             i_nan = np.isnan(intensity[ens])
             intensity[ens][i_nan] = epsilon[ens][i_nan]
         return intensity
@@ -755,9 +755,12 @@ class Voxel(object):
     def plotSpectrum(self, quantity='intensity', title=''):
         # Plot the either the intesity or optical depth spectrum at the voxel velocity (the velocity with the largest
         #  ensemble).
-    
+
+        import matplotlib as mpl
         import matplotlib.pyplot as plt
         from matplotlib.lines import Line2D
+
+        mpl.rcParams['text.usetex'] = True
     
         moleculeColour = {
                            'C+': 'xkcd:orange',
@@ -844,7 +847,7 @@ class Voxel(object):
             else:
                 ax.set_title('Clump Set {} {} spectrum'.format(ens+1, quantity), fontsize=20)
         
-        fig.tight_layout()
+        # fig.tight_layout()
     
         plt.show()
     
