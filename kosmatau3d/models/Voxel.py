@@ -605,22 +605,22 @@ class Voxel(object):
   
     def getSpeciesEmissivity(self, include_dust=False):
         epsilon_species = deepcopy(self.__emissivity_species)
-        if include_dust:
+        if not include_dust:
             epsilon_dust = self.__emissivity_dust
             for ens in range(len(constants.clumpMassNumber)):
                 if epsilon_dust[ens].shape[1] > 1:
                     epsilon_dust_interp = interp1d(constants.wavelengths[constants.nDust],
                                                    epsilon_dust[ens].max(0), fill_value='extrapolate')
-                for i, transition in enumerate(species.moleculeWavelengths):
-                    if epsilon_dust[ens].shape[1] > 1:
-                        epsilon_species[ens][:, i] -= epsilon_dust_interp(transition)
+                    for i, transition in enumerate(species.moleculeWavelengths):
+                        if epsilon_dust[ens].shape[1] > 1:
+                            epsilon_species[ens][:, i] -= epsilon_dust_interp(transition)
                 else:
                     epsilon_species[ens] -= epsilon_dust[ens]
         return np.asarray(epsilon_species)
   
     def getSpeciesAbsorption(self, include_dust=False):
         kappa_species = deepcopy(self.__absorption_species)
-        if include_dust:
+        if not include_dust:
             kappa_dust = self.__absorption_dust
             for ens in range(len(constants.clumpMassNumber)):
                 if kappa_dust[ens].shape[1] > 1:
@@ -780,17 +780,17 @@ class Voxel(object):
     
         if quantity == 'emissivity':
             valueDust = self.getDustEmissivity()
-            valueSpecies = self.getSpeciesEmissivity()
+            valueSpecies = self.getSpeciesEmissivity(include_dust=True)
             ylabel = r'$\epsilon_{\lambda} \ \left( \frac{K}{pc} \right)$'
     
         elif quantity == 'absorption':
             valueDust = self.getDustAbsorption()
-            valueSpecies = self.getSpeciesAbsorption()
+            valueSpecies = self.getSpeciesAbsorption(include_dust=True)
             ylabel = r'$\kappa_{\lambda} \ \left( \frac{1}{pc} \right)$'
     
         elif quantity == 'intensity':
             valueDust = self.getDustIntensity()
-            valueSpecies = self.getSpeciesIntensity()
+            valueSpecies = self.getSpeciesIntensity(include_dust=True)
             ylabel = r'$I_{\lambda} \ \left( K \right)$'
         
         else:
