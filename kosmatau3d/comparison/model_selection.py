@@ -1040,10 +1040,12 @@ def view_observation(path='/mnt/hpc_backup/yanitski/projects/pdr/observational_d
 
 def error_correction(data, conf=''):
 
+    if len(data.shape) == 0:
+        return 0
     if data.shape[0] == 1 and data.ndim == 3:
-        data_copy = data[0]
+        data_copy = np.nan_to_num(data[0], nan=0)
     else:
-        data_copy = deepcopy(data)
+        data_copy = np.nan_to_num(data, nan=0)
     correction = np.zeros_like(data)
 
     if conf == 'axisymmetric':
@@ -1256,7 +1258,7 @@ def model_selection(path='/mnt/hpc_backup/yanitski/projects/pdr/KT3_history/Milk
 
                 if (survey == 'COBE') or (survey == 'COBE-FIRAS'):
                     if '.idl' in file:
-                        obs_error_conf = error_correction(obs_data[i, int(transition_indeces[i])],
+                        obs_error_conf = error_correction(obs_data[:, int(transition_indeces[i])],
                                                           conf='axisymmetric')
                         vmin = obs_data[:, int(transition_indeces[i])].min()
                         vmax = obs_data[:, int(transition_indeces[i])].max()
@@ -1272,8 +1274,8 @@ def model_selection(path='/mnt/hpc_backup/yanitski/projects/pdr/KT3_history/Milk
                     vmin = np.nanmin(obs_data)
                     vmax = np.nanmax(obs_data)
 
-                print('Average error in observation: {}'.format(obs_error.mean()))
-                print('Correction due to axisymmetry: {}'.format(obs_error_conf.mean()))
+                print('Average error in observation: {}'.format(np.nanmean(obs_error)))
+                print('Correction due to axisymmetry: {}'.format(np.nanmean(obs_error_conf)))
 
                 for param in model_params:
 
@@ -1365,8 +1367,12 @@ def model_selection(path='/mnt/hpc_backup/yanitski/projects/pdr/KT3_history/Milk
                         model_interp = trapz(model_data, vel_model, axis=model_data.shape.index(vel_model.size))
                         if '.idl' in file:
                             idx_obs = np.ix_(np.arange(obs_data.shape[0]), [int(transition_indeces[i])])
-                            obs_data_final = obs_data[idx_obs].reshape(-1)#[:, int(transition_indeces[i])]
-                            obs_error_final = np.sqrt(obs_error**2+obs_error_conf**2)[idx_obs].reshape(-1)#[:, int(transition_indeces[i])]
+                            obs_data_final = obs_data[:, int(transition_indeces[i])].reshape(-1)#[:, int(transition_indeces[i])]
+                            # print(obs_data_final.shape)
+                            # print(obs_error[:, int(transition_indeces[i])].shape, obs_error_conf.shape)
+                            obs_error_final = np.sqrt(obs_error[idx_obs]**2
+                                                      +obs_error_conf**2).reshape(-1)#[:, int(transition_indeces[i])]
+                            # print(obs_error_final.shape)
                             model_interp = model_interp.reshape(-1)
                         else:
                             idx_obs = np.ix_([int(transition_indeces[i])], i_lat_obs, np.arange(obs_data.shape[2]))
@@ -1390,18 +1396,23 @@ def model_selection(path='/mnt/hpc_backup/yanitski/projects/pdr/KT3_history/Milk
                         #       obs_data[:, i_lat_obs, :].shape,
                         #       np.swapaxes(obs_data[:, i_lat_obs, :], 0, 1).shape)
                         # input()
-                        model_data = (model[1].data[:, i_lat_model, :, i_spec]
-                                        - model[2].data[:, i_lat_model, :, 0])
-                        obs_data_temp = np.swapaxes(obs_data[:, i_lat_obs, :], 0, 1)
+                        idx_t = np.ix_(np.arange(vel_model.size), i_lat_model, np.arange(lon_model.size), i_spec)
+                        idx_d = np.ix_(np.arange(vel_model.size), i_lat_model, np.arange(lon_model.size), [0])
+                        model_data = (model[1].data[idx_t]
+                                      - model[2].data[idx_d])
+                        idx_obs = np.ix_(np.arange(vel_obs.size), i_lat_obs, np.arange(lon_obs.size))
+                        idx_map = np.ix_(i_lat_obs, np.arange(lon_obs.size))
+                        obs_data_temp = obs_data[idx_obs]#np.swapaxes(obs_data[idx_obs], 0, 1)
                         if comp_type == 'integrated':
+                            # This will give an incorrect result if either the latitude or longitude axes are the same
+                            # size as the velocity axis
                             model_interp = np.trapz(model_data, vel_model, axis=model_data.shape.index(vel_model.size))
                             obs_data_final = np.trapz(obs_data_temp, vel_obs, axis=obs_data_temp.shape.index(vel_obs.size))
-                            obs_error_final = len(vel_obs)*np.sqrt(obs_error**2+obs_error_conf**2)[i_lat_obs, :]
+                            obs_error_final = len(vel_obs)*np.sqrt(obs_error**2+obs_error_conf**2)[idx_obs]
                         elif comp_type == 'pv':
-                            model_interp = np.swapaxes(model_data, 0, 1)
-                            obs_data_final = copy(obs_data[:, i_lat_obs, :])
-                            obs_error_final = np.asarray([np.sqrt(obs_error**2+obs_error_conf**2)[i_lat_obs, :]]
-                                                         *obs_data_temp.shape[1])
+                            model_interp = model_data[:, :, :, 0]#np.swapaxes(model_data, 0, 1)
+                            obs_data_final = copy(obs_data_temp)
+                            obs_error_final = np.sqrt(obs_error**2+obs_error_conf**2)[idx_obs]
                             # obs_error_final = np.swapaxes([obs_error[i_lat_obs, :]]*obs_data_temp.shape[1], 0, 1)
                         else:
                             print('ERROR >> Comparison type {} not valid; '.format(comp_type) +
@@ -1475,6 +1486,9 @@ def model_selection(path='/mnt/hpc_backup/yanitski/projects/pdr/KT3_history/Milk
                     # print((obs_data_final[i_signal] - model_interp[i_signal]).any())
                     # print(((obs_data_final[i_signal] - model_interp[i_signal])** 2 / \
                     #                  obs_error_final[i_signal] ** 2).max())
+                    # print('chi2, i_signal, obs_data_final, model_interp, obs_error_final\n',
+                    #       chi2.shape, np.shape(i_signal), obs_data_final.shape,
+                    #       model_interp.shape, obs_error_final.shape)
                     chi2[i_signal] = (obs_data_final[i_signal] - model_interp[i_signal]) ** 2 / \
                                      obs_error_final[i_signal] ** 2 / (obs_data_final[i_signal].size - len(param))
                     loglikelihood[i_signal] = -chi2[i_signal] / 2 \
@@ -1665,6 +1679,7 @@ def plot_comparison(path='/mnt/hpc_backup/yanitski/projects/pdr/KT3_history/Milk
     dimensions = len(model_param)
     naxis = np.zeros((dimensions), dtype=bool)
     naxis[[i_x, i_y]] = True
+    print(model_param)
     lenaxis = np.asarray([len(arr) for arr in model_param])
 
     model_param_grid = np.meshgrid(*np.asarray(model_param, dtype=object)[naxis])
@@ -1794,7 +1809,7 @@ def plot_comparison(path='/mnt/hpc_backup/yanitski/projects/pdr/KT3_history/Milk
                         t_axes = np.asarray([[t_axes]])
                     elif t_axes.ndim == 1:
                         t_axes.resize(-1, 1)
-                    transition_plots.append((deepcopy(t_fig), deepcopy(t_axes)))
+                    transition_plots.append((copy(t_fig), copy(t_axes)))
                     transition_log_likelihood.append(np.zeros(x_grid.shape))
                     plt.close(t_fig)
 
