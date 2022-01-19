@@ -51,8 +51,8 @@ def addMolecules(molecules):
             transition = file[1+int(info[0])+int(molecule.split(' ')[1])].split()[:2]
             nINI = levels == transition[0]
             nFIN = levels == transition[1]
-            species.moleculeFrequencies.append(2.99792458*10**10*(energies[nINI]-energies[nFIN]))
-            species.moleculeWavelengths.append(1./100/(energies[nINI]-energies[nFIN]))
+            species.moleculeFrequencies.append((2.99792458*10**10*(energies[nINI]-energies[nFIN]))[0])
+            species.moleculeWavelengths.append((1./100/(energies[nINI]-energies[nFIN]))[0])
     
             # interpolations.initialise()
     
