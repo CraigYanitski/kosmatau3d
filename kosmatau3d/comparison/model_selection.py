@@ -1472,9 +1472,9 @@ def model_selection(path='/mnt/hpc_backup/yanitski/projects/pdr/KT3_history/Milk
                     loglikelihood = np.zeros_like(model_interp)
                     # if ((survey == 'COBE') or (survey == 'COBE-FIRAS')):
                     if '.idl' in file:
-                        i_signal = np.where(obs_data_final >= obs_data_final.min())
+                        i_signal = np.where(obs_data_final != 0)
                     else:
-                        i_signal = np.where(obs_data_final > obs_error_final)
+                        i_signal = np.where(obs_data_final != 0)
                         # print(model_interp.shape,
                         #       obs_data_final.shape,
                         #       obs_error_final.shape,
