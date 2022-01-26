@@ -1640,6 +1640,256 @@ def model_selection(path='/mnt/hpc_backup/yanitski/projects/pdr/KT3_history/Milk
     return
 
 
+def box_comparison(path='/mnt/hpc_backup/yanitski/projects/pdr/observational_data/MilkyWay/', file_format='',
+                   missions=[], model_param=[[]], log_comp=True, lat=None, comp_type='integrated',
+                   ylabel='', title='', boxwidth=0.5, label_rotation=30, label_fontsize=16, fontsize=20,
+                   figsize=None, save_plot=False, output_file='', output_format='png',
+                   debug=False, verbose=False, **kwargs):
+
+    # Check that the missions are specified properly.
+    if missions == '' or missions == None or missions == []:
+        missions = os.listdir(path)
+    elif isinstance(missions, str):
+        missions = [missions]
+    elif isinstance(missions, list):
+        pass
+    else:
+        print('Please specify a list of missions to compare the models.')
+        return
+
+    if file_format == '' or model_param == [[]]:
+        print('Please specify both file_format and model_param.')
+        return
+
+    if log_comp:
+        comp = comp_type + '_logT'
+    else:
+        comp = comp_type
+
+    model_param_grid = np.meshgrid(*np.asarray(model_param, dtype=object))
+    model_params = zip(*[model_param_grid[n].flatten() for n in range(len(model_param_grid))])
+
+    for survey in missions:
+
+        if survey == 'Plots':
+            continue
+
+        obs_directory = path + survey + '/regridded/temp/'
+
+        # if verbose:
+        print('\n  {}\n'.format(survey))
+
+        if (survey + '_files') in kwargs.keys():
+            if isinstance(kwargs[survey + '_files'], list):
+                survey_files = kwargs[survey + '_files']
+            elif isinstance(kwargs[survey + '_files'], str):
+                survey_files = [kwargs[survey + '_files']]
+            else:
+                print('Incorrect files specified for survey {}'.format(survey))
+                continue
+        else:
+            survey_files = os.listdir(path + survey + '/regridded/temp/')
+
+        if not 'Plots' in os.listdir(path.replace('observational_data', 'KT3_history') + 'fit_results/' + survey):
+            os.mkdir(path.replace('observational_data', 'KT3_history') + 'fit_results/' + survey + '/Plots/')
+
+        for survey_file in survey_files:
+
+            if 'error' in survey_file or not '.fits' in survey_file:
+                continue
+
+            print(survey_file)
+
+            if '.fits' in survey_file or '.FITS' in survey_file:
+                obs = fits.open(obs_directory + survey_file)
+                obs_error = fits.open(obs_directory + survey_file.replace('.fits', '_error.fits'))[0].data
+            elif '.sav' in survey_file or '.idl' in survey_file:
+                obs = readsav(obs_directory + survey_file)
+            else:
+                print(survey_file)
+                print('Invalid: Unknown file type in observation folder.')
+                continue
+
+            if survey == 'COBE' or survey == 'COBE-FIRAS':
+                if file == 'craig.idl':
+
+                    # This file requires a comparison to the galactic plane
+                    # lat = 0
+
+                    # these values are hard-coded since the data is not in the file
+                    linfrq = np.array([115.3, 230.5, 345.8, 424.8, 461.0, 492.2, 556.9, 576.3, 691.5, 808.1,
+                                       1113, 1460, 2226, 1901, 2060, 2311, 2459, 2589, 921.8])
+                    transitions = np.array(['CO 1', 'CO 2', 'CO 3', 'CO 4', 'C 3', 'CO 5',
+                                            'CO 6', 'CO 7 + C 1', 'C+ 1', 'O 1', 'CO 8'])
+                    transition_indeces = np.array([0, 1, 2, 4, 5, 7, 8, 9, 13, 14, 18])
+
+                    obs_data = obs['amplitude'] / (2.9979**3) * (linfrq**3) * 2 * 1.38 / 10 ** 8
+                    obs_error = obs['sigma'] / (2.9979**3) * (linfrq**3) * 2 * 1.38 / 10 ** 8
+                    lon_obs = obs['long']
+                    lat_obs = np.array([0])
+                    i_lat_obs_init = np.ones(1, dtype=bool)
+
+                else:
+
+                    obs_data = obs[0].data
+                    if debug:
+                        pprint(obs[0].header)
+                    # obs_error = obs[0].header['OBSERR'].split()
+                    transitions = obs[0].header['TRANSL'].split(', ')
+                    transition_indeces = obs[0].header['TRANSI'].split(', ')
+                    lon_obs = np.linspace(obs[0].header['CRVAL1'] - obs[0].header['CDELT1'] * (obs[0].header['CRPIX1'] - 1),
+                                          obs[0].header['CRVAL1'] + obs[0].header['CDELT1'] * (
+                                                      obs[0].header['NAXIS1'] - obs[0].header['CRPIX1']),
+                                          num=obs[0].header['NAXIS1'])
+                    lat_obs = np.linspace(obs[0].header['CRVAL2'] - obs[0].header['CDELT2'] * (obs[0].header['CRPIX2'] - 1),
+                                          obs[0].header['CRVAL2'] + obs[0].header['CDELT2'] * (
+                                                      obs[0].header['NAXIS2'] - obs[0].header['CRPIX2']),
+                                          num=obs[0].header['NAXIS2'])
+                    i_lat_obs_init = obs_data.any(0).any(1)
+                vel = None
+
+            elif survey == 'Planck':
+                obs_data = obs[0].data
+                if debug:
+                    pprint(obs[0].header)
+                # obs_error = obs[0].header['OBSERR'].split()
+                transitions = obs[0].header['TRANSL'].split(', ')
+                transition_indeces = obs[0].header['TRANSI'].split(', ')
+                lon_obs = np.linspace(obs[0].header['CRVAL1'] - obs[0].header['CDELT1'] * (obs[0].header['CRPIX1'] - 1),
+                                      obs[0].header['CRVAL1'] + obs[0].header['CDELT1'] * (
+                                                  obs[0].header['NAXIS1'] - obs[0].header['CRPIX1']),
+                                      num=obs[0].header['NAXIS1'])
+                lat_obs = np.linspace(obs[0].header['CRVAL2'] - obs[0].header['CDELT2'] * (obs[0].header['CRPIX2'] - 1),
+                                      obs[0].header['CRVAL2'] + obs[0].header['CDELT2'] * (
+                                                  obs[0].header['NAXIS2'] - obs[0].header['CRPIX2']),
+                                      num=obs[0].header['NAXIS2'])
+                i_lat_obs_init = obs_data.any(1)
+                vel = None
+
+            else:
+                if debug:
+                    pprint(obs[0].header)
+                # obs_error = obs[0].header['OBSERR']
+                transitions = obs[0].header['TRANSL'].split(', ')
+                transition_indeces = obs[0].header['TRANSI'].split(', ')
+                lon_obs = np.linspace(obs[0].header['CRVAL1'] - obs[0].header['CDELT1'] * (obs[0].header['CRPIX1'] - 1),
+                                      obs[0].header['CRVAL1'] + obs[0].header['CDELT1'] * (
+                                                  obs[0].header['NAXIS1'] - obs[0].header['CRPIX1']),
+                                      num=obs[0].header['NAXIS1'])
+                lat_obs = np.linspace(obs[0].header['CRVAL2'] - obs[0].header['CDELT2'] * (obs[0].header['CRPIX2'] - 1),
+                                      obs[0].header['CRVAL2'] + obs[0].header['CDELT2'] * (
+                                                  obs[0].header['NAXIS2'] - obs[0].header['CRPIX2']),
+                                      num=obs[0].header['NAXIS2'])
+                vel_obs = np.linspace(obs[0].header['CRVAL3'] - obs[0].header['CDELT3'] * (obs[0].header['CRPIX3'] - 1),
+                                      obs[0].header['CRVAL3'] + obs[0].header['CDELT3'] * (
+                                                  obs[0].header['NAXIS3'] - obs[0].header['CRPIX3']),
+                                      num=obs[0].header['NAXIS3'])
+                obs_data = np.trapz(obs[0].data, vel_obs, axis=0)
+                i_lat_obs_init = obs_data.any(1)
+
+            for transition in transitions:
+
+                print(transition)
+
+                map_list = [deepcopy(obs_data)]
+                map_labels = [survey + ' ' + transition]
+
+                for param in deepcopy(model_params):
+
+                    map_labels.append(file_format.format(*param))
+                    model_dir = path.replace('observational_data', 'KT3_history') + map_labels[-1] \
+                                + 'channel_intensity.fits'
+
+                    model = fits.open(model_dir)
+
+                    # Create arrays for the longitude and velocity axes
+                    lat_model = np.linspace(
+                        model[1].header['CRVAL3']
+                        - model[1].header['CDELT3'] * (model[1].header['CRPIX3'] - 0.5),
+                        model[1].header['CRVAL3']
+                        + model[1].header['CDELT3'] * (model[1].header['NAXIS3'] - model[1].header['CRPIX3'] - 0.5),
+                        num=model[1].header['NAXIS3']) * 180 / np.pi
+                    lon_model = np.linspace(
+                        model[1].header['CRVAL2']
+                        - model[1].header['CDELT2'] * (model[1].header['CRPIX2'] - 0.5),
+                        model[1].header['CRVAL2']
+                        + model[1].header['CDELT2'] * (model[1].header['NAXIS2']-model[1].header['CRPIX2'] - 0.5),
+                        num=model[1].header['NAXIS2']) * 180 / np.pi
+                    # if not (mission == 'COGAL'):
+                    #     lon_model[lon_model<0] += 360
+                    vel_model = np.linspace(
+                        model[1].header['CRVAL4']
+                        - model[1].header['CDELT4'] * (model[1].header['CRPIX4'] - 0.5),
+                        model[1].header['CRVAL4']
+                        + model[1].header['CDELT4'] * (model[1].header['CRPIX4'] - 0.5),
+                        num=model[1].header['NAXIS4'])
+
+                    if transition == 'Dust':
+                        map_list.append(deepcopy(model[2].data[0, :, :, 0]))
+                    else:
+                        i_transition = np.where(np.asarray(model[1].header['SPECIES'].split(', ')) == transition)[0]
+                        if i_transition.size:
+                            map_list.append(np.trapz(model[1].data[:, :, :, i_transition][:, :, :, 0] -
+                                                     model[2].data[:, :, :, 0], vel_model, axis=0))
+                        else:
+                            print('Transition {} not found in file {}'.format(transition, survey))
+                            continue
+
+                    if ((isinstance(lat, int) or isinstance(lat, float)) and comp_type == 'pv' and
+                        not (survey == 'COBE-FIRAS' or survey == 'Planck')):
+                        lat_min = lat
+                        lat_max = lat
+                    else:
+                        lat_min = lat_obs[i_lat_obs_init].min()
+                        lat_max = lat_obs[i_lat_obs_init].max()
+
+                    i_lon_obs = np.linspace(0, lon_model.size-1, num=lon_obs.size, dtype=int)
+                    i_lon_model = np.linspace(0, lon_model.size-1, num=lon_model.size, dtype=int)
+                    if survey == 'COBE-FIRAS' or survey == 'Planck':
+                        i_lat_model = (lat_model >= lat_min) \
+                                      & (lat_model <= lat_max)
+                        i_lat_obs = (lat_obs >= lat_model[i_lat_model].min()) \
+                                    & (lat_obs <= lat_model[i_lat_model].max())
+                    else:
+                        i_lat_model = np.where((lat_model >= lat_min)
+                                               & (lat_model <= lat_max))[0]
+                        i_lat_obs = np.where((lat_obs >= lat_model[i_lat_model].min())
+                                             & (lat_obs <= lat_model[i_lat_model].max()))[0]
+                    i_obs = np.ix_(i_lat_obs, i_lon_obs)
+                    i_model = np.ix_(i_lat_model, i_lon_model)
+
+                print(len(map_list), len(map_labels))
+
+                fig, ax = plt.subplots(1, 1, figsize=(1*len(map_list), 7))
+                if log_comp == True:
+                    data = [np.log10(map_list[0][i_obs].flatten()),
+                            *[np.log10(m[i_model].flatten()) for m in map_list[1:]]]
+                    ax.boxplot(data, labels=map_labels, widths=boxwidth, notch=True)
+                    ax.set_ylabel(r'$log_{10} (\varpi) \ \left( K \frac{km}{s} \right)$', fontsize=fontsize)
+                else:
+                    data = [map_list[0][i_obs].flatten(), *[m[i_model].flatten() for m in map_list[1:]]]
+                    ax.boxplot(data, labels=map_labels, widths=boxwidth, notch=True)
+                    ax.set_ylabel(r'$\varpi \ \left( K \frac{km}{s} \right)$', fontsize=fontsize)
+                xticknames = ax.get_xticklabels()
+                plt.setp(xticknames, rotation=label_rotation, fontsize=label_fontsize)
+                ax.set_title(survey + ' -- ' + transition)
+                plt.tight_layout()
+                if save_plot:
+                    if output_file == '':
+                        current_output_file = 'boxplot_{}-{}'.format(survey_file, transition) + comp
+                    else:
+                        current_output_file = output_file
+                    plt.savefig(path.replace('observational_data', 'KT3_history') +
+                                'fit_results/{}/Plots/{}.{}'.format(survey, current_output_file, output_format),
+                                format=output_format)
+                else:
+                    plt.show()
+
+        plt.close('all')
+
+    return
+
+
 def plot_comparison(path='/mnt/hpc_backup/yanitski/projects/pdr/KT3_history/MilkyWay/fit_results/', file_format='',
                     missions=[], model_param=[[]], i_x=0, i_y=1,
                     comp_type='pv', log_comp=True, likelihood=True, log=False, normalise=False,
