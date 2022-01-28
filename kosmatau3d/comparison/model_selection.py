@@ -121,6 +121,10 @@ thrumms_rms_window = {
     'dr4.s348.13co.fits' : (),
     'dr4.s354.13co.fits' : ()
 }
+cobe_idl_linfrq = np.array([115.3, 230.5, 345.8, 424.8, 461.0, 492.2, 556.9, 576.3, 691.5, 808.1,
+                            1113, 1460, 2226, 1901, 2060, 2311, 2459, 2589, 921.8])
+cobe_idl_transitions = np.array(['CO 1', 'CO 2', 'CO 3', 'CO 4', 'C 3', 'CO 5',
+                                 'CO 6', 'CO 7 + C 1', 'C+ 1', 'O 1', 'CO 8'])
 
 
 def determine_rms(hdul, mission='', file=''):
@@ -1642,12 +1646,164 @@ def model_selection(path='/mnt/hpc_backup/yanitski/projects/pdr/KT3_history/Milk
 
 def line_ratio_comparison(obs_path='/mnt/hpc_backup/yanitski/projects/pdr/observational_data/MilkyWay/',
                           model_path='/mnt/hpc_backup/yanitski/projects/pdr/KT3_history/fit_results/MilkyWay/',
-                          missions=[], transitions=[], log_comp=True, lat=None, comp_type='integrated',
+                          missions=[], transitions=[], survey_files=[], file_format='', model_param=[[]],
+                          log_comp=True, lat=None, comp_type='integrated',
                           ylabel='', title='', boxwidth=0.5, label_rotation=30, label_fontsize=16, fontsize=20,
                           figsize=None, save_plot=False, output_file='', output_format='png',
                           debug=False, verbose=False, **kwargs):
 
+    survey_paths = [[], []]
+    survey_maps = [[], []]
+    survey_i_lat_init = []
+    survey_ix = [[], []]
+    survey_ratios = [[], []]
+    survey_labels = [['/'.join(missions)], []]
+    survey_transitions = [[], []]
+    survey_lons = [[], []]
+    survey_lats = [[], []]
+    survey_vels = [[], []]
 
+    for i, survey in enumerate(missions):
+        survey_paths[0].append(obs_path + missions[i] + '/regridded/temp/' + survey_files[i])
+        if '.fits' in survey_paths[i]:
+            obs = fits.open(survey_paths[i])
+            survey_transitions[0].append(np.asarray(obs[0].header['TRANSL'].split(', ')))
+            i_trans_obs = survey_transitions[i] == transitions[i]
+            if i_trans_obs.any() == False:
+                print('Invalid transition {} for file {}'.format(transitions[i], survey_paths[i]))
+                exit()
+            survey_lons[0].append(np.linspace(obs[0].header['CRVAL1'] - obs[0].header['CDELT1'] * (
+                                               obs[0].header['CRPIX1'] - 1),
+                                           obs[0].header['CRVAL1'] + obs[0].header['CDELT1'] * (
+                                               obs[0].header['NAXIS1'] - obs[0].header['CRPIX1']),
+                                           num=obs[0].header['NAXIS1']))
+            survey_lats[0].append(np.linspace(obs[0].header['CRVAL2'] - obs[0].header['CDELT2'] * (
+                                               obs[0].header['CRPIX2'] - 1),
+                                           obs[0].header['CRVAL2'] + obs[0].header['CDELT2'] * (
+                                               obs[0].header['NAXIS2'] - obs[0].header['CRPIX2']),
+                                           num=obs[0].header['NAXIS2']))
+            if survey == 'COBE-FIRAS':
+                survey_vels[0].append(np.asarray([0]))
+                survey_maps[0].append(obs[0].data[i_trans_obs, :, :])
+                survey_i_lat_init.append(survey_maps[0][i].any(0).any(1))
+            elif survey == 'Planck':
+                survey_vels[0].append(np.asarray([0]))
+                survey_maps[0].append(obs[0].data[:, :])
+                survey_i_lat_init.append(survey_maps[0][i].any(1))
+            if not ('COBE-FIRAS' in missions or 'Planck' in missions) or comp_type == 'integrated':
+                survey_vels[0].append(np.linspace(obs[0].header['CRVAL3'] - obs[0].header['CDELT3'] * (
+                                                   obs[0].header['CRPIX3'] - 1),
+                                               obs[0].header['CRVAL3'] + obs[0].header['CDELT3'] * (
+                                                   obs[0].header['NAXIS3'] - obs[0].header['CRPIX3']),
+                                               num=obs[0].header['NAXIS3']))
+                survey_maps[0].append(np.trapz(obs[0].data, survey_vels[i], axis=0))
+                survey_i_lat_init.append(survey_maps[0][i].any(1))
+            else:
+                survey_vels[0].append(np.linspace(obs[0].header['CRVAL3'] - obs[0].header['CDELT3'] * (
+                                                   obs[0].header['CRPIX3'] - 1),
+                                               obs[0].header['CRVAL3'] + obs[0].header['CDELT3'] * (
+                                                   obs[0].header['NAXIS3'] - obs[0].header['CRPIX3']),
+                                               num=obs[0].header['NAXIS3']))
+                survey_maps[0].append(obs[0].data)
+                survey_i_lat_init.append(survey_maps[0][i].any(0).any(1))
+        elif '.idl' in survey_paths[i]:
+            obs = readsav(survey_paths[i])
+            survey_lons[0].append(survey_maps[i]['long'])
+            survey_lats[0].append(np.asarray([0]))
+            survey_transitions[0].append(transitions[i])
+            i_trans_obs = cobe_idl_transitions == transitions[i]
+            if i_trans_obs.any() == False:
+                print()
+                exit()
+            survey_maps[0].append(obs['amplitude'][:, i_trans_obs] / (2.9979**3)
+                               * (cobe_idl_linfrq[i_trans_obs]**3) * 2 * 1.38 / 10 ** 8)
+            i_lat_obs_init = np.ones(1, dtype=bool)
+        else:
+            print('Invalid mission path {}.'.format(survey_paths[i]))
+            exit()
+
+    survey_ratios[0].append(survey_maps[0][0])
+
+    model_param_grid = np.meshgrid(*np.asarray(model_param, dtype=object))
+    model_params = zip(*[model_param_grid[n].flatten() for n in range(len(model_param_grid))])
+
+    for param in model_params:
+
+        survey_labels[1].append(file_format.format(*param))
+        model_dir = model_path + survey_labels[1][-1] + 'channel_intensity.fits'
+
+        model = fits.open(model_dir)
+
+        # Create arrays for the longitude and velocity axes
+        survey_lats[1].append(np.linspace(
+            model[1].header['CRVAL3']
+            - model[1].header['CDELT3'] * (model[1].header['CRPIX3'] - 0.5),
+            model[1].header['CRVAL3']
+            + model[1].header['CDELT3'] * (model[1].header['NAXIS3'] - model[1].header['CRPIX3'] - 0.5),
+            num=model[1].header['NAXIS3']) * 180 / np.pi)
+        survey_lons[1].append(np.linspace(
+            model[1].header['CRVAL2']
+            - model[1].header['CDELT2'] * (model[1].header['CRPIX2'] - 0.5),
+            model[1].header['CRVAL2']
+            + model[1].header['CDELT2'] * (model[1].header['NAXIS2'] - model[1].header['CRPIX2'] - 0.5),
+            num=model[1].header['NAXIS2']) * 180 / np.pi)
+        # if not (mission == 'COGAL'):
+        #     lon_model[lon_model<0] += 360
+        survey_vels[1].append(np.linspace(
+            model[1].header['CRVAL4']
+            - model[1].header['CDELT4'] * (model[1].header['CRPIX4'] - 0.5),
+            model[1].header['CRVAL4']
+            + model[1].header['CDELT4'] * (model[1].header['CRPIX4'] - 0.5),
+            num=model[1].header['NAXIS4']))
+
+        for i, transition in transitions:
+            survey_maps[1].append([])
+            if transition == 'Dust':
+                survey_transitions[1].append(np.asarray(model[2].header['SPECIES'].split(', ')))
+                survey_maps[1][-1].append(deepcopy(model[2].data[0, :, :, 0]))
+            else:
+                survey_transitions[1].append(np.asarray(model[1].header['SPECIES'].split(', ')))
+                i_transition = np.where(survey_transitions[1][-1] == transition)[0]
+                if i_transition.size == 1 and (comp_type == 'integrated'
+                                               or not ('COBE-FIRAS' in missions or 'Planck' in missions)):
+                    survey_maps[1][-1].append(np.trapz(model[1].data[:, :, :, i_transition][:, :, :, 0]
+                                                       - model[2].data[:, :, :, 0], vel_model, axis=0))
+                elif i_transition_size == 1:
+                    survey_maps[1][-1].append(model[1].data[:, :, :, i_transition][:, :, :, 0]
+                                              - model[2].data[:, :, :, 0])
+                else:
+                    print('Transition {} not found in model'.format(transition))
+                    exit()
+
+            if ((isinstance(lat, int) or isinstance(lat, float)) and comp_type == 'pv' and
+                not ('COBE-FIRAS' in missions or 'Planck' in missions)):
+                lat_min = lat
+                lat_max = lat
+            else:
+                lat_min = survey_lats[0][i][i_lat_obs_init].min()
+                lat_max = survey_lats[0][i][i_lat_obs_init].max()
+
+            i_lon_obs = np.linspace(0, lon_obs.size-1, num=lon_obs.size, dtype=int)
+            i_lon_model = np.linspace(0, lon_model.size-1, num=lon_model.size, dtype=int)
+            if survey == 'COBE-FIRAS' or survey == 'Planck':
+                i_lat_model = (lat_model >= lat_min) \
+                              & (lat_model <= lat_max)
+                i_lat_obs = (lat_obs >= lat_model[i_lat_model].min()) \
+                            & (lat_obs <= lat_model[i_lat_model].max())
+            else:
+                i_lat_model = np.where((lat_model >= lat_min)
+                                       & (lat_model <= lat_max))[0]
+                i_lat_obs = np.where((lat_obs >= lat_model[i_lat_model].min())
+                                     & (lat_obs <= lat_model[i_lat_model].max()))[0]
+            if not survey == 'COBE-FIRAS':
+                i_obs = np.ix_(i_lat_obs, i_lon_obs)
+            if not survey_file == 'craig.idl':
+                i_obs = np.ix_([i_trans_obs], i_lat_obs, i_lon_obs)
+            else:
+                i_obs = np.ix_(i_lon_obs, [i_trans_obs])
+            i_model = np.ix_(i_lat_model, i_lon_model)
+
+    fig, ax = plt.subplots(1, 1, figsize=(5*(len(survey_ratios[0])+len(survey_ratios[1])), 10))
 
     return
 
@@ -1844,7 +2000,7 @@ def box_comparison(path='/mnt/hpc_backup/yanitski/projects/pdr/observational_dat
                             map_list.append(np.trapz(model[1].data[:, :, :, i_transition][:, :, :, 0] -
                                                      model[2].data[:, :, :, 0], vel_model, axis=0))
                         else:
-                            print('Transition {} not found in file {}'.format(transition, survey))
+                            print('Transition {} not found in file {}'.format(transition, survey_file))
                             break
 
                     if ((isinstance(lat, int) or isinstance(lat, float)) and comp_type == 'pv' and
