@@ -1640,9 +1640,21 @@ def model_selection(path='/mnt/hpc_backup/yanitski/projects/pdr/KT3_history/Milk
     return
 
 
+def line_ratio_comparison(obs_path='/mnt/hpc_backup/yanitski/projects/pdr/observational_data/MilkyWay/',
+                          model_path='/mnt/hpc_backup/yanitski/projects/pdr/KT3_history/fit_results/MilkyWay/',
+                          missions=[], transitions=[], log_comp=True, lat=None, comp_type='integrated',
+                          ylabel='', title='', boxwidth=0.5, label_rotation=30, label_fontsize=16, fontsize=20,
+                          figsize=None, save_plot=False, output_file='', output_format='png',
+                          debug=False, verbose=False, **kwargs):
+
+
+
+    return
+
+
 def box_comparison(path='/mnt/hpc_backup/yanitski/projects/pdr/observational_data/MilkyWay/', file_format='',
                    missions=[], model_param=[[]], log_comp=True, lat=None, comp_type='integrated',
-                   ylabel='', title='', boxwidth=0.5, label_rotation=30, label_fontsize=16, fontsize=20,
+                   ylim=[], ylabel='', title='', boxwidth=0.5, label_rotation=30, label_fontsize=16, fontsize=20,
                    figsize=None, save_plot=False, output_file='', output_format='png',
                    debug=False, verbose=False, **kwargs):
 
@@ -1695,10 +1707,10 @@ def box_comparison(path='/mnt/hpc_backup/yanitski/projects/pdr/observational_dat
 
         for survey_file in survey_files:
 
-            if 'error' in survey_file or not '.fits' in survey_file:
+            if 'error' in survey_file or (not '.fits' in survey_file and not '.idl' in survey_file):
                 continue
 
-            print(survey_file)
+            print('\n{}'.format(survey_file))
 
             if '.fits' in survey_file or '.FITS' in survey_file:
                 obs = fits.open(obs_directory + survey_file)
@@ -1711,7 +1723,7 @@ def box_comparison(path='/mnt/hpc_backup/yanitski/projects/pdr/observational_dat
                 continue
 
             if survey == 'COBE' or survey == 'COBE-FIRAS':
-                if file == 'craig.idl':
+                if survey_file == 'craig.idl':
 
                     # This file requires a comparison to the galactic plane
                     # lat = 0
@@ -1787,7 +1799,7 @@ def box_comparison(path='/mnt/hpc_backup/yanitski/projects/pdr/observational_dat
                 obs_data = np.trapz(obs[0].data, vel_obs, axis=0)
                 i_lat_obs_init = obs_data.any(1)
 
-            for transition in transitions:
+            for i_trans_obs, transition in enumerate(transitions):
 
                 print(transition)
 
@@ -1833,7 +1845,7 @@ def box_comparison(path='/mnt/hpc_backup/yanitski/projects/pdr/observational_dat
                                                      model[2].data[:, :, :, 0], vel_model, axis=0))
                         else:
                             print('Transition {} not found in file {}'.format(transition, survey))
-                            continue
+                            break
 
                     if ((isinstance(lat, int) or isinstance(lat, float)) and comp_type == 'pv' and
                         not (survey == 'COBE-FIRAS' or survey == 'Planck')):
@@ -1843,7 +1855,7 @@ def box_comparison(path='/mnt/hpc_backup/yanitski/projects/pdr/observational_dat
                         lat_min = lat_obs[i_lat_obs_init].min()
                         lat_max = lat_obs[i_lat_obs_init].max()
 
-                    i_lon_obs = np.linspace(0, lon_model.size-1, num=lon_obs.size, dtype=int)
+                    i_lon_obs = np.linspace(0, lon_obs.size-1, num=lon_obs.size, dtype=int)
                     i_lon_model = np.linspace(0, lon_model.size-1, num=lon_model.size, dtype=int)
                     if survey == 'COBE-FIRAS' or survey == 'Planck':
                         i_lat_model = (lat_model >= lat_min) \
@@ -1855,14 +1867,33 @@ def box_comparison(path='/mnt/hpc_backup/yanitski/projects/pdr/observational_dat
                                                & (lat_model <= lat_max))[0]
                         i_lat_obs = np.where((lat_obs >= lat_model[i_lat_model].min())
                                              & (lat_obs <= lat_model[i_lat_model].max()))[0]
-                    i_obs = np.ix_(i_lat_obs, i_lon_obs)
+                    if not survey == 'COBE-FIRAS':
+                        i_obs = np.ix_(i_lat_obs, i_lon_obs)
+                    if not survey_file == 'craig.idl':
+                        i_obs = np.ix_([i_trans_obs], i_lat_obs, i_lon_obs)
+                    else:
+                        i_obs = np.ix_(i_lon_obs, [i_trans_obs])
                     i_model = np.ix_(i_lat_model, i_lon_model)
 
-                print(len(map_list), len(map_labels))
+                if len(map_list) == 1:
+                    print('No models used in comparison...')
+                    continue
+
+                if debug:
+                    print('number of maps and labels: {}, {}'.format(len(map_list), len(map_labels)))
+                    print('observation')
+                    print('  full map size: {}, indexed map size: {}'.format(map_list[0].size,
+                                                                             map_list[0][i_obs].size))
+                    if len(map_list) > 1:
+                        print('model')
+                        print('  full map size: {}, indexed map size: {}'.format(map_list[1].size,
+                                                                                 map_list[1][i_model].size))
 
                 fig, ax = plt.subplots(1, 1, figsize=(1*len(map_list), 7))
                 if log_comp == True:
-                    data = [np.log10(map_list[0][i_obs].flatten()),
+                    # map_list[0] = np.nan_to_num(map_list[0], nan=0)
+                    i_nan_obs = (map_list[0][i_obs] <= 0) | np.isnan(map_list[0][i_obs])
+                    data = [np.log10(map_list[0][i_obs][~i_nan_obs].flatten()),
                             *[np.log10(m[i_model].flatten()) for m in map_list[1:]]]
                     ax.boxplot(data, labels=map_labels, widths=boxwidth, notch=True)
                     ax.set_ylabel(r'$log_{10} (\varpi) \ \left( K \frac{km}{s} \right)$', fontsize=fontsize)
@@ -1871,8 +1902,10 @@ def box_comparison(path='/mnt/hpc_backup/yanitski/projects/pdr/observational_dat
                     ax.boxplot(data, labels=map_labels, widths=boxwidth, notch=True)
                     ax.set_ylabel(r'$\varpi \ \left( K \frac{km}{s} \right)$', fontsize=fontsize)
                 xticknames = ax.get_xticklabels()
+                if len(ylim):
+                    ax.set_ylim(ylim)
                 plt.setp(xticknames, rotation=label_rotation, fontsize=label_fontsize)
-                ax.set_title(survey + ' -- ' + transition)
+                ax.set_title(survey + ' -- ' + transition, fontsize=fontsize)
                 plt.tight_layout()
                 if save_plot:
                     if output_file == '':
@@ -1884,8 +1917,7 @@ def box_comparison(path='/mnt/hpc_backup/yanitski/projects/pdr/observational_dat
                                 format=output_format)
                 else:
                     plt.show()
-
-        plt.close('all')
+                plt.close()
 
     return
 
