@@ -1692,8 +1692,8 @@ def line_ratio_comparison(obs_path='/mnt/hpc_backup/yanitski/projects/pdr/observ
                                               num=obs[0].header['NAXIS2']))
             if survey == 'COBE-FIRAS':
                 survey_vels[0].append(np.asarray([0]))
-                survey_maps[0].append(obs[0].data[i_trans_obs, :, :])
-                survey_i_lat_init.append(survey_maps[0][i].any(0).any(1))
+                survey_maps[0].append(obs[0].data[i_trans_obs, :, :][0, :, :])
+                survey_i_lat_init.append(survey_maps[0][i].any(1))
             elif survey == 'Planck':
                 survey_vels[0].append(np.asarray([0]))
                 survey_maps[0].append(obs[0].data[:, :])
@@ -1734,6 +1734,8 @@ def line_ratio_comparison(obs_path='/mnt/hpc_backup/yanitski/projects/pdr/observ
         else:
             print('Invalid mission path {}.'.format(survey_paths[0][i]))
             return
+
+    print(survey_maps[0][0].shape, survey_maps[0][1].shape)
 
     i_lon_obs = []
     i_lon_model = []
