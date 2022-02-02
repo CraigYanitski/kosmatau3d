@@ -29,6 +29,7 @@ def initialise():
     interpolations.FUVfieldInterpolation = interpolateFUVfield()
     # interpolations.eTildeReal = interpolateETildeReal()
     # interpolations.eTildeImaginary = interpolateETildeImaginary()
+    interpolations.initialised = True
     return
 
 

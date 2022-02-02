@@ -31,82 +31,125 @@
     \section{Single-voxel setup}
     \label{setup}
 
-    Here we will examine the current setup of the calculations of \kosmatau3d.
+    Here we will examine the current setup of the calculations of \texttt{kosmatau3d}.
     These will give a basis on how the probabilistic calculation works for a single voxel, and what assumptions are present when using the single-voxel model.
     The observed intensity is calculated from the radiative transfer equation,
 
-    \[
-    dI_\nu = - I_\nu \kappa_\nu ds + \epsilon_nu ds,
-    \]
+    \begin{equation}
+    \label{radiative transfer equation}
+    dI_\nu = - I_\nu \kappa_\nu ds + \epsilon_\nu ds,
+    \end{equation}
 
     we can assume \(\kappa\) and \(\epsilon\) (the absorption and emissivity coefficients, respectively) are constant in the voxel.
-    Therefore they are calculated using the voxel-averaged emmision:
+    Therefore they are calculated using the voxel-averaged emission:
 
-    \[
-    \epsilon_\nu (v_{obs}) = \frac{\left<I_\nu\right> (v_{obs})}{\Delta s},
-    \]
+    \begin{equation}
+    \label{voxel-averaged emissivity}
+    \left<\epsilon_\nu (v_{obs})\right>_{vox} = \lim_{\Delta s \to 0} \left( \frac{\left<I_\nu\right>_{vox} (v_{obs})}{\Delta s} \right),
+    \end{equation}
 
-    \[
-    \kappa_\nu (v_{obs}) = \frac{\left<\tau_\nu\right> (v_{obs})}{\Delta s},
-    \]
+    \begin{equation}
+    \label{voxel-averaged opacity}
+    \left<\kappa_\nu (v_{obs})\right>_{vox} = \lim_{\Delta s \to 0} \left( \frac{\left<\tau_\nu\right>_{vox} (v_{obs})}{\Delta s} \right),
+    \end{equation}
 
+    where \(\Delta s\) is the size of the voxel, and \(\left< \cdots \right>_{vox}\) indicates a property averaged over the voxel.
     In order to properly understand these voxel-averaged values, it is necessary to have some insight for what is happening inside the voxel.
-    The clumpy PDR is approximated by an ensemble of spherically-symetric \kosmatau 'clumps'.
-    The ensemble of clumps has a Gaussian velocity distribution with dispersion \(\sigma_{ens}\), and each clump has an intrinsic velocity dispersion \(\sigma_{cl}\) (this value depends on which underlying \kosmatau grid is used, but currently it is \(\sim0.71 \frac{km}{s}\)).
-    The number of clumps with a particular mass (\(N_j\)) follows the mass spectrum:
+    The clumpy PDR is approximated by an ensemble of spherically-symetric \kosmatau \ 'clumps'.
+    The number of clumps with a particular mass (\(N_j\)) follows the clump mass distribution:
 
-    \[
-    \frac{\mathrm{d}N}{\mathrm{d}M} = A M^{-\alpha}
-    \]
+    \begin{equation}
+    \label{mass function}
+    \frac{\mathrm{d}N}{\mathrm{d}M} = \mathcal{A} M^{-\alpha}.
+    \end{equation}
 
-    Here we adopt \(\alpha=1.84\) from Heithausen et al. (1998), and \(A\) is a constant.
+    Here we adopt \(\alpha=1.84\) from Heithausen et al. (1998), and \(\mathcal{A}\) is a constant.
     Henceforth the subscript \(j\) will refer to a property specific for clumps with mass \(M_j\).
-    Clumps can be observed with a particular radial velocity, so we also use the formalism of the subscript \(i\) to refer to a property with radial velocity \(v_i\).
-    Note that this is a velocity within the voxel, not the observed velocity.
-    The observed radial velocity is \(v_{obs}\).
 
-    Now the number of clumps with a particular radial velocity \(v_i\) is determined by the number of clumps of a particular mass \(N_j\) and velocity distribution of the ensemble \(\sigma_{ens}\).
+    There are three types of velocity one needs to consider:
 
-    \[
-    \Delta N_{j,i} (v_{obs}) = \frac{N_j}{\sqrt{2 \pi} \sigma_{ens}} \ \mathrm{exp} \left( -\frac{(v_{vox}-v_i)^2}{2 \sigma_{ens}} \right) \Delta v
-    \]
+    \begin{itemize}
+        \item \(v_{vox}\): The average radial velocity of the gas in the voxel. For testing purposes, this is set to zero. (ie. The observed intensities should follow a Gaussian centered at 0.)
+        \item \(v_{j,i}\): The internal velocities in the voxel. This is used for the radial velocity of the modeled clumps in the ensemble. This is calculated on-the-fly using \(v_{j,i} \in [v_{vox} - 3 \sigma_{ens,j}, v_{vox} + 3 \sigma_{ens,j}]\) with step size, \\
+        \[\delta v = \mathrm{min} \left( \frac{\sigma_{ens}}{n_{velocity}}, \frac{\sigma_{cl}}{n_{velocity}} \right).\]\\
+         Initial testing had shown that \(n_{velocity} = 3\) is sufficient. \(j\) refers to a clump mass in the ensemble (which may have a different intrinsic velocity dispersion \(\sigma_{cl,j}\)) while \(i\) refers to the internal velocity. The number of internal velocities are \(\geq 6 n_{velocity} + 1\).
+        \item \(v_{obs}\): The observing velocities of the emission. This is required as an argument to the voxel initialisation, and it is independent of the step size chosen for \(v_{obs}\).
+    \end{itemize}
 
-    \(p_{j,i}\) is the probability of having \(k_{j,i}\) clumps in a line-of-sight observed at velocity \(v_i\), determined by Binomial distribution of the number of clumps at that velocity:
+%    The ensemble of clumps has a normal velocity distribution centered at \(v_{vox}\) with dispersion \(\sigma_{ens, j}\), which determines the velocity \(v_{j,i}\) of clump \(j\) in the ensemble.
+%    We use an internal velocity grid \(v_{j,i} \in [v_{vox} - 3 \sigma_{ens,j}, v_{vox} + 3 \sigma_{ens,j}]\) to model the clumps in the ensemble, and any quantity that depends on this internal velocity will also have this subscript \(i\).
+%    Each clump also has an intrinsic velocity dispersion \(\sigma_{cl,j}\) (this value depends on which underlying \kosmatau \ grid is used, but currently it is \(\sim0.71 \frac{km}{s}\) for all clump sizes).
+%    %Clumps can be observed with a particular radial velocity, so we also use the formalism of the subscript \(i\) to refer to a property with radial velocity \(v_i\).
+%    %Note that this is a velocity within the voxel, not the observed velocity.
+%    %The observed radial velocity is \(v_{obs}\).
+    Now the number of clumps with a particular radial velocity \(v_{j,i}\) is determined by the number of clumps of a particular mass \(N_j\) and velocity distribution of the ensemble \(\sigma_{ens,j}\).
 
-    \[
-    p_{j,i} = \binom{N_{j,i}}{k_{j,i}} p_j^{k_{j,i}} (1-p_j)^{N_{j,i}-k_{j,i}}
-    \]
+    \begin{equation}
+    \label{delta Nji}
+    \Delta N_{j,i} = \frac{N_j}{\sqrt{2 \pi} \sigma_{ens,j}} \ \mathrm{exp} \left( -\frac{(v_{vox}-v_{j,i})^2}{2 \sigma_{ens, j}^2} \right) \delta v_j,
+    \end{equation}
 
-    Where \(p_j\) is the area fraction of clump \(j\).
-    If \(p_j N_{j,i}>5\), then a gaussian expression is used with \(\mu_{j,i} = p_j N_{j,i}\) and \(\sigma_{j,i} = \sqrt{N_{j,i} p_j (1-p_j)}\).
+    where \(\delta v_j\) is the aforementioned step size in \(v_{j,i}\).
+%    This step size is necessarily smaller than \(\sigma_{cl,j}\) to ensure the velocity distribution is adequately sampled in the ensemble.
+%    (ie. One should not be able to see the contributions of different internal velocities in the emission).
+    The probability \(p_{j,i}\) of having \(k_{j,i}\) clumps in a line-of-sight observed at velocity \(v_i\) is determined by Binomial distribution of the number of clumps at that velocity:
 
-    For having \(k_{j,i}\) clumps in a line-of-sight, the intensity and optical depth (\(I_{\nu,j,i}\) \& \(\tau_{\nu,j,i}\)) can be calculated.
-    Here the subscript \(\nu\) means the properties refer to a particular transition (which is what we get from the \kosmatau grid).
+    \begin{equation}
+    \label{combination probability}
+    p_{j,i} = \binom{\Delta N_{j,i}}{k_{j,i}} p_j^{k_{j,i}} (1-p_j)^{\Delta N_{j,i}-k_{j,i}},
+    \end{equation}
 
-    \[
-    I_{\nu,j,i} (v_{obs}) = k_{j,i} I_{cl,j} \mathrm{exp} \left( \frac{(v_i-v_{obs})^2}{2\sigma_{cl}^2} \right)
-    \]
+    where \(p_j\) is equivalent to the area-filling factor of clump \(j\) (\(p_j = \frac{\pi R_{j}^2}{\Delta s^2}\)).
+    If \(p_j N_{j,i}>5\), then a Gaussian expression is used with \(\mu_{j,i} = p_j N_{j,i}\) and \(\sigma_{j,i} = \sqrt{N_{j,i} p_j (1-p_j)}\).
 
-    \[
-    \tau_{\nu,j,i} (v_{obs}) = k_{j,i} \tau_{cl,j} \mathrm{exp} \left( \frac{(v_i-v_{obs})^2}{2\sigma_{cl}^2} \right)
-    \]
+    For having \(k_{j,i}\) clumps in a line-of-sight, the intensity and optical depth (\(I_{\nu,j,i}\) \& \(\tau_{\nu,j,i}\)) can be calculated.\footnote{
+        This is incorrect as stated, but it is presented as such to agree with Andree-Labsch et al. (2015) as well as the corresponding code. For correctness, it is better to calculate \(\epsilon_{\nu,j,i}\) rather than \(I_{\nu,j,i}\). In the original implementation, the equation used is \(\epsilon_{\nu,j,i} = \frac{I_{\nu,j,i}}{\Delta s}\).}
+    Here the subscript \(\nu\) means the properties refer to a particular transition (which is what we obtain from the \kosmatau \ grid).
 
-    Finally the intensity and optical depth can be averaged over the voxel using all possible combinations and their corresponding probabilities to determine voxel properties we require.
+    \begin{equation}
+    \label{los intensity}
+    I_{\nu,j,i} (v_{obs}) = k_{j,i} I_{cl,\nu,j} \mathrm{exp} \left( \frac{(v_i-v_{obs})^2}{2\sigma_{cl, j}^2} \right),
+    \end{equation}
 
-    \[
-    \left< I_\nu \right> (v_{obs}) = \sum_i \left( \prod_j p_{j,i}(k_{j,i}) \right) \left( \sum_j k_{j,i} I_{\nu,j,i} (v_{obs}) \right)
-    \]
+    \begin{equation}
+    \label{los optical depth}
+    \tau_{\nu,j,i} (v_{obs}) = k_{j,i} \tau_{cl,\nu,j} \mathrm{exp} \left( \frac{(v_i-v_{obs})^2}{2\sigma_{cl, j}^2} \right),
+    \end{equation}
 
-    \[
-    \left< \tau_\nu \right> (v_{obs}) = -\mathrm{ln} \left[ \sum_i \left( \prod_j p_{j,i}(k_{j,i}) \right) \ \mathrm{exp} \left( - \sum_j k_{j,i} \tau_{\nu,j,i} (v_{obs}) \right) \right]
-    \]
+    where the factor \(\mathrm{exp}(\frac{(v_{j,i} - v_{obs})^2}{2 \sigma_{cl, j}^2})\) accounts for the contribution of the clumps with radial velocity \(v_{j,i}\) at observing velocity \(v_{obs}\).
+    Finally the intensity and optical depth can be averaged over the voxel using all possible combinations and their corresponding probabilities.
+
+    \begin{equation}
+    \label{velocity-dependent averaged intensity}
+    \left< I_\nu \right>_{i} (v_{obs}) = \sum_k \bigg[ \Big( \prod_j p_{j,i}(k_{j,i}) \Big) \Big( \sum_j I_{\nu,j,i} (v_{obs}) \Big) \bigg],
+    \end{equation}
+
+    \begin{equation}
+    \label{velocity-dependent averaged optical depth}
+    \left< \tau_\nu \right>_{i} (v_{obs}) = -\mathrm{ln} \Bigg\{ \sum_k \bigg[ \Big( \prod_j p_{j,i}(k_{j,i}) \Big) \ \mathrm{exp} \Big( - \sum_j \tau_{\nu,j,i} (v_{obs}) \Big) \bigg] \Bigg\},
+    \end{equation}
+
+    and finally summing over the contributions of the clumps at all velocities:
+
+    \begin{equation}
+    \label{voxel-averaged intensity}
+    \left< I_\nu \right>_{vox} (v_{obs}) = \sum_i \left< I_\nu \right>_{i} (v_{obs}),
+    \end{equation}
+
+    \begin{equation}
+    \label{voxel-averaged optical depth}
+    \left< \tau_\nu \right>_{vox} (v_{obs}) = \sum_i \left< \tau_\nu \right>_{i} (v_{obs}).
+    \end{equation}
 
     Here the sums and products ensure we consider contributions from all clump masses at all radial velocities, since there is a velocity dispersion to each clump's intensity and optical depth.
-    Now we can finally substitute these into the radiative transfer equation to determine the intensity we expect to observe from this voxel.
+    Now we can finally substitute these into the radiative transfer equation to determine the intensity we expect to observe from this voxel, accounting for any background intensity \(I_{bg, \nu}\):
 
-    \[
-    I_{\mathrm{vox},\nu} (v_{obs}) = \frac{\epsilon_\nu (v_{obs})}{\kappa_\nu (v_{obs})} \left( 1 - e^{-\kappa_\nu (v_{obs}) \Delta s} \right) + I_{bg} e^{-\kappa_\nu (v_{obs}) \Delta s}
-    \]
+    \begin{equation}
+    \label{voxel intensity}
+    I_{\mathrm{vox},\nu} (v_{obs}) = \frac{\epsilon_\nu (v_{obs})}{\kappa_\nu (v_{obs})} \left( 1 - e^{-\kappa_\nu (v_{obs}) \Delta s} \right) + I_{bg, \nu} e^{-\kappa_\nu (v_{obs}) \Delta s}.
+    \end{equation}
+
+%    \pagebreak
 
     \section{Calculation error}
 
@@ -117,99 +160,232 @@
     This makes enough sense as the clumps overflow behind the voxel.
     I now need to revise my intensity calculations not only to correct this absorption feature, but to ensure that the previous calculations (without this error) also agree.
 
-    For a densely-filled voxel, there should exist a plateau in the \(I(v_{obs})\) curve (see Figure \ref{plateau}), however the error is that there still exists some additional absorption.
+    For a densely-filled voxel, there could exist a saturation plateau in the intensity profile \(I(v_{obs})\), however the error is that there still exists some additional absorption.
     Due to the calculation of the voxel intensity (see \S \ref{setup}), there are two separate modes of calculation: standard and normalised.
     The standard calculation of the intensity uses the clump numbers calculated using \(\Delta N_{j,i}\), while the normalised calculation resizes the voxel to ensure a given number of the largest clump are included in the voxel (typically 1 for the dense clumpy ISM).
     There is also part of the code which resizes the voxel if it is too small to fit the largest clump.
     It is the combination of these two features that make debugging this error more difficult.
     For that reason, I will debug these calculation methods separately.
+    What follows in this section and the next are just for voxels normalised to have 1 of the largest clump in the ensemble.
+    The un-normalised comparison will follow in a later version of this document.
 
     \subsection{The correction}
 
     The issue identified thus-far is that the probabilistic description has been applied to the averaged \textit{intensity} rather than the \textit{emissivity}, and therefore there exists some excess absorption in the plateau region.
     The proposed fix for this is to modify the equation for \(I_{\nu, j, i} (v_{obs})\) to calculate instead \(\epsilon_{\nu, j, i} (v_{obs})\):
 
-    \[
-    \epsilon_{\nu,j,i} = I_{\nu,j,i} \frac{\tau_{\nu,j,i}} {L_{j}} / [ 1 - \exp(-\tau_{\nu,j,i}) ],
-    \]
+    \begin{equation}
+    \label{corrected emissivity}
+    \epsilon_{\nu,j,i} (v_{obs}) = k_{j,i} \left( \frac{I_{cl,\nu,j}}{L_{vox}} \right) \left(\frac{\tau_{cl,\nu,j}}{\left[ 1 - \exp(- \tau_{cl,\nu,j}) \right]} \right) \mathrm{exp} \left( \frac{(v_{j,i}-v_{obs})^2}{2\sigma_{cl,j}^2} \right).
+    \end{equation}
 
-    leading to,
+    \(L_{vox}\) in this equation is the line-of-sight length of the voxel. An over-filled voxel will thus have \(L_{vox} = f_V \Delta s\). This leads to a voxel-averaged emissivity of,
 
-    \[
-    \left< \epsilon_\nu \right> (v_{obs}) = \sum_i \left( \prod_j p_{j,i}(k_{j,i}) \right) \left( \sum_j k_{j,i} \epsilon_{\nu,j,i} (v_{obs}) \right).
-    \]
+    \begin{equation}
+    \label{corrected voxel-averaged emissivity}
+    \left< \epsilon_\nu \right>_{i} (v_{obs}) = \sum_i \bigg[ \Big( \prod_j p_{j,i}(k_{j,i}) \Big) \Big( \sum_j \epsilon_{\nu,j,i} (v_{obs}) \Big) \bigg].
+    \end{equation}
 
-    The modification for the optical depth in terms of opacity is,
+    The corresponding modification for the optical depth in terms of opacity is,
 
-    \[
-    \left< \kappa_\nu \right> (v_{obs}) = -\mathrm{ln} \left[ \sum_i \left( \prod_j p_{j,i}(k_{j,i}) \right) \ \mathrm{exp} \left( - \sum_j \frac{k_{j,i} \tau_{\nu,j,i} (v_{obs}) \times A_{j}}{V_{voxel}} \right) \right]
-    \]
+    \begin{equation}
+    \label{corrected opacity}
+    \kappa_{\nu,j,i} (v_{obs}) = \frac{\tau_{\nu,j,i} (v_{obs})}{L_{vox}},
+    \end{equation}
+
+    \begin{equation}
+    \label{corrected voxel-averaged opacity}
+    \left< \kappa_\nu \right>_{i} (v_{obs}) = -\mathrm{ln} \Bigg\{ \sum_i \bigg[ \Big( \prod_j p_{j,i}(k_{j,i}) \Big) \ \mathrm{exp} \Big( - \sum_j \kappa_{\nu,j,i} (v_{obs}) \times \Delta s \Big) \bigg] \Bigg\},
+    \end{equation}
+
+    though this is essentially just the same calculation as before.
 
     At least this is how the intended modification to the code should work.
     Its implementation tries to remain as faithful to this description as possible, but it was noted that there are still a couple errors.
-    Therefore some flags were added to choose the type of implementation: \texttt{test\_calc}, \texttt{test\_pexp}, \texttt{test\_opacity}, and \texttt{test\_fv}.
-    \texttt{test\_calc} chooses whether or not the test calculation is used, and it will definitely affect the emissivity.
-    \texttt{test\_opacity} is a flag to use either the original definition of opacity or to use the modified version given above.
-    \texttt{test\_pexp} is a test to see how the calculation of opacity changes if one considers how the result is changed if one applies the probabilistic approach to \(\kappa\) rather than \(e^{-\kappa}\).
-    This should not be working since the probabilistic approach should work on the attenuation (\(e^{-\tau}\)).
-    In any case, this is included for a test.
-    The final flag, \texttt{test\_fv}, tests a form of the calculation that should have been in the code from the beginning.
-    Since only partially- to fully-filled voxels are considered in the 3D models, all of the computations depend on the extent of the voxel, \(\Delta s\).
-    This is not true in the case of an over-filled voxel, where the excess clumps are assumed to be located just behind the voxel.
+    Therefore a couple of flags were added to choose the type of implementation: \texttt{test\_calc} and \texttt{test\_fv}.
+    \texttt{test\_calc} chooses whether or not the test calculation is used, which will definitely affect the emissivity.
+%    \texttt{test\_opacity} is a flag to use either the original definition of opacity or to use the modified version given above.
+%    \texttt{test\_pexp} is a test to see how the calculation of opacity changes if one considers how the result is changed if one applies the probabilistic approach to \(\kappa\) rather than \(e^{-\kappa \Delta s}\).
+%    This should not be working since the probabilistic approach should work on the attenuation (\(e^{-\tau}\)).
+%    In any case, this is included for testing purposes.
+    \texttt{test\_fv} tests a form of the calculation that should have been in the code from the beginning.
+    Since only partially- to fully-filled voxels are considered in the 3D models (\(f_V \leq 1\)), all of the computations depend on the extent of the voxel, \(\Delta s\).
+    This is not true in the case of an over-filled voxel (\(f_V > 1\)), where the excess clumps are assumed to be located just behind the voxel.
     In this case of an over-filled voxel, the calculations are modified to ensure it is still physically correct.
-    As a crude approximation, this changes equations such as the voxel-averaged opacity to \(<\kappa_\nu> = \frac{<\tau_\nu>}{f_V \Delta s}\), where \(f_V > 1\).
+    (ie. The voxel essentially becomes a column, with the voxel size \(\Delta s\) determining the observed area and the depth adjusted by \(f_C \equiv \mathrm{max}(1, f_V)\).)
+    As a crude approximation, this changes equations such as the voxel-averaged opacity to \(<\kappa_\nu> = \frac{<\tau_\nu>_{vox}}{f_C \Delta s}\).
     This ensures all of the clumps are contained in the voxel being calculated.
     In the case of an over-filled voxel, the voxel calculated is actually a rectangle.
 
     For the following tests in this section, we will use the same parameters used to identify the issue.
-    This used four clump masses \(M_{cl} \in [10^{-3}, 10^{-2}, 10^{-1}, 10^{0}] M_\odot\),
+%    This used four clump masses \(M_{cl} \in [10^{-3}, 10^{-2}, 10^{-1}, 10^{0}] M_\odot\),
+    This used one clump mass \(M_{cl} = 10 M_\odot\),
     voxel size \(\Delta s = 0.1 pc\),
-    hydrogen number density \(n_H = 10^{4.8} cm^{-3}\),
-    total mass \(M_{vox} = 10^{0.8} M_\odot\),
-    and far-UV radiation \(\chi = 10^{1.7} \chi_0\).
+    ensemble dispersion \(\sigma_{ens} = 1 \frac{km}{s}\),
+%    ensemble mass \(M_{vox} = 10^{0.8} M_\odot\),
+%    hydrogen number density \(n_H = 10^{4.8} cm^{-3}\),
+%    and far-UV radiation \(\chi = 10^{1.7} \chi_0\).
+    ensemble mass \(M_{vox} = 10^{1} M_\odot\),
+    hydrogen number density \(n_H = 10^{5} cm^{-3}\),
+    and far-UV radiation \(\chi = 10^{4} \chi_0\).
+    The \texttt{test\_fv} flag will always be set true, since this is the required method of calculation, and for this setup we will have \(f_V \approx 4\).
+    We will just be looking at the difference between the new calculation as described and the original calculation.
 
-    \subsection{Standard calculation}
+%    \subsection{Standard calculation}
+%
+%    Setting all flags to false will perform the original calculation, which for a partially-filled voxel acts as a benchmark.
+%    The issue noted by Yoko, however, was for a voxel with \(f_V \gtrsim 4\).
+%    This case is thus included to show how the error was identified.
+%    The absorption feature in C\(\mathsc{ii}\) is the error that we will be tracking.
+%
+%    \includegraphics*[width=\linewidth]{voxel_error_original.png}
+%
+%    \pagebreak
+%
+%    \subsection{Using the correct \(f_V\)}
+%
+%    In this model we set \texttt{test\_fv} True while keeping the other flags False.
+%    This should be the correct calculation of an over-filled voxel using the old calculation.
+%
+%    \includegraphics*[width=\linewidth]{voxel_error_fv.png}
+%
+%    \subsection{Setting \texttt{test\_fv} and \texttt{test\_pexp}}
+%
+%    Here I test the validity of the way the probability approach is applied to the opacity.
+%    This test uses the probability on the \(\tau_\nu\) rather than \(e^{-\tau_\nu}\).
+%    It can be seen that this test correctly removes the absorption features, however it is at the expense of a slightly-reduced intensity.
+%    The slightly-reduced intensity is understandable considering the result without setting \texttt{test\_fv} was not physically correct.
+%
+%    \includegraphics*[width=\linewidth]{voxel_error_fv-pexp.png}
+%
+%    \pagebreak
+%
+%    \subsection{Setting \texttt{test\_fv}, \texttt{test\_calc}, and \texttt{test\_opacity}}
+%
+%    Here we test the new calculation applied to both \(\epsilon_\nu\) and \(\kappa_\nu\).
+%
+%    \includegraphics*[width=\linewidth]{voxel_error_fv-calc-opacity.png}
+%
+%    \subsection{Setting \texttt{test\_fv} and \texttt{test\_calc}}
+%
+%    Here we test the new calculation applied just to \(\epsilon_\nu\), but \(<\kappa_\nu>\) is still calculated from \(<\tau_\nu>\) like in the old calculation.
+%
+%    \includegraphics*[width=\linewidth]{voxel_error_fv-calc-opacity.png}
+%
+%    \pagebreak
+%
+%    \subsection{Setting \texttt{test\_fv}, \texttt{test\_calc}, \texttt{test\_opacity}, and \texttt{test\_pexp}}
+%
+%    Finally we calculate a model setting all of the flags.
+%    This also correctly results in the desired plateaux, but the relative intensities are different (since C\textsc{ii} is now larger than O\textsc{i}).
+%
+%    \includegraphics*[width=\linewidth]{voxel_error_fv-calc-opacity-pexp.png}
+%
+%    \subsection{Summary}
+%
+%    As shown in the previous subsections, the calculations which correctly model the saturation plateaux features apply the probabilistic calculation directly to the opacity \(\kappa_\nu\), rather than \(e^{-\kappa_\nu \Delta s}\).
+%    These models differ, at least in these examples, by the relative intensities of the transitions.
+%    Notably the C\(\mathsc{ii}\) and C\(\mathsc{i}\) lines differ.
+%    What remains is determining which calculation is correct.
+%
+%    \pagebreak
+%
+%    \section{Convergence test}
+%
+%    An initial test notebook was created to explain how the single-voxel object functions.
+%    The example was a voxel with side length \(\Delta s = 1 pc\), clump mass \(M_{cl} = 10 M_\odot\), ensemble mass \(M_{ens} = 10 M_\odot\), ensemble dispersion \(\sigma_{ens} = 0 \frac{km}{s}\), hydrogen number density \(n_{H\mathsc{i}} = 10^{5} cm^{-3}\), and far-UV radiation \(\chi = 10^{4} \chi_0\).
+%    It is essentially a voxel containing one clump with no added velocity dispersion.
+%    This will be used as a benchmark result, and we will examine the two settings that worked on the over-filled voxel.
+%    The correction for an over-filled voxel is not necessary in this case since the model is partially filled.
+%
+%    \includegraphics*[width=\linewidth]{voxel_convergence_original.png}
+%
+%    This model should contain just one clump of mass \(10 M_\odot\).
+%    The intensity of this clump (after calculating the radiative transfer equation) is given below.
+%
+%    \includegraphics*[width=\linewidth]{voxel_single-clump.png}
+%
+%    \pagebreak
+%
+%    \subsection{Setting \texttt{test\_pexp}}
+%
+%    We first look at the intensity of the voxel with the adjusted probabilistic calculation of the voxel-averaged opacity \(<\kappa_\nu>_vox\).
+%    The result is the same as the benchmark plot.
+%
+%    \includegraphics*[width=\linewidth]{voxel_convergence_fv-pexp.png}
+%
+%    We also look into the result for a voxel area with a comparable area to the projected area of the clump, which is a voxel with side length \(\Delta s = 0.16 pc\).
+%    This should result in the same plot as the clump intensity plot.
+%
+%    \includegraphics*[width=\linewidth]{voxel_single-clump_fv-pexp.png}
+%
+%    \pagebreak
+%
+%    \subsection{Setting \texttt{test\_calc}, \texttt{test\_opacity}, and \texttt{test\_pexp}}
+%
+%    Now the \(1 pc\) voxel with the suggested calculation correction results in an intensity plot that is lower by a factor of 4.
+%    The relative intensities of the various transitions are also different.
+%
+%    \includegraphics*[width=\linewidth]{voxel_convergence_fv-calc-opacity-pexp.png}
+%
+%    Finally the \(0.16 pc\) voxel, which should have an intensity profile similar to the benchmark profile of a single clump, is greater by about a factor of 4.
+%    There are also different transitions that are saturated ().
+%
+%    \includegraphics*[width=\linewidth]{voxel_single-clump_fv-calc-opacity-pexp.png}
+%
+%    \pagebreak
+%
+%    \subsection{Summary/Issues}
+%
+%    In the end the implementation that appears successful is the original calculation, but including the correction for over-filled voxels and applying the probabilities to \(\kappa\) rather than \(e^{-\kappa \Delta s}\).
+%    This is not the end of the issue, though.
+%    As noted by Markus, the intensity value used in the plots is the integrated intensity.
+%    That means the intensity profile of the single clump used in the calculation is incorrect.
+%    It could very-well be that the proposed corrected voxel-averaged calculations would work if the code uses the correct clump emissivity/opacity.
+%    To that end, I guess I have a question for Markus: is it possible to get the maximum emissivity/opacity of the clumps in the grid (which is assumed to be the peak of a Gaussian with \(\sigma_{cl} \approx 0.71 \frac{km}{s}\))?
+%
+    \newpage
 
-    Setting all flags to false will perform the original calculation, which for a partially-filled voxel acts as a benchmark.
-    The issue noted by Yoko, however, was for a voxel with \(f_V \gtrsim 4\).
-    This case is thus included to show how the error was identified.
-    The absorption feature in C\(\mathsc{ii}\) is the error that we will be tracking.
+    \subsection{Original calculation} \label{original calc}
+    Here we will see the original form of the calculation, which tries to treat clump intensities as additive. As seen, there is a strange absorption feature for the C\textsc{ii} \(1 \rightarrow 0\) and O\textsc{i} 163 \(\mu\)m transitions.
 
-    \includegraphics*[width=\linewidth]{voxel_error_original.png}
+    \includegraphics*[width=\linewidth]{voxel_single-clump_fv_new.png} \\
 
-    \subsection{Using the correct \(f_V\)}
+    \subsection{Revised calculation} \label{revised calc}
+    Fixing the calculation to correctly treat the clump emissivities as additive, we see that the self-absorption features are still apparent for the C\textsc{ii} \(1 \rightarrow 0\) and O\textsc{i} 163 \(\mu\)m transitions.
 
-    In this model we set \texttt{test\_fv} True while keeping the other flags False.
-    This should be the correct calculation of an over-filled voxel using the old calculation.
+    \includegraphics*[width=\linewidth]{voxel_single-clump_fv-calc_new.png} \\
 
-    \includegraphics*[width=\linewidth]{voxel_error_fv.png}
+    \newpage
 
-    \subsection{Setting \texttt{test\_fv} and \texttt{test\_pexp}}
+    \subsection{Convergence test} \label{convergence}
+    Another issue that might exist is that the internal velocity grid is too coarse.
+    To this end, I implemented an option to change \(n_{velocity}\), which affects the internal velocity grid spacing calculation (\(\delta v = \frac{\sigma_{ens,j}}{n_{velocity}}\)).
+    Below I show the convergence of the integrated intensity \(\varpi\) for a few transitions. \\
 
-    Here I test the validity of the way the probability approach is applied to the opacity.
-    This test uses the probability on the \(\tau_\nu\) rather than \(e^{-\tau_\nu}\).
-    It can be seen that this test correctly removes the absorption features, however it is at the expense of a slightly-reduced intensity.
-    The slightly-reduced intensity is understandable considering the result without setting \texttt{test\_fv} was not physically correct.
+    \includegraphics*[width=\linewidth]{voxel_convergence_n_velocity.png} \\
 
-    \includegraphics*[width=\linewidth]{voxel_error_fv-pexp.png}
+    \includegraphics*[width=\linewidth]{voxel_convergence_n_velocity2.png} \\
 
-    \subsection{Setting \texttt{test\_fv}, \texttt{test\_calc}, and \texttt{test\_opacity}}
+    Clearly there should be a smaller step size for the internal velocity grid (\(n_{velocity} = 10\) seems sufficient).
+    What is quite alarming is the difference in the converged \(\varpi\) for the new calculation and the old calculation.
+    We can now recalculate the voxels in \S \ref{original calc} and \S \ref{revised calc}.
 
-    Here we test the new calculation applied to both \(\epsilon_\nu\) and \(\kappa_\nu\).
 
-    \includegraphics*[width=\linewidth]{voxel_error_fv-calc-opacity.png}
+    \includegraphics*[width=\linewidth]{voxel_single-clump_fv_n10.png} \\
 
-    \subsection{Setting \texttt{test\_fv} and \texttt{test\_calc}}
+    \includegraphics*[width=\linewidth]{voxel_single-clump_fv-calc_n10.png} \\
 
-    Here we test the new calculation applied just to \(\epsilon_\nu\), but \(<\kappa_\nu>\) is still calculated from \(<\tau_\nu>\) like in the old calculation.
+    \subsection{Summary/Issues}
 
-    \includegraphics*[width=\linewidth]{voxel_error_fv-calc-opacity.png}
-
-    \subsection{Setting \texttt{test\_fv}, \texttt{test\_calc}, \texttt{test\_opacity}, and \texttt{test\_pexp}}
-
-    Finally we calculate a model setting all of the flags.
-    This also correctly results in the desired plateaux, but the relative intensities are different (since C\textsc{ii} is now larger than O\textsc{i}).
-
-    \includegraphics*[width=\linewidth]{voxel_error_fv-calc-opacity-pexp.png}
+%    In the end the implementation that appears successful is the original calculation, but including the correction for over-filled voxels and applying the probabilities to \(\kappa\) rather than \(e^{-\kappa \Delta s}\).
+    The issue appears to be in the internal velocity grid spacing \(\delta v_j\).
+    This fixes the self-absorption effect in both the original and the revised calculations.
+    The issue is now that the new calculations give a much higher intensity for the transitions that had these self-absorption features.
+    This is not the end of the issue, though.
+    As noted by Markus a month ago, the intensity value used in the plots is the integrated intensity.
+    That means the intensity profile of the single clump used in the calculation is incorrect.
+    It could very-well be that the difference between these calculations would decrease if the code uses the correct clump emissivity/opacity.
+    To that end, I guess I have a question for Markus: is it possible to get the maximum emissivity/opacity of the clumps in the grid (which is assumed to be the peak of a Gaussian with velocity dispersion \(\sigma_{cl} \approx 0.71 \frac{km}{s}\))?
 
 \end{document}
