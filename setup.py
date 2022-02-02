@@ -5,7 +5,7 @@ with open('README.md', 'r') as f:
 
 setup(
                            name = 'kosmatau3d',
-                        version = '1.0.1',
+                        version = '1.0.2',
                     description = 'package for the subgrid modelling of photo-dissociation regions using KOSMA-tau',
                             url = 'https://git.ph1.uni-koeln.de/yanitski/kosma-tau-3d',
                          author = 'C.N. Yanitski',
