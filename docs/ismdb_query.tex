@@ -1,0 +1,50 @@
+\documentclass[a4paper]{article}
+\usepackage[T1]{fontenc}
+\usepackage[utf8]{inputenc}
+\usepackage[top=2.5cm,left=3cm,right=3cm,bottom=2.5cm,dvips]{geometry}
+
+\newcommand{\kosmatau}{\texttt{KOSMA-\(\tau\)}}
+\newcommand{\kttd}{\texttt{kosmatau3d}}
+
+\begin{document}
+	
+    \title{The interaction of \texttt{kosmatau3d} with ISMDB}
+    \author{Craig Yanitski}
+    \date{}
+    \maketitle
+
+    The three-dimensional PDR modelling code \kttd, based on \kosmatau, will need to interact with ISMDB\footnote{https://ismdb.obspm.fr/} in order to download the required data.
+    From what I can find thus-far, the functionality of ISMDB is to give the appropriate parameters to download the data for each model individually.
+    (ex. For an isochoric model with \(\chi=10\), \(n_H=35\), and \(A_V=10\) the model ID \texttt{P154G3\_n\_r1e1n3p5e1A1e1}, and the downloadable data has an additional suffix depending on the data type.)
+    This allows one to examine the profile of various properties such as density, abundance, charge grain, etc.
+    Technically this is also possible for \kosmatau.
+    I have written python code using \texttt{requests} and \texttt{beautifulsoup} to determine the available grids and access the data, but it is far from efficient.%
+
+	\hfill \\
+
+    What I need to make {\kttd} work is a complete grid with results from multiple models (Currently I have a parameter space spanning 1225 models with a few holes).
+    Due to the spherical structure of the {\kosmatau} model and how it is implemented in \kttd, I will require simple clump-averaged surface values.
+    The ideal method to perform such a task is to query the database specifying the input parameter space and type of output data.
+    It is not downloading each model's data individually, but to send some SQL query to ISMDB and retrieving a data file (for example by using \texttt{requests} in python).
+    This is normally handled in python using \texttt{astroquery}.
+    This will not work for a new database, but its functionality can be inherited by whatever function I write.
+    The main advantage is that I can query the database with minimal 'brute force' attempts to determine the database structure and available parameter space.
+    The primary issue is whether this is possible in ISMDB.%
+    
+    \hfill \\
+
+    So far the type of queries that I will send to the database will have the logspace parameters metalicity, surface hydrogen density, hydrogen mass, far-UV radiation, and primary cosmic ray ionisation rate as input parameters, and output will be intensity, optical depth, and far-UV extinction.
+    Each row in the data output will have a column for each input parameter, followed by the output data.
+    For the getting the \(A_{FUV}\), this is independent of the far-UV radiation and cosmic ray ionisation rate and has just one output value.
+    The intensities and optical depths, however, will contain all of the input parameters and have an output for each transition\footnote{Currently I have 171 transitions, but this depends on the model.} in the model.
+    This also applies to the values at all of the 333 dust wavelengths.
+    In the end, the current grid files in {\kttd} range in size from 3 kB to 12 MB.%
+    
+    \hfill \\
+    
+    Ideally I should be able to query ISMDB specifying the parameter space and desired transitions, and it should be able to return a plaintext table of the data.
+    In principle this should not be a static parameter space that will be queried, but I should be able to specify the input and output parameters in the SQL query.
+    For example it will be useful to use the number densities or temperature as input parameters or output data.
+    There should also be a way to ask the database what parameters are available.%
+    
+\end{document}
