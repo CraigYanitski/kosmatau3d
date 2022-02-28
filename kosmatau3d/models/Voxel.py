@@ -63,6 +63,7 @@ class Voxel(object):
         self.test_opacity = False
         self.test_pexp = False
         self.test_fv = False
+        self.suggested_calc = True
 
         return
   
@@ -157,7 +158,7 @@ class Voxel(object):
     def setProperties(self, voxel_size=1, molecules='all', dust='PAH', alpha=1.84, gamma=2.31, clumpMassNumber=[3,1],
                       clumpMassRange=[[0,2],[-2]], clumpNmax=[1, 100], velocityRange=[-10,10], velocityNumber=51,
                       ensembleMass=100, velocity=0., ensembleDispersion=1, velocity_resolution=3, volumeFactor=None,
-                      ensembleDensity=[15000, 1911], FUV=[20000, 1], crir=2e-16,
+                      ensembleDensity=[15000, 1911], FUV=[20000, 1], crir=2e-16, suggested_calc=True,
                       from_grid=False, new_grid=False, change_interpolation=False,
                       timed=False, verbose=False, debug=False):
         '''
@@ -228,7 +229,9 @@ class Voxel(object):
                the local rate is used (2e-16).
     
          GENERAL FLAGS
-    
+
+         suggested_calc: This flag is used to specify the corrected version of the calculation
+                         should be used. It is True by default.
          fromFile: This flag can be set to retrieve the voxel properties from a file. It is
                    False by default.
          verbose: This is mainly used for debugging purposes. It prints various statements
@@ -247,6 +250,8 @@ class Voxel(object):
         
         if timed:
             t0 = time()
+
+        self.suggested_calc = suggested_calc
     
         x, y = np.meshgrid(np.linspace(self.__x-.5*constants.voxel_size, self.__x+.5*constants.voxel_size, 3),
                            np.linspace(self.__y-.5*constants.voxel_size, self.__y+.5*constants.voxel_size, 3))
@@ -325,7 +330,8 @@ class Voxel(object):
             # if fuv[i]==None: fuv[i] = self.__FUV
     
         masspoints.setMasspointData(density=self.__ensembleDensity, FUV=self.__FUV, crir=self.__crir)
-        ensemble.initialise(ensembledispersion=self.__ensembleDispersion, ensemblemass=self.__ensembleMass)
+        ensemble.initialise(ensembledispersion=self.__ensembleDispersion, ensemblemass=self.__ensembleMass,
+                            suggested_calc=self.suggested_calc)
         combinations.initialise(clumpcombination=[ensemble.clumpCombinations[ens][ensemble.clumpLargestIndex[ens]]
                                                   for ens in range(len(constants.clumpMassNumber))])
         
@@ -421,7 +427,8 @@ class Voxel(object):
             self.__logger.info('Masspoint emission calculated:',format(t1-t0))
         
         combinations.calculateEmission(test_calc=test_calc, test_opacity=test_opacity,
-                                       test_fv=test_fv, f_v=self.__volumeFactor)
+                                       test_fv=test_fv, f_v=self.__volumeFactor,
+                                       suggested_calc=self.suggested_calc)
         
         if timed:
             t2 = time()
@@ -444,128 +451,138 @@ class Voxel(object):
             vel = constants.velocityRange   # v_obs
             clumpVel = ensemble.clumpVelocities[ens]   # v_sys
             # print(vel.shape, clumpVel.shape)
-            nv = np.abs(vel-self.__velocity) <= 4*np.maximum(self.__ensembleDispersion[ens],
-                                                             constants.clumpDispersion)
-            factor = 1/np.sqrt(2*np.pi*constants.clumpDispersion**2) \
-                     * np.exp(-(vel[nv].reshape(1, -1)-clumpVel.reshape(-1, 1)-self.__velocity)**2
-                              /2/constants.clumpDispersion**2)
-            
-            # clumpIntensity[ens] = np.zeros((ensemble.clumpVelocities[ens].size,
-            #                                 constants.velocityRange.size,
-            #                                 combinations.clumpIntensity[ens].shape[0],
-            #                                 combinations.clumpIntensity[ens].shape[1]))
-            # clumpIntensityDust[ens] = np.zeros((constants.velocityRange.size,
-            #                                     combinations.clumpIntensity[ens].shape[0],
-            #                                     combinations.clumpIntensity[ens].shape[1]))
-            # clumpOpticalDepth[ens] = np.zeros((ensemble.clumpVelocities[ens].size,
-            #                                    constants.velocityRange.size,
-            #                                    combinations.clumpIntensity[ens].shape[0],
-            #                                    combinations.clumpIntensity[ens].shape[1]))
-            # clumpOpticalDepthDust[ens] = np.zeros((constants.velocityRange.size,
-            #                                        combinations.clumpIntensity[ens].shape[0],
-            #                                        combinations.clumpIntensity[ens].shape[1]))
-      
-            if nv.any():
-            
+            if self.suggested_calc:
                 for i, probability in enumerate(ensemble.clumpProbability[ens]):
-          
-                    if timed:
-                        t3 = time()
-                        self.__logger.info('Start I_xi calculation:'.format(t3-t2))
-            
-                    intensity = copy(combinations.clumpIntensity[ens][:, iDust:])
-                    # shape (v_obs, combination, wavelength)
-                    intensity = np.array([intensity*factor[ensemble.clumpIndeces[ens][i], j]
-                                          for j in range(factor.shape[1])])
-                    # shape (v_sys, v_obs, combination, wavelength)
-                    clumpIntensity[ens].append(np.array([(probability.prod(1)/probability.prod(1).sum(0) *
-                                                          intensity[j].T).T
-                                                         for j in range(factor.shape[1])]))
-                    # shape (combination, wavelength)
-                    intensityDust = copy(combinations.clumpIntensity[ens][:, :iDust])
-                    # shape (v_obs, combination, wavelength)
-                    clumpIntensityDust[ens].append((probability.prod(1)/probability.prod(1).sum(0)
-                                                    * intensityDust.T).T)
-            
-                    opticalDepth = copy(combinations.clumpOpticalDepth[ens][:, iDust:])
-                    opticalDepth = np.array([opticalDepth*factor[ensemble.clumpIndeces[ens][i], j]
-                                             for j in range(factor.shape[1])])
-                    opticalDepthDust = copy(combinations.clumpOpticalDepth[ens][:, :iDust])
-                    if self.test_pexp:
-                        clumpOpticalDepthDust[ens].append((probability.prod(1)/probability.prod(1).sum(0)
-                                                           * opticalDepthDust.T).T)
-                        clumpOpticalDepth[ens].append(np.array([(probability.prod(1)/probability.prod(1).sum(0)
-                                                                 * opticalDepth[j].T).T
-                                                                for j in range(factor.shape[1])]))
-                    elif self.test_opacity:
-                        clumpOpticalDepthDust[ens].append((probability.prod(1)/probability.prod(1).sum(0)
-                                                           * np.exp(-opticalDepthDust.T
-                                                                    *constants.voxel_size*f_ds[ens])).T)
-                        clumpOpticalDepth[ens].append(np.array([(probability.prod(1)/probability.prod(1).sum(0)
-                                                                 * np.exp(-opticalDepth[j].T
-                                                                          *constants.voxel_size*f_ds[ens])).T
-                                                                for j in range(factor.shape[1])]))
-                    else:
-                        clumpOpticalDepthDust[ens].append((probability.prod(1)/probability.prod(1).sum(0)
-                                                           * np.exp(-opticalDepthDust.T)).T)
-                        clumpOpticalDepth[ens].append(np.array([(probability.prod(1)/probability.prod(1).sum(0)
-                                                                 * np.exp(-opticalDepth[j].T)).T
-                                                                for j in range(factor.shape[1])]))
-            
-                    if timed:
-                        t4 = time()
-                        self.__logger.info('End I_xi calculation:'.format(t4-t3))
-          
-                # All of these have shape (velocity, wavelength)
-                self.__intensitySpecies[ens][nv, :] = self.__intensitySpecies[ens][nv, :] + \
-                                                      (np.array(clumpIntensity[ens]).sum(2)
-                                                       ).sum(0).astype(constants.dtype)
-                # self.__intensityDust[ens][:,:] = self.__intensityDust[ens][:,:] +
-                #                                  np.array([np.array(clumpIntensityDust[ens]).sum(1).sum(0)
-                #                                  for _ in range(factor.shape[1])]).astype(constants.dtype)
-                # self.__opticalDepthDust[ens][:,:] = self.__opticalDepthDust[ens][:,:] +
-                #                                     np.array([-np.log(np.array(clumpOpticalDepthDust[ens]).sum(1)).sum(0)
-                #                                     for _ in range(factor.shape[1])]).astype(constants.dtype)
-                #                                     (factor.shape[1])]).astype(constants.dtype)
-                self.__intensityDust[ens][:, :] = (self.__intensityDust[ens][:, :] +
-                                                   np.array([np.array(clumpIntensityDust[ens]).sum(1).sum(0)
-                                                             for _ in range(self.__intensityDust[ens].shape[0])
-                                                             ]).astype(constants.dtype))
-                if self.test_pexp:
-                    self.__opticalDepthSpecies[ens][nv, :] = self.__opticalDepthSpecies[ens][nv, :] + \
-                                                             (np.array(clumpOpticalDepth[ens]).sum(2)
-                                                              ).sum(0).astype(constants.dtype)
-                    self.__opticalDepthDust[ens][:, :] = (self.__opticalDepthDust[ens][:, :] +
-                                                          np.array([np.array(clumpOpticalDepthDust[ens]).sum(1).sum(0)
-                                                                    for _ in range(self.__opticalDepthDust[ens].shape[0])
-                                                                    ]).astype(constants.dtype))
-                else:
-                    self.__opticalDepthSpecies[ens][nv, :] = self.__opticalDepthSpecies[ens][nv, :] + \
-                                                             (-np.log(np.array(clumpOpticalDepth[ens]).sum(2))
-                                                              ).sum(0).astype(constants.dtype)
-                    self.__opticalDepthDust[ens][:, :] = (self.__opticalDepthDust[ens][:, :] +
-                                                          np.array([-np.log(np.array(clumpOpticalDepthDust[ens]).sum(1)
-                                                                            ).sum(0)
-                                                                    for _ in range(self.__opticalDepthDust[ens].shape[0])
-                                                                    ]).astype(constants.dtype))
-          
-                if iDust > 1:
-                    intensityDustInterp = interp1d(constants.wavelengths[constants.nDust],
-                                                   self.__intensityDust[ens].max(0), fill_value='extrapolate')
-                    opticalDepthDustInterp = interp1d(constants.wavelengths[constants.nDust],
-                                                      self.__opticalDepthDust[ens].max(0), fill_value='extrapolate')
-          
-                for i, transition in enumerate(species.moleculeWavelengths):
-                    if iDust > 1:
-                        self.__intensitySpecies[ens][:, i] += intensityDustInterp(transition)
-                        self.__opticalDepthSpecies[ens][:, i] += opticalDepthDustInterp(transition)
-                    else:
-                        self.__intensitySpecies[ens][:, i] += self.__intensityDust[ens].max()
-                        self.__opticalDepthSpecies[ens][:, i] += self.__opticalDepthDust[ens].max()
-            
+                    i_nan = combinations.clumpOpticalDepth[ens][i] == 0
+                    intensity_comb = copy(combinations.clumpIntensity)
+                    intensity_comb[~i_nan] = (intensity_comb[~i_nan] / combinations.clumpOpticalDepth[~i_nan]
+                                              * (1-np.exp(-combinations.clumpOpticalDepth[~i_nan])))
+                    clumpIntensity.append((probability.prod(1)/probability.prod(1).sum(0)*intensity_comb.T).T)
+                    clumpOpticalDepth.append(-np.log(probability.prod(1)/probability.prod(1).sum(0)
+                                                     *np.exp(-combinations.clumpOpticalDepth[ens].T)).T)
             else:
-                self.__logger.warning('Voxel with velocity {} not within given observing velocity range.'
-                                      .format(self.__velocity))
+                nv = np.abs(vel-self.__velocity) <= 4*np.maximum(self.__ensembleDispersion[ens],
+                                                                 constants.clumpDispersion)
+                factor = 1/np.sqrt(2*np.pi*constants.clumpDispersion**2) \
+                         * np.exp(-(vel[nv].reshape(1, -1)-clumpVel.reshape(-1, 1)-self.__velocity)**2
+                                  /2/constants.clumpDispersion**2)
+
+                # clumpIntensity[ens] = np.zeros((ensemble.clumpVelocities[ens].size,
+                #                                 constants.velocityRange.size,
+                #                                 combinations.clumpIntensity[ens].shape[0],
+                #                                 combinations.clumpIntensity[ens].shape[1]))
+                # clumpIntensityDust[ens] = np.zeros((constants.velocityRange.size,
+                #                                     combinations.clumpIntensity[ens].shape[0],
+                #                                     combinations.clumpIntensity[ens].shape[1]))
+                # clumpOpticalDepth[ens] = np.zeros((ensemble.clumpVelocities[ens].size,
+                #                                    constants.velocityRange.size,
+                #                                    combinations.clumpIntensity[ens].shape[0],
+                #                                    combinations.clumpIntensity[ens].shape[1]))
+                # clumpOpticalDepthDust[ens] = np.zeros((constants.velocityRange.size,
+                #                                        combinations.clumpIntensity[ens].shape[0],
+                #                                        combinations.clumpIntensity[ens].shape[1]))
+
+                if nv.any():
+
+                    for i, probability in enumerate(ensemble.clumpProbability[ens]):
+
+                        if timed:
+                            t3 = time()
+                            self.__logger.info('Start I_xi calculation:'.format(t3-t2))
+
+                        intensity = copy(combinations.clumpIntensity[ens][:, iDust:])
+                        # shape (v_obs, combination, wavelength)
+                        intensity = np.array([intensity*factor[ensemble.clumpIndeces[ens][i], j]
+                                              for j in range(factor.shape[1])])
+                        # shape (v_sys, v_obs, combination, wavelength)
+                        clumpIntensity[ens].append(np.array([(probability.prod(1)/probability.prod(1).sum(0) *
+                                                              intensity[j].T).T
+                                                             for j in range(factor.shape[1])]))
+                        # shape (combination, wavelength)
+                        intensityDust = copy(combinations.clumpIntensity[ens][:, :iDust])
+                        # shape (v_obs, combination, wavelength)
+                        clumpIntensityDust[ens].append((probability.prod(1)/probability.prod(1).sum(0)
+                                                        * intensityDust.T).T)
+
+                        opticalDepth = copy(combinations.clumpOpticalDepth[ens][:, iDust:])
+                        opticalDepth = np.array([opticalDepth*factor[ensemble.clumpIndeces[ens][i], j]
+                                                 for j in range(factor.shape[1])])
+                        opticalDepthDust = copy(combinations.clumpOpticalDepth[ens][:, :iDust])
+                        if self.test_pexp:
+                            clumpOpticalDepthDust[ens].append((probability.prod(1)/probability.prod(1).sum(0)
+                                                               * opticalDepthDust.T).T)
+                            clumpOpticalDepth[ens].append(np.array([(probability.prod(1)/probability.prod(1).sum(0)
+                                                                     * opticalDepth[j].T).T
+                                                                    for j in range(factor.shape[1])]))
+                        elif self.test_opacity:
+                            clumpOpticalDepthDust[ens].append((probability.prod(1)/probability.prod(1).sum(0)
+                                                               * np.exp(-opticalDepthDust.T
+                                                                        *constants.voxel_size*f_ds[ens])).T)
+                            clumpOpticalDepth[ens].append(np.array([(probability.prod(1)/probability.prod(1).sum(0)
+                                                                     * np.exp(-opticalDepth[j].T
+                                                                              *constants.voxel_size*f_ds[ens])).T
+                                                                    for j in range(factor.shape[1])]))
+                        else:
+                            clumpOpticalDepthDust[ens].append((probability.prod(1)/probability.prod(1).sum(0)
+                                                               * np.exp(-opticalDepthDust.T)).T)
+                            clumpOpticalDepth[ens].append(np.array([(probability.prod(1)/probability.prod(1).sum(0)
+                                                                     * np.exp(-opticalDepth[j].T)).T
+                                                                    for j in range(factor.shape[1])]))
+
+                        if timed:
+                            t4 = time()
+                            self.__logger.info('End I_xi calculation:'.format(t4-t3))
+
+                    # All of these have shape (velocity, wavelength)
+                    self.__intensitySpecies[ens][nv, :] = self.__intensitySpecies[ens][nv, :] + \
+                                                          (np.array(clumpIntensity[ens]).sum(2)
+                                                           ).sum(0).astype(constants.dtype)
+                    # self.__intensityDust[ens][:,:] = self.__intensityDust[ens][:,:] +
+                    #                                  np.array([np.array(clumpIntensityDust[ens]).sum(1).sum(0)
+                    #                                  for _ in range(factor.shape[1])]).astype(constants.dtype)
+                    # self.__opticalDepthDust[ens][:,:] = self.__opticalDepthDust[ens][:,:] +
+                    #                                     np.array([-np.log(np.array(clumpOpticalDepthDust[ens]).sum(1)).sum(0)
+                    #                                     for _ in range(factor.shape[1])]).astype(constants.dtype)
+                    #                                     (factor.shape[1])]).astype(constants.dtype)
+                    self.__intensityDust[ens][:, :] = (self.__intensityDust[ens][:, :] +
+                                                       np.array([np.array(clumpIntensityDust[ens]).sum(1).sum(0)
+                                                                 for _ in range(self.__intensityDust[ens].shape[0])
+                                                                 ]).astype(constants.dtype))
+                    if self.test_pexp:
+                        self.__opticalDepthSpecies[ens][nv, :] = self.__opticalDepthSpecies[ens][nv, :] + \
+                                                                 (np.array(clumpOpticalDepth[ens]).sum(2)
+                                                                  ).sum(0).astype(constants.dtype)
+                        self.__opticalDepthDust[ens][:, :] = (self.__opticalDepthDust[ens][:, :] +
+                                                              np.array([np.array(clumpOpticalDepthDust[ens]).sum(1).sum(0)
+                                                                        for _ in range(self.__opticalDepthDust[ens].shape[0])
+                                                                        ]).astype(constants.dtype))
+                    else:
+                        self.__opticalDepthSpecies[ens][nv, :] = self.__opticalDepthSpecies[ens][nv, :] + \
+                                                                 (-np.log(np.array(clumpOpticalDepth[ens]).sum(2))
+                                                                  ).sum(0).astype(constants.dtype)
+                        self.__opticalDepthDust[ens][:, :] = (self.__opticalDepthDust[ens][:, :] +
+                                                              np.array([-np.log(np.array(clumpOpticalDepthDust[ens]).sum(1)
+                                                                                ).sum(0)
+                                                                        for _ in range(self.__opticalDepthDust[ens].shape[0])
+                                                                        ]).astype(constants.dtype))
+
+                    if iDust > 1:
+                        intensityDustInterp = interp1d(constants.wavelengths[constants.nDust],
+                                                       self.__intensityDust[ens].max(0), fill_value='extrapolate')
+                        opticalDepthDustInterp = interp1d(constants.wavelengths[constants.nDust],
+                                                          self.__opticalDepthDust[ens].max(0), fill_value='extrapolate')
+
+                    for i, transition in enumerate(species.moleculeWavelengths):
+                        if iDust > 1:
+                            self.__intensitySpecies[ens][:, i] += intensityDustInterp(transition)
+                            self.__opticalDepthSpecies[ens][:, i] += opticalDepthDustInterp(transition)
+                        else:
+                            self.__intensitySpecies[ens][:, i] += self.__intensityDust[ens].max()
+                            self.__opticalDepthSpecies[ens][:, i] += self.__opticalDepthDust[ens].max()
+
+                else:
+                    self.__logger.warning('Voxel with velocity {} not within given observing velocity range.'
+                                          .format(self.__velocity))
 
         if self.test_calc:
             self.__emissivity_species = deepcopy(self.__intensitySpecies)
