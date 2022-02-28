@@ -23,11 +23,11 @@ It can be either a clump or an interclump ensemble.
 '''
 
 
-def initialise(ensembledispersion=0, ensemblemass=0, verbose=False):
+def initialise(ensembledispersion=0, ensemblemass=0, suggested_calc=True, verbose=False):
     if verbose:
         print('Ensemble instance initialised\n')
     ensemble.clumpMass = ensemblemass
-    createCombinationObjects(ensembledispersion, dtype=constants.dtype)
+    createCombinationObjects(ensembledispersion, dtype=constants.dtype, suggested_calc=suggested_calc)
     return
 
 
@@ -99,7 +99,7 @@ def calculateCombinations(clumpN, test=True, verbose=False):
     return combinations
 
 
-def createCombinationObjects(ensembleDispersion, dtype=np.float64, verbose=False, debug=False):
+def createCombinationObjects(ensembleDispersion, dtype=np.float64, suggested_calc=True, verbose=False, debug=False):
     '''
     This function removes all of the unnecessary degenerate looping during this calculation.
     Of course it is possible because of the wonders of numpy.ndarray(). . .
@@ -145,9 +145,14 @@ def createCombinationObjects(ensembleDispersion, dtype=np.float64, verbose=False
                                                                  velocityStep).astype(np.int)+1)
         # print(ensemble.clumpVelocities[ens].size)
         velocityStep = ensemble.clumpVelocities[ens][1]-ensemble.clumpVelocities[ens][0]
-        ensemble.clumpDeltaNji[ens] = (np.array(ensemble.clumpNj[ens]).T/np.sqrt(2*np.pi)/system_dispersion *
-                                       (np.exp(-0.5*(ensemble.clumpVelocities[ens]/system_dispersion)**2)).T *
-                                       velocityStep)
+        if suggested_calc:
+            ensemble.clumpDeltaNji[ens] = (np.array(ensemble.clumpNj[ens]).T
+                                           * constants.clumpDispersion/ensembleDispersion[ens] *
+                                           (np.exp(-0.5*(ensemble.clumpVelocities[ens]/ensembleDispersion[ens])**2)).T)
+        else:
+            ensemble.clumpDeltaNji[ens] = (np.array(ensemble.clumpNj[ens]).T/np.sqrt(2*np.pi)/system_dispersion *
+                                           (np.exp(-0.5*(ensemble.clumpVelocities[ens]/system_dispersion)**2)).T *
+                                           velocityStep)
 
         # if ensembleDispersion[ens] > constants.clumpDispersion:
         #     velocityStep = np.minimum(ensembleDispersion[ens]/3, constants.clumpDispersion/3)
