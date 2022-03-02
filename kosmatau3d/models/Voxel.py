@@ -703,7 +703,7 @@ class Voxel(object):
                         eps = []
                         for i in range(self.__emissivity_species[ens].shape[1]):
                             fn = interp1d(self.__clumpVelocities[ens], self.__emissivity_species[ens][:, i],
-                                          kind=kind, fill_value='extrapolate')
+                                          kind=kind, fill_value=0, bounds_error=False)
                             eps.append(fn(constants.velocityRange))
                         epsilon_species.append(np.asarray(eps).T)
                     if include_dust:
@@ -766,7 +766,7 @@ class Voxel(object):
                         kap = []
                         for i in range(self.__absorption_species[ens].shape[1]):
                             fn = interp1d(self.__clumpVelocities[ens], self.__absorption_species[ens][:, i],
-                                          kind=kind, fill_value='extrapolate')
+                                          kind=kind, fill_value=0, bounds_error=False)
                             kap.append(fn(constants.velocityRange))
                         kappa_species.append(np.asarray(kap).T)
                     if include_dust:
@@ -825,7 +825,7 @@ class Voxel(object):
                         tau = []
                         for i in range(self.__opticalDepthSpecies[ens].shape[1]):
                             fn = interp1d(self.__clumpVelocities[ens], self.__opticalDepthSpecies[ens][:, i],
-                                          kind=kind, fill_value='extrapolate')
+                                          kind=kind, fill_value=0, bounds_error=False)
                             tau.append(fn(constants.velocityRange))
                         tau_species.append(np.asarray(tau).T)
                     if include_dust:
@@ -879,7 +879,7 @@ class Voxel(object):
                     else:
                         intensity_species = self.__intensitySpecies[ens]
                         intensity_interp = interp1d(self.__clumpVelocities[ens], intensity_species,
-                                                    kind=kind, fill_value='extrapolate')
+                                                    kind=kind, fill_value=0, bounds_error=False)
                         intensity = intensity_interp(vel)
                 else:
                     vel = self.__clumpVelocities
