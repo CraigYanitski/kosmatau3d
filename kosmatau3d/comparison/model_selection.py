@@ -1,7 +1,7 @@
 import cygrid
 import numpy as np
-import healpy as hp
-import astrokit
+#import healpy as hp
+#import astrokit
 from astropy.io import fits
 from astropy.wcs import WCS
 from astropy.convolution import Gaussian1DKernel, Gaussian2DKernel, convolve

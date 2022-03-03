@@ -473,7 +473,8 @@ class Voxel(object):
                 intensity_comb = copy(combinations.clumpIntensity[ens])
                 i_nan = optical_depth_comb == 0
                 if not i_nan.all():
-                    intensity_comb[~i_nan] = (intensity_comb[~i_nan] / optical_depth_comb[~i_nan]
+                    intensity_comb[~i_nan] = (intensity_comb[~i_nan]
+                                              / (optical_depth_comb[~i_nan]/constants.voxel_size*f_ds[ens])
                                               * (1-np.exp(-optical_depth_comb[~i_nan])))
                 for i, probability in enumerate(ensemble.clumpProbability[ens]):
                     clumpIntensity[ens].append((probability.prod(1)/probability.prod(1).sum(0)
@@ -483,12 +484,12 @@ class Voxel(object):
                 # The intensity and optical depth are arranged as the dust followed by the chemical transitions
                 self.__intensitySpecies[ens] += np.asarray(clumpIntensity[ens])[:, iDust:]
                 self.__opticalDepthSpecies[ens] += np.asarray(clumpOpticalDepth[ens])[:, iDust:]
-                self.__absorption_species[ens] = self.__opticalDepthSpecies[ens] / constants.voxel_size
+                self.__absorption_species[ens] = self.__opticalDepthSpecies[ens] / constants.voxel_size/f_ds[ens]
                 self.__emissivity_species[ens] = (self.__intensitySpecies[ens] * self.__absorption_species[ens]
                                              / (1-np.exp(-self.__opticalDepthSpecies[ens])))
                 self.__intensityDust[ens] += np.asarray(clumpIntensity[ens])[:, :iDust]
                 self.__opticalDepthDust[ens] += np.asarray(clumpOpticalDepth[ens])[:, :iDust]
-                self.__absorption_dust[ens] = self.__opticalDepthDust[ens] / constants.voxel_size
+                self.__absorption_dust[ens] = self.__opticalDepthDust[ens] / constants.voxel_size/f_ds[ens]
                 self.__emissivity_dust[ens] = (self.__intensityDust[ens] * self.__absorption_dust[ens]
                                              / (1-np.exp(-self.__opticalDepthDust[ens])))
 
