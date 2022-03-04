@@ -1,7 +1,5 @@
 import cygrid
 import numpy as np
-#import healpy as hp
-#import astrokit
 from astropy.io import fits
 from astropy.wcs import WCS
 from astropy.convolution import Gaussian1DKernel, Gaussian2DKernel, convolve
@@ -128,6 +126,9 @@ cobe_idl_transitions = np.array(['CO 1', 'CO 2', 'CO 3', 'CO 4', 'C 3', 'CO 5',
 
 
 def determine_rms(hdul, mission='', file=''):
+
+    import astrokit
+
     if mission == 'COGAL':
 
         mean=True
@@ -222,6 +223,8 @@ def regrid_observations(path='/media/hpc_backup/yanitski/projects/pdr/observatio
     :param target_kernel: The kernel to use for regridding.
     :return: Float -- 0 for success; 1 for fail
     '''
+
+    import healpy as hp
 
     if isinstance(mission, str):
         mission = [mission]
