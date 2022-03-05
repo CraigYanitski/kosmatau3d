@@ -160,7 +160,7 @@ class Voxel(object):
                       clumpMassRange=[[0,2],[-2]], clumpNmax=[1, 100], velocityRange=[-10,10], velocityNumber=51,
                       ensembleMass=100, velocity=0., ensembleDispersion=1, velocity_resolution=3, volumeFactor=None,
                       ensembleDensity=[15000, 1911], FUV=[20000, 1], crir=2e-16, suggested_calc=True,
-                      from_grid=False, new_grid=False, change_interpolation=False,
+                      from_grid=False, new_grid=False, change_interpolation=False, dilled=False,
                       timed=False, verbose=False, debug=False):
         '''
           This method calculates the radii assuming an origin of (0,0). It then averages
@@ -281,7 +281,7 @@ class Voxel(object):
             constants.changeDustWavelengths(dust)
             observations.methods.initialise()
             species.addMolecules(molecules)
-            interpolations.initialise()
+            interpolations.initialise_grid(dilled=dilled)
 
         if timed:
             t1 = time()

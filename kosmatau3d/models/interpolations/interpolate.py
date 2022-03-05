@@ -21,15 +21,19 @@ warnings.simplefilter('ignore', category=NumbaDeprecationWarning)
 warnings.simplefilter('ignore', category=NumbaPendingDeprecationWarning)
 
 
-def initialise():
-    interpolations.intensityInterpolation,interpolations.tauInterpolation = calculateGridInterpolation()
-    interpolations.rotationInterpolation = calculateRotationVelocity()
-    interpolations.dispersionInterpolation = 1  # calculateVelocityDispersion()
-    interpolations.densityInterpolation = calculateDensity()
-    interpolations.clumpMassInterpolation = clumpMassProfile()
-    interpolations.interclumpMassInterpolation = interclumpMassProfile()
-    interpolations.FUVextinctionInterpolation = interpolateFUVextinction()
-    interpolations.FUVfieldInterpolation = interpolateFUVfield()
+def initialise_grid(dilled=False):
+    calculateGridInterpolation(dilled=dilled)
+    interpolations.FUVextinctionInterpolation = interpolateFUVextinction(dilled=dilled)
+    return
+
+
+def initialise_model(dilled=False):
+    interpolations.rotationInterpolation = calculateRotationVelocity(dilled=dilled)
+    interpolations.dispersionInterpolation = 1  # calculateVelocityDispersion(dilled=dilled)
+    interpolations.densityInterpolation = calculateDensity(dilled=dilled)
+    interpolations.clumpMassInterpolation = clumpMassProfile(dilled=dilled)
+    interpolations.interclumpMassInterpolation = interclumpMassProfile(dilled=dilled)
+    interpolations.FUVfieldInterpolation = interpolateFUVfield(dilled=dilled)
     # interpolations.eTildeReal = interpolateETildeReal()
     # interpolations.eTildeImaginary = interpolateETildeImaginary()
     interpolations.initialised = True
@@ -59,25 +63,25 @@ def calculateGridInterpolation(verbose=False, dilled=False):
             dustIntensityInterpolation = dill.load(file)
         with open(constants.GRIDPATH + 'dust_tau_interpolation_dilled', 'rb') as file:
             dustTauInterpolation = dill.load(file)
-        interpolations.intensityInterpolation = []
-        interpolations.tauInterpolation = []
+        speciesIntensityInterpolation = []
+        speciesTauInterpolation = []
         for index in species.moleculeIndeces:
-            interpolations.intensityInterpolation.append(intensityInterpolation[index])
-            interpolations.tauInterpolation.append(tauInterpolation[index])
+            speciesIntensityInterpolation.append(intensityInterpolation[index])
+            speciesTauInterpolation.append(tauInterpolation[index])
         if constants.dust:
             interpolations.dustIntensityInterpolation = []
             interpolations.dustTauInterpolation = []
             for i in np.where(constants.nDust)[0]:
                 interpolations.dustIntensityInterpolation.append(copy(dustIntensityInterpolation[i]))
                 interpolations.dustTauInterpolation.append(copy(dustTauInterpolation[i]))
-        return
+        return speciesIntensityInterpolation, speciesTauInterpolation
 
     np.seterr(divide='ignore', invalid='ignore')
     # indeces = species.molecules.getFileIndeces()
     crnmuvI, I = observations.tbCenterline
     crnmuvTau, Tau = observations.tauCenterline
-    intensityInterpolation = []
-    tauInterpolation = []
+    interpolations.intensityInterpolation = []
+    interpolations.tauInterpolation = []
     
     # Correct for the negative emission values (from Silke's code)
     I[I <= 0] = 1e-100
@@ -113,9 +117,9 @@ def calculateGridInterpolation(verbose=False, dilled=False):
             if verbose:
                 print('Creating tau grid interpolation')
             rInterpTau = interpolate.LinearNDInterpolator(crnmuvTau, logTau[:, index])
-            intensityInterpolation.append(rInterpI)
-            tauInterpolation.append(rInterpTau)
-        return intensityInterpolation, tauInterpolation
+            interpolations.intensityInterpolation.append(rInterpI)
+            interpolations.tauInterpolation.append(rInterpTau)
+        return #intensityInterpolation, tauInterpolation
   
     elif constants.interpolation == 'radial' or constants.interpolation == 'cubic':
         if constants.dust:
@@ -129,9 +133,9 @@ def calculateGridInterpolation(verbose=False, dilled=False):
             if verbose:
                 print('Creating tau grid interpolation')
             rInterpTau = interpolate.Rbf(crnmuvTau[:, 0], crnmuvTau[:, 1], crnmuvTau[:, 2], crnmuvTau[:, 3], logTau[:, index])
-            intensityInterpolation.append(rInterpI)
-            tauInterpolation.append(rInterpTau)
-        return intensityInterpolation, tauInterpolation
+            interpolations.intensityInterpolation.append(rInterpI)
+            interpolations.tauInterpolation.append(rInterpTau)
+        return #intensityInterpolation, tauInterpolation
       
     else:
         sys.exit('<<ERROR>>: There is no such method as {} to interpolate the '.format(constants.interpolation) +

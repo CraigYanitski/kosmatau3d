@@ -211,7 +211,7 @@ class VoxelGrid(object):
     def getDimensions(self):
         return self.__shape.getDimensions()
   
-    def calculateEmission(self, index=0, timed=False, verbose=False, debug=False, multiprocessing=0):
+    def calculateEmission(self, index=0, dilled=False, timed=False, verbose=False, debug=False, multiprocessing=0):
         # This will initialise the grid of voxels and calculate their emission. This has to be
         # done in succession for each voxel since the calculations are modular (the temporary
         # voxel terms are changed when calculating different voxels). This can be rerun and it
@@ -221,7 +221,8 @@ class VoxelGrid(object):
             t0 = time()
     
         # print(observations.tauCenterline)
-        interpolations.initialise()
+        interpolations.initialise_grid(dilled=dilled)
+        interpolations.initialise_model(dilled=dilled)
         self.__initialiseGrid()
         
         if timed:
