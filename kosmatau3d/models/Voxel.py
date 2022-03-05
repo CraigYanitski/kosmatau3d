@@ -6,7 +6,7 @@ import numpy as np
 from numba import jit
 from scipy.interpolate import interp1d
 from scipy.optimize import curve_fit
-from logging import getLogger
+from logging import getLogger, DEBUG, INFO, WARNING
 
 from kosmatau3d.models import (
   constants,
@@ -243,11 +243,11 @@ class Voxel(object):
 
         self.__logger = getLogger(__name__)
         if debug:
-            self.__logger.setLevel('DEBUG')
+            self.__logger.setLevel(DEBUG)
         elif verbose:
-            self.__logger.setLevel('INFO')
+            self.__logger.setLevel(INFO)
         else:
-            self.__logger.setLevel('WARNING')
+            self.__logger.setLevel(WARNING)
         
         if timed:
             t0 = time()
@@ -653,10 +653,10 @@ class Voxel(object):
             self.__absorption_dust = [self.__opticalDepthDust[ens]/constants.voxel_size
                                       for ens in range(len(constants.clumpMassNumber))]
 
-        self.__logger.warning('NaN in species intensity: {}'.format(np.isnan(self.__intensitySpecies).any()))
-        self.__logger.warning('NaN in species optical depth: {}'.format(np.isnan(self.__opticalDepthSpecies).any()))
-        self.__logger.warning('NaN in dust intensity: {}'.format(np.isnan(self.__intensityDust).any()))
-        self.__logger.warning('NaN in dust optical depth: {}'.format(np.isnan(self.__opticalDepthDust).any()))
+        self.__logger.info('NaN in species intensity: {}'.format(np.isnan(self.__intensitySpecies).any()))
+        self.__logger.info('NaN in species optical depth: {}'.format(np.isnan(self.__opticalDepthSpecies).any()))
+        self.__logger.info('NaN in dust intensity: {}'.format(np.isnan(self.__intensityDust).any()))
+        self.__logger.info('NaN in dust optical depth: {}'.format(np.isnan(self.__opticalDepthDust).any()))
     
         self.__logger.info('Voxel emission calculated.')
           
@@ -1038,13 +1038,13 @@ class Voxel(object):
 
             print('Total number: {:.4f}'.format(np.trapz(N, vel)))
 
-            fig = plt.figure(figsize=(10, 5))
-            plt.plot(vel, N, marker='o', ms=2, ls='-', lw=1)
-            plt.xlabel(xlabel, fontsize=20)
-            plt.ylabel(ylabel, fontsize=20)
-            plt.title(title.format(ens), fontsize=20)
-            plt.setp(ax.get_xticklabels(), fontsize=14)
-            plt.setp(ax.get_yticklabels(), fontsize=14)
+            fig, ax = plt.subplots(1, 1, figsize=(10, 5))
+            ax.plot(vel, N, marker='o', ms=2, ls='-', lw=1)
+            ax.xlabel(xlabel, fontsize=20)
+            ax.ylabel(ylabel, fontsize=20)
+            ax.title(title.format(ens), fontsize=20)
+            ax.setp(ax.get_xticklabels(), fontsize=14)
+            ax.setp(ax.get_yticklabels(), fontsize=14)
             fig.tight_layout()
             plt.show()
 

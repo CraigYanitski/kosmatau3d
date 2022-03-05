@@ -23,7 +23,7 @@ def dill_grid():
     observations.methods.initialise()
     constants.changeDustWavelengths('all')
     species.addMolecules('all')
-    interpolations.initialise()
+    interpolations.initialise_grid()
     if not os.path.exists(constants.GRIDPATH + 'dilled/'):
         os.mkdir(constants.GRIDPATH + 'dilled/')
     with open(constants.GRIDPATH + 'dilled/intensity_interpolation', 'wb') as file:

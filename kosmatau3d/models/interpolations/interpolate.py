@@ -24,6 +24,7 @@ warnings.simplefilter('ignore', category=NumbaPendingDeprecationWarning)
 def initialise_grid(dilled=False):
     calculateGridInterpolation(dilled=dilled)
     interpolations.FUVextinctionInterpolation = interpolateFUVextinction(dilled=dilled)
+    interpolations.initialised = True
     return
 
 
@@ -36,7 +37,6 @@ def initialise_model(dilled=False):
     interpolations.FUVfieldInterpolation = interpolateFUVfield(dilled=dilled)
     # interpolations.eTildeReal = interpolateETildeReal()
     # interpolations.eTildeImaginary = interpolateETildeImaginary()
-    interpolations.initialised = True
     return
 
 
@@ -54,29 +54,29 @@ def calculateGridInterpolation(verbose=False, dilled=False):
     at 333 wavelengths for the dust continuum. the indeces used for the dust is therefore [170:503], to refer to
     for the corresponding emission indeces.
     '''
+    np.seterr(divide='ignore', invalid='ignore')
     if dilled:
-        with open(constants.GRIDPATH + 'dilled/intensity_interpolation_dilled', 'rb') as file:
+        with open(constants.GRIDPATH + 'dilled/intensity_interpolation', 'rb') as file:
             intensityInterpolation = dill.load(file)
-        with open(constants.GRIDPATH + 'tau_interpolation_dilled', 'rb') as file:
+        with open(constants.GRIDPATH + 'dilled/tau_interpolation', 'rb') as file:
             tauInterpolation = dill.load(file)
-        with open(constants.GRIDPATH + 'dust_intensity_interpolation_dilled', 'rb') as file:
+        with open(constants.GRIDPATH + 'dilled/dust_intensity_interpolation', 'rb') as file:
             dustIntensityInterpolation = dill.load(file)
-        with open(constants.GRIDPATH + 'dust_tau_interpolation_dilled', 'rb') as file:
+        with open(constants.GRIDPATH + 'dilled/dust_tau_interpolation', 'rb') as file:
             dustTauInterpolation = dill.load(file)
-        speciesIntensityInterpolation = []
-        speciesTauInterpolation = []
+        interpolations.intensityInterpolation = []
+        interpolations.tauInterpolation = []
         for index in species.moleculeIndeces:
-            speciesIntensityInterpolation.append(intensityInterpolation[index])
-            speciesTauInterpolation.append(tauInterpolation[index])
+            interpolations.intensityInterpolation.append(intensityInterpolation[index[0][0]])
+            interpolations.tauInterpolation.append(tauInterpolation[index[0][0]])
         if constants.dust:
             interpolations.dustIntensityInterpolation = []
             interpolations.dustTauInterpolation = []
             for i in np.where(constants.nDust)[0]:
                 interpolations.dustIntensityInterpolation.append(copy(dustIntensityInterpolation[i]))
                 interpolations.dustTauInterpolation.append(copy(dustTauInterpolation[i]))
-        return speciesIntensityInterpolation, speciesTauInterpolation
+        return #speciesIntensityInterpolation, speciesTauInterpolation
 
-    np.seterr(divide='ignore', invalid='ignore')
     # indeces = species.molecules.getFileIndeces()
     crnmuvI, I = observations.tbCenterline
     crnmuvTau, Tau = observations.tauCenterline
