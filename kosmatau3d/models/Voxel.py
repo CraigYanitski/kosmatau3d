@@ -485,13 +485,17 @@ class Voxel(object):
                 self.__intensitySpecies[ens] += np.asarray(clumpIntensity[ens])[:, iDust:]
                 self.__opticalDepthSpecies[ens] += np.asarray(clumpOpticalDepth[ens])[:, iDust:]
                 self.__absorption_species[ens] = self.__opticalDepthSpecies[ens] / constants.voxel_size/f_ds[ens]
-                self.__emissivity_species[ens] = (self.__intensitySpecies[ens] * self.__absorption_species[ens]
-                                                  / (1-np.exp(-self.__opticalDepthSpecies[ens])))
+                i_undef = self.__absorption_species[ens] == 0
+                self.__emissivity_species[ens][~i_undef] = (self.__intensitySpecies[ens][~i_undef] * self.__absorption_species[ens][~i_undef]
+                                                  / (1-np.exp(-self.__opticalDepthSpecies[ens][~i_undef])))
+                self.__emissivity_species[ens][i_undef] = self.__intensitySpecies[ens][i_undef]
                 self.__intensityDust[ens] += np.asarray(clumpIntensity[ens])[:, :iDust]
                 self.__opticalDepthDust[ens] += np.asarray(clumpOpticalDepth[ens])[:, :iDust]
                 self.__absorption_dust[ens] = self.__opticalDepthDust[ens] / constants.voxel_size/f_ds[ens]
-                self.__emissivity_dust[ens] = (self.__intensityDust[ens] * self.__absorption_dust[ens]
-                                               / (1-np.exp(-self.__opticalDepthDust[ens])))
+                i_undef = self.__absorption_dust[ens] == 0
+                self.__emissivity_dust[ens][~i_undef] = (self.__intensityDust[ens][~i_undef] * self.__absorption_dust[ens][~i_undef]
+                                               / (1-np.exp(-self.__opticalDepthDust[ens][~i_undef])))
+                self.__emissivity_dust[ens][i_undef] = self.__intensityDust[ens][i_undef]
 
             # The old computation that will soon be removed
             else:
@@ -676,10 +680,11 @@ class Voxel(object):
     def getSpeciesEmissivity(self, kind='gaussian', include_dust=False, fit=True, total=True):
         if self.suggested_calc:
             epsilon_species = []
-            if include_dust and total:
-                epsilon_dust = [self.getDustEmissivity(total=total)]
-            elif include_dust:
-                epsilon_dust = self.getDustEmissivity(total=total)
+            if include_dust:
+                if total:
+                    epsilon_dust = [self.getDustEmissivity(total=total)]
+                else:
+                    epsilon_dust = self.getDustEmissivity(total=total)
             else:
                 pass
             for ens in range(len(constants.clumpMassNumber)):
@@ -702,12 +707,15 @@ class Voxel(object):
                                 eps.append(np.zeros_like(constants.velocityRange))
                         epsilon_species.append(np.asarray(eps).T)
                     else:
-                        eps = []
-                        for i in range(self.__emissivity_species[ens].shape[1]):
-                            fn = interp1d(clump_vel, self.__emissivity_species[ens][:, i],
-                                          kind=kind, fill_value=0, bounds_error=False)
-                            eps.append(fn(constants.velocityRange))
-                        epsilon_species.append(np.asarray(eps).T)
+                        # eps = []
+                        # for i in range(self.__emissivity_species[ens].shape[1]):
+                        #     fn = interp1d(clump_vel, self.__emissivity_species[ens][:, i],
+                        #                   kind=kind, fill_value=0, bounds_error=False)
+                        #     eps.append(fn(constants.velocityRange))
+                        # epsilon_species.append(np.asarray(eps).T)
+                        fn = interp1d(clump_vel, self.__emissivity_species[ens],
+                                      kind=kind, fill_value=0, bounds_error=False, axis=0)
+                        epsilon_species.append(fn(constants.velocityRange))
                     if include_dust:
                         if epsilon_dust[ens].shape[1] > 1:
                             epsilon_dust_interp = interp1d(constants.wavelengths[constants.nDust],
@@ -724,7 +732,7 @@ class Voxel(object):
             if not include_dust:
                 epsilon_dust = self.__emissivity_dust
                 for ens in range(len(constants.clumpMassNumber)):
-                    if epsilon_dust[ens].shape[1] > 1:
+                    if np.where(constants.nDust)[0].size > 1:
                         epsilon_dust_interp = interp1d(constants.wavelengths[constants.nDust],
                                                        epsilon_dust[ens].max(0), fill_value='extrapolate')
                         for i, transition in enumerate(species.moleculeWavelengths):
@@ -740,10 +748,11 @@ class Voxel(object):
     def getSpeciesAbsorption(self, kind='gaussian', include_dust=False, fit=True, total=True):
         if self.suggested_calc:
             kappa_species = []
-            if include_dust and total:
-                kappa_dust = [self.getDustAbsorption(total=total)]
-            elif include_dust:
-                kappa_dust = self.getDustAbsorption(total=total)
+            if include_dust:
+                if total:
+                    kappa_dust = [self.getDustAbsorption(total=total)]
+                else:
+                    kappa_dust = self.getDustAbsorption(total=total)
             else:
                 pass
             for ens in range(len(constants.clumpMassNumber)):
@@ -766,12 +775,15 @@ class Voxel(object):
                                 kap.append(np.zeros_like(constants.velocityRange))
                         kappa_species.append(np.asarray(kap).T)
                     else:
-                        kap = []
-                        for i in range(self.__absorption_species[ens].shape[1]):
-                            fn = interp1d(clump_vel, self.__absorption_species[ens][:, i],
-                                          kind=kind, fill_value=0, bounds_error=False)
-                            kap.append(fn(constants.velocityRange))
-                        kappa_species.append(np.asarray(kap).T)
+                        # kap = []
+                        # for i in range(self.__absorption_species[ens].shape[1]):
+                        #     fn = interp1d(clump_vel, self.__absorption_species[ens][:, i],
+                        #                   kind=kind, fill_value=0, bounds_error=False)
+                        #     kap.append(fn(constants.velocityRange))
+                        # kappa_species.append(np.asarray(kap).T)
+                        fn = interp1d(clump_vel, self.__absorption_species[ens],
+                                      kind=kind, fill_value=0, bounds_error=False, axis=0)
+                        kappa_species.append(fn(constants.velocityRange))
                     if include_dust:
                         if kappa_dust[ens].shape[1] > 1:
                             kappa_dust_interp = interp1d(constants.wavelengths[constants.nDust],
@@ -788,7 +800,7 @@ class Voxel(object):
             if not include_dust:
                 kappa_dust = self.__absorption_dust
                 for ens in range(len(constants.clumpMassNumber)):
-                    if kappa_dust[ens].shape[1] > 1:
+                    if np.where(constants.nDust)[0].size > 1:
                         kappa_dust_interp = interp1d(constants.wavelengths[constants.nDust],
                                                        kappa_dust[ens].max(0), fill_value='extrapolate')
                         for i, transition in enumerate(species.moleculeWavelengths):
@@ -805,7 +817,10 @@ class Voxel(object):
         if self.suggested_calc:
             tau_species = []
             if include_dust:
-                tau_dust = self.getDustOpticalDepth(total=total)
+                if total:
+                    tau_dust = [self.getDustOpticalDepth(total=total)]
+                else:
+                    tau_dust = self.getDustOpticalDepth(total=total)
             for ens in range(len(constants.clumpMassNumber)):
                 if fit:
                     clump_vel = self.__clumpVelocities[ens][self.__clumpVelocityIndeces[ens]]
@@ -826,14 +841,17 @@ class Voxel(object):
                                 tau.append(np.zeros_like(constants.velocityRange))
                         tau_species.append(np.asarray(tau).T)
                     else:
-                        tau = []
-                        for i in range(self.__opticalDepthSpecies[ens].shape[1]):
-                            fn = interp1d(clump_vel, self.__opticalDepthSpecies[ens][:, i],
-                                          kind=kind, fill_value=0, bounds_error=False)
-                            tau.append(fn(constants.velocityRange))
-                        tau_species.append(np.asarray(tau).T)
+                        # tau = []
+                        # for i in range(self.__opticalDepthSpecies[ens].shape[1]):
+                        #     fn = interp1d(clump_vel, self.__opticalDepthSpecies[ens][:, i],
+                        #                   kind=kind, fill_value=0, bounds_error=False)
+                        #     tau.append(fn(constants.velocityRange))
+                        # tau_species.append(np.asarray(tau).T)
+                        fn = interp1d(clump_vel, self.__opticalDepthSpecies[ens],
+                                      kind=kind, fill_value=0, bounds_error=False, axis=0)
+                        tau_species.append(fn(constants.velocityRange))
                     if include_dust:
-                        if tau_dust[ens].shape[1] > 1:
+                        if np.where(constants.nDust)[0].size > 1:
                             tau_dust_interp = interp1d(constants.wavelengths[constants.nDust],
                                                            tau_dust[ens].max(0), fill_value='extrapolate')
                             for i, transition in enumerate(species.moleculeWavelengths):
@@ -884,7 +902,7 @@ class Voxel(object):
                     else:
                         intensity_species = self.__intensitySpecies[ens]
                         intensity_interp = interp1d(clump_vel, intensity_species,
-                                                    kind=kind, fill_value=0, bounds_error=False)
+                                                    kind=kind, fill_value=0, bounds_error=False, axis=0)
                         intensity = intensity_interp(vel)
                 else:
                     vel = clump_vel
@@ -914,7 +932,7 @@ class Voxel(object):
                 intensity[ens][i_nan] = epsilon[ens][i_nan]
 
                 if not include_dust:
-                    if intensity_dust[ens].shape[1] > 1:
+                    if np.where(constants.nDust)[0].size > 1:
                         intensity_dust_interp = interp1d(constants.wavelengths[constants.nDust],
                                                        intensity_dust[ens].max(0), fill_value='extrapolate')
                         for i, transition in enumerate(species.moleculeWavelengths):
@@ -1024,7 +1042,7 @@ class Voxel(object):
             title = 'Clump ensemble {} number'
 
         for ens in range(constants.ensembles):
-            dNj_dvi = combinations.clumpCombination[ens].sum(1)
+            dNj_dvi = combinations.clumpCombination[ens].sum(1)  # Sum over clump types
             if effective or not self.suggested_calc:
                 pass
             else:
@@ -1033,18 +1051,18 @@ class Voxel(object):
             vel = copy(ensemble.clumpVelocities[ens][ensemble.clumpIndeces[ens]])
             N = []
             for i, probability in enumerate(pji):
-                pi = probability.prod(1)/probability.prod(1).sum(0)
-                N.append((pi * dNj_dvi).sum())
+                pi = probability.prod(1)/probability.prod(1).sum(0)  # Product over clump types and normalise
+                N.append((pi * dNj_dvi).sum())  # Sum over combinations
 
             print('Total number: {:.4f}'.format(np.trapz(N, vel)))
 
             fig, ax = plt.subplots(1, 1, figsize=(10, 5))
             ax.plot(vel, N, marker='o', ms=2, ls='-', lw=1)
-            ax.xlabel(xlabel, fontsize=20)
-            ax.ylabel(ylabel, fontsize=20)
-            ax.title(title.format(ens), fontsize=20)
-            ax.setp(ax.get_xticklabels(), fontsize=14)
-            ax.setp(ax.get_yticklabels(), fontsize=14)
+            ax.set_xlabel(xlabel, fontsize=20)
+            ax.set_ylabel(ylabel, fontsize=20)
+            ax.set_title(title.format(ens), fontsize=20)
+            plt.setp(ax.get_xticklabels(), fontsize=14)
+            plt.setp(ax.get_yticklabels(), fontsize=14)
             fig.tight_layout()
             plt.show()
 
