@@ -66,15 +66,23 @@ def calculateGridInterpolation(verbose=False, dilled=False):
             dustTauInterpolation = dill.load(file)
         interpolations.intensityInterpolation = []
         interpolations.tauInterpolation = []
-        for index in species.moleculeIndeces:
-            interpolations.intensityInterpolation.append(intensityInterpolation[index[0][0]])
-            interpolations.tauInterpolation.append(tauInterpolation[index[0][0]])
+        if len(species.moleculeIndeces) == len(intensityInterpolation):
+            interpolations.intensityInterpolation = intensityInterpolation
+            interpolations.tauInterpolation = tauInterpolation
+        else:
+            for index in species.moleculeIndeces:
+                interpolations.intensityInterpolation.append(intensityInterpolation[index[0][0]])
+                interpolations.tauInterpolation.append(tauInterpolation[index[0][0]])
         if constants.dust:
-            interpolations.dustIntensityInterpolation = []
-            interpolations.dustTauInterpolation = []
-            for i in np.where(constants.nDust)[0]:
-                interpolations.dustIntensityInterpolation.append(copy(dustIntensityInterpolation[i]))
-                interpolations.dustTauInterpolation.append(copy(dustTauInterpolation[i]))
+            if np.where(constants.nDust)[0].size == len(dustIntensityInterpolation):
+                interpolations.dustIntensityInterpolation = dustIntensityInterpolation
+                interpolations.dustTauInterpolation = dustTauInterpolation
+            else:
+                interpolations.dustIntensityInterpolation = []
+                interpolations.dustTauInterpolation = []
+                for i in np.where(constants.nDust)[0]:
+                    interpolations.dustIntensityInterpolation.append(copy(dustIntensityInterpolation[i]))
+                    interpolations.dustTauInterpolation.append(copy(dustTauInterpolation[i]))
         return #speciesIntensityInterpolation, speciesTauInterpolation
 
     # indeces = species.molecules.getFileIndeces()
