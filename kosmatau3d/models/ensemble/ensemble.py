@@ -156,80 +156,28 @@ def createCombinationObjects(ensembleDispersion, dtype=np.float64, suggested_cal
             ensemble.clumpDeltaNji[ens] = (np.array(ensemble.clumpNj[ens]).T/np.sqrt(2*np.pi)/system_dispersion *
                                            (np.exp(-0.5*(ensemble.clumpVelocities[ens]/system_dispersion)**2)).T *
                                            velocityStep)
-        # print(ensemble.clumpVelocities[ens].size)
-
-        # if ensembleDispersion[ens] > constants.clumpDispersion:
-        #     velocityStep = np.minimum(ensembleDispersion[ens]/3, constants.clumpDispersion/3)
-        #     # ensemble.clumpVelocities[ens] = np.linspace(-3*ensembleDispersion[ens], 3*ensembleDispersion[ens],
-        #     #                                             num=np.round(6*ensembleDispersion[ens] /
-        #     #                                                          velocityStep).astype(np.int)+1)
-        #     ensemble.clumpVelocities[ens] = np.linspace(-3*ensembleDispersion[ens], 3*ensembleDispersion[ens],
-        #                                                 num=np.round(2*ensembleDispersion[ens] /
-        #                                                              velocityStep).astype(np.int)+1)
-        #     # print(ensemble.clumpVelocities[ens].size)
-        #     velocityStep = ensemble.clumpVelocities[ens][1]-ensemble.clumpVelocities[ens][0]
-        #     ensemble.clumpDeltaNji[ens] = (np.array(ensemble.clumpNj[ens]).T/np.sqrt(2*np.pi)/ensembleDispersion[ens] *
-        #                                    (np.exp(-0.5*(ensemble.clumpVelocities[ens]/ensembleDispersion[ens])**2)).T *
-        #                                    velocityStep)
-        # else:
-        #     ensemble.clumpVelocities[ens] = np.zeros(1)
-        #     ensemble.clumpDeltaNji[ens] = ensemble.clumpNj[ens].T
-        
-        # self.__deltaNji = np.array([self.__deltaNji]).T
         
         warnings.filterwarnings('ignore', category=RuntimeWarning)
     
         # print('\n\nC L U M P S\n\n')
+        pj = np.pi*masspoints.clumpRadius[ens].T**2 / constants.voxel_size**2
+
         if constants.clumpNmax[ens]:
             # scaling factor to set the maximum number of the largest clump
             normalise = constants.clumpNmax[ens]/ensemble.clumpDeltaNji[ens][-1, :]
         else:
-            # normalise = np.ones(ensemble.clumpDeltaNji[ens][-1,:].size, dtype=np.float)
             normalise = np.clip(np.around(ensemble.clumpDeltaNji[ens][-1, :]), 1, None)\
                         / ensemble.clumpDeltaNji[ens][-1, :]
-        # this accounts for NaNs or potential NaNs in the ensuing calculations
-        # i_undef = (normalise == 0) #| ((abs(ensemble.clumpVelocities[ens])/ensembleDispersion[ens]) > 4.74)
-        # normalise[i_undef] = 0
         ensemble.clumpNormalisedDeltaNji[ens] = np.around(ensemble.clumpDeltaNji[ens]*normalise)
-        # print(ensemble.clumpNormalisedDeltaNji[ens])
-        # renormalise = 1.  # np.ones(ensemble.clumpNormalisedDeltaNji[ens].shape)
-        # renormalise = np.around(ensemble.clumpNormalisedDeltaNji[ens])/ensemble.clumpNormalisedDeltaNji[ens]
-        # to remove any rounding error from normalisation
-        pj = np.pi*masspoints.clumpRadius[ens].T**2 / constants.voxel_size**2
-        # ensemble.clumpNormalisedDeltaNji[ens] = np.around(ensemble.clumpNormalisedDeltaNji[ens]*renormalise)
-        # print(ensemble.clumpNormalisedDeltaNji[ens])
-        # this is 'pTab' in the original code
         clumpSurfaceProbability = np.array(pj/normalise)
-        # clumpSurfaceProbability[:, i_undef] = 0
-        i_change = clumpSurfaceProbability >= 1
+        i_change = (clumpSurfaceProbability >= 1).any(0)
         if i_change.any():  # increase voxel size if the clumps are too large
-            if verbose:
-                print('resize')
-            # Comment out to prevent strange rounding feature in self-absorption
-            # resize = np.ceil(np.pi*masspoints.clumpRadius[ens].max()**2/constants.voxel_size**2/normalise)
-            # i_resize = clumpSurfaceProbability >= 1
-            n_resized = np.ceil(ensemble.clumpDeltaNji[ens][-1, i_change]*pj.max()/normalise[i_change])
-            # resize[i_undef] = 0
-            # resize[:,i_undef] = 0
-            normalise[i_change] = n_resized / ensemble.clumpDeltaNji[ens][:, i_change]
-            # ensemble.clumpNormalisedDeltaNji[ens] = ensemble.clumpNormalisedDeltaNji[ens][:, i_resize]*resize
-            # print(ensemble.clumpNormalisedDeltaNji[ens])
-            # renormalise2 = 1.  # np.around(ensemble.clumpNormalisedDeltaNji[ens])/ensemble.clumpNormalisedDeltaNji[ens]
-            # renormalise2[renormalise2==0] = 1.
-            # to remove any rounding error from normalisation
-            # ensemble.clumpNormalisedDeltaNji[ens] = np.around(ensemble.clumpNormalisedDeltaNji[ens][:, i_resize]
-            #                                                   *renormalise2)
+            n_resized = np.ceil(ensemble.clumpDeltaNji[ens][-1, i_change] * pj.max())
+            normalise[i_change] = n_resized / ensemble.clumpDeltaNji[ens][-1, i_change]
             ensemble.clumpNormalisedDeltaNji[ens][:, i_change] = np.around(ensemble.clumpDeltaNji[ens][:, i_change]
                                                                            *normalise[i_change])
-            # print(ensemble.clumpNormalisedDeltaNji[ens])
-            # i_undef = i_undef | (ensemble.clumpNormalisedDeltaNji[ens][-1,:]<1)
-            # clumpSurfaceProbability = np.array(np.pi*masspoints.clumpRadius[ens].T**2/constants.voxel_size**2 /
-            #                                    normalise[i_resize]/resize[i_resize]/renormalise[i_resize]/renormalise2[i_resize])
             clumpSurfaceProbability = np.asarray(pj / normalise)
-            # clumpSurfaceProbability[:, i_undef] = 0
-        # this is 'expectedValTab' in the original code
         clumpProbableNumber = (ensemble.clumpNormalisedDeltaNji[ens]*clumpSurfaceProbability)
-        # this is 'standardDeriTab' in the original code
         clumpStandardDeviation = np.sqrt(ensemble.clumpNormalisedDeltaNji[ens]*clumpSurfaceProbability *
                                          (1-clumpSurfaceProbability))
         
@@ -237,32 +185,26 @@ def createCombinationObjects(ensembleDispersion, dtype=np.float64, suggested_cal
         ensemble.clumpProbableNumber[ens] = clumpProbableNumber
         ensemble.clumpStandardDeviation[ens] = clumpStandardDeviation
     
-        # print('\nClump surface P, Pn, Sn\n',
-        #       clumpSurfaceProbability, '\n\n',
-        #       clumpProbableNumber, '\n\n',
-        #       clumpStandardDeviation, '\n')
-    
         if constants.clumpNmax[ens]:
             # scaling factor to set the maximum number of the largest clump
             normaliseMax = constants.clumpNmax[ens]/ensemble.clumpNj[ens][0,-1]
         else:
-            normaliseMax = np.ceil(ensemble.clumpNj[ens][0, -1]) / ensemble.clumpNj[ens][0, -1]
+            normaliseMax = np.clip(ensemble.clumpNj[ens][0, -1], 1, None) / ensemble.clumpNj[ens][0, -1]
         ensemble.clumpNormalisedNj[ens] = np.around(ensemble.clumpNj[ens]*normaliseMax)
-        # renormaliseMax = np.around(ensemble.clumpNormalisedNj[ens])/ensemble.clumpNormalisedNj[ens]
-        # ensemble.clumpNormalisedNj[ens] = np.around(ensemble.clumpNormalisedNj[ens]*renormaliseMax)
         CLmaxSurfaceProbability = np.array(pj / normaliseMax)
-        i_change = CLmaxSurfaceProbability >= 1
+        i_change = (CLmaxSurfaceProbability >= 1).any(0)
         if i_change.any():
-            # resize = np.ceil(np.pi*masspoints.clumpRadius[ens].max()**2/constants.voxel_size**2/normaliseMax)
-            n_resize = np.array(ensemble.clumpNj[ens][0, -1] * pj.max()/normaliseMax)
-            normaliseMax = np.around(n_resize / ensemble.clumpNj[ens])
+            n_resized = np.ceil(ensemble.clumpNj[ens][0, -1] * pj.max())
+            normaliseMax = n_resized / ensemble.clumpNj[ens][0, -1]
             ensemble.clumpNormalisedNj[ens] = np.around(ensemble.clumpNj[ens]*normaliseMax)
-            # renormaliseMax2 = 1.   # np.around(ensemble.clumpNormalisedNj[ens])/ensemble.clumpNormalisedNj[ens]
-            # ensemble.clumpNormalisedNj[ens] = np.around(ensemble.clumpNormalisedNj[ens]*renormaliseMax2)
-            CLmaxSurfaceProbability = np.array(pj / normaliseMax)
-        CLmaxProbableNumber = (ensemble.clumpNormalisedNj[ens]*CLmaxSurfaceProbability.flatten())
-        CLmaxStandardDeviation = np.sqrt(ensemble.clumpNormalisedNj[ens]*(CLmaxSurfaceProbability *
-                                                                          (1-CLmaxSurfaceProbability)).flatten())
+            CLmaxSurfaceProbability = np.asarray(pj / normaliseMax)
+        CLmaxProbableNumber = (ensemble.clumpNormalisedNj[ens].T*CLmaxSurfaceProbability)
+        CLmaxStandardDeviation = np.sqrt(ensemble.clumpNormalisedNj[ens].T*(CLmaxSurfaceProbability *
+                                                                          (1-CLmaxSurfaceProbability)))
+
+        ensemble.CLmaxSurfaceProbability[ens] = CLmaxSurfaceProbability
+        ensemble.CLmaxProbableNumber[ens] = CLmaxProbableNumber
+        ensemble.CLmaxStandardDeviation[ens] = CLmaxStandardDeviation
     
         warnings.filterwarnings('default', category=RuntimeWarning)
         
@@ -281,21 +223,23 @@ def createCombinationObjects(ensembleDispersion, dtype=np.float64, suggested_cal
                                 np.floor(clumpProbableNumber-constants.n_sigma*clumpStandardDeviation))
         clumpUpper = np.minimum(ensemble.clumpNormalisedDeltaNji[ens],
                                 np.ceil(clumpProbableNumber+constants.n_sigma*clumpStandardDeviation))
-        CLmaxLower = np.maximum(np.zeros([constants.clumpLogMass[ens].size, 1]),
+        CLmaxLower = np.maximum(lower,
                                 np.floor(CLmaxProbableNumber-constants.n_sigma*CLmaxStandardDeviation))
-        CLmaxUpper = np.minimum(ensemble.clumpNormalisedNj[ens],
+        CLmaxUpper = np.minimum(ensemble.clumpNormalisedNj[ens].T,
                                 np.ceil(CLmaxProbableNumber+constants.n_sigma*CLmaxStandardDeviation))
         if verbose:
             print('\nupper,lower:\n', clumpUpper, '\n', clumpLower)
         
         ensemble.clumpNumberRange[ens] = np.array([clumpLower, clumpUpper+1], dtype=np.int).T
-        
+        ensemble.CLmaxNumberRange[ens] = np.array([CLmaxLower, CLmaxUpper+1], dtype=np.int).T
+
         if verbose:
             print('\nMasspoint number range:\n', ensemble.clumpNumberRange[ens].round())
             print('\nMasspoint number range:\n', ensemble.interclumpNumberRange.round())
         
         ensemble.clumpCombinations[ens] = calculateCombinations(ensemble.clumpNumberRange[ens])
-        
+        ensemble.CLmaxCombinations[ens] = calculateCombinations(ensemble.CLmaxNumberRange[ens])
+
         #########################################################################################
     
         if verbose:
@@ -322,11 +266,11 @@ def createCombinationObjects(ensembleDispersion, dtype=np.float64, suggested_cal
         # print(clumpLargestCombination)
         # loop over combinations of masspoints in each velocity bin
         for i,combinations in enumerate(ensemble.clumpCombinations[ens]):
-            ensemble.clumpCombinations[ens][i] = np.array(combinations).T
+            ensemble.clumpCombinations[ens][i] = combinations.T
             probability = np.zeros((ensemble.clumpLargestCombination[ens], constants.clumpLogMass[ens].size),
                                    dtype=dtype)
-            maxProbability = np.zeros((ensemble.clumpLargestCombination[ens], constants.clumpLogMass[ens].size),
-                                      dtype=dtype)
+            # maxProbability = np.zeros((ensemble.clumpLargestCombination[ens], constants.clumpLogMass[ens].size),
+            #                           dtype=dtype)
             combinationIndeces.append(i)
             if verbose:
                 print('\nEnsemble combinations:\n', combinations)
@@ -378,32 +322,32 @@ def createCombinationObjects(ensembleDispersion, dtype=np.float64, suggested_cal
                             #                     clumpSurfaceProbability[:,i], debug=debug)  # n and p for binominal
                             #   probability[index,~iGauss] = (b.binomfunc(combination))[~iGauss]
                         
-                        iGauss = ((CLmaxProbableNumber > constants.pnGauss) &
-                                  (ensemble.clumpNormalisedNj[ens] > constants.nGauss))[0]
-                        # print(iGauss.shape, iGauss)
-                        if iGauss.any():
-                            # print(combination)
-                            
-                            # if constants.scipyProbability:
-                            maxProbability[index, iGauss] = stats.norm.pdf(combination,
-                                                                           loc=CLmaxProbableNumber.flatten(),
-                                                                           scale=CLmaxStandardDeviation.flatten())[iGauss]
-                            
-                            # else:
-                            #   g = stat.Gauss(CLmaxProbableNumber, CLmaxStandardDeviation, debug=debug)
-                            #   maxProbability[index,iGauss] = (g.gaussfunc(combination))[iGauss]
-                        
-                        if (~iGauss).any():
-                          
-                            # if constants.scipyProbability:
-                            maxProbability[index, ~iGauss] = stats.binom.pmf(combination,
-                                                                             ensemble.clumpNormalisedNj[ens].flatten(),
-                                                                             CLmaxSurfaceProbability.flatten())[~iGauss]
-                            
-                            # else:
-                            #   b = stat.Binomial(ensemble.clumpNormalisedNj[ens],
-                            #                     CLmaxSurfaceProbability, debug=debug)  # n and p for binominal
-                            #   maxProbability[index,~iGauss] = (b.binomfunc(combination))[~iGauss]
+                        # iGauss = ((CLmaxProbableNumber > constants.pnGauss) &
+                        #           (ensemble.clumpNormalisedNj[ens] > constants.nGauss))[0]
+                        # # print(iGauss.shape, iGauss)
+                        # if iGauss.any():
+                        #     # print(combination)
+                        #
+                        #     # if constants.scipyProbability:
+                        #     maxProbability[index, iGauss] = stats.norm.pdf(combination,
+                        #                                                    loc=CLmaxProbableNumber.flatten(),
+                        #                                                    scale=CLmaxStandardDeviation.flatten())[iGauss]
+                        #
+                        #     # else:
+                        #     #   g = stat.Gauss(CLmaxProbableNumber, CLmaxStandardDeviation, debug=debug)
+                        #     #   maxProbability[index,iGauss] = (g.gaussfunc(combination))[iGauss]
+                        #
+                        # if (~iGauss).any():
+                        #
+                        #     # if constants.scipyProbability:
+                        #     maxProbability[index, ~iGauss] = stats.binom.pmf(combination,
+                        #                                                      ensemble.clumpNormalisedNj[ens].flatten(),
+                        #                                                      CLmaxSurfaceProbability.flatten())[~iGauss]
+                        #
+                        #     # else:
+                        #     #   b = stat.Binomial(ensemble.clumpNormalisedNj[ens],
+                        #     #                     CLmaxSurfaceProbability, debug=debug)  # n and p for binominal
+                        #     #   maxProbability[index,~iGauss] = (b.binomfunc(combination))[~iGauss]
           
                     elif constants.probability == 'poisson':
                         iGauss = (clumpProbableNumber[:, i] > constants.pnGauss) & \
@@ -419,20 +363,20 @@ def createCombinationObjects(ensembleDispersion, dtype=np.float64, suggested_cal
                             if verbose:
                                 print('Poisson')
                             probability[index, ~iGauss] = stats.pmf(combination, clumpProbableNumber[:, i])[~iGauss]
-                        iGauss = ((CLmaxProbableNumber > constants.pnGauss) &
-                                  (ensemble.clumpNormalisedNj[ens] > constants.nGauss))[0]
-                        if iGauss.any():
-                            maxProbability[index, iGauss] = stats.norm.pdf(combination,
-                                                                           loc=CLmaxProbableNumber.flatten(),
-                                                                           scale=CLmaxStandardDeviation.flatten())[iGauss]
-                        if (~iGauss).any():
-                            maxProbability[index, ~iGauss] = stats.pmf(combination, clumpProbableNumber[:, i])[~iGauss]
+                        # iGauss = ((CLmaxProbableNumber > constants.pnGauss) &
+                        #           (ensemble.clumpNormalisedNj[ens] > constants.nGauss))[0]
+                        # if iGauss.any():
+                        #     maxProbability[index, iGauss] = stats.norm.pdf(combination,
+                        #                                                    loc=CLmaxProbableNumber.flatten(),
+                        #                                                    scale=CLmaxStandardDeviation.flatten())[iGauss]
+                        # if (~iGauss).any():
+                        #     maxProbability[index, ~iGauss] = stats.pmf(combination, clumpProbableNumber[:, i])[~iGauss]
       
-            if np.shape(probability) != np.shape(maxProbability) and debug:
-                for i in range(len(probability)):
-                    print(np.array(probability[i]).shape)
-                    print(np.array(maxProbability[i]).shape)
-                input()
+            # if np.shape(probability) != np.shape(maxProbability) and debug:
+            #     for i in range(len(probability)):
+            #         print(np.array(probability[i]).shape)
+            #         print(np.array(maxProbability[i]).shape)
+            #     input()
             #print((probability))
             while(len(probability) < ensemble.clumpLargestCombination[ens]):
                 probability.append(np.zeros((constants.clumpLogMass[ens].size)))
@@ -445,12 +389,53 @@ def createCombinationObjects(ensembleDispersion, dtype=np.float64, suggested_cal
                 input()
             # print(probabilityList, probability)
             probabilityList.append(np.array(probability))
-            if i == ensemble.clumpLargestIndex[ens]:
-                maxProbabilityList = np.array(maxProbability)
+            # if i == ensemble.clumpLargestIndex[ens]:
+            #     maxProbabilityList = np.array(maxProbability)
         clumpCombinationIndeces = np.array(combinationIndeces)
-        maxProbability = np.array(maxProbabilityList, dtype=dtype)
+        # maxProbability = np.array(maxProbabilityList, dtype=dtype)
         ensemble.clumpProbability[ens] = np.array(probabilityList)
+        # ensemble.CLmaxProbability[ens] = maxProbability
+        for i, combinations in enumerate(ensemble.CLmaxCombinations[ens]):
+            ensemble.CLmaxCombinations[ens][i] = combinations.T
+            maxProbability = np.zeros_like(combinations.T, dtype=dtype)
+            for combination in ensemble.CLmaxCombinations[ens][i]:
+                    if constants.probability == 'binomial':
+                        if verbose:
+                            print(clumpProbableNumber.shape, combination.shape)
+
+                        iGauss = ((CLmaxProbableNumber > constants.pnGauss) &
+                                  (ensemble.clumpNormalisedNj[ens] > constants.nGauss))[0]
+                        # print(iGauss.shape, iGauss)
+                        if iGauss.any():
+                            # print(combination)
+
+                            # if constants.scipyProbability:
+                            maxProbability[index, iGauss] = stats.norm.pdf(combination,
+                                                                           loc=CLmaxProbableNumber.flatten(),
+                                                                           scale=CLmaxStandardDeviation.flatten())[iGauss]
+
+                            # else:
+                            #   g = stat.Gauss(CLmaxProbableNumber, CLmaxStandardDeviation, debug=debug)
+                            #   maxProbability[index,iGauss] = (g.gaussfunc(combination))[iGauss]
+
+                        if (~iGauss).any():
+
+                            # if constants.scipyProbability:
+                            maxProbability[index, ~iGauss] = stats.binom.pmf(combination,
+                                                                             ensemble.clumpNormalisedNj[ens].flatten(),
+                                                                             CLmaxSurfaceProbability.flatten())[~iGauss]
+                    elif constants.probability == 'poisson':
+                        iGauss = ((CLmaxProbableNumber > constants.pnGauss) &
+                                  (ensemble.clumpNormalisedNj[ens] > constants.nGauss))[0]
+                        if iGauss.any():
+                            maxProbability[index, iGauss] = stats.norm.pdf(combination,
+                                                                           loc=CLmaxProbableNumber.flatten(),
+                                                                           scale=CLmaxStandardDeviation.flatten())[iGauss]
+                        if (~iGauss).any():
+                            maxProbability[index, ~iGauss] = stats.pmf(combination, clumpProbableNumber[:, i])[~iGauss]
+        maxProbability = np.array(maxProbability, dtype=dtype)
         ensemble.CLmaxProbability[ens] = maxProbability
+
         # ensemble.CLmaxProbability[ens] = np.array([maxProbability[i]/maxProbability.prod(1).sum(0)
         #                                            for i in range(maxProbability.shape[0])], dtype=np.float128)
   
@@ -529,11 +514,16 @@ def reinitialise():
     ensemble.clumpSurfaceProbability = [[] for _ in range(len(constants.clumpMassNumber))]
     ensemble.clumpProbableNumber = [[] for _ in range(len(constants.clumpMassNumber))]
     ensemble.clumpStandardDeviation = [[] for _ in range(len(constants.clumpMassNumber))]
+    ensemble.CLmaxSurfaceProbability = [[] for _ in range(len(constants.clumpMassNumber))]
+    ensemble.CLmaxProbableNumber = [[] for _ in range(len(constants.clumpMassNumber))]
+    ensemble.CLmaxStandardDeviation = [[] for _ in range(len(constants.clumpMassNumber))]
   
     ensemble.clumpNumberRange = [[] for _ in range(len(constants.clumpMassNumber))]
-  
+    ensemble.CLmaxNumberRange = [[] for _ in range(len(constants.clumpMassNumber))]
+
     ensemble.clumpCombinations = [[] for _ in range(len(constants.clumpMassNumber))]
-  
+    ensemble.CLmaxCombinations = [[] for _ in range(len(constants.clumpMassNumber))]
+
     ensemble.clumpLargestCombination = [0 for _ in range(len(constants.clumpMassNumber))]
     ensemble.clumpLargestIndex = [0 for _ in range(len(constants.clumpMassNumber))]
   

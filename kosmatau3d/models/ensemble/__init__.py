@@ -16,10 +16,15 @@ clumpNormalisedDeltaNji = [[] for _ in range(len(constants.clumpMassNumber))]
 clumpSurfaceProbability = [[] for _ in range(len(constants.clumpMassNumber))]
 clumpProbableNumber = [[] for _ in range(len(constants.clumpMassNumber))]
 clumpStandardDeviation = [[] for _ in range(len(constants.clumpMassNumber))]
+CLmaxSurfaceProbability = [[] for _ in range(len(constants.clumpMassNumber))]
+CLmaxProbableNumber = [[] for _ in range(len(constants.clumpMassNumber))]
+CLmaxStandardDeviation = [[] for _ in range(len(constants.clumpMassNumber))]
 
 clumpNumberRange = [[] for _ in range(len(constants.clumpMassNumber))]
+CLmaxNumberRange = [[] for _ in range(len(constants.clumpMassNumber))]
 
 clumpCombinations = [[] for _ in range(len(constants.clumpMassNumber))]
+CLmaxCombinations = [[] for _ in range(len(constants.clumpMassNumber))]
 
 clumpLargestCombination = [0 for _ in range(len(constants.clumpMassNumber))]
 clumpLargestIndex = [0 for _ in range(len(constants.clumpMassNumber))]
