@@ -686,7 +686,7 @@ class Voxel(object):
         g2 = self.gaussian(x, a2, sigma)
         return np.hstack((g1, g2))
 
-    def getSpeciesEmissivity(self, kind='gaussian', include_dust=False, fit=True, total=True):
+    def getSpeciesEmissivity(self, kind='linear', include_dust=False, fit=True, total=True):
         if self.suggested_calc:
             epsilon_species = []
             if include_dust:
@@ -701,10 +701,8 @@ class Voxel(object):
                     clump_vel = self.__clumpVelocities[ens][self.__clumpVelocityIndeces[ens]]
                     if kind == 'gaussian':
                         eps = []
-                        diff_eps = (self.__emissivity_species[ens]
-                                    - self.__emissivity_species[ens].mean(0)).any(0)
-                        diff_kap = (self.__absorption_species[ens]
-                                    - self.__absorption_species[ens].mean(0)).any(0)
+                        diff_eps = self.__emissivity_species[ens].var(0)
+                        diff_kap = self.__absorption_species[ens].var(0)
                         for i in range(self.__emissivity_species[ens].shape[1]):
                             if diff_eps[i] or diff_kap[i]:
                                 a_eps, a_kap, sigma = curve_fit(self.two_gaussians, clump_vel,
@@ -754,7 +752,7 @@ class Voxel(object):
         else:
             return np.asarray(epsilon_species)
   
-    def getSpeciesAbsorption(self, kind='gaussian', include_dust=False, fit=True, total=True):
+    def getSpeciesAbsorption(self, kind='linear', include_dust=False, fit=True, total=True):
         if self.suggested_calc:
             kappa_species = []
             if include_dust:
@@ -769,10 +767,8 @@ class Voxel(object):
                     clump_vel = self.__clumpVelocities[ens][self.__clumpVelocityIndeces[ens]]
                     if kind == 'gaussian':
                         kap = []
-                        diff_eps = (self.__emissivity_species[ens]
-                                    - self.__emissivity_species[ens].mean(0)).any(0)
-                        diff_kap = (self.__absorption_species[ens]
-                                    - self.__absorption_species[ens].mean(0)).any(0)
+                        diff_eps = self.__emissivity_species[ens].var(0)
+                        diff_kap = self.__absorption_species[ens].var(0)
                         for i in range(self.__absorption_species[ens].shape[1]):
                             if diff_eps[i] or diff_kap[i]:
                                 a_eps, a_kap, sigma = curve_fit(self.two_gaussians, clump_vel,
@@ -822,7 +818,7 @@ class Voxel(object):
         else:
             return np.asarray(kappa_species)
 
-    def getSpeciesOpticalDepth(self, kind='gaussian', include_dust=False, fit=True, total=True):
+    def getSpeciesOpticalDepth(self, kind='linear', include_dust=False, fit=True, total=True):
         if self.suggested_calc:
             tau_species = []
             if include_dust:
@@ -835,10 +831,8 @@ class Voxel(object):
                     clump_vel = self.__clumpVelocities[ens][self.__clumpVelocityIndeces[ens]]
                     if kind == 'gaussian':
                         tau = []
-                        diff_eps = (self.__emissivity_species[ens]
-                                    - self.__emissivity_species[ens].mean(0)).any(0)
-                        diff_kap = (self.__absorption_species[ens]
-                                    - self.__absorption_species[ens].mean(0)).any(0)
+                        diff_eps = self.__emissivity_species[ens].var(0)
+                        diff_kap = self.__absorption_species[ens].var(0)
                         for i in range(self.__opticalDepthSpecies[ens].shape[1]):
                             if diff_eps[i] or diff_kap[i]:
                                 a_eps, a_kap, sigma = curve_fit(self.two_gaussians, clump_vel,
@@ -877,7 +871,7 @@ class Voxel(object):
         else:
             return np.asarray(tau_species)
   
-    def getSpeciesIntensity(self, integrated=False, kind='gaussian', include_dust=False, fit=True, total=True):
+    def getSpeciesIntensity(self, integrated=False, kind='linear', include_dust=False, fit=True, total=True):
         if self.suggested_calc:
             if total and not integrated and not fit:
                 print('Cannot return total intensity without first fitting. Returning fitted intensity instead.')
@@ -917,7 +911,21 @@ class Voxel(object):
                     vel = clump_vel
                     intensity = copy(self.__intensitySpecies[ens])
                 if integrated:
-                    intensity_final.append(np.trapz(intensity, vel, axis=0))
+                    if include_dust:
+                        if total:
+                            intensity_dust = [self.getDustIntensity(fit=fit, total=total)]
+                        else:
+                            intensity_dust = self.getDustIntensity(fit=fit, total=total)
+                        intensity_final.append(np.trapz(intensity, vel, axis=0))
+                        if np.where(constants.nDust)[0].size > 1:
+                            intensity_dust_interp = interp1d(constants.wavelengths[constants.nDust],
+                                                             intensity_dust[ens].max(0), fill_value='extrapolate')
+                            for i, transition in enumerate(species.moleculeWavelengths):
+                                intensity_final[-1][i] += intensity_dust_interp(transition)
+                        else:
+                            intensity_final[-1] += intensity_dust[ens][:, 0]
+                    else:
+                        intensity_final.append(np.trapz(intensity, vel, axis=0))
                 else:
                     intensity_final.append(copy(intensity))
         else:
@@ -940,7 +948,7 @@ class Voxel(object):
                 i_nan = np.isnan(intensity[ens])
                 intensity[ens][i_nan] = epsilon[ens][i_nan]
 
-                if not include_dust:
+                if not include_dust or (include_dust and integrated):
                     if np.where(constants.nDust)[0].size > 1:
                         intensity_dust_interp = interp1d(constants.wavelengths[constants.nDust],
                                                        intensity_dust[ens].max(0), fill_value='extrapolate')
@@ -954,6 +962,14 @@ class Voxel(object):
                 intensity_final = np.zeros((intensity.shape[0], intensity.shape[2]))
                 for ens in range(len(constants.clumpMassNumber)):
                     intensity_final[ens] = np.trapz(intensity[ens], constants.velocityRange, axis=0)
+                    if include_dust:
+                        if np.where(constants.nDust)[0].size > 1:
+                            intensity_dust_interp = interp1d(constants.wavelengths[constants.nDust],
+                                                           intensity_dust[ens].max(0), fill_value='extrapolate')
+                            for i, transition in enumerate(species.moleculeWavelengths):
+                                intensity_final[ens][i] += intensity_dust_interp(transition)
+                        else:
+                            intensity_final[ens] += intensity_dust[ens].max(0)
             else:
                 intensity_final = intensity
         if total:
@@ -1077,7 +1093,8 @@ class Voxel(object):
 
         return
   
-    def plotMolecule(self, molecule='', quantity='intensity', moleculeName='', title='', logscale=False):
+    def plotMolecule(self, molecule='', quantity='intensity', kind='linear', include_dust=False, total=False,
+                     moleculeName='', title='', logscale=False):
         # Plot the molecule emission with respect to the voxel velocity structure
     
         import matplotlib.pyplot as plt
@@ -1092,15 +1109,15 @@ class Voxel(object):
             molecule = species.molecules
     
         if quantity == 'emissivity':
-            value = self.getSpeciesEmissivity(total=False)
+            value = self.getSpeciesEmissivity(kind=kind, include_dust=include_dust, total=total)
             ylabel = r'$\epsilon_{\lambda} \ \left( \frac{K}{pc} \right)$'
     
         elif quantity == 'absorption':
-            value = self.getSpeciesAbsorption(total=False)
+            value = self.getSpeciesAbsorption(kind=kind, include_dust=include_dust, total=total)
             ylabel = r'$\kappa_{\lambda} \ \left( \frac{1}{pc} \right)$'
     
         elif quantity == 'intensity':
-            value = self.getSpeciesIntensity(total=False)
+            value = self.getSpeciesIntensity(kind=kind, include_dust=include_dust, total=total)
             ylabel = r'$I_{\lambda} \ \left( K \right)$'
         else:
             self.__logger.warning('Quantity {} not available.'.format(quantity))
@@ -1156,7 +1173,7 @@ class Voxel(object):
     
         return
   
-    def plotSpectrum(self, quantity='intensity', vel=None, title=''):
+    def plotSpectrum(self, quantity='intensity', kind='linear', integrated=False, total=False, vel=None, title=''):
         # Plot the either the intesity or optical depth spectrum at the voxel velocity (the velocity with the largest
         #  ensemble).
 
@@ -1184,18 +1201,23 @@ class Voxel(object):
     
         if quantity == 'emissivity':
             valueDust = self.getDustEmissivity(total=False)
-            valueSpecies = self.getSpeciesEmissivity(include_dust=True, total=False)
+            valueSpecies = self.getSpeciesEmissivity(kind=kind, include_dust=True, total=False)
             ylabel = r'$\epsilon_{\lambda} \ \left( \frac{K}{pc} \right)$'
     
         elif quantity == 'absorption':
             valueDust = self.getDustAbsorption(total=False)
-            valueSpecies = self.getSpeciesAbsorption(include_dust=True, total=False)
+            valueSpecies = self.getSpeciesAbsorption(kind=kind, include_dust=True, total=False)
             ylabel = r'$\kappa_{\lambda} \ \left( \frac{1}{pc} \right)$'
     
         elif quantity == 'intensity':
             valueDust = self.getDustIntensity(total=False)
-            valueSpecies = self.getSpeciesIntensity(include_dust=True, total=False)
-            ylabel = r'$I_{\lambda} \ \left( K \right)$'
+            if integrated:
+                valueSpecies = self.getSpeciesIntensity(kind=kind, include_dust=True,
+                                                        integrated=integrated, total=False)
+                ylabel = r'$\varpi_{\lambda} \ \left( K \frac{km}{s} \right)$'
+            else:
+                valueSpecies = self.getSpeciesIntensity(kind=kind, include_dust=True, total=False)
+                ylabel = r'$I_{\lambda} \ \left( K \right)$'
         
         else:
             self.__logger.warning('Quantity {} not available.'.format(quantity))
@@ -1211,7 +1233,10 @@ class Voxel(object):
             else:
                 ax = axes
 
-            if vel==None:
+            if integrated and quantity=='intensity':
+                vel = 0
+                valueSpecies = np.asarray([valueSpecies])
+            elif vel==None:
                 vel = int(valueSpecies[ens].shape[0]/2)
             
             if valueDust[ens].shape[1] > 1:
@@ -1238,7 +1263,6 @@ class Voxel(object):
                           ls='-', lw=1, c=colour[-1])
       
             lines = [Line2D([0], [0], color=moleculeColour[molecule], lw=1) for molecule in molecules]
-            # mols  = ['dust', ]
             leg = ax.legend(labels=molecules, handles=lines, fontsize=16, bbox_to_anchor=(1.05, 1))
             
             ax.set_xlabel(r'$\lambda \ (\mu m)$', fontsize=20)
