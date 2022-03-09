@@ -80,6 +80,7 @@ velocityStep = velocityRange[1] - velocityRange[0]
 # Clump characteristics
 clumpDispersion = 1.67/2.3548  # conversion from Gaussian FWHM to velocity dispersion (2.3548 = 2*sqrt(2*ln2))
 
+ensembles = 2
 clumpMassNumber = [3, 1]
 clumpLogMassRange = [[0, 2], [-2]]
 clumpLogMass = [np.resize(np.linspace(clumpLogMassRange[i][0],

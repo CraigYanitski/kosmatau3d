@@ -3,9 +3,12 @@ import importlib as il
 
 import numpy as np
 import scipy.interpolate as interpolate
+import dill
+import warnings
+
+from copy import copy
 from numba import jit_module
 from numba.core.errors import NumbaWarning, NumbaDeprecationWarning, NumbaPendingDeprecationWarning
-import warnings
 
 from kosmatau3d.models import constants
 from kosmatau3d.models import interpolations
@@ -18,22 +21,29 @@ warnings.simplefilter('ignore', category=NumbaDeprecationWarning)
 warnings.simplefilter('ignore', category=NumbaPendingDeprecationWarning)
 
 
-def initialise():
-    interpolations.intensityInterpolation,interpolations.tauInterpolation = calculateGridInterpolation()
-    interpolations.rotationInterpolation = calculateRotationVelocity()
-    interpolations.dispersionInterpolation = 1  # calculateVelocityDispersion()
-    interpolations.densityInterpolation = calculateDensity()
-    interpolations.clumpMassInterpolation = clumpMassProfile()
-    interpolations.interclumpMassInterpolation = interclumpMassProfile()
-    interpolations.FUVextinctionInterpolation = interpolateFUVextinction()
-    interpolations.FUVfieldInterpolation = interpolateFUVfield()
-    # interpolations.eTildeReal = interpolateETildeReal()
-    # interpolations.eTildeImaginary = interpolateETildeImaginary()
+def initialise_grid(dilled=False):
+    calculateGridInterpolation(dilled=dilled)
+    interpolations.FUVextinctionInterpolation = interpolateFUVextinction(dilled=dilled)
     interpolations.initialised = True
     return
 
 
-def calculateGridInterpolation(verbose=False):
+def initialise_model(dilled=False):
+    interpolations.rotationInterpolation = calculateRotationVelocity(dilled=dilled)
+    interpolations.dispersionInterpolation = 1  # calculateVelocityDispersion(dilled=dilled)
+    interpolations.densityInterpolation = calculateDensity(dilled=dilled)
+    interpolations.clumpMassInterpolation = clumpMassProfile(dilled=dilled)
+    interpolations.interclumpMassInterpolation = interclumpMassProfile(dilled=dilled)
+    interpolations.FUVfieldInterpolation = interpolateFUVfield(dilled=dilled)
+    # interpolations.eTildeReal = interpolateETildeReal()
+    # interpolations.eTildeImaginary = interpolateETildeImaginary()
+    return
+
+
+# Grid interpolation
+
+
+def calculateGridInterpolation(verbose=False, dilled=False):
     '''
     This interpolates the needed species from the KOSMA-tau emission grids. It automatically interpolates
     the dust continuum as well, even if there are no molecules specified. This is kept as a separate interpolation
@@ -45,11 +55,41 @@ def calculateGridInterpolation(verbose=False):
     for the corresponding emission indeces.
     '''
     np.seterr(divide='ignore', invalid='ignore')
+    if dilled:
+        with open(constants.GRIDPATH + 'dilled/intensity_interpolation', 'rb') as file:
+            intensityInterpolation = dill.load(file)
+        with open(constants.GRIDPATH + 'dilled/tau_interpolation', 'rb') as file:
+            tauInterpolation = dill.load(file)
+        with open(constants.GRIDPATH + 'dilled/dust_intensity_interpolation', 'rb') as file:
+            dustIntensityInterpolation = dill.load(file)
+        with open(constants.GRIDPATH + 'dilled/dust_tau_interpolation', 'rb') as file:
+            dustTauInterpolation = dill.load(file)
+        interpolations.intensityInterpolation = []
+        interpolations.tauInterpolation = []
+        if len(species.moleculeIndeces) == len(intensityInterpolation):
+            interpolations.intensityInterpolation = intensityInterpolation
+            interpolations.tauInterpolation = tauInterpolation
+        else:
+            for index in species.moleculeIndeces:
+                interpolations.intensityInterpolation.append(intensityInterpolation[index[0][0]])
+                interpolations.tauInterpolation.append(tauInterpolation[index[0][0]])
+        if constants.dust:
+            if np.where(constants.nDust)[0].size == len(dustIntensityInterpolation):
+                interpolations.dustIntensityInterpolation = dustIntensityInterpolation
+                interpolations.dustTauInterpolation = dustTauInterpolation
+            else:
+                interpolations.dustIntensityInterpolation = []
+                interpolations.dustTauInterpolation = []
+                for i in np.where(constants.nDust)[0]:
+                    interpolations.dustIntensityInterpolation.append(copy(dustIntensityInterpolation[i]))
+                    interpolations.dustTauInterpolation.append(copy(dustTauInterpolation[i]))
+        return #speciesIntensityInterpolation, speciesTauInterpolation
+
     # indeces = species.molecules.getFileIndeces()
     crnmuvI, I = observations.tbCenterline
     crnmuvTau, Tau = observations.tauCenterline
-    intensityInterpolation = []
-    tauInterpolation = []
+    interpolations.intensityInterpolation = []
+    interpolations.tauInterpolation = []
     
     # Correct for the negative emission values (from Silke's code)
     I[I <= 0] = 1e-100
@@ -85,9 +125,9 @@ def calculateGridInterpolation(verbose=False):
             if verbose:
                 print('Creating tau grid interpolation')
             rInterpTau = interpolate.LinearNDInterpolator(crnmuvTau, logTau[:, index])
-            intensityInterpolation.append(rInterpI)
-            tauInterpolation.append(rInterpTau)
-        return intensityInterpolation, tauInterpolation
+            interpolations.intensityInterpolation.append(rInterpI)
+            interpolations.tauInterpolation.append(rInterpTau)
+        return #intensityInterpolation, tauInterpolation
   
     elif constants.interpolation == 'radial' or constants.interpolation == 'cubic':
         if constants.dust:
@@ -101,91 +141,19 @@ def calculateGridInterpolation(verbose=False):
             if verbose:
                 print('Creating tau grid interpolation')
             rInterpTau = interpolate.Rbf(crnmuvTau[:, 0], crnmuvTau[:, 1], crnmuvTau[:, 2], crnmuvTau[:, 3], logTau[:, index])
-            intensityInterpolation.append(rInterpI)
-            tauInterpolation.append(rInterpTau)
-        return intensityInterpolation, tauInterpolation
+            interpolations.intensityInterpolation.append(rInterpI)
+            interpolations.tauInterpolation.append(rInterpTau)
+        return #intensityInterpolation, tauInterpolation
       
     else:
-        sys.exit('<<ERROR>>: There is no such method as {} to interpolate the '.format(interpolation) +
+        sys.exit('<<ERROR>>: There is no such method as {} to interpolate the '.format(constants.interpolation) +
                  'KOSMA-tau grid.\n\nExitting...\n\n')
 
 
-def calculateRotationVelocity(verbose=False):
-    if constants.directory != '':
-        if verbose:
-            print('Creating rotation velocity interpolation')
-        rotation = observations.rotationProfile
-        if constants.interpolation == 'linear':
-            return interpolate.interp1d(rotation[0], rotation[1][:, 0], kind='linear')
-        elif constants.interpolation == 'cubic' or constants.interpolation == 'radial':
-            return interpolate.interp1d(rotation[0], rotation[1][:, 0], kind='cubic')
-        else:
-            sys.exit('<<ERROR>>: There is no such method as {} to interpolate '.format(interpolation) +
-                     'the velocity profile.\n\nExitting...\n\n')
-    return
-
-
-def calculateVelocityDispersion(verbose=False):
-    if constants.directory != '':
-        if verbose:
-            print('Creating velocity dispersion interpolation')
-        rotation = observations.rotationProfile
-        if constants.interpolation == 'linear':
-            return interpolate.interp1d(rotation[0], rotation[1][:, 1], kind='linear')
-        elif constants.interpolation == 'cubic' or constants.interpolation == 'radial':
-            return interpolate.interp1d(rotation[0], rotation[1][:, 1], kind='cubic')
-        else:
-            sys.exit('<<ERROR>>: There is no such method as {} to interpolate '.format(interpolation) +
-                     'the velocity profile.\n\nExitting...\n\n')
-    return
-
-
-def calculateDensity(verbose=False):
-    if constants.directory != '':
-        if verbose:
-            print('Creating density interpolation')
-        density = observations.densityProfile
-        if constants.interpolation == 'linear':
-            return interpolate.interp1d(density[0], density[1], kind='linear')
-        elif constants.interpolation == 'cubic' or constants.interpolation == 'radial':
-            return interpolate.interp1d(density[0], density[1], kind='cubic')
-        else:
-            sys.exit('<<ERROR>>: There is no such method as {} to interpolate '.format(interpolation) +
-                     'the KOSMA-tau grid.\n\nExitting...\n\n')
-    return
-
-
-def clumpMassProfile(verbose=False):
-    if constants.directory != '':
-        if verbose:
-            print('Creating clump mass interpolation')
-        clumpMass = observations.clumpMassProfile
-        if constants.interpolation == 'linear':
-            return interpolate.interp1d(clumpMass[0], clumpMass[1], kind='linear')
-        elif constants.interpolation == 'cubic' or constants.interpolation == 'radial':
-            return interpolate.interp1d(clumpMass[0], clumpMass[1], kind='cubic')
-        else:
-            sys.exit('<<ERROR>>: There is no such method as {} to interpolate '.format(interpolation) +
-                     'the KOSMA-tau grid.\n\nExitting...\n\n')
-    return
-
-
-def interclumpMassProfile(verbose=False):
-    if constants.directory != '':
-        if verbose:
-            print('Creating interclump mass interpolation')
-        interclumpMass = observations.clumpMassProfile
-        if constants.interpolation == 'linear':
-            return interpolate.interp1d(interclumpMass[0], interclumpMass[1], kind='linear')
-        elif constants.interpolation == 'cubic' or constants.interpolation == 'radial':
-            return interpolate.interp1d(interclumpMass[0], interclumpMass[1], kind='cubic')
-        else:
-            sys.exit('<<ERROR>>: There is no such method as {} to interpolate '.format(interpolation) +
-                     'the KOSMA-tau grid.\n\nExitting...\n\n')
-    return
-
-
-def interpolateFUVextinction(verbose=False):
+def interpolateFUVextinction(verbose=False, dilled=False):
+    if dilled:
+        with open(constants.GRIDPATH + 'dilled/fuv_extinction_interpolation', 'rb') as file:
+            return dill.load(file)
     if verbose:
         print('Creating A_UV grid interpolation')
     rhomass,AUV = observations.rhoMassAFUV
@@ -196,12 +164,108 @@ def interpolateFUVextinction(verbose=False):
     elif constants.interpolation == 'cubic' or constants.interpolation == 'radial':
         return interpolate.Rbf(rhomass, logAUV)
     else:
-        sys.exit('<<ERROR>>: There is no such method as {} to interpolate '.format(interpolation) +
+        sys.exit('<<ERROR>>: There is no such method as {} to interpolate '.format(constants.interpolation) +
                  'the extinction in the KOSMA-tau grid.\n\nExitting...\n\n')
 
 
-def interpolateFUVfield(verbose=False):
+# Model interpolation
+
+
+def calculateRotationVelocity(verbose=False, dilled=False):
     if constants.directory != '':
+        if dilled:
+            with open(constants.INPUTPATH+constants.directory + 'dilled/rotation_interpolation', 'rb') as file:
+                return dill.load(file)
+        if verbose:
+            print('Creating rotation velocity interpolation')
+        rotation = observations.rotationProfile
+        if constants.interpolation == 'linear':
+            return interpolate.interp1d(rotation[0], rotation[1][:, 0], kind='linear')
+        elif constants.interpolation == 'cubic' or constants.interpolation == 'radial':
+            return interpolate.interp1d(rotation[0], rotation[1][:, 0], kind='cubic')
+        else:
+            sys.exit('<<ERROR>>: There is no such method as {} to interpolate '.format(constants.interpolation) +
+                     'the velocity profile.\n\nExitting...\n\n')
+    return
+
+
+def calculateVelocityDispersion(verbose=False, dilled=False):
+    if constants.directory != '':
+        if dilled:
+            with open(constants.INPUTPATH+constants.directory + 'dilled/dispersion_interpolation', 'rb') as file:
+                return dill.load(file)
+        if verbose:
+            print('Creating velocity dispersion interpolation')
+        rotation = observations.rotationProfile
+        if constants.interpolation == 'linear':
+            return interpolate.interp1d(rotation[0], rotation[1][:, 1], kind='linear')
+        elif constants.interpolation == 'cubic' or constants.interpolation == 'radial':
+            return interpolate.interp1d(rotation[0], rotation[1][:, 1], kind='cubic')
+        else:
+            sys.exit('<<ERROR>>: There is no such method as {} to interpolate '.format(constants.interpolation) +
+                     'the velocity profile.\n\nExitting...\n\n')
+    return
+
+
+def calculateDensity(verbose=False, dilled=False):
+    if constants.directory != '':
+        if dilled:
+            with open(constants.INPUTPATH+constants.directory * 'dilled/density_interpolation', 'rb') as file:
+                return dill.load(file)
+        if verbose:
+            print('Creating density interpolation')
+        density = observations.densityProfile
+        if constants.interpolation == 'linear':
+            return interpolate.interp1d(density[0], density[1], kind='linear')
+        elif constants.interpolation == 'cubic' or constants.interpolation == 'radial':
+            return interpolate.interp1d(density[0], density[1], kind='cubic')
+        else:
+            sys.exit('<<ERROR>>: There is no such method as {} to interpolate '.format(constants.interpolation) +
+                     'the KOSMA-tau grid.\n\nExitting...\n\n')
+    return
+
+
+def clumpMassProfile(verbose=False, dilled=False):
+    if constants.directory != '':
+        if dilled:
+            with open(constants.INPUTPATH+constants.directory + 'dilled/clump_mass_interpolation', 'rb') as file:
+                return dill.load(file)
+        if verbose:
+            print('Creating clump mass interpolation')
+        clumpMass = observations.clumpMassProfile
+        if constants.interpolation == 'linear':
+            return interpolate.interp1d(clumpMass[0], clumpMass[1], kind='linear')
+        elif constants.interpolation == 'cubic' or constants.interpolation == 'radial':
+            return interpolate.interp1d(clumpMass[0], clumpMass[1], kind='cubic')
+        else:
+            sys.exit('<<ERROR>>: There is no such method as {} to interpolate '.format(constants.interpolation) +
+                     'the KOSMA-tau grid.\n\nExitting...\n\n')
+    return
+
+
+def interclumpMassProfile(verbose=False, dilled=True):
+    if constants.directory != '':
+        if dilled:
+            with open(constants.INPUTPATH+constants.directory + 'dilled/interclump_mass_interpolation', 'rb') as file:
+                return dill.load(file)
+        if verbose:
+            print('Creating interclump mass interpolation')
+        interclumpMass = observations.clumpMassProfile
+        if constants.interpolation == 'linear':
+            return interpolate.interp1d(interclumpMass[0], interclumpMass[1], kind='linear')
+        elif constants.interpolation == 'cubic' or constants.interpolation == 'radial':
+            return interpolate.interp1d(interclumpMass[0], interclumpMass[1], kind='cubic')
+        else:
+            sys.exit('<<ERROR>>: There is no such method as {} to interpolate '.format(constants.interpolation) +
+                     'the KOSMA-tau grid.\n\nExitting...\n\n')
+    return
+
+
+def interpolateFUVfield(verbose=False, dilled=False):
+    if constants.directory != '':
+        if dilled:
+            with open(constants.INPUTPATH+constants.directory + 'dilled/fuv_field_interpolation', 'rb') as file:
+                return dill.load(file)
         if verbose:
             print('Creating FUV interpolation')
         fuv = observations.FUVfield
@@ -213,7 +277,7 @@ def interpolateFUVfield(verbose=False):
         elif constants.interpolation == 'cubic' or constants.interpolation == 'radial':
             return interpolate.Rbf(fuv[0][:, 0], fuv[0][:, 1], np.trapz(f(wav), wav))
         else:
-            sys.exit('<<ERROR>>: There is no such method as {} to interpolate '.format(interpolation) +
+            sys.exit('<<ERROR>>: There is no such method as {} to interpolate '.format(constants.interpolation) +
                      'the KOSMA-tau grid.\n\nExitting...\n\n')
     return
 
