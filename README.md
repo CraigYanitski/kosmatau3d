@@ -1,3 +1,5 @@
+[![pipeline status](https://git.ph1.uni-koeln.de/yanitski/kosma-tau-3d/badges/master/pipeline.svg)](https://git.ph1.uni-koeln.de/yanitski/kosma-tau-3d/-/commits/master) [![coverage report](https://git.ph1.uni-koeln.de/yanitski/kosma-tau-3d/badges/master/coverage.svg)](https://git.ph1.uni-koeln.de/yanitski/kosma-tau-3d/-/commits/master) [![Latest Release](https://git.ph1.uni-koeln.de/yanitski/kosma-tau-3d/-/badges/release.svg)](https://git.ph1.uni-koeln.de/yanitski/kosma-tau-3d/-/releases)
+
 # **kosmatau3d**
 
 This is the current working version of `kosmatau3d`. It uses a series of sub-modules to perform most of the calculations. The reason for doing this is to reduce the memory footprint of the code to increase the overall efficiency. This also increases the maximum number of voxels that can be evaluated, since each voxel no longer owns as much memory.
@@ -43,17 +45,28 @@ The major changes to the `kosmatau3d` model are described in the document treati
 
 ## Developmental Progress
 
+### base development
+
+* [x] Include submodule to explore KOSMA-$\tau$ and `kosmatau3d` properties
+* [ ] Include submodule covering the Mathematica routines developed by Markus Röllig
 * [x] Correct voxel-averaged intensity calculation
 * [x] Ensure 3D model saves relevant data
   * [ ] implement multiprocessing
 * [x] Ensure correct calculation of sythetic datacube
   * [x] implement multiprocessing
   * [ ] optimise
+* [x] Include submodule to compare observational data with synthetic datacubes
 * [x] Modify single-voxel instance to calculate a column when $f_V > 1$
   * [ ] Allow for arbitrary $f_V$ ($<1$)
-* [ ] Fixed observational regridding error maps
+* [x] Fixed observational regridding error maps
 * [ ] Implement FUV absorption calculation in full 3D model
 * [ ] Modify the `radiativeTransfer` module to work for arbitrary geometry
+* [ ] Fully document the code using `sphinx`
+* [ ] Implement CI/CD for code testing
+  
+### future development
+
+* [x] Allow pickling of interpolation functions for faster debugging of the single-voxel model
 * [ ] Implement `numba` more fully to optimise the computation time
   * [ ] use this to parallelise the code
 * [ ] Create a GUI to make it easier to setup/alter the model
