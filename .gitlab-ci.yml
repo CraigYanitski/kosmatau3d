@@ -1,0 +1,27 @@
+image: python:latest
+
+variables:
+    PIP_CACHE_DIR: "CI_PROJECT_DIR/.cache/pip"
+
+cache:
+    path:
+        - .cache/pip
+        - venv/
+
+before_script:
+    - python --version
+    - pip install virtualenv
+    - virtualenv venv
+    - source venv/bin/activate
+
+pages:
+    script:
+        - pip install sphinx
+        - cd doc
+        - make html
+        - mv build/html/ ../public/
+    artifacts:
+        paths:
+            - public
+    rules:
+        - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
