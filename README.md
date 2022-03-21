@@ -1,4 +1,6 @@
-[![pipeline status](https://git.ph1.uni-koeln.de/yanitski/kosma-tau-3d/badges/master/pipeline.svg)](https://git.ph1.uni-koeln.de/yanitski/kosma-tau-3d/-/commits/master) [![coverage report](https://git.ph1.uni-koeln.de/yanitski/kosma-tau-3d/badges/master/coverage.svg)](https://git.ph1.uni-koeln.de/yanitski/kosma-tau-3d/-/commits/master) [![Latest Release](https://git.ph1.uni-koeln.de/yanitski/kosma-tau-3d/-/badges/release.svg)](https://git.ph1.uni-koeln.de/yanitski/kosma-tau-3d/-/releases)
+[![pipeline status](https://git.ph1.uni-koeln.de/yanitski/kosma-tau-3d/badges/master/pipeline.svg)](https://git.ph1.uni-koeln.de/yanitski/kosma-tau-3d/-/commits/master)
+[![coverage report](https://git.ph1.uni-koeln.de/yanitski/kosma-tau-3d/badges/master/coverage.svg)](https://git.ph1.uni-koeln.de/yanitski/kosma-tau-3d/-/commits/master)
+[![Latest Release](https://git.ph1.uni-koeln.de/yanitski/kosma-tau-3d/-/badges/release.svg)](https://git.ph1.uni-koeln.de/yanitski/kosma-tau-3d/-/releases)
 
 # **kosmatau3d**
 
