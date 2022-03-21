@@ -1,4 +1,5 @@
 from . import fuv_models
+from .data_check import *
 
 
 def help():
