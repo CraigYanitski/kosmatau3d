@@ -7,20 +7,33 @@
 This is the current working version of `kosmatau3d`. It uses a series of sub-modules to perform most of the calculations. The reason for doing this is to reduce the memory footprint of the code to increase the overall efficiency. This also increases the maximum number of voxels that can be evaluated, since each voxel no longer owns as much memory.
 
 ## Installation
-In the directory of this repository, install this package in bash with,
+In the root directory of this repository, install this package in bash with,
 
 ```
-pip install .
+$ pip install .
 ```
 
 A `Voxel` instance can be initialised using,
 
 ```
-from kosmatau3d import models
-vox = models.Voxel()
+>>> from kosmatau3d import models
+>>> vox = models.Voxel()
 ```
 
 There are many parameters that must be specified in order to initialise and simulate the clumpy ensemble. For a detailed explanation of the properties that can be defined/accessed with a voxel instance, see the `jupyter` notebook in `./tests/voxel.ipynb`.
+
+## Documentation
+
+At the moment there is no CI/CD to automatically compile the documentation files. In order to properly view the current documentation, from the root directory run,
+
+```
+$ cd doc
+$ make html
+$ cd build/html
+$ browse index.html
+```
+
+You should now see the homepage of the documentation in its current form. This will periodically be improved over time.
 
 ## Functionality
 
@@ -63,12 +76,15 @@ The major changes to the `kosmatau3d` model are described in the document treati
 * [x] Fixed observational regridding error maps
 * [ ] Implement FUV absorption calculation in full 3D model
 * [ ] Modify the `radiativeTransfer` module to work for arbitrary geometry
+* [ ] Develop the code testing suite
 * [ ] Fully document the code using `sphinx`
-* [ ] Implement CI/CD for code testing
+* [ ] Implement CI/CD
+* [ ] Develop the code testing suite
   
 ### future development
 
 * [x] Allow pickling of interpolation functions for faster debugging of the single-voxel model
+* [ ] Utilise `cython` to improve code efficiency
 * [ ] Implement `numba` more fully to optimise the computation time
   * [ ] use this to parallelise the code
 * [ ] Create a GUI to make it easier to setup/alter the model
