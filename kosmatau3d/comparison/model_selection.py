@@ -265,8 +265,9 @@ def regrid_observations(path='/media/hpc_backup/yanitski/projects/pdr/observatio
 
     for survey in mission:
 
-        if survey == 'COBE':
-            survey = 'COBE-FIRAS'
+        # COBE data must be located in instrument-separated folders
+        # if survey == 'COBE':
+        #     survey = 'COBE-FIRAS'
 
         temp_header = copy(target_header)
         twod_header = copy(target_header)
@@ -676,6 +677,68 @@ def regrid_observations(path='/media/hpc_backup/yanitski/projects/pdr/observatio
                 # Get axes
                 lon_mesh = obs[1].data['GAL_LON']
                 lat_mesh = obs[1].data['GAL_LAT']
+
+                if 'HIGH' in file and False:
+                    lon_test = np.linspace(2.5, 357.5, num=72)
+                    lat_test = np.zeros(lon_test.shape)
+                    i_cii = np.zeros(lon_test.shape)
+                    for i in range(i_cii.size):
+                        idx = (np.abs(lon_mesh-lon_test[i])<2.5) & (np.abs(lat_mesh-lat_test[i])<1)
+                        i_cii[i] = np.average(obs_data[idx, 5])
+                    fig, ax = plt.subplots(1, 1)
+                    ax.step(lon_test, i_cii)
+                    plt.show()
+
+                # Fix header
+                if 'CDELT3' in temp_header.keys():
+                    # temp_header['NAXIS'] = 2
+                    # del temp_header['NAXIS3']
+                    del temp_header['CTYPE3']
+                    del temp_header['CDELT3']
+                    del temp_header['CRVAL3']
+                    del temp_header['CRPIX3']
+                temp_header['NAXIS'] = 3
+                temp_header['NAXIS3'] = obs_data.shape[1]
+
+                # Grid
+                gridder = cygrid.WcsGrid(temp_header)
+                gridder.set_kernel(*target_kernel)
+                gridder.grid(lon_mesh, lat_mesh, obs_data)
+                gridder_err = cygrid.WcsGrid(temp_header)
+                gridder_err.set_kernel(*target_kernel)
+                gridder_err.grid(lon_mesh, lat_mesh, obs_error)
+                temp_header['TRANSL'] = ', '.join(transitions)
+                temp_header['TRANSI'] = ', '.join('{}'.format(_) for _ in np.arange(len(transitions)))
+                grid_hdu = fits.PrimaryHDU(data=gridder.get_datacube(), header=fits.Header(temp_header))
+                grid_hdu_err = fits.PrimaryHDU(data=gridder_err.get_datacube(), header=fits.Header(temp_header))
+                grid_hdu.writeto(path + survey + '/regridded/temp/' + file.replace('.FITS', '_regridded.fits'),
+                                 overwrite=True, output_verify='ignore')
+                grid_hdu_err.writeto(path + survey + '/regridded/temp/' + file.replace('.FITS', '_regridded_error.fits'),
+                                     overwrite=True, output_verify='ignore')
+            elif survey == 'COBE-DIRBE':
+
+                print(file)
+
+                # Specify transitions
+                transitions = [obs[0].header[key].split('.')['microns'] + 'um' for key in obs[0].header.keys() if 'WAVE' in key]
+                transition_indeces = [0]
+
+                # Open data and convert to brightness temperature
+                obs = fits.open(path + survey + '/' + file)
+                pixcoord = fits.open(path + survey + '/DIRBE_SKYMAP_INFO.FITS')
+                linfrq = 2.9979e5 / np.array([float(obs[0].header[key].split('microns')[0]) for key in obs[0].header.keys() if 'WAVE' in key])
+                # obs_data = np.nan_to_num(obs[1].data['LINE_FLU'], nan=0) * (2.9979**3) \
+                #            / (linfrq**3) / 2 / 1.38 * 10 ** 8
+                # obs_data = np.nan_to_num(obs[1].data['LINE_FLU'], nan=0) / (2.9979**3) \
+                #            * (linfrq**3) * 2 * 1.38 / 10 ** 8
+                obs_data = (np.nan_to_num(obs[1].data['Photomet'], nan=0) * (2.9979**3) / (linfrq**3) / 2
+                            / 1.38 * 10 ** 8)
+                obs_error = (np.nan_to_num(obs[1].data['StdDev'], nan=0) * (2.9979**3) / (linfrq**3) / 2
+                             / 1.38 * 10 ** 8)
+
+                # Get axes
+                lon_mesh = pixcoord[1].data['GLON-CSC']
+                lat_mesh = pixcoord[1].data['GLAT-CSC']
 
                 if 'HIGH' in file and False:
                     lon_test = np.linspace(2.5, 357.5, num=72)
