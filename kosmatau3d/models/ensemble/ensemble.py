@@ -143,8 +143,8 @@ def createCombinationObjects(ensembleDispersion, dtype=np.float64, suggested_cal
                                                                      velocityStep).astype(np.int)+1)
             velocityStep = ensemble.clumpVelocities[ens][1]-ensemble.clumpVelocities[ens][0]
             ensemble.clumpDeltaNji[ens] = (np.array(ensemble.clumpNj[ens]).T
-                                           * constants.clumpDispersion/ensembleDispersion[ens] *
-                                           (np.exp(-0.5*(ensemble.clumpVelocities[ens]/ensembleDispersion[ens])**2)).T)
+                                           * constants.clumpDispersion/dispersion *
+                                           (np.exp(-0.5*(ensemble.clumpVelocities[ens]/dispersion)**2)).T)
         else:
             velocityStep = np.minimum(system_dispersion/constants.velocity_resolution,
                                       constants.clumpDispersion/constants.velocity_resolution)
