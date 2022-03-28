@@ -343,7 +343,19 @@ class Voxel(object):
             self.__logger.info('Modules initialised:'.format(t2-t1))
     
         for ens in range(len(constants.clumpMassNumber)):
-            self.__modelMass.append((ensemble.clumpDeltaNji[ens].sum(1)*10**constants.clumpLogMass[ens]).sum())
+            if self.suggested_calc:
+                if self.__ensembleDispersion[ens] > constants.clumpDispersion:
+                    dispersion = np.sqrt(self.__ensembleDispersion[ens]**2-constants.clumpDispersion**2)
+                    self.__modelMass.append((ensemble.clumpDeltaNji[ens].sum(1)
+                                             /np.sqrt(2*np.pi)/dispersion
+                                             *self.__ensembleDispersion[ens]/constants.clumpDispersion
+                                             *10**constants.clumpLogMass[ens]).sum())
+                else:
+                    self.__modelMass.append((ensemble.clumpDeltaNji[ens].sum(1)
+                                             /np.sqrt(2*np.pi)/constants.clumpDispersion
+                                             *10**constants.clumpLogMass[ens]).sum())
+            else:
+                self.__modelMass.append((ensemble.clumpDeltaNji[ens].sum(1)*10**constants.clumpLogMass[ens]).sum())
             self.__volumeFactor.append((ensemble.clumpNj[ens]*(masspoints.clumpRadius[ens]**3*4*np.pi/3)).sum() /
                                        constants.voxel_size**3)
             if abs(self.__modelMass[ens]-self.__ensembleMass[ens]) > 0.1*self.__ensembleMass[ens] \
@@ -412,7 +424,10 @@ class Voxel(object):
         return self.__ensembleMass
   
     def getModelMass(self):
-        return self.__modelMass
+        if self.suggested_calc:
+            return self.__modelMass / np.sqrt(2*np.pi) / constants.clumpDispersion
+        else:
+            return self.__modelMass
   
     def getVolumeFillingFactor(self):
         return self.__volumeFactor
