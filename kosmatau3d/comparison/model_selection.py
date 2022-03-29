@@ -593,7 +593,7 @@ def regrid_observations(path='/media/hpc_backup/yanitski/projects/pdr/observatio
                     nest = False
 
                 if 'commander' in file:
-                    obs_data = obs[1].data['I_ML'] * 1e-6
+                    obs_data = obs[1].data['I_MEAN'] * 1e-6
                     obs_error = obs[1].data['I_RMS'] * 1e-6
                 elif 'GNILC' in file:
                     freq = int(file.split('F')[1].split('_')[0])
