@@ -152,6 +152,7 @@ def interpolateDustIntensity(points, verbose=False):
         elif constants.interpolation == 'radial' or interpolation == 'cubic':
             intensity = (10**dustIntensityInterpolation(points[0], points[1], points[2], points[3]))
     
+    # Convert specific flux Jansky units to brightness temperature Kelvin units
     intensity = np.asarray(intensity) * 10**-26 * constants.wavelengths[constants.nDust]**2/2/constants.kB
   
     return intensity

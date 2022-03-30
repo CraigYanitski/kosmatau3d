@@ -88,7 +88,7 @@ def masspointEmission(interpolationPoint, ens, masspoint, velocity=0, verbose=Fa
         print(intensity)
     
     if constants.dust:
-        # Must convert Janskys in dust intensity file using I/2/constants.kB*(constants.wavelengths)**2*10**-26)
+        # Must convert Janskys in dust intensity file using I/2/constants.kB*(constants.wavelengths)**2*10**-26) -- now calculated in interpolation function
         intensity = (interpolations.interpolateDustIntensity(interpolationPoint))
         tau = interpolations.interpolateDustTau(interpolationPoint)
     
