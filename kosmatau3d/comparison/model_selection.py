@@ -668,30 +668,16 @@ def regrid_observations(path='/media/hpc_backup/yanitski/projects/pdr/observatio
 
                 # Open data and convert to brightness temperature
                 obs = fits.open(path + survey + '/' + file)
-                linfrq = np.array([obs[0].header[key] for key in obs[0].header.keys() if 'LINFRQ' in key])
-                # obs_data = np.nan_to_num(obs[1].data['LINE_FLU'], nan=0) * (2.9979**3) \
-                #            / (linfrq**3) / 2 / 1.38 * 10 ** 8
-                # obs_data = np.nan_to_num(obs[1].data['LINE_FLU'], nan=0) / (2.9979**3) \
-                #            * (linfrq**3) * 2 * 1.38 / 10 ** 8
+                linfrq = np.array([obs[0].header[key] for key in obs[0].header.keys()
+                                   if 'LINFRQ' in key])
                 obs_data = (np.nan_to_num(obs[1].data['LINE_FLU'], nan=0) * (2.9979**3) / (linfrq**3) / 2
-                            / 1.38 * 10 ** 8)
+                            / 1.38 * 10 ** 8) * np.pi**3*7**2/180**2  # corresponding beam size in sr
                 obs_error = (np.nan_to_num(obs[1].data['LINE_FL2'], nan=0) * (2.9979**3) / (linfrq**3) / 2
-                             / 1.38 * 10 ** 8)
+                             / 1.38 * 10 ** 8) * np.pi**3*7**2/180**2  # corresponding beam size in sr
 
                 # Get axes
                 lon_mesh = obs[1].data['GAL_LON']
                 lat_mesh = obs[1].data['GAL_LAT']
-
-                if 'HIGH' in file and False:
-                    lon_test = np.linspace(2.5, 357.5, num=72)
-                    lat_test = np.zeros(lon_test.shape)
-                    i_cii = np.zeros(lon_test.shape)
-                    for i in range(i_cii.size):
-                        idx = (np.abs(lon_mesh-lon_test[i])<2.5) & (np.abs(lat_mesh-lat_test[i])<1)
-                        i_cii[i] = np.average(obs_data[idx, 5])
-                    fig, ax = plt.subplots(1, 1)
-                    ax.step(lon_test, i_cii)
-                    plt.show()
 
                 # Fix header
                 if 'CDELT3' in temp_header.keys():
@@ -730,30 +716,15 @@ def regrid_observations(path='/media/hpc_backup/yanitski/projects/pdr/observatio
                 # Open data and convert to brightness temperature
                 obs = fits.open(path + survey + '/' + file)
                 pixcoord = fits.open(path + survey + '/DIRBE_SKYMAP_INFO.FITS')
-                linfrq = 2.9979e5 / np.array([float(obs[0].header[key].split('microns')[0]) for key in obs[0].header.keys() if 'WAVE' in key])
-                # obs_data = np.nan_to_num(obs[1].data['LINE_FLU'], nan=0) * (2.9979**3) \
-                #            / (linfrq**3) / 2 / 1.38 * 10 ** 8
-                # obs_data = np.nan_to_num(obs[1].data['LINE_FLU'], nan=0) / (2.9979**3) \
-                #            * (linfrq**3) * 2 * 1.38 / 10 ** 8
-                obs_data = (np.nan_to_num(obs[1].data['Photomet'], nan=0) * (2.9979**3) / (linfrq**3) / 2
-                            / 1.38 * 10 ** 8)
+                linfrq = 2.9979e5 / 240  # convert the relevant DIRBE band to GHz
+                obs_data = (np.nan_to_num(obs[1].data['Resid'], nan=0) * (2.9979**3) / (linfrq**3) / 2
+                            / 1.38 * 10 ** 8) * 1.323e-4  # corresponding beam size in sr
                 obs_error = (np.nan_to_num(obs[1].data['StdDev'], nan=0) * (2.9979**3) / (linfrq**3) / 2
-                             / 1.38 * 10 ** 8)
+                             / 1.38 * 10 ** 8) * 1.323e-4
 
                 # Get axes
                 lon_mesh = pixcoord[1].data['GLON-CSC']
                 lat_mesh = pixcoord[1].data['GLAT-CSC']
-
-                if 'HIGH' in file and False:
-                    lon_test = np.linspace(2.5, 357.5, num=72)
-                    lat_test = np.zeros(lon_test.shape)
-                    i_cii = np.zeros(lon_test.shape)
-                    for i in range(i_cii.size):
-                        idx = (np.abs(lon_mesh-lon_test[i])<2.5) & (np.abs(lat_mesh-lat_test[i])<1)
-                        i_cii[i] = np.average(obs_data[idx, 5])
-                    fig, ax = plt.subplots(1, 1)
-                    ax.step(lon_test, i_cii)
-                    plt.show()
 
                 # Fix header
                 if 'CDELT3' in temp_header.keys():
