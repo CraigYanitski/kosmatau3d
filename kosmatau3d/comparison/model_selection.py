@@ -210,7 +210,7 @@ def determine_rms(hdul, mission='', file=''):
 
 
 def regrid_observations(path='/media/hpc_backup/yanitski/projects/pdr/observational_data/MilkyWay/', mission=None,
-                        target_header=None, target_kernel=None, output_file='obs_regridded.fits'):
+                        nu_planck=713e9, target_header=None, target_kernel=None, output_file='obs_regridded.fits'):
     '''
     This function will regrid the specified mission data to the specified target header. This prepares the
     observational data for comparison to simulated data. For now, the target header must
@@ -593,7 +593,11 @@ def regrid_observations(path='/media/hpc_backup/yanitski/projects/pdr/observatio
                     nest = False
 
                 if 'commander' in file:
-                    obs_data = obs[1].data['I_MEAN'] * 1e-6
+                    obs_tkj = obs[1].data['I_ML'] * 1e-6
+                    obs_t = obs[1].data['TEMP_ML']
+                    obs_beta = obs[1].data['BETA_ML']
+                    obs_gamma = 6.646e-34/1.38e-23/obs_t
+                    obs_data = obs_tkj * (nu_planck/545e9)**(obs_beta+1) * (np.exp(obs_gamma*545e9)-1)/(np.exp(obs_gamma*nu_planck)-1)
                     obs_error = obs[1].data['I_RMS'] * 1e-6
                 elif 'GNILC' in file:
                     freq = int(file.split('F')[1].split('_')[0])
