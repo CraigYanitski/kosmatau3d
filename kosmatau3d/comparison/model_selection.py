@@ -582,7 +582,7 @@ def regrid_observations(path='/media/hpc_backup/yanitski/projects/pdr/observatio
                 print(file)
 
                 # Specify observation type
-                transitions = ['Dust']
+                transitions = ['550um']
 
                 # Open file and get data
                 obs = fits.open(path + survey + '/' + file)
@@ -710,7 +710,7 @@ def regrid_observations(path='/media/hpc_backup/yanitski/projects/pdr/observatio
                 print(file)
 
                 # Specify transitions
-                transitions = [obs[0].header[key].split('.')['microns'] + 'um' for key in obs[0].header.keys() if 'WAVE' in key]
+                transitions = ['240um']
                 transition_indeces = [0]
 
                 # Open data and convert to brightness temperature
@@ -916,7 +916,7 @@ def view_observation(path='/mnt/hpc_backup/yanitski/projects/pdr/observational_d
     pprint(header)
 
     twod_header = copy(header)
-    if (mission != 'COBE-FIRAS') and (mission != 'Planck') and not ('error' in filename):
+    if (mission != 'COBE-FIRAS') and (mission != 'COBE-DIRBE') and (mission != 'Planck') and not ('error' in filename):
         print('spectroscopic data')
         if transition != header['TRANSL']:
             print('Line transition not in specified file. Please supply the correct line/file.')
@@ -1160,7 +1160,12 @@ def model_selection(path='/mnt/hpc_backup/yanitski/projects/pdr/KT3_history/Milk
     elif isinstance(missions, str):
         missions = [missions]
     elif isinstance(missions, list):
-        pass
+        # Use both COBE instruments if simply 'COBE' is specified
+        if 'COBE' in missions:
+            if 'COBE-FIRAS' in missions: missions.remove('COBE-FIRAS')
+            if 'COBE-DIRBE' in missions: missions.remove('COBE-DIRBE')
+            missions.append('COBE-FIRAS')
+            missions.append('COBE-DIRBE')
     else:
         print('Please specify a list of missions to compare the models.')
         return
@@ -1217,7 +1222,7 @@ def model_selection(path='/mnt/hpc_backup/yanitski/projects/pdr/KT3_history/Milk
             else:
                 continue
 
-            if survey == 'COBE' or survey == 'COBE-FIRAS':
+            if survey == 'COBE-DIRBE' or survey == 'COBE-FIRAS':
                 if file == 'craig.idl':
 
                     # This file requires a comparison to the galactic plane
@@ -1301,7 +1306,7 @@ def model_selection(path='/mnt/hpc_backup/yanitski/projects/pdr/KT3_history/Milk
                 loglikelihood_grid = []
                 params = []
 
-                if (survey == 'COBE') or (survey == 'COBE-FIRAS'):
+                if (survey == 'COBE-DIRBE') or (survey == 'COBE-FIRAS'):
                     if '.idl' in file:
                         obs_error_conf = error_correction(obs_data[:, int(transition_indeces[i])],
                                                           conf='axisymmetric')
@@ -1379,14 +1384,14 @@ def model_selection(path='/mnt/hpc_backup/yanitski/projects/pdr/KT3_history/Milk
 
                     # Identify the common latitudes between the observations and the model
                     if ((isinstance(lat, int) or isinstance(lat, float)) and comp_type == 'pv' and
-                        not (survey == 'COBE-FIRAS' or survey == 'Planck')):
+                        not (survey == 'COBE-FIRAS' or survey == 'COBE-DIRBE' or survey == 'Planck')):
                         lat_min = lat
                         lat_max = lat
                     else:
                         lat_min = lat_obs[i_lat_obs_init].min()
                         lat_max = lat_obs[i_lat_obs_init].max()
 
-                    if survey == 'COBE-FIRAS' or survey == 'Planck':
+                    if survey == 'COBE-FIRAS' or survey == 'COBE-DIRBE' or survey == 'Planck':
                         i_lon_model = np.linspace(0, lon_model.size-1, num=lon_obs.size, dtype=int)
                         i_lat_model = (lat_model >= lat_min) \
                                       & (lat_model <= lat_max)
@@ -1399,7 +1404,7 @@ def model_selection(path='/mnt/hpc_backup/yanitski/projects/pdr/KT3_history/Milk
                                              & (lat_obs <= lat_model[i_lat_model].max()))[0]
 
                     # Interpolate at the observational axes
-                    if (survey == 'COBE') or (survey == 'COBE-FIRAS'):
+                    if (survey == 'COBE-DIRBE') or (survey == 'COBE-FIRAS'):
                         idx_t = np.ix_(np.arange(vel_model.size), i_lat_model, i_lon_model, i_spec)
                         idx_d = np.ix_(np.arange(vel_model.size), i_lat_model, i_lon_model, [0])
                         # print(i_lat_model.size, i_lon_model.size)
@@ -1578,7 +1583,7 @@ def model_selection(path='/mnt/hpc_backup/yanitski/projects/pdr/KT3_history/Milk
                     # print(obs_data.min(), obs_data.max())
 
                     if PLOT:
-                        if (survey == 'COBE') or (survey == 'COBE-FIRAS'):
+                        if (survey == 'COBE-DIRBE') or (survey == 'COBE-FIRAS'):
                             fig, ax = plt.subplots(1, 1, figsize=(7, 7))
                             fig2, ax2 = plt.subplots(1, 1, figsize=(7, 7))
                             cm = ax.scatter(lon_model, lat_model, c=np.asarray(model_interp), cmap=cmap,
@@ -1708,7 +1713,7 @@ def line_ratio_comparison(obs_path='/mnt/hpc_backup/yanitski/projects/pdr/observ
     survey_lats = [[], []]   # list of data lattitude (in order observed, synthetic)
     survey_vels = [[], []]   # list of data velocities (in order observed, synthetic; 0 for 2D maps)
 
-    if ('COBE-FIRAS' in missions or 'Planck' in missions):
+    if ('COBE-FIRAS' in missions or 'COBE-DIRBE' in missions or 'Planck' in missions):
         comp_type = 'integrated'
 
     for i, survey in enumerate(missions):
@@ -1732,6 +1737,10 @@ def line_ratio_comparison(obs_path='/mnt/hpc_backup/yanitski/projects/pdr/observ
                                               obs[0].header['NAXIS2'] - obs[0].header['CRPIX2']),
                                               num=obs[0].header['NAXIS2']))
             if survey == 'COBE-FIRAS':
+                survey_vels[0].append(np.asarray([0]))
+                survey_maps[0].append(obs[0].data[i_trans_obs, :, :][0, :, :])
+                survey_i_lat_init.append(survey_maps[0][i].any(1))
+            if survey == 'COBE-DIRBE':
                 survey_vels[0].append(np.asarray([0]))
                 survey_maps[0].append(obs[0].data[i_trans_obs, :, :][0, :, :])
                 survey_i_lat_init.append(survey_maps[0][i].any(1))
@@ -1783,7 +1792,7 @@ def line_ratio_comparison(obs_path='/mnt/hpc_backup/yanitski/projects/pdr/observ
     i_lat_obs = []
     i_lat_model = []
     if ((isinstance(lat, int) or isinstance(lat, float)) and comp_type == 'pv' and
-        not ('COBE-FIRAS' in missions or 'Planck' in missions)):
+        not ('COBE-FIRAS' in missions or 'COBE-DIRBE' in missions or 'Planck' in missions)):
         lat_min = lat
         lat_max = lat
     else:
@@ -1934,7 +1943,12 @@ def box_comparison(path='/mnt/hpc_backup/yanitski/projects/pdr/observational_dat
     elif isinstance(missions, str):
         missions = [missions]
     elif isinstance(missions, list):
-        pass
+        # Use both COBE instruments if simply 'COBE' is specified
+        if 'COBE' in missions:
+            if 'COBE-FIRAS' in missions: missions.remove('COBE-FIRAS')
+            if 'COBE-DIRBE' in missions: missions.remove('COBE-DIRBE')
+            missions.append('COBE-FIRAS')
+            missions.append('COBE-DIRBE')
     else:
         print('Please specify a list of missions to compare the models.')
         return
@@ -1992,7 +2006,7 @@ def box_comparison(path='/mnt/hpc_backup/yanitski/projects/pdr/observational_dat
                 print('Invalid: Unknown file type in observation folder.')
                 continue
 
-            if survey == 'COBE' or survey == 'COBE-FIRAS':
+            if survey == 'COBE-DIRBE' or survey == 'COBE-FIRAS':
                 if survey_file == 'craig.idl':
 
                     # This file requires a comparison to the galactic plane
@@ -2118,7 +2132,7 @@ def box_comparison(path='/mnt/hpc_backup/yanitski/projects/pdr/observational_dat
                             break
 
                     if ((isinstance(lat, int) or isinstance(lat, float)) and comp_type == 'pv' and
-                        not (survey == 'COBE-FIRAS' or survey == 'Planck')):
+                        not (survey == 'COBE-FIRAS' or survey == 'COBE-DIRBE' or survey == 'Planck')):
                         lat_min = lat
                         lat_max = lat
                     else:
@@ -2127,7 +2141,7 @@ def box_comparison(path='/mnt/hpc_backup/yanitski/projects/pdr/observational_dat
 
                     i_lon_obs = np.linspace(0, lon_obs.size-1, num=lon_obs.size, dtype=int)
                     i_lon_model = np.linspace(0, lon_model.size-1, num=lon_model.size, dtype=int)
-                    if survey == 'COBE-FIRAS' or survey == 'Planck':
+                    if survey == 'COBE-FIRAS' or survey == 'DOBE-DIRBE' or survey == 'Planck':
                         i_lat_model = (lat_model >= lat_min) \
                                       & (lat_model <= lat_max)
                         i_lat_obs = (lat_obs >= lat_model[i_lat_model].min()) \
@@ -2137,7 +2151,7 @@ def box_comparison(path='/mnt/hpc_backup/yanitski/projects/pdr/observational_dat
                                                & (lat_model <= lat_max))[0]
                         i_lat_obs = np.where((lat_obs >= lat_model[i_lat_model].min())
                                              & (lat_obs <= lat_model[i_lat_model].max()))[0]
-                    if not survey == 'COBE-FIRAS':
+                    if not survey == 'COBE-FIRAS' and not survey == 'COBE-DIRBE':
                         i_obs = np.ix_(i_lat_obs, i_lon_obs)
                     if not survey_file == 'craig.idl':
                         i_obs = np.ix_([i_trans_obs], i_lat_obs, i_lon_obs)
@@ -2209,7 +2223,12 @@ def plot_comparison(path='/mnt/hpc_backup/yanitski/projects/pdr/KT3_history/Milk
     elif isinstance(missions, str):
         missions = [missions]
     elif isinstance(missions, list):
-        pass
+        # Use both COBE instruments if simply 'COBE' is specified
+        if 'COBE' in missions:
+            if 'COBE-FIRAS' in missions: missions.remove('COBE-FIRAS')
+            if 'COBE-DIRBE' in missions: missions.remove('COBE-DIRBE')
+            missions.append('COBE-FIRAS')
+            missions.append('COBE-DIRBE')
     else:
         print('Please specify a list of missions to compare the models.')
         return
