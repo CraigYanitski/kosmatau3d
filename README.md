@@ -24,7 +24,7 @@ A `Voxel` instance can be initialised using,
 ```
 
 There are many parameters that must be specified in order to initialise and simulate the clumpy ensemble.
-For a detailed explanation of the properties that can be defined/accessed with a voxel instance, see the `jupyter` notebook in `./tests/voxel.ipynb`.
+For a detailed explanation of the properties that can be defined/accessed with a voxel instance, see the `jupyter` notebook in `./notebooks/voxel.ipynb`.
 
 ## Documentation
 
@@ -48,7 +48,7 @@ This will periodically be improved over time.
 This is the basic component of `kosmatau3d`.
 It is made available as a self-sufficient object for use in other subgridding models.
 Given a volume-filling factor, mass, and FUV field, the single voxel object calculates the wavelength-dependant intensity, optical depth, absorption, and emissivity (assuming no background intensity) for a clumpy PDR ensemble.
-The explanation of this model is thoroughly-explained in `./tests/voxel.ipynb`.
+The explanation of this model is thoroughly-explained in `./notebooks/voxel.ipynb`.
 
 The objects that will modelled with this are:
 
@@ -70,7 +70,7 @@ The objects that will modelled with this are:
 
 ## Code Corrections
 
-The major changes to the `kosmatau3d` model are described in the document `treatise.pdf`, and the major changes to the Milky Way model will also appear in the upcoming Yanitski et al. (2022) paper.
+The major changes to the `kosmatau3d` model are described in the document `./docs/treatise.pdf`, and the major changes to the Milky Way model will also appear in the upcoming Yanitski et al. (2022) paper.
 There will be other documents to state the other various corrections and developments made.
 
 ## Developmental Progress
