@@ -439,7 +439,7 @@ class VoxelGrid(object):
         shdu_clump_absorption_species = self.shdu_header(name='Clump species absorption', units='1/pc', molecules=True,
                                                          filename='species_absorption_clump', dim=dim)
         
-        dim = [nDust, constants.velocityRange.size, self.__voxelNumber]
+        dim = [nDust, self.__voxelNumber]
         shdu_clump_emissivity_dust = self.shdu_header(name='Clump dust emissivity', units='K/pc', dust=True,
                                                       filename='dust_emissivity_clump', dim=dim)
         shdu_clump_absorption_dust = self.shdu_header(name='Clump dust absorption', units='1/pc', dust=True,
@@ -457,10 +457,10 @@ class VoxelGrid(object):
               
                 gc.collect()
                 
-                epsilon_species = np.sum(voxel.getSpeciesEmissivity(), axis=0)
-                kappa_species = np.sum(voxel.getSpeciesAbsorption(), axis=0)
-                epsilon_dust = np.sum(voxel.getDustEmissivity(), axis=0)
-                kappa_dust = np.sum(voxel.getDustAbsorption(), axis=0)
+                epsilon_species = voxel.getSpeciesEmissivity(include_dust=True, total=True)
+                kappa_species = voxel.getSpeciesAbsorption(include_dust=True, total=True)
+                epsilon_dust = voxel.getDustEmissivity(minimal=True)
+                kappa_dust = voxel.getDustAbsorption(minimal=True)
         
                 # Optain the voxel emission data
                 # clumpIntensity = intensity[0]

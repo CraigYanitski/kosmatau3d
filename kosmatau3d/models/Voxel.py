@@ -1006,7 +1006,7 @@ class Voxel(object):
         else:
             return np.asarray(emissivity)
   
-    def getDustAbsorption(self, fit=True, total=True):
+    def getDustAbsorption(self, fit=True, total=True, minimal=False):
         if self.suggested_calc:
             if fit:
                 absorption = [([self.__absorption_dust[ens].max(0)]*constants.velocityRange.size)
@@ -1015,12 +1015,14 @@ class Voxel(object):
                 absorption = copy(self.__absorption_dust)
         else:
             absorption = self.__absorption_dust
-        if total:
+        if minimal:
+            return np.asarray(absorption).sum(0).max(0)
+        elif total:
             return np.asarray(absorption).sum(0)
         else:
             return np.asarray(absorption)
 
-    def getDustOpticalDepth(self, fit=True, total=True):
+    def getDustOpticalDepth(self, fit=True, total=True, minimal=False):
         if self.suggested_calc:
             if fit:
                 optical_depth = [([self.__opticalDepthDust[ens].max(0)]*constants.velocityRange.size)
@@ -1029,7 +1031,9 @@ class Voxel(object):
                 optical_depth = copy(self.__opticalDepthDust)
         else:
             optical_depth = self.__opticalDepthDust
-        if total:
+        if minimal:
+            return np.asarray(optical_depth).sum(0).max(0)
+        elif total:
             return np.asarray(optical_depth).sum(0)
         else:
             return np.asarray(optical_depth)
