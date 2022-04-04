@@ -292,26 +292,38 @@ def calculateObservation(directory='', dim='xy', slRange=[(-np.pi,np.pi), (-np.p
 
 
 def multiprocessCalculation(slRange=[(-np.pi,np.pi), (-np.pi/2,np.pi/2)], nsl=[50,25], multiprocessing=0,
-                            dim='spherical', debug=False):
+                            dim='spherical', vel_pool=False, debug=False):
   
     Vpositions = []
     VintensityMapSpecies = []
     VintensityMapDust = []
     sightlines = []
-    
-    velChannel = partial(calculateVelocityChannel, slRange=slRange, nsl=nsl, dim=dim, debug=debug,
-                         multiprocess=multiprocessing)
-    vNum = constants.velocityRange.size
+
+    if vel_pool:
+        velChannel = partial(calculateVelocityChannel, slRange=slRange, nsl=nsl, dim=dim, debug=debug,
+                             multiprocess=multiprocessing, vel_pool=vel_pool)
+        vNum = constants.velocityRange.size
+    else:
+        lon = np.linspace(slRange[0][0], slRange[0][1], num=nsl[0])
+        lat = np.linspace(slRange[1][0], slRange[1][1], num=nsl[1])
+        longrid, latgrid = (arr.flatten() for arr in np.meshgrid(lon, lat))
+        sightlines = np.zeros((lon.size, lat.size))
+        calc_los = partial(calculateSightline, slRange=slRange, nsl=nsl, dim=dim, debug=debug,
+                           multiprocess=multiprocessing, vel_pool=vel_pool)
     
     t0 = time()
     
     if multiprocessing:
         pool = Pool(processes=multiprocessing)
         chunksize = max(int(vNum/multiprocessing/100), 1)
-        intensity = pool.imap(velChannel, list(enumerate(constants.velocityRange)), chunksize)
+        if vel_pool:
+            intensity = pool.imap(velChannel, list(enumerate(constants.velocityRange)), chunksize)
+        else:
+            intensity = pool.imap(calc_los)
     else:
         intensity = []
-        vTqdm = tqdm(total=constants.velocityRange.size, desc='Observing velocity', miniters=1, dynamic_ncols=True)
+        if vel_pool:
+            vTqdm = tqdm(total=constants.velocityRange.size, desc='Observing velocity', miniters=1, dynamic_ncols=True)
         rt.slTqdm = tqdm(total=nsl[0]*nsl[1], desc='Sightline', miniters=1, dynamic_ncols=True)
         for iv in enumerate(constants.velocityRange):
             intensity.append(velChannel(iv))
@@ -321,7 +333,10 @@ def multiprocessCalculation(slRange=[(-np.pi,np.pi), (-np.pi/2,np.pi/2)], nsl=[5
     vmax = constants.velocityRange.min()
     
     if multiprocessing:
-        vTqdm = tqdm(total=constants.velocityRange.size, desc='Observing velocity', miniters=1, dynamic_ncols=True)
+        if vel_pool:
+            vTqdm = tqdm(total=constants.velocityRange.size, desc='Observing velocity', miniters=1, dynamic_ncols=True)
+        else:
+            rt.slTqdm = tqdm(total=lon.size, desc='Sightline', miniters=1, dynamic_ncols=True)
     
     for n, i in enumerate(intensity):
         #   i.wait()
@@ -340,7 +355,10 @@ def multiprocessCalculation(slRange=[(-np.pi,np.pi), (-np.pi/2,np.pi/2)], nsl=[5
             # intensity[i] = None
           
         if multiprocessing:
-            vTqdm.update()
+            if vel_pool:
+                vTqdm.update()
+            else:
+                rt.slTqdm.update()
         
     # print('\n\nTotal evaluation time for {} sightlines and {} velocity channels: {}\n\n'.format(nsl[0]*nsl[1], vNum,
     #                                                                                             time()-t0))
@@ -495,6 +513,151 @@ def calculateVelocityChannel(ivelocity, slRange=[(-np.pi,np.pi), (-np.pi/2,np.pi
     #   ax.set_yticklabels([])
     #   plt.show(block=True)
     
+    # print('\n\n', sightlines.shape, '\n\n')
+    return (position, intensityMapSpecies, intensityMapDust, sightlines)
+
+
+def calculateSightline(los, slRange=[(-np.pi,np.pi), (-np.pi/2,np.pi/2)], nsl=[50,25],
+                             dim='spherical', debug=False, multiprocess=0):
+
+    # Convert the tuple to the desired index and velocity
+    i_vel = ivelocity[0]
+
+    # if multiprocess:
+    #   t0 = time()
+    #   print('\nCalculating velocity channel at {:.2f} km\s'.format(ivelocity[1]))
+
+    # Setup the sightlines that are calculated
+    longrid = np.linspace(slRange[0][0], slRange[0][1], num=nsl[0])
+    latgrid = np.linspace(slRange[1][0], slRange[1][1], num=nsl[1])
+    sightlines = np.zeros((longrid.size, latgrid.size))
+
+    # print('lon/lat arrays created:', time()-t0)
+
+    # Find the voxels that exist at the observing velocity
+    nDust = rt.tempDustEmissivity[0].shape[2]
+    if nDust > 1:
+        base = rt.interpDust(species.moleculeWavelengths)[:, :, 0]
+    else:
+        base = rt.tempDustEmissivity[0].data[0, i_vel, 0]
+
+    rt.i_vox = ((rt.tempSpeciesEmissivity[0].data[:, i_vel, :] > base).any(1) |
+                               rt.tempDustEmissivity[0].data[:, i_vel, :].any(1))
+
+    # print('Voxels selected (shape={}):'.format(i_vox[i_vox].shape), time()-t0)
+
+    # Update velocity progress bar
+    # rt.vTqdm.update()
+
+    # Reset sightline progress bar
+    if multiprocess == 0:
+        rt.slTqdm.reset()
+
+    # Initialise the intensities and map
+    position = []
+    intensityMapSpecies = []
+    intensityMapDust = []
+
+    # Get indeces of voxels at the correct observing velocity
+    # iClumpV = np.where(iCV)
+    # iInterclumpV = np.where(iIV)
+
+    if rt.i_vox.any() is False:
+        # print('\n\n', [], '\n\n')
+        return 0, 0, 0, []  # sightlines
+
+    # The voxel positions can be any of the voxels
+    # rt.tempSpeciesEmissivity = tempSpeciesEmissivity#[iV,i,:] / constants.pc/100
+    # rt.tempSpeciesAbsorption = tempSpeciesAbsorption#[iV,i,:] / constants.pc/100
+    # rt.tempDustEmissivity = tempDustEmissivity#[iV,i,:] / constants.pc/100
+    # rt.tempDustAbsorption = tempDustAbsorption#[iV,i,:] / constants.pc/100
+    # rt.tempPosition = rt.voxelPositions[0].data[iV,:]
+    # rt.tempClumpVelocity = clumpVelocity[iClumpV[0],:]
+    # rt.tempInterclumpEmission = interclumpEmission[:,iInterclumpV[0],iInterclumpV[1],:]
+    # rt.tempInterclumpPosition = voxelPositions[iInterclumpV[0],:]
+    # rt.tempInterclumpVelocity = interclumpVelocity[iInterclumpV[0],:]
+
+    for j, lat in enumerate(latgrid):
+
+        # Initialise a list containing the intensities at each lattitude
+        positionintensity_species = []
+        positionintensity_dust = []
+
+        for i, lon in enumerate(longrid):
+
+            # print('lon,lat before scipy call', lon, lat, ':', time()-t0)
+
+            # Calculate sightline length
+            Rslh = op.root_scalar(sightlength, args=lon, x0=constants.rGalEarth, x1=constants.rGal).root
+            thetaC = np.arctan(constants.hd/Rslh)
+            # if verbose:
+            #   print('\n',thetaC,'\n')
+            if abs(lat) < thetaC:
+                Rsl = Rslh/np.cos(lat)
+            else:
+                Rsl = constants.hd/np.sin(abs(lat))
+
+            # print('lon,lat after scipy call', lon, lat, ':', time()-t0)
+
+            # Try to isolate voxels in LoS and work with all transitions, else do them one at a time
+            try:
+                result, vox = setLOS(lon=lon, lat=lat, i_vel=i_vel, dim=dim, debug=debug)
+            except OSError:
+                rt.logger.critical('OSError!!')
+                sys.exit()
+
+            position.append([lon, lat])
+
+            if vox:
+                normfactor = Rsl/constants.voxel_size/vox  # to normalise to disk shape...
+                # if sightlines[i,j]<vox: sightlines[i,j] = normfactor*vox
+                sightlines[i, j] = vox
+
+            # Integrate along LoS
+            if vox == 1:
+                positionintensity_species.append(rt.intensity_species * normfactor)
+                positionintensity_dust.append(rt.intensity_dust * normfactor)
+            elif vox > 1:
+                calculatert(scale=normfactor)
+                positionintensity_species.append(rt.intensity_species)
+                positionintensity_dust.append(rt.intensity_dust)
+                # intensity_species = []
+                # intensity_dust = []
+            else:
+                positionintensity_species.append(np.zeros(rt.tempSpeciesEmissivity[0].shape[-1]))
+                positionintensity_dust.append(np.zeros(rt.tempDustEmissivity[0].shape[-1]))
+
+            if multiprocess == 0:
+                rt.slTqdm.update()
+
+            if len(np.shape(positionintensity_species[-1])) > 1:
+                rt.logger.error('Error {}'.format(np.shape(positionintensity_species[-1])))
+                input()
+
+        # Save intensities for each latitude
+        intensityMapSpecies.append(positionintensity_species)
+        intensityMapDust.append(positionintensity_dust)
+
+    # Save map for velocity channel
+    # VintensityMapSpecies.append(intensityMapSpecies)
+    # VintensityMapDust.append(intensityMapDust)
+    # Vpositions.append(position)
+
+    # if verbose:
+    #   print('Evaluating {} km/s HDU'.format(velocity))
+
+    # if plotV:
+    #   fig = plt.figure()
+    #   ax = fig.add_subplot(111, projection='mollweide')
+    #   cb = ax.scatter(np.array(position)[:,0], np.array(position)[:,1],
+    #                   c=np.array(intensityMapSpecies)[:,:,0,23].flatten(), s=64, marker='s')
+    #   plt.ion()
+    #   fig.colorbar(cb)
+    #   ax.grid(True)
+    #   ax.set_xticklabels([])
+    #   ax.set_yticklabels([])
+    #   plt.show(block=True)
+
     # print('\n\n', sightlines.shape, '\n\n')
     return (position, intensityMapSpecies, intensityMapDust, sightlines)
 
