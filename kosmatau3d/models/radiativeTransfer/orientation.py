@@ -825,8 +825,8 @@ def setLOS(x=0, y=0, z=0, lon=0, lat=0, i_vox=[], i_vel=0, i_spe=None, i_dust=No
     
     if i_los.size == 1:
   
-        rt.intensity_species = scale * rt.tempSpeciesEmissivity[0].data[i_los, i_vel, :][0, :] / constants.pc/100
-        rt.intensity_dust = scale * rt.tempDustEmissivity[0].data[i_los, i_vel, :][0, :] / constants.pc/100
+        rt.intensity_species = scale * rt.tempSpeciesEmissivity[0].data[i_los, :, :][0, :, :] / constants.pc/100
+        rt.intensity_dust = scale * rt.tempDustEmissivity[0].data[i_los, :, :][0, :] / constants.pc/100
         
         # print('\n\n', (rt.tempSpeciesEmissivity[0].data[iLOS,i_vel,:]>0).any(), '\n\n')
     
@@ -861,9 +861,9 @@ def setLOS(x=0, y=0, z=0, lon=0, lat=0, i_vox=[], i_vel=0, i_spe=None, i_dust=No
         # input()
         
         if (i_spe is None) & (i_dust is None):
-            rt.e_species = c.copy(rt.tempSpeciesEmissivity[0].data[iLoS_ordered, i_vel, :]) / constants.pc/100
+            rt.e_species = c.copy(rt.tempSpeciesEmissivity[0].data[iLoS_ordered, :, :]) / constants.pc/100
             rt.de_species = (rt.e_species[1:]-rt.e_species[:-1])/(scale)
-            rt.k_species = c.copy(rt.tempSpeciesAbsorption[0].data[iLoS_ordered, i_vel, :]) / constants.pc/100
+            rt.k_species = c.copy(rt.tempSpeciesAbsorption[0].data[iLoS_ordered, :, :]) / constants.pc/100
             rt.dk_species = (rt.k_species[1:]-rt.k_species[:-1])/(scale)
             
             rt.e_dust = c.copy(rt.tempDustEmissivity[0].data[iLoS_ordered, :]) / constants.pc/100
