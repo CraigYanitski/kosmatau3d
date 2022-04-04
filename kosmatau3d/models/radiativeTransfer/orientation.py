@@ -177,9 +177,9 @@ def calculateObservation(directory='', dim='xy', slRange=[(-np.pi,np.pi), (-np.p
         result = multiprocessCalculation(slRange=slRange, nsl=nsl, multiprocessing=multiprocessing,
                                          dim=dim, debug=debug)
         
-        Vpositions = result[0]
-        VintensityMapSpecies = result[1]
-        VintensityMapDust = result[2]
+        result_positions = result[0]
+        result_intensity_species = result[1][0]
+        result_intensity_dust = result[2][0]
         rt.sightlines = np.asarray(result[3]).max(0)
         vmin, vmax = result[4]
         
@@ -187,9 +187,9 @@ def calculateObservation(directory='', dim='xy', slRange=[(-np.pi,np.pi), (-np.p
         np.savetxt(directory+'/sightlines.csv', rt.sightlines, delimiter=',')
         
         # Convert to numpy arrays
-        Vpositions = np.array(Vpositions[0])
-        VintensityMapSpecies = np.array(VintensityMapSpecies)
-        VintensityMapDust = np.array(VintensityMapDust)
+        result_positions = np.asarray(result_positions)
+        result_intensity_species = np.asarray(result_intensity_species)
+        result_intensity_dust = np.asarray(result_intensity_dust)
     
         if verbose:
             rt.logger.info('Map position shape:')
@@ -216,15 +216,15 @@ def calculateObservation(directory='', dim='xy', slRange=[(-np.pi,np.pi), (-np.p
         # Setup the data to be saved in a FITS file. It will create an HDU list with position, species, and dust HDUs.
         if not debug:
             # Create HDUs for the map position and intensity and add the velocity in the headers
-            PositionHDU = fits.ImageHDU(Vpositions)
+            PositionHDU = fits.ImageHDU(result_positions)
             
             # print(VintensityMapSpecies.shape, np.shape(VintensityMapSpecies[0, 0, 0]))
             rt.intensity_species = VintensityMapSpecies
-            IntensityHDUSpecies = fits.ImageHDU(VintensityMapSpecies)
+            IntensityHDUSpecies = fits.ImageHDU(result_intensity_species)
             
             # print(VintensityMapDust.shape, np.shape(VintensityMapDust[0, 0, 0]))
-            rt.intensity_dust = VintensityMapDust
-            IntensityHDUDust = fits.ImageHDU(VintensityMapDust)
+            rt.intensity_dust = result_intensity_dust
+            IntensityHDUDust = fits.ImageHDU(result_intensity_dust)
             # input('Integrated intensity shape: {}'.format(VintensityMap.shape))
       
             PositionHDU.header['TYPE1'] = 'Angle'
@@ -346,7 +346,7 @@ def multiprocessCalculation(slRange=[(-np.pi,np.pi), (-np.pi/2,np.pi/2)], nsl=[5
         optical_depth_map_dust = np.zeros((lon.size, lat.size))
         sightlines = np.zeros((lon.size, lat.size))
         args = (list(enumerate(zip(longrid, latgrid))), longrid.size)
-        calc_los = partial(calculateSightline, slRange=slRange, nsl=nsl, dim=dim, debug=debug,
+        calc_los = partial(calculate_sightline, slRange=slRange, nsl=nsl, dim=dim, debug=debug,
                            multiprocess=multiprocessing, vel_pool=vel_pool)
     
     t0 = time()
@@ -375,12 +375,13 @@ def multiprocessCalculation(slRange=[(-np.pi,np.pi), (-np.pi/2,np.pi/2)], nsl=[5
             vTqdm = tqdm(total=constants.velocityRange.size, desc='Observing velocity', miniters=1, dynamic_ncols=True)
         else:
             rt.slTqdm = tqdm(total=lon.size, desc='Sightline', miniters=1, dynamic_ncols=True)
-    
+
+    # Loop through all processes
     for n, i in enumerate(intensity):
         #   i.wait()
         #   print(i)
-        # This allows for discarding the velocity channels without an emission (assuming vel_pool is True)
-        if len(i[3]):
+        # # This allows for discarding the velocity channels without an emission (assuming vel_pool is True)
+        if vel_pool:
             if constants.velocityRange[n] < vmin:
                 vmin = constants.velocityRange[n]
             if constants.velocityRange[n] > vmax:
@@ -391,13 +392,15 @@ def multiprocessCalculation(slRange=[(-np.pi,np.pi), (-np.pi/2,np.pi/2)], nsl=[5
                 VintensityMapSpecies.append(i[1])
                 VintensityMapDust.append(i[2])
                 sightlines.append(i[3])
-            else:
-                Vpositions.append(i[0][1:])
-                i_lon = np.where(lon == Vpositions[1])[0][0]
-                i_lat = np.where(lat == Vpositions[2])[0][0]
-                VintensityMapSpecies.append(i[1][0])
-                VintensityMapDust.append(i[2][0])
-                sightlines[i_lon, i_lat] = i[3]
+        else:
+            positions.append(i[0][1:])
+            i_lon = np.where(lon == Vpositions[1])[0][0]
+            i_lat = np.where(lat == Vpositions[2])[0][0]
+            intensity_map_species[i_lon, i_lat] = i[1][0]
+            optical_depth_map_species[i_lon, i_lat] = i[1][1]
+            intensity_map_dust[i_lon, i_lat] = i[2][0]
+            optical_depth_map_dust[i_lon, i_lat] = i[2][1]
+            sightlines[i_lon, i_lat] = i[3]
 
             # intensity[i] = None
           
@@ -409,8 +412,12 @@ def multiprocessCalculation(slRange=[(-np.pi,np.pi), (-np.pi/2,np.pi/2)], nsl=[5
         
     # print('\n\nTotal evaluation time for {} sightlines and {} velocity channels: {}\n\n'.format(nsl[0]*nsl[1], vNum,
     #                                                                                             time()-t0))
-    
-    return (Vpositions, VintensityMapSpecies, VintensityMapDust, sightlines, (vmin, vmax))
+
+    if vel_pool:
+        return (Vpositions[0], (VintensityMapSpecies,), (VintensityMapDust,), sightlines, (vmin, vmax))
+    else:
+        return (positions, (intensity_map_species, optical_depth_map_species),
+                (intensity_map_dust, optical_depth_map_dust), sightlines, (vmin, vmax))
 
 
 def sightlength(x, l):
@@ -564,7 +571,7 @@ def calculateVelocityChannel(ivelocity, slRange=[(-np.pi,np.pi), (-np.pi/2,np.pi
     return (position, intensityMapSpecies, intensityMapDust, sightlines)
 
 
-def calculateSightline(los, slRange=[(-np.pi,np.pi), (-np.pi/2,np.pi/2)], nsl=[50,25],
+def calculate_sightline(los, slRange=[(-np.pi,np.pi), (-np.pi/2,np.pi/2)], nsl=[50,25],
                              dim='spherical', debug=False, multiprocess=0):
 
     # # Convert the tuple to the desired index and velocity
