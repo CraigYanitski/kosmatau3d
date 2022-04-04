@@ -107,8 +107,8 @@ def calculateObservation(directory='', dim='xy', slRange=[(-np.pi,np.pi), (-np.p
     if nDust > 1:
         # default interpolation is along the last axis, which is what we need
         rt.interpDust = interpolate.interp1d(constants.wavelengths[:nDust],
-                                                            rt.tempDustEmissivity[0].data[:, 0, :],
-                                                            fill_value='extrapolate')
+                                             rt.tempDustEmissivity[0].data[:, 0, :],
+                                             fill_value='extrapolate')
     
     constants.velocityRange = np.linspace(rt.tempSpeciesEmissivity[0].header['CRVAL2'] -
                                           (rt.tempSpeciesEmissivity[0].header['CRPIX2']) *
@@ -325,22 +325,27 @@ def calculateObservation(directory='', dim='xy', slRange=[(-np.pi,np.pi), (-np.p
 
 def multiprocessCalculation(slRange=[(-np.pi,np.pi), (-np.pi/2,np.pi/2)], nsl=[50,25], multiprocessing=0,
                             dim='spherical', vel_pool=False, debug=False):
-  
-    Vpositions = []
-    VintensityMapSpecies = []
-    VintensityMapDust = []
-    sightlines = []
+
 
     if vel_pool:
+        Vpositions = []
+        VintensityMapSpecies = []
+        VintensityMapDust = []
+        sightlines = []
+        args = (list(enumerate(constants.velocityRange)), constants.velocityRange.size)
         velChannel = partial(calculateVelocityChannel, slRange=slRange, nsl=nsl, dim=dim, debug=debug,
                              multiprocess=multiprocessing, vel_pool=vel_pool)
-        vNum = constants.velocityRange.size
     else:
         lon = np.linspace(slRange[0][0], slRange[0][1], num=nsl[0])
         lat = np.linspace(slRange[1][0], slRange[1][1], num=nsl[1])
         longrid, latgrid = (arr.flatten() for arr in np.meshgrid(lon, lat))
+        positions = []
+        intensity_map_species = np.zeros((lon.size, lat.size))
+        optical_depth_map_species = np.zeros((lon.size, lat.size))
+        intensity_map_dust = np.zeros((lon.size, lat.size))
+        optical_depth_map_dust = np.zeros((lon.size, lat.size))
         sightlines = np.zeros((lon.size, lat.size))
-        args = list(zip(enumerate()))
+        args = (list(enumerate(zip(longrid, latgrid))), longrid.size)
         calc_los = partial(calculateSightline, slRange=slRange, nsl=nsl, dim=dim, debug=debug,
                            multiprocess=multiprocessing, vel_pool=vel_pool)
     
@@ -348,11 +353,11 @@ def multiprocessCalculation(slRange=[(-np.pi,np.pi), (-np.pi/2,np.pi/2)], nsl=[5
     
     if multiprocessing:
         pool = Pool(processes=multiprocessing)
-        chunksize = max(int(vNum/multiprocessing/100), 1)
+        chunksize = max(int(args[1]/multiprocessing/100), 1)
         if vel_pool:
-            intensity = pool.imap(velChannel, list(enumerate(constants.velocityRange)), chunksize)
+            intensity = pool.imap(velChannel, args[0], chunksize)
         else:
-            intensity = pool.imap(calc_los, list())
+            intensity = pool.imap(calc_los, args[0], chunksize)
     else:
         intensity = []
         if vel_pool:
@@ -380,12 +385,20 @@ def multiprocessCalculation(slRange=[(-np.pi,np.pi), (-np.pi/2,np.pi/2)], nsl=[5
                 vmin = constants.velocityRange[n]
             if constants.velocityRange[n] > vmax:
                 vmax = constants.velocityRange[n]
-        
-            Vpositions.append(i[0])
-            VintensityMapSpecies.append(i[1])
-            VintensityMapDust.append(i[2])
-            sightlines.append(i[3])
-            
+
+            if vel_pool:
+                Vpositions.append(i[0])
+                VintensityMapSpecies.append(i[1])
+                VintensityMapDust.append(i[2])
+                sightlines.append(i[3])
+            else:
+                Vpositions.append(i[0][1:])
+                i_lon = np.where(lon == Vpositions[1])[0][0]
+                i_lat = np.where(lat == Vpositions[2])[0][0]
+                VintensityMapSpecies.append(i[1][0])
+                VintensityMapDust.append(i[2][0])
+                sightlines[i_lon, i_lat] = i[3]
+
             # intensity[i] = None
           
         if multiprocessing:
@@ -556,9 +569,8 @@ def calculateSightline(los, slRange=[(-np.pi,np.pi), (-np.pi/2,np.pi/2)], nsl=[5
 
     # # Convert the tuple to the desired index and velocity
     # i_vel = ivelocity[0]
-    i_lon = los[0][0]
-    lon = los[0][1]
-    i_lat = los[1][0]
+    i_lon = los[0]
+    lon = los[1][0]
     lat = los[1][1]
 
     # if multiprocess:
@@ -572,15 +584,14 @@ def calculateSightline(los, slRange=[(-np.pi,np.pi), (-np.pi/2,np.pi/2)], nsl=[5
 
     # print('lon/lat arrays created:', time()-t0)
 
-    # Find the voxels that exist at the observing velocity
-    nDust = rt.tempDustEmissivity[0].shape[2]
-    if nDust > 1:
-        base = rt.interpDust(species.moleculeWavelengths)[:, :, 0]
-    else:
-        base = rt.tempDustEmissivity[0].data[0, i_vel, 0]
+    # # Find the voxels that exist at the observing velocity
+    # nDust = rt.tempDustEmissivity[0].shape[2]
+    # if nDust > 1:
+    #     base = rt.interpDust(species.moleculeWavelengths)[:, :, 0]
+    # else:
+    #     base = rt.tempDustEmissivity[0].data[0, 0]
 
-    rt.i_vox = ((rt.tempSpeciesEmissivity[0].data[:, i_vel, :] > base).any(1) |
-                               rt.tempDustEmissivity[0].data[:, i_vel, :].any(1))
+    rt.i_vox = rt.tempDustEmissivity[0].data.any(1)
 
     # print('Voxels selected (shape={}):'.format(i_vox[i_vox].shape), time()-t0)
 
@@ -591,10 +602,10 @@ def calculateSightline(los, slRange=[(-np.pi,np.pi), (-np.pi/2,np.pi/2)], nsl=[5
     if multiprocess == 0:
         rt.slTqdm.reset()
 
-    # Initialise the intensities and map
-    position = []
-    intensityMapSpecies = []
-    intensityMapDust = []
+    # # Initialise the intensities and map
+    # position = []
+    # intensityMapSpecies = []
+    # intensityMapDust = []
 
     # Get indeces of voxels at the correct observing velocity
     # iClumpV = np.where(iCV)
@@ -602,7 +613,7 @@ def calculateSightline(los, slRange=[(-np.pi,np.pi), (-np.pi/2,np.pi/2)], nsl=[5
 
     if rt.i_vox.any() is False:
         # print('\n\n', [], '\n\n')
-        return 0, 0, 0, []  # sightlines
+        return 0, (0, 0), (0, 0), 0  # sightlines
 
     # The voxel positions can be any of the voxels
     # rt.tempSpeciesEmissivity = tempSpeciesEmissivity#[iV,i,:] / constants.pc/100
@@ -615,66 +626,72 @@ def calculateSightline(los, slRange=[(-np.pi,np.pi), (-np.pi/2,np.pi/2)], nsl=[5
     # rt.tempInterclumpPosition = voxelPositions[iInterclumpV[0],:]
     # rt.tempInterclumpVelocity = interclumpVelocity[iInterclumpV[0],:]
 
-    for j, lat in enumerate(latgrid):
+    # # Initialise a list containing the intensities at each lattitude
+    # positionintensity_species = []
+    # positionintensity_dust = []
+    # positionopticaldepth_species = []
+    # positionopticaldepth_dust = []
 
-        # Initialise a list containing the intensities at each lattitude
-        positionintensity_species = []
-        positionintensity_dust = []
+    # print('lon,lat before scipy call', lon, lat, ':', time()-t0)
 
-        for i, lon in enumerate(longrid):
+    # Calculate sightline length
+    Rslh = op.root_scalar(sightlength, args=lon, x0=constants.rGalEarth, x1=constants.rGal).root
+    thetaC = np.arctan(constants.hd/Rslh)
+    # if verbose:
+    #   print('\n',thetaC,'\n')
+    if abs(lat) < thetaC:
+        Rsl = Rslh/np.cos(lat)
+    else:
+        Rsl = constants.hd/np.sin(abs(lat))
 
-            # print('lon,lat before scipy call', lon, lat, ':', time()-t0)
+    # print('lon,lat after scipy call', lon, lat, ':', time()-t0)
 
-            # Calculate sightline length
-            Rslh = op.root_scalar(sightlength, args=lon, x0=constants.rGalEarth, x1=constants.rGal).root
-            thetaC = np.arctan(constants.hd/Rslh)
-            # if verbose:
-            #   print('\n',thetaC,'\n')
-            if abs(lat) < thetaC:
-                Rsl = Rslh/np.cos(lat)
-            else:
-                Rsl = constants.hd/np.sin(abs(lat))
+    # Try to isolate voxels in LoS and work with all transitions, else do them one at a time
+    try:
+        result, vox = setLOS(lon=lon, lat=lat, dim=dim, debug=debug)
+    except OSError:
+        rt.logger.critical('OSError!!')
+        sys.exit()
 
-            # print('lon,lat after scipy call', lon, lat, ':', time()-t0)
+    # position.append([lon, lat])
 
-            # Try to isolate voxels in LoS and work with all transitions, else do them one at a time
-            try:
-                result, vox = setLOS(lon=lon, lat=lat, i_vel=i_vel, dim=dim, debug=debug)
-            except OSError:
-                rt.logger.critical('OSError!!')
-                sys.exit()
+    if vox > 0:
+        normfactor = Rsl/constants.voxel_size/vox  # to normalise to disk shape...
+        # if sightlines[i,j]<vox: sightlines[i,j] = normfactor*vox
 
-            position.append([lon, lat])
+    # Integrate along LoS
+    if vox == 1:
+        # positionintensity_species.append(rt.intensity_species * normfactor)
+        # positionintensity_dust.append(rt.intensity_dust * normfactor)
+        # positionopticaldepth_species.append(rt.opticaldepth_species * normfactor)
+        # positionopticaldepth_dust.append(rt.opticaldepth_dust * normfactor)
+        result = ((rt.intensity_species * normfactor, rt.opticaldepth_species * normfactor),
+                  (rt.intensity_dust * normfactor, rt.opticaldepth_dust * normfactor))
+    elif vox > 1:
+        # calculatert(scale=normfactor)
+        # positionintensity_species.append(rt.intensity_species)
+        # positionintensity_dust.append(rt.intensity_dust)
+        # positionopticaldepth_species.append(rt.k_species.sum(0) * normfactor*constants.voxel_size*100*constants.pc)
+        # positionopticaldepth_dust.append(rt.kopticaldepth_dust.sum(0) * normfactor*constants.voxel_size*100*constants.pc)
+        result = ((copy(rt.intensity_species), rt.k_species.sum(0) * normfactor*constants.voxel_size*100*constants.pc),
+                  (copy(rt.intensity_dust), rt.k_dust.sum(0) * normfactor*constants.voxel_size*100*constants.pc))
+        # intensity_species = []
+        # intensity_dust = []
+    else:
+        # positionintensity_species.append(np.zeros(rt.tempSpeciesEmissivity[0].shape[1:]))
+        # positionintensity_dust.append(np.zeros(rt.tempDustEmissivity[0].shape[1]))
+        # positionopticaldepth_species.append(np.zeros(rt.tempSpeciesAbsorption[0].shape[1:]))
+        # positionopticaldepth_dust.append(np.zeros(rt.tempDustAbsorption[0].shape[1]))
+        result = ((np.zeros(rt.tempSpeciesEmissivity[0].shape[1:]), np.zeros(rt.tempSpeciesAbsorption[0].shape[1:])),
+                  (np.zeros(rt.tempDustEmissivity[0].shape[1]), np.zeros(rt.tempDustAbsorption[0].shape[1])))
 
-            if vox:
-                normfactor = Rsl/constants.voxel_size/vox  # to normalise to disk shape...
-                # if sightlines[i,j]<vox: sightlines[i,j] = normfactor*vox
-                sightlines[i, j] = vox
+    if len(np.shape(positionintensity_species[-1])) > 1:
+        rt.logger.error('Error {}'.format(np.shape(positionintensity_species[-1])))
+        input()
 
-            # Integrate along LoS
-            if vox == 1:
-                positionintensity_species.append(rt.intensity_species * normfactor)
-                positionintensity_dust.append(rt.intensity_dust * normfactor)
-            elif vox > 1:
-                calculatert(scale=normfactor)
-                positionintensity_species.append(rt.intensity_species)
-                positionintensity_dust.append(rt.intensity_dust)
-                # intensity_species = []
-                # intensity_dust = []
-            else:
-                positionintensity_species.append(np.zeros(rt.tempSpeciesEmissivity[0].shape[-1]))
-                positionintensity_dust.append(np.zeros(rt.tempDustEmissivity[0].shape[-1]))
-
-            if multiprocess == 0:
-                rt.slTqdm.update()
-
-            if len(np.shape(positionintensity_species[-1])) > 1:
-                rt.logger.error('Error {}'.format(np.shape(positionintensity_species[-1])))
-                input()
-
-        # Save intensities for each latitude
-        intensityMapSpecies.append(positionintensity_species)
-        intensityMapDust.append(positionintensity_dust)
+    # # Save intensities for each latitude
+    # intensity_species.append(positionintensity_species)
+    # intensity_dust.append(positionintensity_dust)
 
     # Save map for velocity channel
     # VintensityMapSpecies.append(intensityMapSpecies)
@@ -697,7 +714,7 @@ def calculateSightline(los, slRange=[(-np.pi,np.pi), (-np.pi/2,np.pi/2)], nsl=[5
     #   plt.show(block=True)
 
     # print('\n\n', sightlines.shape, '\n\n')
-    return (position, intensityMapSpecies, intensityMapDust, sightlines)
+    return (position, *result, vox)
 
 
 def setLOS(x=0, y=0, z=0, lon=0, lat=0, i_vox=[], i_vel=0, i_spe=None, i_dust=None,
@@ -825,8 +842,10 @@ def setLOS(x=0, y=0, z=0, lon=0, lat=0, i_vox=[], i_vel=0, i_spe=None, i_dust=No
     
     if i_los.size == 1:
   
-        rt.intensity_species = scale * rt.tempSpeciesEmissivity[0].data[i_los, :, :][0, :, :] / constants.pc/100
-        rt.intensity_dust = scale * rt.tempDustEmissivity[0].data[i_los, :, :][0, :] / constants.pc/100
+        rt.intensity_species = scale * rt.tempSpeciesEmissivity[0].data[i_los, :, :][0, :, :]
+        rt.intensity_dust = scale * rt.tempDustEmissivity[0].data[i_los, :][0, :]
+        rt.opticaldepth_species = scale * rt.tempSpeciesAbsorption[0].data[i_los, :, :][0, :, :]
+        rt.opticaldepth_dust = scale * rt.tempDustAbsorption[0].data[i_los, :][0, :]
         
         # print('\n\n', (rt.tempSpeciesEmissivity[0].data[iLOS,i_vel,:]>0).any(), '\n\n')
     
@@ -901,7 +920,7 @@ def calculatert(scale=1, background_intensity=0., species=True, dust=True, verbo
     #   intensity_dust = np.array([backgroundI])
     #   nSteps = rt.de_dust.shape[0]
     # else:
-    rt.intensity_species = np.full(rt.k_species.shape[1], background_intensity)
+    rt.intensity_species = np.full(rt.k_species.shape[1:], background_intensity)
     rt.intensity_dust = np.full(rt.k_dust.shape[1], background_intensity)
     n_steps = rt.de_species.shape[0]
     
@@ -934,8 +953,8 @@ def calculatert(scale=1, background_intensity=0., species=True, dust=True, verbo
     with warnings.catch_warnings():
         warnings.simplefilter('ignore')
         if species:
-            a_species = (rt.k_species[:-1, :] / np.sqrt(2*np.abs(rt.dk_species)))
-            b_species = ((rt.k_species[:-1, :] + rt.dk_species*scale) / np.sqrt(2*np.abs(rt.dk_species)))
+            a_species = (rt.k_species[:-1, :, :] / np.sqrt(2*np.abs(rt.dk_species)))
+            b_species = ((rt.k_species[:-1, :, :] + rt.dk_species*scale) / np.sqrt(2*np.abs(rt.dk_species)))
         if dust:
             a_dust = (rt.k_dust[:-1, :] / np.sqrt(2*np.abs(rt.dk_dust)))
             b_dust = ((rt.k_dust[:-1, :] + rt.dk_dust*scale) / np.sqrt(2*np.abs(rt.dk_dust)))
@@ -951,12 +970,12 @@ def calculatert(scale=1, background_intensity=0., species=True, dust=True, verbo
         if species:
     
             # Determine which form of integration the species transitions require
-            k0_species = ((rt.dk_species[i, :] == 0) &
-                          (np.abs(rt.k_species[i, :]*scale) < 10**-10))
-            kg_species = ~k0_species & (np.abs(rt.k_species[i, :])
-                                        > (10**3*np.abs(rt.dk_species[i, :])*scale))
-            keg_species = ~k0_species & ~kg_species & (rt.dk_species[i, :] > 0)
-            kel_species = ~k0_species & ~kg_species & (rt.dk_species[i, :] < 0)
+            k0_species = ((rt.dk_species[i, :, :] == 0) &
+                          (np.abs(rt.k_species[i, :, :]*scale) < 10**-10))
+            kg_species = ~k0_species & (np.abs(rt.k_species[i, :, :])
+                                        > (10**3*np.abs(rt.dk_species[i, :, :])*scale))
+            keg_species = ~k0_species & ~kg_species & (rt.dk_species[i, :, :] > 0)
+            kel_species = ~k0_species & ~kg_species & (rt.dk_species[i, :, :] < 0)
             
             # Integrate using the required method
             if k0_species.any():
