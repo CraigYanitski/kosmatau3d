@@ -38,6 +38,25 @@ def eTildeImaginary(file='Eimag.dat'):
     return (eimaginary['x'], eimaginary['Eimaginary'])
 
 
+def open_voxel_positions():
+    rt.voxelPositions = fits.open(directory + 'voxel_position.fits', mode='denywrite')
+    return
+
+
+def open_voxel_velocities():
+    rt.voxelVelocities = fits.open(directory+'voxel_velocity.fits', mode='denywrite')
+    return
+
+
+def open_voxel_emission():
+    # Emissivities in K/pc; absorptions in 1/pc
+    rt.tempSpeciesEmissivity = fits.open(directory+'species_emissivity.fits', mode='denywrite')
+    rt.tempSpeciesAbsorption = fits.open(directory+'species_absorption.fits', mode='denywrite')
+    rt.tempDustEmissivity = fits.open(directory+'dust_emissivity.fits', mode='denywrite')
+    rt.tempDustAbsorption = fits.open(directory+'dust_absorption.fits', mode='denywrite')
+    return
+
+
 def calculateObservation(directory='', dim='xy', slRange=[(-np.pi,np.pi), (-np.pi/2,np.pi/2)], nsl=[50,25],
                          terminal=True, plotV=False, multiprocessing=0, debug=False, verbose=False):
 
@@ -47,14 +66,10 @@ def calculateObservation(directory='', dim='xy', slRange=[(-np.pi,np.pi), (-np.p
     # constants.velocityRange = np.linspace(-300, 300, 500)
     
     # print('Load data')
-  
-    rt.voxelPositions = fits.open(directory+'voxel_position.fits', mode='denywrite')
-    rt.voxelVelocities = fits.open(directory+'voxel_velocity.fits', mode='denywrite')
-    # Emissivities in K/pc; absorptions in 1/pc
-    rt.tempSpeciesEmissivity = fits.open(directory+'species_emissivity.fits', mode='denywrite')
-    rt.tempSpeciesAbsorption = fits.open(directory+'species_absorption.fits', mode='denywrite')
-    rt.tempDustEmissivity = fits.open(directory+'dust_emissivity.fits', mode='denywrite')
-    rt.tempDustAbsorption = fits.open(directory+'dust_absorption.fits', mode='denywrite')
+
+    rt.open_voxel_positions()
+    rt.open_voxel_velocities()
+    rt.open_voxel_emission()
   
     nDust = rt.tempDustEmissivity[0].shape[2]
     if nDust > 1:
