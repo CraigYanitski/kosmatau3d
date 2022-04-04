@@ -38,18 +38,50 @@ def eTildeImaginary(file='Eimag.dat'):
     return (eimaginary['x'], eimaginary['Eimaginary'])
 
 
-def open_voxel_positions():
+def open_voxel_positions(directory):
+    '''
+    Open the file containing the Cartesian positions of all voxels.
+    This will save the contents in a sub-module variable.
+
+    :param directory: path to the model files
+    :return:
+
+    shape -> (n_voxels, 3)
+    '''
+
     rt.voxelPositions = fits.open(directory + 'voxel_position.fits', mode='denywrite')
     return
 
 
-def open_voxel_velocities():
+def open_voxel_velocities(directory):
+    '''
+    Open the file containing the observed velocity of all voxels.
+    This will save the contents in a sub-module variable.
+
+    :param directory: path to the model files
+    :return:
+
+    shape -> (n_voxels, 1)
+    '''
+
     rt.voxelVelocities = fits.open(directory+'voxel_velocity.fits', mode='denywrite')
     return
 
 
-def open_voxel_emission():
-    # Emissivities in K/pc; absorptions in 1/pc
+def open_voxel_emission(directory):
+    '''
+    Open the file containing the emissivity and absorption of all voxels.
+    This will save the contents in a sub-module variable.
+
+    :param directory: path to the model files
+    :return:
+
+    Emissivities in K/pc; absorptions in 1/pc
+
+    species file shape -> (n_voxels, n_v_obs, n_transitions)
+
+    dust file shape -> (n_voxels, n_wavelengths)
+    '''
     rt.tempSpeciesEmissivity = fits.open(directory+'species_emissivity.fits', mode='denywrite')
     rt.tempSpeciesAbsorption = fits.open(directory+'species_absorption.fits', mode='denywrite')
     rt.tempDustEmissivity = fits.open(directory+'dust_emissivity.fits', mode='denywrite')
@@ -67,9 +99,9 @@ def calculateObservation(directory='', dim='xy', slRange=[(-np.pi,np.pi), (-np.p
     
     # print('Load data')
 
-    rt.open_voxel_positions()
-    rt.open_voxel_velocities()
-    rt.open_voxel_emission()
+    rt.open_voxel_positions(directory)
+    rt.open_voxel_velocities(directory)
+    rt.open_voxel_emission(directory)
   
     nDust = rt.tempDustEmissivity[0].shape[2]
     if nDust > 1:
@@ -308,6 +340,7 @@ def multiprocessCalculation(slRange=[(-np.pi,np.pi), (-np.pi/2,np.pi/2)], nsl=[5
         lat = np.linspace(slRange[1][0], slRange[1][1], num=nsl[1])
         longrid, latgrid = (arr.flatten() for arr in np.meshgrid(lon, lat))
         sightlines = np.zeros((lon.size, lat.size))
+        args = list(zip(enumerate()))
         calc_los = partial(calculateSightline, slRange=slRange, nsl=nsl, dim=dim, debug=debug,
                            multiprocess=multiprocessing, vel_pool=vel_pool)
     
@@ -319,7 +352,7 @@ def multiprocessCalculation(slRange=[(-np.pi,np.pi), (-np.pi/2,np.pi/2)], nsl=[5
         if vel_pool:
             intensity = pool.imap(velChannel, list(enumerate(constants.velocityRange)), chunksize)
         else:
-            intensity = pool.imap(calc_los)
+            intensity = pool.imap(calc_los, list())
     else:
         intensity = []
         if vel_pool:
@@ -341,6 +374,7 @@ def multiprocessCalculation(slRange=[(-np.pi,np.pi), (-np.pi/2,np.pi/2)], nsl=[5
     for n, i in enumerate(intensity):
         #   i.wait()
         #   print(i)
+        # This allows for discarding the velocity channels without an emission (assuming vel_pool is True)
         if len(i[3]):
             if constants.velocityRange[n] < vmin:
                 vmin = constants.velocityRange[n]
@@ -373,7 +407,7 @@ def sightlength(x, l):
 
 
 def calculateVelocityChannel(ivelocity, slRange=[(-np.pi,np.pi), (-np.pi/2,np.pi/2)], nsl=[50,25],
-                             dim='spherical', debug=False, multiprocess=0):
+                             dim='spherical', debug=False, multiprocess=0, vel_pool=True):
 
     # Convert the tuple to the desired index and velocity
     i_vel = ivelocity[0]
@@ -520,17 +554,21 @@ def calculateVelocityChannel(ivelocity, slRange=[(-np.pi,np.pi), (-np.pi/2,np.pi
 def calculateSightline(los, slRange=[(-np.pi,np.pi), (-np.pi/2,np.pi/2)], nsl=[50,25],
                              dim='spherical', debug=False, multiprocess=0):
 
-    # Convert the tuple to the desired index and velocity
-    i_vel = ivelocity[0]
+    # # Convert the tuple to the desired index and velocity
+    # i_vel = ivelocity[0]
+    i_lon = los[0][0]
+    lon = los[0][1]
+    i_lat = los[1][0]
+    lat = los[1][1]
 
     # if multiprocess:
     #   t0 = time()
     #   print('\nCalculating velocity channel at {:.2f} km\s'.format(ivelocity[1]))
 
-    # Setup the sightlines that are calculated
-    longrid = np.linspace(slRange[0][0], slRange[0][1], num=nsl[0])
-    latgrid = np.linspace(slRange[1][0], slRange[1][1], num=nsl[1])
-    sightlines = np.zeros((longrid.size, latgrid.size))
+    # # Setup the sightlines that are calculated
+    # longrid = np.linspace(slRange[0][0], slRange[0][1], num=nsl[0])
+    # latgrid = np.linspace(slRange[1][0], slRange[1][1], num=nsl[1])
+    # sightlines = np.zeros((longrid.size, latgrid.size))
 
     # print('lon/lat arrays created:', time()-t0)
 
