@@ -703,8 +703,34 @@ def calculateSightline(los, slRange=[(-np.pi,np.pi), (-np.pi/2,np.pi/2)], nsl=[5
 def setLOS(x=0, y=0, z=0, lon=0, lat=0, i_vox=[], i_vel=0, i_spe=None, i_dust=None,
            dim='xy', reverse=True, debug=False, verbose=False):
     '''
-    The emission dimensions should be velocity x species x 2 x voxels. Axis 1 should be split for intensity and optical
-    depth. The positions dimensions should be 3 x voxels.
+    The emission dimensions should be velocity x species x 2 x voxels.
+    Axis 1 should be split for intensity and optical depth.
+    The positions dimensions should be 3 x voxels.
+
+    A function to find the voxels in a particular line-of-sight. This takes a position (specified in Cartesian or
+    spherical coordinates) as input, and uses the previously-opened sub-module variables for the voxel positions.
+    It the determines the voxels in the line-of-sight, orders them from farthest to closest, and saves the
+    sub-module variables necessary for the RT calculation.
+
+    :param x:
+    :param y:
+    :param z:
+    :param lon:
+    :param lat:
+    :param i_vox:
+    :param i_vel:
+    :param i_spe:
+    :param i_dust:
+    :param dim:
+    :param reverse:
+    :param debug:
+    :param verbose:
+    :return:
+        :param calculation_code: 0 for no voxels in the line-of sight, 1 for one voxel in the line-of-sight, and
+            2 for more then one voxel in the line-of-sight. This is important for the radiative transfer calculation.
+        :param n_vel: the number of the voxels in the line-of-sight. The original use (velocities) mostly defunct due
+            to how the velocity dimension is handled, but rather it is used to get the number of voxels in the
+            line-of-sight.
     '''
   
     scale = constants.voxel_size*constants.pc*100   # pc should be in cm
@@ -840,9 +866,9 @@ def setLOS(x=0, y=0, z=0, lon=0, lat=0, i_vox=[], i_vel=0, i_spe=None, i_dust=No
             rt.k_species = c.copy(rt.tempSpeciesAbsorption[0].data[iLoS_ordered, i_vel, :]) / constants.pc/100
             rt.dk_species = (rt.k_species[1:]-rt.k_species[:-1])/(scale)
             
-            rt.e_dust = c.copy(rt.tempDustEmissivity[0].data[iLoS_ordered, i_vel, :]) / constants.pc/100
+            rt.e_dust = c.copy(rt.tempDustEmissivity[0].data[iLoS_ordered, :]) / constants.pc/100
             rt.de_dust = (rt.e_dust[1:]-rt.e_dust[:-1])/(scale)
-            rt.k_dust = c.copy(rt.tempDustAbsorption[0].data[iLoS_ordered, i_vel, :]) / constants.pc/100
+            rt.k_dust = c.copy(rt.tempDustAbsorption[0].data[iLoS_ordered, :]) / constants.pc/100
             rt.dk_dust = (rt.k_dust[1:]-rt.k_dust[:-1])/(scale)
     
     else:
