@@ -11,6 +11,8 @@ from tqdm import tqdm
 from numba import jit
 from logging import getLogger
 from copy import copy
+from pprint import pprint
+from time import time
 
 from .Voxel import *
 from kosmatau3d.models import (
@@ -193,7 +195,12 @@ class VoxelGrid(object):
     
         self.__properties = {
             # Model parameters
-            'fromGrid': True,
+            'voxel_size': constants.voxel_size,
+            'clumpMassRange': constants.clumpLogMassRange,
+            'clumpMassNumber': constants.clumpMassNumber,
+            'clumpNmax': constants.clumpNmax,
+            'velocityRange': constants.velocityBin,
+            'velocityNumber': constants.velocityNumber,
     
             # Voxel properties
             'velocity': velocity,
@@ -201,7 +208,11 @@ class VoxelGrid(object):
             'ensembleMass': ensembleMass,
             'ensembleDensity': ensembleDensity,
             'FUV': FUV,
-            'crir': crir
+            'crir': crir,
+
+            # Calculation
+            'suggested_calc': True,
+            'velocity_resolution': 1
             }
     
         return
@@ -222,7 +233,7 @@ class VoxelGrid(object):
     
         # print(observations.tauCenterline)
         interpolations.initialise_grid(dilled=dilled)
-        interpolations.initialise_model(dilled=dilled)
+        interpolations.initialise_model()
         self.__initialiseGrid()
         
         if timed:
@@ -267,8 +278,8 @@ class VoxelGrid(object):
         shdu_FUVabsorption = self.shdu_header(name='tau_FUV', units='mag', filename='voxel_FUVabsorption', dim=dim)
         
         # test of multiprocessing
-        def getProperties(voxel):
-            i, voxel = voxel
+        def getProperties(ivoxel):
+            i, voxel = ivoxel
       
             self.__x.append(x[i])
             self.__y.append(y[i])
@@ -277,9 +288,13 @@ class VoxelGrid(object):
             voxel.setIndex(i)  # -len(self.__unusedVoxels))
             voxel.setPosition(x[i], y[i], z[i], r[i], phi[i])
             self.__calculateProperties(x[i], y[i], z[i], average=3)
+            #t0 = time()
+            #pprint(self.__properties)
             voxel.setProperties(**self.__properties)
-            
+            #print('Initialised:', (time()-t0)/60)
             voxel.calculateEmission()
+            #print('Calculated:', (time()-t0)/60)
+            #print()
             
             return voxel
           
@@ -301,7 +316,8 @@ class VoxelGrid(object):
                 self.__logger.info('Max X, Radius: {} {}'.format(max(x), r[i]))
                   
                 if not multiprocessing:
-                    voxel = getProperties((i, voxel))
+                    voxel = getProperties((i, copy(voxel)))
+
         
                 # modified for multiprocessing
                 # ------------------------------

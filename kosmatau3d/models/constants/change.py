@@ -132,10 +132,11 @@ def changeDustWavelengths(limit=''):
     
     # Only use the longest wavelength with roughly the same intensity for all the species transitions for a
     #  reduced dust model.
-    if limit == 'reduced':
-        limit = ['3.1mm']
-    elif limit in constants.dustNames:
-        limit = [limit]
+    if isinstance(limit, str):
+        if limit == 'reduced':
+            limit = ['3.1mm']
+        elif limit in constants.dustNames:
+            limit = [limit]
       
     # Check if individual wavelengths of the dust continuum are specified
     if isinstance(limit, list):

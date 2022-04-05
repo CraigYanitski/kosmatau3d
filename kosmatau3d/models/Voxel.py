@@ -158,7 +158,7 @@ class Voxel(object):
   
     def setProperties(self, voxel_size=1, molecules='all', dust='PAH', alpha=1.84, gamma=2.31, clumpMassNumber=[3,1],
                       clumpMassRange=[[0,2],[-2]], clumpNmax=[1, 100], velocityRange=[-10,10], velocityNumber=51,
-                      ensembleMass=100, velocity=0., ensembleDispersion=1, velocity_resolution=3, volumeFactor=None,
+                      ensembleMass=100, velocity=0., ensembleDispersion=1, velocity_resolution=1, volumeFactor=None,
                       ensembleDensity=[15000, 1911], FUV=[20000, 1], crir=2e-16, suggested_calc=True,
                       from_grid=False, new_grid=False, change_interpolation=False, dilled=False,
                       timed=False, verbose=False, debug=False):
@@ -283,6 +283,8 @@ class Voxel(object):
             species.addMolecules(molecules)
             interpolations.initialise_grid(dilled=dilled)
 
+        #print('interpolation initialised:', (time()-t0)/60)
+
         if timed:
             t1 = time()
             self.__logger.info('Model setup: {}'.format(t1-t0))
@@ -329,15 +331,22 @@ class Voxel(object):
         # for i in range(len(density)):
             # if density[i]=='auto': density[i] = self.__ensembleDensity
             # if fuv[i]==None: fuv[i] = self.__FUV
+
+        #print('properties set:', (time()-t0)/60)
     
         masspoints.setMasspointData(density=self.__ensembleDensity, FUV=self.__FUV, crir=self.__crir)
+        #print('  masspoints:', (time()-t0)/60)
         ensemble.initialise(ensembledispersion=self.__ensembleDispersion, ensemblemass=self.__ensembleMass,
                             suggested_calc=self.suggested_calc)
+        #print('  ensemble:', (time()-t0)/60)
         combinations.initialise(clumpcombination=[ensemble.clumpCombinations[ens][ensemble.clumpLargestIndex[ens]]
                                                   for ens in range(len(constants.clumpMassNumber))],
                                 totalcombination=[ensemble.CLmaxCombinations[ens][0]
                                                   for ens in range(len(constants.clumpMassNumber))])
         
+        #print('probabilities calculated:', (time()-t0)/60)
+        #print('ensemble velocities:', ensemble.clumpVelocities)
+
         if timed:
             t2 = time()
             self.__logger.info('Modules initialised:'.format(t2-t1))
@@ -410,6 +419,7 @@ class Voxel(object):
         if timed:
             self.__logger.info('setProperties() time of execution:'.format(time()-t0))
 
+        #print('voxel initialised:', (time()-t0)/60)
         self.__logger.info('voxel initialised')
 
         return
@@ -450,15 +460,16 @@ class Voxel(object):
         self.test_pexp = test_pexp
         self.test_fv = test_fv
 
-        if timed:
-            t0 = time()
+        #if timed:
+        t0 = time()
         
         masspoints.calculateEmission(tauFUV=self.__tauFUV, timed=timed)
         
         if timed:
             t1 = time()
             self.__logger.info('Masspoint emission calculated:',format(t1-t0))
-        
+        #print('masspoint emission calculated:', (time()-t0)/60)
+
         combinations.calculateEmission(test_calc=test_calc, test_opacity=test_opacity,
                                        test_fv=test_fv, f_v=self.__volumeFactor,
                                        suggested_calc=self.suggested_calc)
@@ -466,7 +477,8 @@ class Voxel(object):
         if timed:
             t2 = time()
             self.__logger.info('Combination emission calculated:'.format(t2-t1))
-    
+        #print('combination emission calculated:', (time()-t0)/60)
+
         clumpIntensity = [[] for _ in range(len(constants.clumpMassNumber))]
         clumpOpticalDepth = [[] for _ in range(len(constants.clumpMassNumber))]
         clumpIntensityDust = [[] for _ in range(len(constants.clumpMassNumber))]
@@ -486,6 +498,7 @@ class Voxel(object):
             # print(vel.shape, clumpVel.shape)
 
             if self.suggested_calc:
+                #print('new calculation:', (time()-t0)/60)
                 # dust calculation
                 optical_depth_comb_dust = copy(combinations.clumpDustOpticalDepth[ens])
                 intensity_comb_dust = copy(combinations.clumpDustIntensity[ens])
@@ -713,7 +726,7 @@ class Voxel(object):
                 pass
             for ens in range(len(constants.clumpMassNumber)):
                 if fit:
-                    clump_vel = self.__clumpVelocities[ens][self.__clumpVelocityIndeces[ens]]
+                    clump_vel = self.__clumpVelocities[ens][self.__clumpVelocityIndeces[ens]]+self.__velocity
                     if kind == 'gaussian':
                         eps = []
                         diff_eps = self.__emissivity_species[ens].var(0)
@@ -779,7 +792,7 @@ class Voxel(object):
                 pass
             for ens in range(len(constants.clumpMassNumber)):
                 if fit:
-                    clump_vel = self.__clumpVelocities[ens][self.__clumpVelocityIndeces[ens]]
+                    clump_vel = self.__clumpVelocities[ens][self.__clumpVelocityIndeces[ens]]+self.__velocity
                     if kind == 'gaussian':
                         kap = []
                         diff_eps = self.__emissivity_species[ens].var(0)
@@ -843,7 +856,7 @@ class Voxel(object):
                     tau_dust = self.getDustOpticalDepth(total=total)
             for ens in range(len(constants.clumpMassNumber)):
                 if fit:
-                    clump_vel = self.__clumpVelocities[ens][self.__clumpVelocityIndeces[ens]]
+                    clump_vel = self.__clumpVelocities[ens][self.__clumpVelocityIndeces[ens]]+self.__velocity
                     if kind == 'gaussian':
                         tau = []
                         diff_eps = self.__emissivity_species[ens].var(0)
@@ -909,7 +922,7 @@ class Voxel(object):
                                                           fit=fit, total=total)
                 ensembles = constants.ensembles
             for ens in range(ensembles):
-                clump_vel = self.__clumpVelocities[ens][self.__clumpVelocityIndeces[ens]]
+                clump_vel = self.__clumpVelocities[ens][self.__clumpVelocityIndeces[ens]]+self.__velocity
                 if fit:
                     vel = constants.velocityRange
                     if kind == 'gaussian':
