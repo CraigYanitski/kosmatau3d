@@ -18,6 +18,12 @@ from kosmatau3d.models import radiativeTransfer
 from kosmatau3d.models import plotting
 
 def dill_grid():
+    '''
+    Use this function to load the grid, initialise all of the interpolation functions, and
+    save them in the package folder. This helps to reduce computation time when first running
+    a voxel. After the dilled files are created, load the grid from them by passing `dill=True`
+    as a kwarg when running Voxel.setProperties()`.
+    '''
     model_directory = copy(constants.directory)
     constants.directory = ''
     observations.methods.initialise()
