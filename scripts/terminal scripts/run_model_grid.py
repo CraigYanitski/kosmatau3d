@@ -27,7 +27,7 @@ parameters = {
                             '13C+ 1', '13C 1', '13C 2', '13CO 1', '13CO 2', '13CO 3', '13CO 4', '13CO 5', '13CO 6',
                             '13CO 7', '13CO 8', 'HCO+ 1', 'HCO+ 2', 'HCO+ 3', 'HCO+ 4', 'HCO+ 5'],
               # 'dust': 'PAH',
-              'dust': '240um',
+              'dust': ['240um', '550um'],
               'clumpMassRange': [[0, 2], [-2]],
               'clumpMassNumber': [3, 1],
               'clumpNmax': [1, 100],
@@ -100,7 +100,7 @@ for resolution in [500]:
                 kosma = models.Model(**parameters)
                 print('\n    -> Model {}'.format(models.constants.history))
                 print('       ' + '-'*len('Model {}'.format(models.constants.history)))
-                kosma.calculateModel(multiprocessing=0)
+                kosma.calculateModel(dilled=True, multiprocessing=0)
 
                 directory = parameters['history_path'] + parameters['directory'] + '/' + parameters['folder']
                 models.radiativeTransfer.calculateObservation(directory=directory, dim='spherical', multiprocessing=8,
