@@ -3,6 +3,7 @@ build/
 kosmatau3d.egg-info/
 notebooks/debugging/debugging_plot/*
 notebooks/debugging/dilled/*
+kosmatau/grid/dilled/*
 *.pyc
 */__pycache__/
 *.py[cod]
