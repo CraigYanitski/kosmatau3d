@@ -58,10 +58,10 @@ mass_icl = [-2]
 r_cmz = 0
 models.constants.fuv_ism = 2
 
-for resolution in [400]:
-    for f_hi in [1.0, 0.8, 0.6, 0.4]:
-        for f_uv in 10**np.linspace(-1, 3, num=5):
-            for fuv in [1.0, 1.4, 1.8, 2.2]:
+for resolution in [500]:
+    # for f_hi in [1.0, 0.8, 0.6, 0.4]:
+    #     for f_uv in 10**np.linspace(-1, 3, num=5):
+    #         for fuv in [1.0, 1.4, 1.8, 2.2]:
                 # for f_hi in [1.0, 0.8, 0.6, 0.4]:
                 #     for f_uv in 10**np.linspace(-1, 3, num=5):
                 #         for fuv in [1.0, 1.4, 1.8, 2.2]:
@@ -90,11 +90,11 @@ for resolution in [400]:
                 parameters['clumpMassRange'] = [mass_cl, mass_icl]
                 parameters['clumpMassNumber'] = [len(mass_cl), len(mass_icl)]
                 parameters['clumpLogFUV'] = None#fuv
-                parameters['interclumpLogFUV'] = fuv
+                parameters['interclumpLogFUV'] = None 
                 parameters['densityFactor'] = f_density
                 parameters['FUVfactor'] = f_uv
                 parameters['r_cmz'] = r_cmz
-                parameters['folder'] = 'r{}_hi{}_f_fuv{:.2f}_const_fuv{}/'.format(int(resolution), f_hi, f_uv, fuv)
+                parameters['folder'] = 'r{}_modtest/'.format(int(resolution))
 
 
                 kosma = models.Model(**parameters)
