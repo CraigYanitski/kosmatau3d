@@ -196,21 +196,21 @@ def calculateObservation(directory='', dim='xy', slRange=[(-np.pi,np.pi), (-np.p
             if Vpositions.ndim > 1:
                 rt.logger.info(Vpositions.shape)
             else:
-                for p in VmapPositions:
+                for p in result_positions:
                     rt.logger.info(p.shape)
               
             rt.logger.info('Map intensity shapes:')
             rt.logger.info('Species')
             if VintensityMapSpecies.ndim > 1:
-                rt.logger.info(VintensityMapSpecies.shape)
+                rt.logger.info(result_intensity_species.shape)
             else:
-                for intensity in intensityMapSpecies:
+                for intensity in result_intensity_species:
                     rt.logger.info(intensity.shape)
             rt.logger.info('Dust')
             if VintensityMapDust.ndim > 1:
-                rt.logger.info(VintensityMapDust.shape)
+                rt.logger.info(result_intensity_dust.shape)
             else:
-                for intensity in intensityMapDust:
+                for intensity in result_intensity_dust:
                     rt.logger.info(intensity.shape)
     
         # Setup the data to be saved in a FITS file. It will create an HDU list with position, species, and dust HDUs.
@@ -340,10 +340,12 @@ def multiprocessCalculation(slRange=[(-np.pi,np.pi), (-np.pi/2,np.pi/2)], nsl=[5
         lat = np.linspace(slRange[1][0], slRange[1][1], num=nsl[1])
         longrid, latgrid = (arr.flatten() for arr in np.meshgrid(lon, lat))
         positions = []
-        intensity_map_species = np.zeros((lon.size, lat.size))
-        optical_depth_map_species = np.zeros((lon.size, lat.size))
-        intensity_map_dust = np.zeros((lon.size, lat.size))
-        optical_depth_map_dust = np.zeros((lon.size, lat.size))
+        intensity_map_species = np.zeros((rt.tempSpeciesEmissivity[0].shape[1], lat.size, lon.size,
+                                          rt.tempSpeciesEmissivity[0].shape[2]))
+        optical_depth_map_species = np.zeros((rt.tempSpeciesAbsorption[0].shape[1], lat.size, lon.size,
+                                              rt.tempSpeciesAbsorption[0].shape[2]))
+        intensity_map_dust = np.zeros((lat.size, lon.size, rt.tempDustEmissivity[0].shape[1]))
+        optical_depth_map_dust = np.zeros((lat.size, lon.size, rt.tempDustAbsorption[0].shape[1]))
         sightlines = np.zeros((lon.size, lat.size))
         args = (list(enumerate(zip(longrid, latgrid))), longrid.size)
         calc_los = partial(calculate_sightline, slRange=slRange, nsl=nsl, dim=dim, debug=debug,
@@ -396,10 +398,10 @@ def multiprocessCalculation(slRange=[(-np.pi,np.pi), (-np.pi/2,np.pi/2)], nsl=[5
             positions.append(i[0][1:])
             i_lon = np.where(lon == Vpositions[1])[0][0]
             i_lat = np.where(lat == Vpositions[2])[0][0]
-            intensity_map_species[i_lon, i_lat] = i[1][0]
-            optical_depth_map_species[i_lon, i_lat] = i[1][1]
-            intensity_map_dust[i_lon, i_lat] = i[2][0]
-            optical_depth_map_dust[i_lon, i_lat] = i[2][1]
+            intensity_map_species[:, i_lat, i_lon, :] = i[1][0]
+            optical_depth_map_species[:, i_lat, i_lon, :] = i[1][1]
+            intensity_map_dust[i_lat, i_lon, :] = i[2][0]
+            optical_depth_map_dust[i_lat, i_lon, :] = i[2][1]
             sightlines[i_lon, i_lat] = i[3]
 
             # intensity[i] = None
