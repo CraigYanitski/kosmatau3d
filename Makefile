@@ -1,3 +1,5 @@
+SHELL = /bin/zsh
+
 .PHONY: help grid comparison
 
 help:
