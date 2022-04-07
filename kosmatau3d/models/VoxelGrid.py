@@ -250,20 +250,24 @@ class VoxelGrid(object):
         # Setup fits files to stream the voxel emissivity and absorption.
         # species
         dim = [len(species.moleculeWavelengths), constants.velocityRange.size, self.__voxelNumber]
-        shdu_voxel_emissivity_species = self.shdu_header(name='Clump species emissivity', units='K/pc', molecules=True,
-                                                         filename='species_emissivity', velocity=True, dim=dim)
-        shdu_voxel_absorption_species = self.shdu_header(name='Clump species absorption', units='1/pc', molecules=True,
-                                                         filename='species_absorption', velocity=True, dim=dim)
+        print('species emission dimension:', dim)
+        shdu_voxel_emissivity_species = self.shdu_header(name='Clump species emissivity', units='K/pc', 
+                                                         molecules=True, filename='species_emissivity',
+                                                         velocity=True, dim=dim)
+        shdu_voxel_absorption_species = self.shdu_header(name='Clump species absorption', units='1/pc', 
+                                                         molecules=True, filename='species_absorption',
+                                                         velocity=True, dim=dim)
         # dust
         nDust = constants.wavelengths[constants.nDust].size
-        dim = [nDust, constants.velocityRange.size, self.__voxelNumber]
-        shdu_voxel_emissivity_dust = self.shdu_header(name='Clump dust emissivity', units='K/pc', dust=True,
-                                                      filename='dust_emissivity', velocity=True, dim=dim)
-        shdu_voxel_absorption_dust = self.shdu_header(name='Clump dust absorption', units='1/pc', dust=True,
-                                                      filename='dust_absorption', velocity=True, dim=dim)
+        dim = [nDust, self.__voxelNumber]
+        print('dust emission dimension:', dim)
+        shdu_voxel_emissivity_dust = self.shdu_header(name='Clump dust emissivity', units='K/pc',
+                                                      dust=True, filename='dust_emissivity', dim=dim)
+        shdu_voxel_absorption_dust = self.shdu_header(name='Clump dust absorption', units='1/pc', 
+                                                      dust=True, filename='dust_absorption', dim=dim)
     
         dim = [len(constants.clumpMassNumber), self.__voxelNumber]
-        shdu_ensemble_mass = self.shdu_header(name='Ensemble Mass', units='Msol', filename='voxel_ensemble_mass',
+        shdu_ensemble_mass = self.shdu_header(name='Ensemble mass', units='Msol', filename='voxel_ensemble_mass',
                                               dim=dim)
         dim = [len(constants.clumpMassNumber), self.__voxelNumber]
         shdu_ensemble_density = self.shdu_header(name='Density', units='cm^-3', filename='voxel_density', dim=dim)
@@ -275,7 +279,7 @@ class VoxelGrid(object):
                                                  filename='voxel_ensemble_dispersion', dim=dim)
         dim = [len(constants.clumpMassNumber), self.__voxelNumber]
         shdu_FUV = self.shdu_header(name='FUV', units='Draine', filename='voxel_fuv', dim=dim)
-        shdu_FUVabsorption = self.shdu_header(name='tau_FUV', units='mag', filename='voxel_FUVabsorption', dim=dim)
+        shdu_FUVabsorption = self.shdu_header(name='FUV optical depth', units='mag', filename='voxel_FUVabsorption', dim=dim)
         
         # test of multiprocessing
         def getProperties(ivoxel):
@@ -372,10 +376,10 @@ class VoxelGrid(object):
                 # ------------------------------------
                 
                 # Save emissivity and absorption
-                shdu_voxel_emissivity_species.write(np.sum(voxel.getSpeciesEmissivity(), axis=0))
-                shdu_voxel_absorption_species.write(np.sum(voxel.getSpeciesAbsorption(), axis=0))
-                shdu_voxel_emissivity_dust.write(np.sum(voxel.getDustEmissivity(), axis=0))
-                shdu_voxel_absorption_dust.write(np.sum(voxel.getDustAbsorption(), axis=0))
+                shdu_voxel_emissivity_species.write(voxel.getSpeciesEmissivity(include_dust=True))
+                shdu_voxel_absorption_species.write(voxel.getSpeciesAbsorption(include_dust=True))
+                shdu_voxel_emissivity_dust.write(voxel.getDustEmissivity(minimal=True))
+                shdu_voxel_absorption_dust.write(voxel.getDustAbsorption(minimal=True))
                 
                 voxels[i] = None
                 # self.__voxels[i] = None
@@ -579,7 +583,8 @@ class VoxelGrid(object):
         print(self.__properties)
         return
   
-    def shdu_header(self, name='', units='', molecules=False, dust=False, filename=None, velocity=False, dim=None):
+    def shdu_header(self, name='', units='', molecules=False, dust=False, velocity=False, 
+                    dim=None, filename=None):
   
         if filename == None or dim == None:
           return
@@ -595,6 +600,9 @@ class VoxelGrid(object):
         if dust:
             header['DUST'] = ', '.join(constants.dustNames[constants.nDust])
     
+        header['NAME'] = name
+        header['UNITS'] = units
+    
         for i in range(len(dim)):
             header['NAXIS{}'.format(i+1)] = dim[i]
             if velocity & i == 0:
@@ -608,7 +616,8 @@ class VoxelGrid(object):
                 header['CUNIT2'] = 'km/s'
                 header['CRPIX2'] = (header['NAXIS2']-1)/2
                 header['CRVAL2'] = 0
-                header['CDELT2'] = (constants.velocityRange[-1]-constants.velocityRange[0])/(header['NAXIS2']-1)
+                header['CDELT2'] = ((constants.velocityRange[-1]-constants.velocityRange[0])
+                                    /(header['NAXIS2']-1))
             elif velocity & i == 2:
                 header['CTYPE3'] = 'Voxel'
                 header['CUNIT1'] = 'N/A'
@@ -621,10 +630,29 @@ class VoxelGrid(object):
         #                    len(self.__species[1].getDust())#emission[0].data[0,0,:,0].size
         # header['NAXIS3'] = 2#emission[0].data[:,0,0,0].size
         # header['NAXIS4'] = self.__voxelNumber#emission[0].data[0,:,0,0].size
-    
-        header['NAME'] = name
-        header['UNITS'] = units
-    
+        
+        header['COMMENT'] = ''.ljust(50, '-')
+        header['COMMENT'] = 'Model Information'.center(50)
+        header['COMMENT'] = ''.ljust(50, '-')
+        header['COMMENT'] = 'It is necessary to have a record of the'.ljust(50)
+        header['COMMENT'] = 'relevant model information in each file,'.ljust(50)
+        header['COMMENT'] = 'so below we record the relevant information'.ljust(50)
+        header['COMMENT'] = 'defining the model parameters.'.ljust(50)
+        header['COMMENT'] = ''.ljust(50)
+        header['COMMENT'] = ''.ljust(50)
+        header['COMMENT'] = 'f_Mcl : '.ljust(50)
+        header['COMMENT'] = 'f_Micl : '.ljust(50)
+        header['COMMENT'] = 'f_n : '.ljust(50)
+        header['COMMENT'] = 'f_FUV : '.ljust(50)
+        header['COMMENT'] = 'f_HI : '.ljust(50)
+        header['COMMENT'] = ''.ljust(50)
+        header['COMMENT'] = ''.ljust(50)
+        header['COMMENT'] = ''.ljust(50)
+        header['COMMENT'] = ''.ljust(50)
+        header['COMMENT'] = ''.ljust(50)
+        header['COMMENT'] = ''.ljust(50)
+        header['COMMENT'] = ''.ljust(50)
+
         directory = constants.HISTORYPATH + constants.directory + constants.history
         
         if not os.path.exists(directory):
