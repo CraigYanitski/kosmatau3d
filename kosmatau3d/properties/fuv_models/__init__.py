@@ -3,7 +3,7 @@ from .models import *
 
 def help():
     print('This package contains various models for the FUV energy density spectrum. ' +
-          'All methods take a wavelength argument in Angstroms')
+          'All methods take a wavelength argument in Angstroms and return the energy density (lambda u_lambda).')
     print('  - u_habing: The original and oft-cited FUV description for interstellar radiation (Habing 1968).')
     print('  - u_draine: A refined FUV description equal roughly to 1.71 times the Habing field (Draine 1978). ' +
           'This method has an optional chi kwarg which can be used to scale the spectrum')
