@@ -86,6 +86,10 @@ def open_voxel_emission(directory):
     rt.tempSpeciesAbsorption = fits.open(directory+'species_absorption.fits', mode='denywrite')
     rt.tempDustEmissivity = fits.open(directory+'dust_emissivity.fits', mode='denywrite')
     rt.tempDustAbsorption = fits.open(directory+'dust_absorption.fits', mode='denywrite')
+
+    print(rt.tempSpeciesEmissivity[0].data.mean(0).mean(0))
+    print(rt.tempDustEmissivity[0].data.mean(0))
+
     return
 
 
@@ -103,11 +107,11 @@ def calculateObservation(directory='', dim='xy', slRange=[(-np.pi,np.pi), (-np.p
     rt.open_voxel_velocities(directory)
     rt.open_voxel_emission(directory)
   
-    nDust = rt.tempDustEmissivity[0].shape[2]
-    if nDust > 1:
+    nDust = rt.tempDustEmissivity[0].shape[1]
+    if nDust > 10:
         # default interpolation is along the last axis, which is what we need
         rt.interpDust = interpolate.interp1d(constants.wavelengths[:nDust],
-                                             rt.tempDustEmissivity[0].data[:, 0, :],
+                                             rt.tempDustEmissivity[0].data,
                                              fill_value='extrapolate')
     
     constants.velocityRange = np.linspace(rt.tempSpeciesEmissivity[0].header['CRVAL2'] -
@@ -144,8 +148,6 @@ def calculateObservation(directory='', dim='xy', slRange=[(-np.pi,np.pi), (-np.p
         #  The integrated intensity is then calculated in the y-z plane to account for different viewing angles across
         #  the galaxy. This can be post-processed to convert to galactic coordinates.
     
-        hdul = fits.HDUList()
-    
         # Define the boundaries separating the inner and outer disk
         xBoundary = (xPositions > 0) & (r > constants.rGalEarth)
         yBoundary = (yPositions < constants.rGalEarth) & (yPositions > -constants.rGalEarth)
@@ -180,6 +182,8 @@ def calculateObservation(directory='', dim='xy', slRange=[(-np.pi,np.pi), (-np.p
         result_positions = result[0]
         result_intensity_species = result[1][0]
         result_intensity_dust = result[2][0]
+        result_optical_depth_species = result[1][1]
+        result_optical_depth_dust = result[2][1]
         rt.sightlines = np.asarray(result[3]).max(0)
         vmin, vmax = result[4]
         
@@ -190,24 +194,26 @@ def calculateObservation(directory='', dim='xy', slRange=[(-np.pi,np.pi), (-np.p
         result_positions = np.asarray(result_positions)
         result_intensity_species = np.asarray(result_intensity_species)
         result_intensity_dust = np.asarray(result_intensity_dust)
+        result_optical_depth_species = np.asarray(result_optical_depth_species)
+        result_optical_depth_dust = np.asarray(result_optical_depth_dust)
     
         if verbose:
             rt.logger.info('Map position shape:')
-            if Vpositions.ndim > 1:
-                rt.logger.info(Vpositions.shape)
+            if result_positions.ndim > 1:
+                rt.logger.info(result_positions.shape)
             else:
                 for p in result_positions:
                     rt.logger.info(p.shape)
               
             rt.logger.info('Map intensity shapes:')
             rt.logger.info('Species')
-            if VintensityMapSpecies.ndim > 1:
+            if result_intensity_species.ndim > 1:
                 rt.logger.info(result_intensity_species.shape)
             else:
                 for intensity in result_intensity_species:
                     rt.logger.info(intensity.shape)
             rt.logger.info('Dust')
-            if VintensityMapDust.ndim > 1:
+            if result_intensity_dust.ndim > 1:
                 rt.logger.info(result_intensity_dust.shape)
             else:
                 for intensity in result_intensity_dust:
@@ -215,101 +221,119 @@ def calculateObservation(directory='', dim='xy', slRange=[(-np.pi,np.pi), (-np.p
     
         # Setup the data to be saved in a FITS file. It will create an HDU list with position, species, and dust HDUs.
         if not debug:
+    
+            hdul_intensity = fits.HDUList()
+            hdul_optical_depth = fits.HDUList()
+            
             # Create HDUs for the map position and intensity and add the velocity in the headers
-            PositionHDU = fits.ImageHDU(result_positions)
+            position_hdu = fits.ImageHDU(result_positions)
+            position_hdu.header['TYPE1'] = 'Angle'
+            position_hdu.header['TYPE2'] = 'Position'
+            position_hdu.header['DIREC'] = 'Radial'
             
             # print(VintensityMapSpecies.shape, np.shape(VintensityMapSpecies[0, 0, 0]))
-            rt.intensity_species = VintensityMapSpecies
-            IntensityHDUSpecies = fits.ImageHDU(result_intensity_species)
+            rt.intensity_species = result_intensity_species
+            intensity_hdu_species = fits.ImageHDU(result_intensity_species)
+            intensity_hdu_species = edit_hdu_header(intensity_hdu_species, sl_range=slRange, 
+                                                    species=True, intensity=True)
             
             # print(VintensityMapDust.shape, np.shape(VintensityMapDust[0, 0, 0]))
             rt.intensity_dust = result_intensity_dust
-            IntensityHDUDust = fits.ImageHDU(result_intensity_dust)
-            # input('Integrated intensity shape: {}'.format(VintensityMap.shape))
+            intensity_hdu_dust = fits.ImageHDU(result_intensity_dust)
+            intensity_hdu_dust = edit_hdu_header(intensity_hdu_dust, sl_range=slRange, 
+                                                 dust=True, intensity=True)
+            
+            # print(VintensityMapSpecies.shape, np.shape(VintensityMapSpecies[0, 0, 0]))
+            rt.optical_depth_species = result_optical_depth_species
+            optical_depth_hdu_species = fits.ImageHDU(result_optical_depth_species)
+            optical_depth_hdu_species = edit_hdu_header(optical_depth_hdu_species, sl_range=slRange, 
+                                                        species=True, optical_depth=True)
+            
+            # print(VintensityMapDust.shape, np.shape(VintensityMapDust[0, 0, 0]))
+            rt.optical_depth_dust = result_optical_depth_dust
+            optical_depth_hdu_dust= fits.ImageHDU(result_optical_depth_dust)
+            optical_depth_hdu_dust = edit_hdu_header(optical_depth_hdu_dust, sl_range=slRange, 
+                                                     dust=True, optical_depth=True)
       
-            PositionHDU.header['TYPE1'] = 'Angle'
-            PositionHDU.header['TYPE2'] = 'Position'
-            PositionHDU.header['DIREC'] = 'Radial'
       
-            IntensityHDUSpecies.header['TYPE'] = 'Species transitions'
-            IntensityHDUSpecies.header['BUNIT'] = 'K'
-            IntensityHDUSpecies.header['CTYPE1'] = 'Wavelength'
-            IntensityHDUSpecies.header['CUNIT1'] = 'm'
-            IntensityHDUSpecies.header['CRVAL1'] = 'N/A'
-            IntensityHDUSpecies.header['CDELT1'] = 'N/A'
-            IntensityHDUSpecies.header['CRPIX1'] = 'N/A'
-            IntensityHDUSpecies.header['CTYPE2'] = 'GLON'
-            IntensityHDUSpecies.header['CUNIT2'] = 'rad'
-            if IntensityHDUSpecies.header['NAXIS2'] > 1:
-                IntensityHDUSpecies.header['CRVAL2'] = (slRange[0][1]+slRange[0][0])/2.
-                IntensityHDUSpecies.header['CDELT2'] = ((slRange[0][1]-slRange[0][0]) /
-                                                        (IntensityHDUSpecies.header['NAXIS2']-1))
-                IntensityHDUSpecies.header['CRPIX2'] = (IntensityHDUSpecies.header['NAXIS2'])/2.
-            else:
-                IntensityHDUSpecies.header['CRVAL2'] = slRange[0][0]
-                IntensityHDUSpecies.header['CDELT2'] = 0
-                IntensityHDUSpecies.header['CRPIX2'] = (IntensityHDUSpecies.header['NAXIS2'])
-            IntensityHDUSpecies.header['CTYPE3'] = 'GLAT'
-            IntensityHDUSpecies.header['CUNIT3'] = 'rad'
-            if IntensityHDUSpecies.header['NAXIS3'] > 1:
-                IntensityHDUSpecies.header['CRVAL3'] = (slRange[1][1]+slRange[1][0])/2.
-                IntensityHDUSpecies.header['CDELT3'] = ((slRange[1][1]-slRange[1][0]) /
-                                                        (IntensityHDUSpecies.header['NAXIS3']-1))
-                IntensityHDUSpecies.header['CRPIX3'] = (IntensityHDUSpecies.header['NAXIS3'])/2.
-            else:
-                IntensityHDUSpecies.header['CRVAL3'] = slRange[1][0]
-                IntensityHDUSpecies.header['CDELT3'] = 0
-                IntensityHDUSpecies.header['CRPIX3'] = (IntensityHDUSpecies.header['NAXIS3'])
-            IntensityHDUSpecies.header['CTYPE4'] = 'Velocity'
-            IntensityHDUSpecies.header['CUNIT4'] = 'km/s'
-            IntensityHDUSpecies.header['CRVAL4'] = (vmax+vmin)/2.
-            IntensityHDUSpecies.header['CDELT4'] = (vmax-vmin)/(IntensityHDUSpecies.header['NAXIS4']-1)
-            IntensityHDUSpecies.header['CRPIX4'] = (IntensityHDUSpecies.header['NAXIS4'])/2.
-            IntensityHDUSpecies.header['DIREC'] = 'Radial'
-            IntensityHDUSpecies.header['SPECIES'] = rt.tempSpeciesEmissivity[0].header['SPECIES']
+            # IntensityHDUSpecies.header['TYPE'] = 'Species transitions'
+            # IntensityHDUSpecies.header['BUNIT'] = 'K'
+            # IntensityHDUSpecies.header['CTYPE1'] = 'Wavelength'
+            # IntensityHDUSpecies.header['CUNIT1'] = 'm'
+            # IntensityHDUSpecies.header['CRVAL1'] = 'N/A'
+            # IntensityHDUSpecies.header['CDELT1'] = 'N/A'
+            # IntensityHDUSpecies.header['CRPIX1'] = 'N/A'
+            # IntensityHDUSpecies.header['CTYPE2'] = 'GLON'
+            # IntensityHDUSpecies.header['CUNIT2'] = 'rad'
+            # if IntensityHDUSpecies.header['NAXIS2'] > 1:
+            #     IntensityHDUSpecies.header['CRVAL2'] = (slRange[0][1]+slRange[0][0])/2.
+            #     IntensityHDUSpecies.header['CDELT2'] = ((slRange[0][1]-slRange[0][0]) /
+            #                                             (IntensityHDUSpecies.header['NAXIS2']-1))
+            #     IntensityHDUSpecies.header['CRPIX2'] = (IntensityHDUSpecies.header['NAXIS2'])/2.
+            # else:
+            #     IntensityHDUSpecies.header['CRVAL2'] = slRange[0][0]
+            #     IntensityHDUSpecies.header['CDELT2'] = 0
+            #     IntensityHDUSpecies.header['CRPIX2'] = (IntensityHDUSpecies.header['NAXIS2'])
+            # IntensityHDUSpecies.header['CTYPE3'] = 'GLAT'
+            # IntensityHDUSpecies.header['CUNIT3'] = 'rad'
+            # if IntensityHDUSpecies.header['NAXIS3'] > 1:
+            #     IntensityHDUSpecies.header['CRVAL3'] = (slRange[1][1]+slRange[1][0])/2.
+            #     IntensityHDUSpecies.header['CDELT3'] = ((slRange[1][1]-slRange[1][0]) /
+            #                                             (IntensityHDUSpecies.header['NAXIS3']-1))
+            #     IntensityHDUSpecies.header['CRPIX3'] = (IntensityHDUSpecies.header['NAXIS3'])/2.
+            # else:
+            #     IntensityHDUSpecies.header['CRVAL3'] = slRange[1][0]
+            #     IntensityHDUSpecies.header['CDELT3'] = 0
+            #     IntensityHDUSpecies.header['CRPIX3'] = (IntensityHDUSpecies.header['NAXIS3'])
+            # IntensityHDUSpecies.header['CTYPE4'] = 'Velocity'
+            # IntensityHDUSpecies.header['CUNIT4'] = 'km/s'
+            # IntensityHDUSpecies.header['CRVAL4'] = (vmax+vmin)/2.
+            # IntensityHDUSpecies.header['CDELT4'] = (vmax-vmin)/(IntensityHDUSpecies.header['NAXIS4']-1)
+            # IntensityHDUSpecies.header['CRPIX4'] = (IntensityHDUSpecies.header['NAXIS4'])/2.
+            # IntensityHDUSpecies.header['DIREC'] = 'Radial'
+            # IntensityHDUSpecies.header['SPECIES'] = rt.tempSpeciesEmissivity[0].header['SPECIES']
       
-            IntensityHDUDust.header['TYPE'] = 'Dust continuum'
-            IntensityHDUDust.header['BUNIT'] = 'K'
-            IntensityHDUDust.header['CTYPE1'] = 'Wavelength'
-            IntensityHDUDust.header['CUNIT1'] = 'm'
-            IntensityHDUDust.header['CRVAL1'] = 'N/A'
-            IntensityHDUDust.header['CDELT1'] = 'N/A'
-            IntensityHDUDust.header['CRPIX1'] = 'N/A'
-            IntensityHDUDust.header['CTYPE2'] = 'GLON'
-            IntensityHDUDust.header['CUNIT2'] = 'rad'
-            if IntensityHDUDust.header['NAXIS2'] > 1:
-                IntensityHDUDust.header['CRVAL2'] = (slRange[0][1]+slRange[0][0])/2
-                IntensityHDUDust.header['CDELT2'] = ((slRange[0][1]-slRange[0][0]) /
-                                                     (IntensityHDUDust.header['NAXIS2']-1))
-                IntensityHDUDust.header['CRPIX2'] = (IntensityHDUDust.header['NAXIS2'])/2.
-            else:
-                IntensityHDUDust.header['CRVAL2'] = slRange[0][0]
-                IntensityHDUDust.header['CDELT2'] = 0
-                IntensityHDUDust.header['CRPIX2'] = (IntensityHDUDust.header['NAXIS2'])
-            IntensityHDUDust.header['CTYPE3'] = 'GLAT'
-            IntensityHDUDust.header['CUNIT3'] = 'rad'
-            if IntensityHDUDust.header['NAXIS3'] > 1:
-                IntensityHDUDust.header['CRVAL3'] = (slRange[1][1]+slRange[1][0])/2
-                IntensityHDUDust.header['CDELT3'] = ((slRange[1][1]-slRange[1][0]) /
-                                                     (IntensityHDUDust.header['NAXIS3']-1))
-                IntensityHDUDust.header['CRPIX3'] = (IntensityHDUDust.header['NAXIS3'])/2.
-            else:
-                IntensityHDUDust.header['CRVAL3'] = slRange[1][0]
-                IntensityHDUDust.header['CDELT3'] = 0
-                IntensityHDUDust.header['CRPIX3'] = (IntensityHDUDust.header['NAXIS3'])
-            IntensityHDUDust.header['CTYPE4'] = 'Velocity'
-            IntensityHDUDust.header['CUNIT4'] = 'km/s'
-            IntensityHDUDust.header['CRVAL4'] = (vmax+vmin)/2.
-            IntensityHDUDust.header['CDELT4'] = (vmax-vmin)/(IntensityHDUDust.header['NAXIS4']-1)
-            IntensityHDUDust.header['CRPIX4'] = (IntensityHDUDust.header['NAXIS4'])/2.
-            IntensityHDUDust.header['DIREC'] = 'Radial'
-            IntensityHDUDust.header['DUST'] = rt.tempDustEmissivity[0].header['DUST']
+            # IntensityHDUDust.header['TYPE'] = 'Dust continuum'
+            # IntensityHDUDust.header['BUNIT'] = 'K'
+            # IntensityHDUDust.header['CTYPE1'] = 'Wavelength'
+            # IntensityHDUDust.header['CUNIT1'] = 'm'
+            # IntensityHDUDust.header['CRVAL1'] = 'N/A'
+            # IntensityHDUDust.header['CDELT1'] = 'N/A'
+            # IntensityHDUDust.header['CRPIX1'] = 'N/A'
+            # IntensityHDUDust.header['CTYPE2'] = 'GLON'
+            # IntensityHDUDust.header['CUNIT2'] = 'rad'
+            # if IntensityHDUDust.header['NAXIS2'] > 1:
+            #     IntensityHDUDust.header['CRVAL2'] = (slRange[0][1]+slRange[0][0])/2
+            #     IntensityHDUDust.header['CDELT2'] = ((slRange[0][1]-slRange[0][0]) /
+            #                                          (IntensityHDUDust.header['NAXIS2']-1))
+            #     IntensityHDUDust.header['CRPIX2'] = (IntensityHDUDust.header['NAXIS2'])/2.
+            # else:
+            #     IntensityHDUDust.header['CRVAL2'] = slRange[0][0]
+            #     IntensityHDUDust.header['CDELT2'] = 0
+            #     IntensityHDUDust.header['CRPIX2'] = (IntensityHDUDust.header['NAXIS2'])
+            # IntensityHDUDust.header['CTYPE3'] = 'GLAT'
+            # IntensityHDUDust.header['CUNIT3'] = 'rad'
+            # if IntensityHDUDust.header['NAXIS3'] > 1:
+            #     IntensityHDUDust.header['CRVAL3'] = (slRange[1][1]+slRange[1][0])/2
+            #     IntensityHDUDust.header['CDELT3'] = ((slRange[1][1]-slRange[1][0]) /
+            #                                          (IntensityHDUDust.header['NAXIS3']-1))
+            #     IntensityHDUDust.header['CRPIX3'] = (IntensityHDUDust.header['NAXIS3'])/2.
+            # else:
+            #     IntensityHDUDust.header['CRVAL3'] = slRange[1][0]
+            #     IntensityHDUDust.header['CDELT3'] = 0
+            #     IntensityHDUDust.header['CRPIX3'] = (IntensityHDUDust.header['NAXIS3'])
+            # IntensityHDUDust.header['DIREC'] = 'Radial'
+            # IntensityHDUDust.header['DUST'] = rt.tempDustEmissivity[0].header['DUST']
       
-            hdul.append(PositionHDU)
-            hdul.append(IntensityHDUSpecies)
-            hdul.append(IntensityHDUDust)
+            hdul_intensity.append(c.deepcopy(position_hdu))
+            hdul_intensity.append(intensity_hdu_species)
+            hdul_intensity.append(intensity_hdu_dust)
+            hdul_intensity.writeto(directory+'/synthetic_intensity.fits', overwrite=True)
       
-            hdul.writeto(directory+'/channel_intensity.fits', overwrite=True)
+            hdul_optical_depth.append(c.deepcopy(position_hdu))
+            hdul_optical_depth.append(optical_depth_hdu_species)
+            hdul_optical_depth.append(optical_depth_hdu_dust)
+            hdul_optical_depth.writeto(directory+'/synthetic_optical_depth.fits', overwrite=True)
       
             print('Intensity map written successfully :-)')
     
@@ -321,6 +345,54 @@ def calculateObservation(directory='', dim='xy', slRange=[(-np.pi,np.pi), (-np.p
         rt.tempDustAbsorption.close()
     
     return
+
+
+def edit_hdu_header(hdu, sl_range=(0, 0), species=False, dust=False, 
+                    intensity=False, optical_depth=False):
+    if species:
+        hdu.header['TYPE'] = 'Species transitions'
+    elif dust:
+        hdu.header['TYPE'] = 'Dust continuum'
+    if intensity:
+        hdu.header['BUNIT'] = 'K'
+    elif optical_depth:
+        hdu.header['BUNIT'] = 'N/A'
+    hdu.header['DIREC'] = 'Radial'
+    hdu.header['CTYPE1'] = 'Wavelength'
+    hdu.header['CUNIT1'] = 'm'
+    hdu.header['CRVAL1'] = 'N/A'
+    hdu.header['CDELT1'] = 'N/A'
+    hdu.header['CRPIX1'] = 'N/A'
+    hdu.header['CTYPE2'] = 'GLON'
+    hdu.header['CUNIT2'] = 'rad'
+    if hdu.header['NAXIS2'] > 1:
+        hdu.header['CRVAL2'] = (sl_range[0][1]+sl_range[0][0])/2.
+        hdu.header['CDELT2'] = ((sl_range[0][1]-sl_range[0][0]) / (hdu.header['NAXIS2']-1))
+        hdu.header['CRPIX2'] = (hdu.header['NAXIS2'])/2.
+    else:
+        hdu.header['CRVAL2'] = sl_range[0][0]
+        hdu.header['CDELT2'] = 0
+        hdu.header['CRPIX2'] = (IntensityHDUSpecies.header['NAXIS2'])
+    hdu.header['CTYPE3'] = 'GLAT'
+    hdu.header['CUNIT3'] = 'rad'
+    if hdu.header['NAXIS3'] > 1:
+        hdu.header['CRVAL3'] = (sl_range[1][1]+sl_range[1][0])/2.
+        hdu.header['CDELT3'] = ((sl_range[1][1]-sl_range[1][0]) / (hdu.header['NAXIS3']-1))
+        hdu.header['CRPIX3'] = (hdu.header['NAXIS3'])/2.
+    else:
+        hdu.header['CRVAL3'] = sl_range[1][0]
+        hdu.header['CDELT3'] = 0
+        hdu.header['CRPIX3'] = (hdu.header['NAXIS3'])
+    if species:
+        hdu.header['CTYPE4'] = 'Velocity'
+        hdu.header['CUNIT4'] = 'km/s'
+        hdu.header['CRVAL4'] = rt.tempSpeciesEmissivity[0].header['CRVAL2']#(vmax+vmin)/2.
+        hdu.header['CDELT4'] = rt.tempSpeciesEmissivity[0].header['CDELT2']#(vmax-vmin)/(hdu.header['NAXIS4']-1)
+        hdu.header['CRPIX4'] = rt.tempSpeciesEmissivity[0].header['CRPIX2']#(hdu.header['NAXIS4'])/2.
+        hdu.header['SPECIES'] = rt.tempSpeciesEmissivity[0].header['SPECIES']
+    elif dust:
+        hdu.header['DUST'] = rt.tempDustEmissivity[0].header['DUST']
+    return hdu
 
 
 def multiprocessCalculation(slRange=[(-np.pi,np.pi), (-np.pi/2,np.pi/2)], nsl=[50,25], multiprocessing=0,
@@ -349,7 +421,7 @@ def multiprocessCalculation(slRange=[(-np.pi,np.pi), (-np.pi/2,np.pi/2)], nsl=[5
         sightlines = np.zeros((lon.size, lat.size))
         args = (list(enumerate(zip(longrid, latgrid))), longrid.size)
         calc_los = partial(calculate_sightline, slRange=slRange, nsl=nsl, dim=dim, debug=debug,
-                           multiprocess=multiprocessing, vel_pool=vel_pool)
+                           multiprocess=multiprocessing)
     
     t0 = time()
     
@@ -363,20 +435,32 @@ def multiprocessCalculation(slRange=[(-np.pi,np.pi), (-np.pi/2,np.pi/2)], nsl=[5
     else:
         intensity = []
         if vel_pool:
-            vTqdm = tqdm(total=constants.velocityRange.size, desc='Observing velocity', miniters=1, dynamic_ncols=True)
-        rt.slTqdm = tqdm(total=nsl[0]*nsl[1], desc='Sightline', miniters=1, dynamic_ncols=True)
-        for iv in enumerate(constants.velocityRange):
-            intensity.append(velChannel(iv))
-            vTqdm.update()
+            vTqdm = tqdm(total=constants.velocityRange.size, desc='Observing velocity', 
+                         miniters=1, dynamic_ncols=True)
+            rt.slTqdm = tqdm(total=nsl[0]*nsl[1], desc='Sightline', 
+                             miniters=1, dynamic_ncols=True)
+            for iv in args[0]:
+                intensity.append(velChannel(iv))
+                vTqdm.update()
+        else:
+            rt.slTqdm = tqdm(total=args[1], desc='Sightline', 
+                             miniters=1, dynamic_ncols=True)
+            for arg in args[0]:
+                intensity.append(calc_los(arg))
+                # print(intensity[-1][0][0], '-->', intensity[-1][3])
+                rt.slTqdm.update()
+            print('\n\n')
         
     vmin = constants.velocityRange.max()
     vmax = constants.velocityRange.min()
     
     if multiprocessing:
         if vel_pool:
-            vTqdm = tqdm(total=constants.velocityRange.size, desc='Observing velocity', miniters=1, dynamic_ncols=True)
+            vTqdm = tqdm(total=args[1], desc='Observing velocity', 
+                         miniters=1, dynamic_ncols=True)
         else:
-            rt.slTqdm = tqdm(total=lon.size, desc='Sightline', miniters=1, dynamic_ncols=True)
+            rt.slTqdm = tqdm(total=args[1], desc='Sightline', 
+                             miniters=1, dynamic_ncols=True)
 
     # Loop through all processes
     for n, i in enumerate(intensity):
@@ -396,8 +480,10 @@ def multiprocessCalculation(slRange=[(-np.pi,np.pi), (-np.pi/2,np.pi/2)], nsl=[5
                 sightlines.append(i[3])
         else:
             positions.append(i[0][1:])
-            i_lon = np.where(lon == Vpositions[1])[0][0]
-            i_lat = np.where(lat == Vpositions[2])[0][0]
+            # print(positions)
+            # print(i[1][0])
+            i_lon = np.where(lon == i[0][1])[0][0]
+            i_lat = np.where(lat == i[0][2])[0][0]
             intensity_map_species[:, i_lat, i_lon, :] = i[1][0]
             optical_depth_map_species[:, i_lat, i_lon, :] = i[1][1]
             intensity_map_dust[i_lat, i_lon, :] = i[2][0]
@@ -411,7 +497,12 @@ def multiprocessCalculation(slRange=[(-np.pi,np.pi), (-np.pi/2,np.pi/2)], nsl=[5
                 vTqdm.update()
             else:
                 rt.slTqdm.update()
-        
+       
+    if vel_pool:
+        vTqdm.close()
+    else:
+        rt.slTqdm.close()
+
     # print('\n\nTotal evaluation time for {} sightlines and {} velocity channels: {}\n\n'.format(nsl[0]*nsl[1], vNum,
     #                                                                                             time()-t0))
 
@@ -578,9 +669,10 @@ def calculate_sightline(los, slRange=[(-np.pi,np.pi), (-np.pi/2,np.pi/2)], nsl=[
 
     # # Convert the tuple to the desired index and velocity
     # i_vel = ivelocity[0]
-    i_lon = los[0]
+    i_pos = los[0]
     lon = los[1][0]
     lat = los[1][1]
+    position = (i_pos, lon, lat)
 
     # if multiprocess:
     #   t0 = time()
@@ -607,9 +699,9 @@ def calculate_sightline(los, slRange=[(-np.pi,np.pi), (-np.pi/2,np.pi/2)], nsl=[
     # Update velocity progress bar
     # rt.vTqdm.update()
 
-    # Reset sightline progress bar
-    if multiprocess == 0:
-        rt.slTqdm.reset()
+    # # Reset sightline progress bar
+    # if multiprocess == 0:
+    #     rt.slTqdm.reset()
 
     # # Initialise the intensities and map
     # position = []
@@ -677,13 +769,13 @@ def calculate_sightline(los, slRange=[(-np.pi,np.pi), (-np.pi/2,np.pi/2)], nsl=[
         result = ((rt.intensity_species * normfactor, rt.opticaldepth_species * normfactor),
                   (rt.intensity_dust * normfactor, rt.opticaldepth_dust * normfactor))
     elif vox > 1:
-        # calculatert(scale=normfactor)
+        calculatert(scale=normfactor)
         # positionintensity_species.append(rt.intensity_species)
         # positionintensity_dust.append(rt.intensity_dust)
         # positionopticaldepth_species.append(rt.k_species.sum(0) * normfactor*constants.voxel_size*100*constants.pc)
         # positionopticaldepth_dust.append(rt.kopticaldepth_dust.sum(0) * normfactor*constants.voxel_size*100*constants.pc)
-        result = ((copy(rt.intensity_species), rt.k_species.sum(0) * normfactor*constants.voxel_size*100*constants.pc),
-                  (copy(rt.intensity_dust), rt.k_dust.sum(0) * normfactor*constants.voxel_size*100*constants.pc))
+        result = ((c.copy(rt.intensity_species), rt.k_species.sum(0) * normfactor*constants.voxel_size*100*constants.pc),
+                  (c.copy(rt.intensity_dust), rt.k_dust.sum(0) * normfactor*constants.voxel_size*100*constants.pc))
         # intensity_species = []
         # intensity_dust = []
     else:
@@ -694,9 +786,9 @@ def calculate_sightline(los, slRange=[(-np.pi,np.pi), (-np.pi/2,np.pi/2)], nsl=[
         result = ((np.zeros(rt.tempSpeciesEmissivity[0].shape[1:]), np.zeros(rt.tempSpeciesAbsorption[0].shape[1:])),
                   (np.zeros(rt.tempDustEmissivity[0].shape[1]), np.zeros(rt.tempDustAbsorption[0].shape[1])))
 
-    if len(np.shape(positionintensity_species[-1])) > 1:
-        rt.logger.error('Error {}'.format(np.shape(positionintensity_species[-1])))
-        input()
+    #if len(np.shape(positionintensity_species[-1])) > 1:
+    #    rt.logger.error('Error {}'.format(np.shape(positionintensity_species[-1])))
+    #    input()
 
     # # Save intensities for each latitude
     # intensity_species.append(positionintensity_species)
@@ -817,9 +909,9 @@ def setLOS(x=0, y=0, z=0, lon=0, lat=0, i_vox=[], i_vel=0, i_spe=None, i_dust=No
                                                       np.sin(np.abs(latGrid+np.pi/4))], axis=0)
         # angular size of voxels
         d_lon = 0.5*np.arctan(width/radGrid)
-        d_lon[(lat > 1.0) | (lat < -1.0)] = np.pi
+        d_lon[(lat > 1.11) | (lat < -1.11)] = 3.142  # check if voxel in los but not in selection criteria 
         d_lat = 0.5*np.arctan(height/radGrid)
-        d_lat[(lat > 1.0) | (lat < -1.0)] = np.pi/2.
+        d_lat[(lat > 1.11) | (lat < -1.11)] = 1.571
         i_los = np.where((abs(lonGrid-x1LoS) <= d_lon) & (abs(latGrid-x2LoS) <= d_lat) & rt.i_vox)[0]
         # i_los = np.where((abs(lonGrid-x1LoS) <= d_lon) & (abs(latGrid-x2LoS) <= d_lat))[0]
     
@@ -981,60 +1073,66 @@ def calculatert(scale=1, background_intensity=0., species=True, dust=True, verbo
             # Determine which form of integration the species transitions require
             k0_species = ((rt.dk_species[i, :, :] == 0) &
                           (np.abs(rt.k_species[i, :, :]*scale) < 10**-10))
-            kg_species = ~k0_species & (np.abs(rt.k_species[i, :, :])
-                                        > (10**3*np.abs(rt.dk_species[i, :, :])*scale))
-            keg_species = ~k0_species & ~kg_species & (rt.dk_species[i, :, :] > 0)
-            kel_species = ~k0_species & ~kg_species & (rt.dk_species[i, :, :] < 0)
+            kg_species = (~k0_species & 
+                          (np.abs(rt.k_species[i, :, :])
+                          > (10**3*np.abs(rt.dk_species[i, :, :])*scale)))
+            keg_species = (~k0_species & ~kg_species & (rt.dk_species[i, :, :] > 0))
+            kel_species = (~k0_species & ~kg_species & (rt.dk_species[i, :, :] < 0))
+
+            ix_k0 = (i, *np.where(k0_species))
+            ix_kg = (i, *np.where(kg_species))
+            ix_keg = (i, *np.where(keg_species))
+            ix_kel = (i, *np.where(kel_species))
             
             # Integrate using the required method
             if k0_species.any():
-                rt.intensity_species[k0_species] = (rt.e_species[i, k0_species] * scale
-                                                    + 0.5*rt.de_species[i, k0_species] * scale**2.
-                                                    + rt.intensity_species[k0_species])
+                rt.intensity_species[k0[1:]] = (rt.e_species[k0_species] * scale
+                                                        + 0.5*rt.de_species[k0_species] * scale**2.
+                                                        + rt.intensity_species[k0_species[1:]])
         
             if kg_species.any():
-                rt.intensity_species[kg_species] = ((rt.e_species[i, kg_species]*rt.k_species[i, kg_species]
-                                                    + rt.de_species[i, kg_species]
-                                                    * (rt.k_species[i, kg_species]*scale-1.))
-                                                    / (rt.k_species[i, kg_species]**2.)) \
-                                                  - np.exp(-rt.k_species[i, kg_species]*scale)\
-                                                  * ((rt.e_species[i, kg_species]*rt.k_species[i, kg_species]
-                                                      - rt.de_species[i, kg_species])
-                                                     / (rt.k_species[i, kg_species]**2.)) \
-                                                  + (rt.intensity_species[kg_species]
-                                                     * np.exp(-rt.k_species[i, kg_species]*scale))
+                rt.intensity_species[ix_kg[1:]] = ((rt.e_species[ix_kg]*rt.k_species[ix_kg]
+                                                    + rt.de_species[ix_kg]
+                                                    * (rt.k_species[ix_kg]*scale-1.))
+                                                    / (rt.k_species[ix_kg]**2.)) \
+                                                  - np.exp(-rt.k_species[ix_kg]*scale) \
+                                                  * ((rt.e_species[ix_kg]*rt.k_species[ix_kg]
+                                                     - rt.de_species[ix_kg])
+                                                     / (rt.k_species[ix_kg]**2.)) \
+                                                  + (rt.intensity_species[ix_kg[1:]]
+                                                     * np.exp(-rt.k_species[ix_kg]*scale))
       
             if keg_species.any():
-                rt.logger.info('\na, b:\n{}\n{}'.format(a_dust[i, :], b_dust[i, :]))
-                a_error = erfi(a_species[i, keg_species])
-                b_error = erfi(b_species[i, keg_species])
-                rt.intensity_species[keg_species] = (rt.de_species[i, keg_species]/rt.dk_species[i, keg_species]
-                                                     * (1.-np.exp(-rt.k_species[i, keg_species]*scale
-                                                                  - 0.5*rt.dk_species[i, keg_species]*scale**2.))
-                                                     - (rt.e_species[i, keg_species]*rt.dk_species[i, keg_species]
-                                                        - rt.k_species[i, keg_species]*rt.de_species[i, keg_species])
-                                                     / rt.dk_species[i, keg_species]
-                                                     * np.sqrt(np.pi/2./np.abs(rt.dk_species[i, keg_species]))
-                                                     * np.exp(-b_species[i, keg_species]**2.) * (a_error - b_error)
-                                                     + rt.intensity_species[keg_species]
-                                                     * np.exp(-rt.k_species[i, keg_species]*scale
-                                                              - 0.5*rt.dk_species[i, keg_species]*scale**2.))
+                rt.logger.info('\na, b:\n{}\n{}'.format(a_dust[i], b_dust[i]))
+                a_error = erfi(a_species[ix_keg])
+                b_error = erfi(b_species[ix_keg])
+                rt.intensity_species[ix_keg[1:]] = (rt.de_species[ix_keg]/rt.dk_species[ix_keg]
+                                                    * (1.-np.exp(-rt.k_species[ix_keg]*scale
+                                                                 - 0.5*rt.dk_species[ix_keg]*scale**2.))
+                                                    - (rt.e_species[ix_keg]*rt.dk_species[ix_keg]
+                                                       - rt.k_species[ix_keg]*rt.de_species[ix_keg])
+                                                    / rt.dk_species[ix_keg]
+                                                    * np.sqrt(np.pi/2./np.abs(rt.dk_species[ix_keg]))
+                                                    * np.exp(-b_species[ix_keg]**2.) * (a_error - b_error)
+                                                    + rt.intensity_species[ix_keg[1:]]
+                                                    * np.exp(-rt.k_species[ix_keg]*scale
+                                                             - 0.5*rt.dk_species[ix_keg]*scale**2.))
       
             if kel_species.any():
-                rt.logger.info('\na, b:\n{}\n{}'.format(a_dust[i, :], b_dust[i, :]))
-                a_error = erfc(a_species[i, :][kel_species])
-                b_error = erfc(b_species[i, :][kel_species])
-                rt.intensity_species[kel_species] = (rt.de_species[i, kel_species]/rt.dk_species[i, kel_species]
-                                                     * (1.-np.exp(-rt.k_species[i, kel_species]*scale
-                                                                  - 0.5*rt.dk_species[i, kel_species]*scale**2.))
-                                                     - (rt.e_species[i, kel_species]*rt.dk_species[i, kel_species]
-                                                        - rt.k_species[i, kel_species]*rt.de_species[i, kel_species])
-                                                     / rt.dk_species[i, kel_species]
-                                                     * np.sqrt(np.pi/2./np.abs(rt.dk_species[i, kel_species]))
-                                                     * np.exp(b_species[i, kel_species]**2.) * (a_error - b_error)
-                                                     + rt.intensity_species[kel_species]
-                                                     * np.exp(-rt.k_species[i, kel_species]*scale
-                                                              - 0.5*rt.dk_species[i, kel_species]*scale**2.))
+                rt.logger.info('\na, b:\n{}\n{}'.format(a_dust[i], b_dust[i]))
+                a_error = erfc(a_species[ix_kel])
+                b_error = erfc(b_species[ix_kel])
+                rt.intensity_species[ix_kel[1:]] = (rt.de_species[ix_kel]/rt.dk_species[ix_kel]
+                                                    * (1.-np.exp(-rt.k_species[ix_kel]*scale
+                                                                 - 0.5*rt.dk_species[ix_kel]*scale**2.))
+                                                    - (rt.e_species[ix_kel]*rt.dk_species[ix_kel]
+                                                       - rt.k_species[ix_kel]*rt.de_species[ix_kel])
+                                                    / rt.dk_species[ix_kel]
+                                                    * np.sqrt(np.pi/2./np.abs(rt.dk_species[ix_kel]))
+                                                    * np.exp(b_species[ix_kel]**2.) * (a_error - b_error)
+                                                    + rt.intensity_species[ix_kel[1:]]
+                                                    * np.exp(-rt.k_species[ix_kel]*scale
+                                                             - 0.5*rt.dk_species[ix_kel]*scale**2.))
         
         # << Compute radiative transfer for the dust continuum >>
         if dust:
@@ -1042,59 +1140,64 @@ def calculatert(scale=1, background_intensity=0., species=True, dust=True, verbo
             # Determine which form of integration the dust continuum requires
             k0_dust = ((rt.dk_dust[i, :] == 0) &
                        (abs(rt.k_dust[:-1, :][i, :]*scale) < 10**-10))
-            kg_dust = ~k0_dust & (np.abs(rt.k_dust[:-1, :][i, :])
-                                  > (10**3*abs(rt.dk_dust[i, :])*scale))
-            keg_dust = ~k0_dust & ~kg_dust & (rt.dk_dust[i, :] > 0)
-            kel_dust = ~k0_dust & ~kg_dust & (rt.dk_dust[i, :] < 0)
+            kg_dust = (~k0_dust & (np.abs(rt.k_dust[:-1, :][i, :])
+                                   > (10**3*abs(rt.dk_dust[i, :])*scale)))
+            keg_dust = (~k0_dust & ~kg_dust & (rt.dk_dust[i, :] > 0))
+            kel_dust = (~k0_dust & ~kg_dust & (rt.dk_dust[i, :] < 0))
+
+            ix_k0 = (i, *np.where(k0_dust))
+            ix_kg = (i, *np.where(kg_dust))
+            ix_keg = (i, *np.where(keg_dust))
+            ix_kel = (i, *np.where(kel_dust))
             
             # Integrate using the required method
             if k0_dust.any():
-                rt.intensity_dust[k0_dust] = (rt.e_dust[i, k0_dust]*scale
-                                              + 0.5*rt.de_dust[i, k0_dust]*scale**2.
-                                              + rt.intensity_dust[k0_dust])
+                rt.intensity_dust[ix_k0[1:]] = (rt.e_dust[ix_k0]*scale
+                                                + 0.5*rt.de_dust[ix_k0]*scale**2.
+                                                + rt.intensity_dust[ix_k0[1:]])
         
             if kg_dust.any():
-                rt.intensity_dust[kg_dust] = ((rt.e_dust[i, kg_dust]*rt.k_dust[i, kg_dust]
-                                               + rt.de_dust[i, kg_dust]*(rt.k_dust[i, kg_dust]*scale-1.))
-                                              / (rt.k_dust[i, kg_dust]**2.)) \
-                                             - np.exp(-rt.k_dust[i, kg_dust]*scale) \
-                                             * ((rt.e_dust[i, kg_dust]*rt.k_dust[i, kg_dust]
-                                                 - rt.de_dust[i, kg_dust])
-                                                / (rt.k_dust[i, kg_dust]**2.)) \
-                                             + (rt.intensity_dust[kg_dust]
-                                                * np.exp(-rt.k_dust[i, kg_dust]*scale))
+                rt.intensity_dust[ix_kg[1:]] = ((rt.e_dust[ix_kg]*rt.k_dust[ix_kg]
+                                                 + rt.de_dust[ix_kg]*(rt.k_dust[ix_kg]*scale-1.))
+                                                / (rt.k_dust[ix_kg]**2.)) \
+                                               - np.exp(-rt.k_dust[ix_kg]*scale) \
+                                               * ((rt.e_dust[ix_kg]*rt.k_dust[ix_kg]
+                                                   - rt.de_dust[ix_kg])
+                                                  / (rt.k_dust[ix_kg]**2.)) \
+                                                          + (rt.intensity_dust[ix_kg[1:]]
+                                                  * np.exp(-rt.k_dust[ix_kg]*scale))
       
             if keg_dust.any():
-                rt.logger.info('\na, b:\n{}\n{}'.format(a_dust[i, :], b_dust[i, :]))
-                a_error = erfi(a_dust[i, keg_dust])
-                b_error = erfi(b_dust[i, keg_dust])
-                rt.intensity_dust[keg_dust] = (rt.de_dust[i, keg_dust]/rt.dk_dust[i, keg_dust]
-                                               * (1.-np.exp(-rt.k_dust[i, keg_dust]*scale
-                                                            - 0.5*rt.dk_dust[i, keg_dust]*scale**2.))
-                                               - (rt.e_dust[i, keg_dust]*rt.dk_dust[i, keg_dust]
-                                                  - rt.k_dust[i, keg_dust]*rt.de_dust[i, keg_dust])
-                                               / rt.dk_dust[i, keg_dust]
-                                               * np.sqrt(np.pi/2./np.abs(rt.dk_dust[i, keg_dust]))
-                                               * np.exp(-b_dust[i, keg_dust]**2.) * (a_error - b_error)
-                                               + rt.intensity_dust[keg_dust]
-                                               * np.exp(-rt.k_dust[i, keg_dust]*scale
-                                                        - 0.5*rt.dk_dust[i, keg_dust]*scale**2.))
+                rt.logger.info('\na, b:\n{}\n{}'.format(a_dust[i], b_dust[i]))
+                a_error = erfi(a_dust[ix_keg])
+                b_error = erfi(b_dust[ix_keg])
+                rt.intensity_dust[ix_keg[1:]] = (rt.de_dust[ix_keg]/rt.dk_dust[ix_keg]
+                                                 * (1.-np.exp(-rt.k_dust[ix_keg]*scale
+                                                              - 0.5*rt.dk_dust[ix_keg]*scale**2.))
+                                                 - (rt.e_dust[ix_keg]*rt.dk_dust[ix_keg]
+                                                    - rt.k_dust[ix_keg]*rt.de_dust[ix_keg])
+                                                 / rt.dk_dust[ix_keg]
+                                                 * np.sqrt(np.pi/2./np.abs(rt.dk_dust[ix_keg]))
+                                                 * np.exp(-b_dust[ix_keg]**2.) * (a_error - b_error)
+                                                 + rt.intensity_dust[ix_keg[1:]]
+                                                 * np.exp(-rt.k_dust[ix_keg]*scale
+                                                          - 0.5*rt.dk_dust[ix_keg]*scale**2.))
       
             if kel_dust.any():
-                rt.logger.info('\na, b:\n{}\n{}'.format(a_dust[i, :], b_dust[i, :]))
-                a_error = erfc(a_dust[i, kel_dust])
-                b_error = erfc(b_dust[i, kel_dust])
-                rt.intensity_dust[kel_dust] = (rt.de_dust[i, kel_dust]/rt.dk_dust[i, kel_dust]
-                                               * (1.-np.exp(-rt.k_dust[i, kel_dust]*scale
-                                                            - 0.5*rt.dk_dust[i, kel_dust]*scale**2.))
-                                               - (rt.e_dust[i, kel_dust] * rt.dk_dust[i, kel_dust]
-                                                  - rt.k_dust[i, kel_dust]*rt.de_dust[i, kel_dust])
-                                               / rt.dk_dust[i, kel_dust]
-                                               * np.sqrt(np.pi/2./np.abs(rt.dk_dust[i][kel_dust]))
-                                               * np.exp(b_dust[i, kel_dust]**2.) * (a_error - b_error)
-                                               + rt.intensity_dust[kel_dust]
-                                               * np.exp(-rt.k_dust[i, kel_dust]*scale
-                                                        - 0.5*rt.dk_dust[i, kel_dust]*scale**2.))
+                rt.logger.info('\na, b:\n{}\n{}'.format(a_dust[i], b_dust[i]))
+                a_error = erfc(a_dust[ix_kel])
+                b_error = erfc(b_dust[ix_kel])
+                rt.intensity_dust[ix_kel[1:]] = (rt.de_dust[ix_kel]/rt.dk_dust[ix_kel]
+                                                 * (1.-np.exp(-rt.k_dust[ix_kel]*scale
+                                                              - 0.5*rt.dk_dust[ix_kel]*scale**2.))
+                                                 - (rt.e_dust[ix_kel] * rt.dk_dust[ix_kel]
+                                                    - rt.k_dust[ix_kel]*rt.de_dust[ix_kel])
+                                                 / rt.dk_dust[ix_kel]
+                                                 * np.sqrt(np.pi/2./np.abs(rt.dk_dust[ix_kel]))
+                                                 * np.exp(b_dust[ix_kel]**2.) * (a_error - b_error)
+                                                 + rt.intensity_dust[ix_kel[1:]]
+                                                 * np.exp(-rt.k_dust[ix_kel]*scale
+                                                          - 0.5*rt.dk_dust[ix_kel]*scale**2.))
     
     rt.logger.info('Species intensity shape: {}'.format(np.shape(rt.intensity_species)))
     rt.logger.info('Dust intensity shape: {}'.format(np.shape(rt.intensity_dust)))
