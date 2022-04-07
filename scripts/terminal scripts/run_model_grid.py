@@ -21,7 +21,7 @@ parameters = {
               'modelType': 'disk',
 
               # Model parameters
-              'resolution': 500,
+              'resolution': 400,
               # 'molecules': 'all',
               'molecules': ['C+ 1', 'C 1', 'C 2', 'CO 1', 'CO 2', 'CO 3', 'CO 4', 'CO 5', 'CO 6', 'CO 7', 'CO 8',
                             '13C+ 1', '13C 1', '13C 2', '13CO 1', '13CO 2', '13CO 3', '13CO 4', '13CO 5', '13CO 6',
@@ -57,8 +57,9 @@ mass_cl = [0, 2]
 mass_icl = [-2]
 r_cmz = 0
 models.constants.fuv_ism = 2
+fuv = 1.8
 
-for resolution in [500]:
+for resolution in [400]:
     # for f_hi in [1.0, 0.8, 0.6, 0.4]:
     #     for f_uv in 10**np.linspace(-1, 3, num=5):
     #         for fuv in [1.0, 1.4, 1.8, 2.2]:
@@ -89,7 +90,7 @@ for resolution in [500]:
                 parameters['interclump_hifactor'] = f_hi
                 parameters['clumpMassRange'] = [mass_cl, mass_icl]
                 parameters['clumpMassNumber'] = [len(mass_cl), len(mass_icl)]
-                parameters['clumpLogFUV'] = None#fuv
+                parameters['clumpLogFUV'] = None
                 parameters['interclumpLogFUV'] = None 
                 parameters['densityFactor'] = f_density
                 parameters['FUVfactor'] = f_uv
@@ -102,7 +103,12 @@ for resolution in [500]:
                 print('       ' + '-'*len('Model {}'.format(models.constants.history)))
                 kosma.calculateModel(dilled=True, multiprocessing=0)
 
-                directory = parameters['history_path'] + parameters['directory'] + '/' + parameters['folder']
-                models.radiativeTransfer.calculateObservation(directory=directory, dim='spherical', multiprocessing=8,
-                                                              slRange=[(-np.pi, np.pi), (-2*np.pi/180, 2*np.pi/180)],
+                print(models.species.molecules)
+
+                directory = parameters['history_path'] + parameters['directory'] \
+                            + '/' + parameters['folder']
+                models.radiativeTransfer.calculateObservation(directory=directory, dim='spherical',
+                                                              multiprocessing=8, 
+                                                              slRange=[(-np.pi, np.pi), 
+                                                                       (-2*np.pi/180, 2*np.pi/180)],
                                                               nsl=[361, 5], terminal=True, debug=False)
