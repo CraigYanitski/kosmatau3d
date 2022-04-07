@@ -124,7 +124,7 @@ massLimits = [-3, 3]
 uvLimits = [0, 6]
 
 # UV adjustment
-u_draine0 = 8.950674e-14  # erg/cm^-3 #2.89433*10**39 # erg/pc^3 #
+u_draine0 = 8.93392e-14  # erg/cm^-3 #2.89433*10**39 # erg/pc^3 #
 normUV = 1  # used to normalise the FUV distribution used
 globalUV = 10
 
