@@ -1086,9 +1086,9 @@ def calculatert(scale=1, background_intensity=0., species=True, dust=True, verbo
             
             # Integrate using the required method
             if k0_species.any():
-                rt.intensity_species[k0[1:]] = (rt.e_species[k0_species] * scale
-                                                        + 0.5*rt.de_species[k0_species] * scale**2.
-                                                        + rt.intensity_species[k0_species[1:]])
+                rt.intensity_species[ix_k0[1:]] = (rt.e_species[ix_k0] * scale
+                                                        + 0.5*rt.de_species[ix_k0] * scale**2.
+                                                        + rt.intensity_species[ix_k0[1:]])
         
             if kg_species.any():
                 rt.intensity_species[ix_kg[1:]] = ((rt.e_species[ix_kg]*rt.k_species[ix_kg]
