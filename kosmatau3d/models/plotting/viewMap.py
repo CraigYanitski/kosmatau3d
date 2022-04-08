@@ -49,7 +49,7 @@ def main():
 
 class ViewMap(QApplication):
   
-    def __init__(self, directory='', file='/channel_intensity.fits', posXY=(700, 40), windowSize=(925, 850),
+    def __init__(self, directory='', file='/synthetic_intensity.fits', posXY=(700, 40), windowSize=(925, 850),
                  cmap='cubehelix', cmappv='jet'):
         if not directory:
             print('please specify the directory of the model history files.')
@@ -76,10 +76,10 @@ class ViewMap(QApplication):
         self.lonGrid, self.latGrid = np.meshgrid(self.longitude, self.latitude)
         self.velPV, self.lonPV = np.meshgrid(self.velocity, self.longitude)
         print(self.file[1].shape, self.file[2].shape)
-        self.species_intensity_integrated = np.trapz([self.file[1].data[:, :, :, i] - self.file[2].data[:, :, :, 0]
+        self.species_intensity_integrated = np.trapz([self.file[1].data[:, :, :, i] - self.file[2].data[:, :, 0]
                                                       for i in range(self.file[1].shape[3])],
                                                      self.velocity, axis=1)
-        self.dust_intensity_integrated = np.trapz(self.file[2].data, self.velocity, axis=0)
+        self.dust_intensity_integrated = self.file[2].data
         self.species = self.file[1].header['SPECIES'].split(', ')
         self.species_length = len(self.species)
         self.dust = self.file[2].header['Dust'].split(', ')
