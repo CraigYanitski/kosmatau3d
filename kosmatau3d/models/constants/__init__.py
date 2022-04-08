@@ -33,15 +33,28 @@ interpolation = 'linear'
 dtype = np.float64
 
 # Factors (and constant) for fine-tuning the input data
-clumpMassFactor = [1]
-densityFactor = [1]
-FUVFactor = [1]
+hi_mass_factor = 1  # adjust the neutral hydrogen mass in the model
+h2_mass_factor = 1  # adjust the molecular hydrogen mass in the model
+interclump_hi_ratio = 1
+ensemble_mass_factor = [1, 1]  # adjust the mass factor for each ensemble
+density_factor = 1
+fuv_factor = 1
 
 # CMZ cosmic ray ionisation rate (zeta_H2)
 r_cmz = 0
 zeta_cmz = 1e-14
 zeta_sol = 2e-16
 fuv_ism = 1
+
+# Grid boundaries
+densityLimits = [3, 7]
+massLimits = [-3, 3]
+uvLimits = [0, 6]
+
+# UV adjustment
+u_draine0 = 8.93717e-14  # erg/cm^-3 #2.89433*10**39 # erg/pc^3 #
+# normUV = 1  # used to normalise the FUV distribution used
+# globalUV = 10  # no longer used..
 
 # Standard constants
 massH = 1.007276466812*1.6605*10**-27  # in [kg]
@@ -117,16 +130,6 @@ gauss = False
 probability = 'binomial'
 nGauss = 1000
 pnGauss = 5
-
-# Grid boundaries
-densityLimits = [3, 7]
-massLimits = [-3, 3]
-uvLimits = [0, 6]
-
-# UV adjustment
-u_draine0 = 8.93392e-14  # erg/cm^-3 #2.89433*10**39 # erg/pc^3 #
-normUV = 1  # used to normalise the FUV distribution used
-globalUV = 10
 
 # Interpolation
 logEncoded = True
