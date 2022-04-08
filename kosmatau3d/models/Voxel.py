@@ -254,34 +254,39 @@ class Voxel(object):
 
         self.suggested_calc = suggested_calc
     
-        x, y = np.meshgrid(np.linspace(self.__x-.5*constants.voxel_size, self.__x+.5*constants.voxel_size, 3),
-                           np.linspace(self.__y-.5*constants.voxel_size, self.__y+.5*constants.voxel_size, 3))
+        x, y = np.meshgrid(np.linspace(self.__x-.5*constants.voxel_size, 
+                                       self.__x+.5*constants.voxel_size, 3),
+                           np.linspace(self.__y-.5*constants.voxel_size, 
+                                       self.__y+.5*constants.voxel_size, 3))
         r = np.array([x.flatten(), y.flatten()]).T
         r = np.linalg.norm(r, axis=1)
 
-        if constants.voxel_size != voxel_size:
-            constants.voxel_size = voxel_size
+        if not from_grid:
+            
+            if constants.voxel_size != voxel_size:
+                constants.voxel_size = voxel_size
 
-        if constants.alpha != alpha or constants.gamma != gamma:
-            constants.changeMassFunctionParameters(alpha=alpha, gamma=gamma)
+            if constants.alpha != alpha or constants.gamma != gamma:
+                constants.changeMassFunctionParameters(alpha=alpha, gamma=gamma)
 
-        if constants.velocityBin != velocityRange or constants.velocityNumber != velocityNumber:
-            constants.changeVelocityRange(velocityRange)
-            constants.changeVelocityNumber(velocityNumber)
+            if constants.velocityBin != velocityRange or constants.velocityNumber != velocityNumber:
+                constants.changeVelocityRange(velocityRange)
+                constants.changeVelocityNumber(velocityNumber)
 
-        if constants.velocity_resolution != velocity_resolution:
-            constants.velocity_resolution = velocity_resolution
+            if constants.velocity_resolution != velocity_resolution:
+                constants.velocity_resolution = velocity_resolution
 
-        if constants.clumpLogMassRange != clumpMassRange or constants.clumpMassNumber != clumpMassNumber\
-                or constants.clumpNmax != clumpNmax:
-            constants.addClumps(massRange=clumpMassRange, num=clumpMassNumber, Nmax=clumpNmax, reset=True)
+            if constants.clumpLogMassRange != clumpMassRange \
+                    or constants.clumpMassNumber != clumpMassNumber \
+                    or constants.clumpNmax != clumpNmax:
+                constants.addClumps(massRange=clumpMassRange, num=clumpMassNumber, Nmax=clumpNmax, reset=True)
 
-        if new_grid or change_interpolation or \
-                not interpolations.initialised or not observations.initialised:
-            constants.changeDustWavelengths(dust)
-            observations.methods.initialise()
-            species.addMolecules(molecules)
-            interpolations.initialise_grid(dilled=dilled)
+            if new_grid or change_interpolation or \
+                    not interpolations.initialised or not observations.initialised:
+                constants.changeDustWavelengths(dust)
+                observations.methods.initialise()
+                species.addMolecules(molecules)
+                interpolations.initialise_grid(dilled=dilled)
 
         #print('interpolation initialised:', (time()-t0)/60)
 
