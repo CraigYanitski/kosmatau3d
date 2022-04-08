@@ -138,11 +138,16 @@ class VoxelGrid(object):
         # ensembleDispersion = ensembleDispersion.mean()
 
         # # Mass (clump mass MH2+(1-f)*MHI, interclump mass f*MHI)
-        ensembleMass = [interpolations.interpolateClumpMass(rPol)
-                        + (1-constants.interclump_hifactor) * interpolations.interpolateInterclumpMass(rPol),
-                        constants.interclump_hifactor * interpolations.interpolateInterclumpMass(rPol)]
-        ensembleMass = [constants.clumpMassFactor[ens]*np.asarray(ensembleMass).mean(1)[ens]
-                        for ens in range(len(constants.clumpMassNumber))]
+        ensembleMass = [(constants.h2_mass_factor
+                         * interpolations.interpolateClumpMass(rPol)
+                         + (1-constants.interclump_hi_ratio) 
+                         * constants.hi_mass_factor
+                         * interpolations.interpolateInterclumpMass(rPol)),
+                        (constants.interclump_hi_ratio
+                         * constants.hi_mass_factor
+                         * interpolations.interpolateInterclumpMass(rPol))]
+        ensembleMass = [constants.ensemble_mass_factor[ens]*np.asarray(ensembleMass).mean(1)[ens]
+                        for ens in range(constants.ensembles)]
         # Mass (clump mass MH2+MHI, interclump mass determined by voxel size and filling factor)
         # ensembleMass = interpolations.interpolateClumpMass(rPol) + interpolations.interpolateInterclumpMass(rPol)
         # ensembleMass = np.asarray(ensembleMass).mean()
@@ -152,7 +157,7 @@ class VoxelGrid(object):
         # ensembleDensity = [constants.densityFactor*ensembleDensity.mean(), constants.interclumpDensity]
         # Ensemble density (interclump density determined by maximum 0.01*n_cl and constant interclump density value)
         ensembleDensity = interpolations.interpolateDensity(rPol)
-        ensembleDensity = constants.densityFactor*ensembleDensity.mean()
+        ensembleDensity = constants.density_factor*ensembleDensity.mean()
 
         # clump_fillingfactor = ensembleMass * constants.massSolar / constants.massH \
         #                       / ensembleDensity / (constants.voxel_size*constants.pc*100)**3
@@ -166,17 +171,17 @@ class VoxelGrid(object):
         #                 * (constants.pc*100)**3 * ensembleDensity[1] * constants.clumpMassFactor[1]]
     
         # FUV
-        fuv = constants.FUVFactor * interpolations.interpolateFUVfield(rPol, Z)
-        if constants.clumpLogFUV:
+        fuv = constants.fuv_factor * interpolations.interpolateFUVfield(rPol, Z)
+        if not constants.clumpLogFUV is None:
             clump_fuv = 10**constants.clumpLogFUV
         else:
             # clump_fuv = np.clip(fuv, np.max((1, 10**constants.interclumpLogFUV)), None).mean()
-            clump_fuv = np.clip(fuv, 1, None).mean()
-        if constants.interclumpLogFUV:
+            clump_fuv = np.clip(fuv, constants.fuv_ism, None).mean()
+        if not constants.interclumpLogFUV is None:
             interclump_fuv = 10**constants.interclumpLogFUV
         else:
             # interclump_fuv = np.clip(fuv, np.max((1, 10**constants.clumpLogFUV)), None).mean()
-            interclump_fuv = np.clip(fuv, 1, None).mean()
+            interclump_fuv = np.clip(fuv, constants.fuv_ism, None).mean()
         FUV = [copy(clump_fuv), copy(interclump_fuv)]
 
         # CRIR
@@ -195,6 +200,7 @@ class VoxelGrid(object):
     
         self.__properties = {
             # Model parameters
+            'from_grid': True,
             'voxel_size': constants.voxel_size,
             'clumpMassRange': constants.clumpLogMassRange,
             'clumpMassNumber': constants.clumpMassNumber,
@@ -631,6 +637,8 @@ class VoxelGrid(object):
         # header['NAXIS3'] = 2#emission[0].data[:,0,0,0].size
         # header['NAXIS4'] = self.__voxelNumber#emission[0].data[0,:,0,0].size
         
+        header['COMMENT'] = ''.ljust(50)
+        header['COMMENT'] = ''.ljust(50)
         header['COMMENT'] = ''.ljust(50, '-')
         header['COMMENT'] = 'Model Information'.center(50)
         header['COMMENT'] = ''.ljust(50, '-')
@@ -638,6 +646,7 @@ class VoxelGrid(object):
         header['COMMENT'] = 'relevant model information in each file,'.ljust(50)
         header['COMMENT'] = 'so below we record the relevant information'.ljust(50)
         header['COMMENT'] = 'defining the model parameters.'.ljust(50)
+        header['COMMENT'] = ''.ljust(50)
         header['COMMENT'] = ''.ljust(50)
         header['COMMENT'] = 'Model'.center(50)
         header['COMMENT'] = ''.ljust(50)
@@ -647,28 +656,31 @@ class VoxelGrid(object):
         header['COMMENT'] = '          y: {}'.format(y).ljust(50)
         header['COMMENT'] = '          z: {}'.format(z).ljust(50)
         header['COMMENT'] = '     radius: {}'.format(constants.rGal).ljust(50)
+        header['COMMENT'] = '  R_gal,Sun: {}'.format(constants.rGalEarth).ljust(50)
         #header['COMMENT'] = '  thickness:'.ljust(50)
         header['COMMENT'] = ''.ljust(50)
-        header['COMMENT'] = 'Ensemble properties'center.(50)
         header['COMMENT'] = ''.ljust(50)
-        header['COMMENT'] = 'log m_cl : {}'.format(constants.clumpLogMassRange).ljust(50)
-        header['COMMENT'] = 'N_m_cl : {}'.format(constants.clumpMassNumber).ljust(50)
-        header['COMMENT'] = 'v_obs_range : {}'.format(constants.velocityBin).ljust(50)
-        header['COMMENT'] = 'N_v_obs : {}'.format(constants.velocityNumber).ljust(50)
+        header['COMMENT'] = 'Ensemble properties'.center(50)
         header['COMMENT'] = ''.ljust(50)
-        header['COMMENT'] = 'Parameters'center.(50)
+        header['COMMENT'] = '     log m_cl: {}'.format(constants.clumpLogMassRange).ljust(50)
+        header['COMMENT'] = '       N_m_cl: {}'.format(constants.clumpMassNumber).ljust(50)
+        header['COMMENT'] = '  v_obs_range: {}'.format(constants.velocityBin).ljust(50)
+        header['COMMENT'] = '      N_v_obs: {}'.format(constants.velocityNumber).ljust(50)
         header['COMMENT'] = ''.ljust(50)
-        header['COMMENT'] = 'f_Mcl : {}'.format(constants.h2_mass_factor).ljust(50)
-        header['COMMENT'] = 'f_Micl : {}'.format(constants.hi_mass_factor).ljust(50)
-        header['COMMENT'] = 'f_n : {}'.format(constants.densityFactor).ljust(50)
-        header['COMMENT'] = 'f_FUV : {}'.format(constants.FUVFactor).ljust(50)
-        header['COMMENT'] = 'f_HI : {}'.format(constants.interclump_hifactor).ljust(50)
-        header['COMMENT'] = 'log chi_cl : {}'.format(constants.clumpLogFUV).ljust(50)
-        header['COMMENT'] = 'log chi_icl : {}'.format(constants.interclumpLogFUV).ljust(50)
-        header['COMMENT'] = 'R_gal,CMZ : {}'.format(constants.r_cmz).ljust(50)
-        header['COMMENT'] = 'R_gal,Sun'.format(constants.rGalEarth).ljust(50)
-        header['COMMENT'] = 'zeta_CMZ : {}'.format(constants.zeta_cmz).ljust(50)
-        header['COMMENT'] = 'zeta_Sun : {}'.format(constants.zeta_sol).ljust(50)
+        header['COMMENT'] = ''.ljust(50)
+        header['COMMENT'] = 'Parameters'.center(50)
+        header['COMMENT'] = ''.ljust(50)
+        header['COMMENT'] = '        f_Mcl: {}'.format(constants.h2_mass_factor).ljust(50)
+        header['COMMENT'] = '       f_Micl: {}'.format(constants.hi_mass_factor).ljust(50)
+        header['COMMENT'] = '       f_Mens: {}'.format(constants.ensemble_mass_factor).ljust(50)
+        header['COMMENT'] = '          f_n: {}'.format(constants.density_factor).ljust(50)
+        header['COMMENT'] = '        f_FUV: {}'.format(constants.fuv_factor).ljust(50)
+        header['COMMENT'] = '         f_HI: {}'.format(constants.interclump_hi_ratio).ljust(50)
+        header['COMMENT'] = '   log chi_cl: {}'.format(constants.clumpLogFUV).ljust(50)
+        header['COMMENT'] = '  log chi_icl: {}'.format(constants.interclumpLogFUV).ljust(50)
+        header['COMMENT'] = '    R_gal,CMZ: {}'.format(constants.r_cmz).ljust(50)
+        header['COMMENT'] = '     zeta_CMZ: {}'.format(constants.zeta_cmz).ljust(50)
+        header['COMMENT'] = '     zeta_Sun: {}'.format(constants.zeta_sol).ljust(50)
         header['COMMENT'] = ''.ljust(50)
         header['COMMENT'] = ''.ljust(50)
         header['COMMENT'] = ''.ljust(50)
