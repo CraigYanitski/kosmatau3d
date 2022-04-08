@@ -3,6 +3,8 @@ import astropy.units as u
 import astropy.constants as con
 import matplotlib.pyplot as plt
 
+from astropy.modeling.physical_models import BlackBody
+
 
 def u_habing(l):
     # Habing (1968)
@@ -21,12 +23,18 @@ def u_mezger(l, floattype=False):
         floattype = True
         l = np.asarray([l])
     ul = np.zeros(*l.shape)
+    bb = BlackBody()
+    i = (l>2460)
+    ul[i] = l[i]*(bb.evaluate(l[i]*u.AA, scale=1e-18*u.erg/(u.s*u.cm**2*u.AA*u.sr), 
+                              temperature=7500*u.K) 
+                  + bb.evaluate(l[i]*u.AA, scale=1.65e-17*u.erg/(u.cm**2*u.s*u.AA*u.sr), 
+                                temperature=4000*u.K)) * 4*np.pi / 2.9979e10
     i = (l>1340) & (l<=2460)
-    ul[i] = 2.373e-14 * (l[i]/1e4)**-0.6678
+    ul[i] = 2.373e-14*4*np.pi * (l[i]/1e4)**-0.6678
     i = (l>1100) & (l<=1340)
-    ul[i] = 6.825e-13 * (l[i]/1e4)
+    ul[i] = 6.821e-13*4*np.pi * (l[i]/1e4)
     i = (l>=912) & (l<=1100)
-    ul[i] = 1.287e-9 * (l[i]/1e4)**4.4172
+    ul[i] = 1.287e-9*4*np.pi * (l[i]/1e4)**4.4172
     if floattype:
         return ul[0]
     else:
@@ -50,8 +58,8 @@ def u_kosma(l, floattype=False, **kwargs):
     else:
         return ul
 
-def compare_models():
-    l = np.linspace(912, 2066)
+def compare_models(l_range=(912, 2066)):
+    l = np.linspace(l_range[0], l_range[1], num=1000)
     t = 29000
     w = 1.5e-11
 
@@ -86,7 +94,7 @@ def compare_models():
     return
 
 
-def plot_comparison(l_range, num=10000):
+def plot_comparison(l_range=(912, 2066), num=10000, ticklabelsize=16, labelsize=24):
     l = np.linspace(l_range[0], l_range[1], num=num)
     t = 29000
     w = 1.5e-11
@@ -99,17 +107,18 @@ def plot_comparison(l_range, num=10000):
 
     fig, ax = plt.subplots(1, 1, figsize=(14, 10))
 
-    ax.plot(habing, lw=3, label='Habing (1968)')
-    ax.plot(draine, lw=3, label='Draine (1978)')
-    ax.plot(mezger, ls=':', lw=3, label='Mezger et al. (1982)')
-    ax.plot(zucconi, ls='-.', lw=3, label='Zucconi et al. (2003)')
-    ax.plot(kosma, ls='--', lw=3, label='Röllig et al. (2013)')
+    ax.plot(l, habing/1e-13, lw=3, label='Habing (1968)')
+    ax.plot(l, draine/1e-13, lw=3, label='Draine (1978)')
+    ax.plot(l, mezger/1e-13, ls=':', lw=3, label='Mezger et al. (1982)')
+    ax.plot(l, zucconi/1e-13, ls='-.', lw=3, label='Zucconi et al. (2003)')
+    ax.plot(l, kosma/1e-13, ls='--', lw=3, label='Röllig et al. (2013)')
 
-    ax.set_xlabel(r'$\lambda$ $(\AA)$', fontsize=24)
-    ax.set_ylabel(r'$\lambda u_\lambda$ $\left( \frac{erg}{cm^3} \right)$', fontsize=24)
-    ax.tick_params(axis='x', labelsize=14)
-    ax.tick_params(axis='y', labelsize=14)
-    ax.legend(fontsize=24)
+    ax.set_xlabel(r'$\lambda$ $(\AA)$', fontsize=labelsize)
+    ax.set_ylabel(r'$\lambda u_\lambda$ $\left( 10^{-13}~\mathrm{erg}\,\mathrm{cm^3} \right)$', fontsize=labelsize)
+    ax.tick_params(axis='both', labelsize=ticklabelsize)
+    ax.ticklabel_format(axis='both', style='sci', useLocale=False, useOffset=False, useMathText=True)
+    ax.legend(fontsize=labelsize)
+    ax.set_xlim(l.min(), l.max())
 
     plt.show()
     plt.savefig('/home/yanitski/projects/pdr/FUV_comparison.png')
