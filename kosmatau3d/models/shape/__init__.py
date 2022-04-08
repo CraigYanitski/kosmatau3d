@@ -129,7 +129,10 @@ class Shape():
     
     def getDimensions(self):
         return self.__dimensions
-    
+
+    def getShape(self):
+        return self.__dimensions.getDimension()
+
     def getResolution(self):
         return self.__scale
     
