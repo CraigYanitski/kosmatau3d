@@ -20,11 +20,14 @@ class Model(object):
     '''
     # PRIVATE
   
-    def __init__(self, history_path='', directory='', folder='', x=0, y=0, z=0, modelType='', resolution=1000,
-                 molecules=[], dust='', clumpMassRange=[], clumpMassNumber=[], clumpNmax=[], velocityRange=[],
-                 velocityNumber=0, clumpMassFactor=[], interclump_hifactor=1,
+    def __init__(self, history_path='', directory='', folder='', 
+                 x=0, y=0, z=0, modelType='', resolution=1000,
+                 molecules='all', dust='molecular', velocityRange=(), velocityNumber=0,
+                 clumpMassRange=((0, 2), (-2)), clumpMassNumber=(3, 1), clumpNmax=(1, 100), 
+                 ensemble_mass_factor=(1, 1), interclump_hi_ratio=1,
                  interclump_fillingfactor=None, interclumpLogFUV=None, clumpLogFUV=None,
-                 FUVfactor=1, densityFactor=1, globalUV=10, r_cmz=0, zeta_cmz=1e-14, zeta_sol=2e-16,
+                 hi_mass_factor=1, h2_mass_factor=1, fuv_factor=1, density_factor=1, globalUV=10, 
+                 r_cmz=0, zeta_cmz=1e-14, zeta_sol=2e-16,
                  timed=False, verbose=False, debug=False):
       
         if not len(clumpMassRange):
@@ -42,12 +45,14 @@ class Model(object):
         constants.changeDirectory(directory)
         
         # Factors
-        constants.clumpMassFactor = clumpMassFactor
-        constants.interclump_hifactor = interclump_hifactor
+        constants.ensemble_mass_factor = ensemble_mass_factor
+        constants.hi_mass_factor = hi_mass_factor
+        constants.h2_mass_factor = h2_mass_factor
+        constants.interclump_hi_ratio= interclump_hi_ratio
         constants.interclump_fillingfactor = interclump_fillingfactor
-        constants.densityFactor = densityFactor
-        constants.FUVFactor = FUVfactor
-        constants.globalUV = globalUV
+        constants.density_factor = density_factor
+        constants.fuv_factor = fuv_factor
+        # constants.globalUV = globalUV
         constants.clumpLogFUV = clumpLogFUV
         constants.interclumpLogFUV = interclumpLogFUV
         constants.r_cmz = r_cmz
@@ -68,6 +73,7 @@ class Model(object):
 
         # Shape() object to create the parameters for the grid of voxels
         self.__shape = shape.Shape(x, y, z, modelType=modelType)
+        print(self.__shape.getShape())
         # VoxelGrid() object to build the model and calculate the emission
         self.__grid = VoxelGrid(self.__shape)
         # Orientation() object to change the viewing angle and expected spectra
