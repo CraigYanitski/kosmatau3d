@@ -37,9 +37,12 @@ parameters = {
               'velocityNumber': 701,
 
               # Property factors
-              'clumpMassFactor': [1, 1],
-              'FUVfactor': 1,
-              'densityFactor': 1,
+              'hi_mass_factor': 1,
+              'h2_mass_factor': 1,
+              'ensemble_mass_factor': [1, 1],
+              'fuv_factor': 1,
+              'density_factor': 1,
+              'interclump_hi_ratio': 1,
               'r_cmz': 0,
 
               # Logging
@@ -50,13 +53,14 @@ parameters = {
 
 f_mass1 = 1.0
 f_mass2 = 1.0
+f_m_ens = [1, 1]
 f_hi = 1
 f_density = 1.0
 f_uv = 1
 mass_cl = [0, 2]
 mass_icl = [-2]
 r_cmz = 0
-models.constants.fuv_ism = 2
+models.constants.fuv_ism = 1
 fuv = 1.8
 
 for resolution in [400]:
@@ -86,16 +90,19 @@ for resolution in [400]:
                 #     continue
 
                 parameters['resolution'] = resolution
-                parameters['clumpMassFactor'] = [f_mass1, f_mass2]
-                parameters['interclump_hifactor'] = f_hi
                 parameters['clumpMassRange'] = [mass_cl, mass_icl]
                 parameters['clumpMassNumber'] = [len(mass_cl), len(mass_icl)]
                 parameters['clumpLogFUV'] = None
                 parameters['interclumpLogFUV'] = None 
-                parameters['densityFactor'] = f_density
-                parameters['FUVfactor'] = f_uv
-                parameters['r_cmz'] = r_cmz
                 parameters['folder'] = 'r{}_modtest/'.format(int(resolution))
+
+                parameters['hi_mass_factor'] = f_mass1
+                parameters['h2_mass_factor'] = f_mass2
+                parameters['ensemble_mass_factor'] = f_m_ens
+                parameters['density_factor'] = f_density
+                parameters['fuv_factor'] = f_uv
+                parameters['interclump_hi_ratio'] = f_hi
+                parameters['r_cmz'] = r_cmz
 
 
                 kosma = models.Model(**parameters)
@@ -111,4 +118,4 @@ for resolution in [400]:
                                                               multiprocessing=8, 
                                                               slRange=[(-np.pi, np.pi), 
                                                                        (-2*np.pi/180, 2*np.pi/180)],
-                                                              nsl=[361, 5], terminal=True, debug=False)
+                                                              nsl=[721, 9], terminal=True, debug=False)
