@@ -764,7 +764,7 @@ class Voxel(object):
                                 epsilon_species[ens][:, i] += epsilon_dust_interp(transition)
                         else:
                             for i in range(len(species.molecules)):
-                                epsilon_species[ens][:, i] += epsilon_dust[ens].mean(1)
+                                epsilon_species[ens][:, i] += epsilon_dust[ens].mean()
                 else:
                     epsilon_species.append(copy(self.__emissivity_species[ens]))
         else:
@@ -831,7 +831,7 @@ class Voxel(object):
                                 kappa_species[ens][:, i] += kappa_dust_interp(transition)
                         else:
                             for i in range(len(species.molecules)):
-                                kappa_species[ens][:, i] += kappa_dust[ens].mean(1)
+                                kappa_species[ens][:, i] += kappa_dust[ens].mean()
                 else:
                     kappa_species.append(copy(self.__absorption_species[ens]))
         else:
@@ -896,7 +896,7 @@ class Voxel(object):
                                 tau_species[ens][:, i] += tau_dust_interp(transition)
                         else:
                             for i in range(len(species.molecules)):
-                                tau_species[ens][:, i] += tau_dust[ens].mean(1)
+                                tau_species[ens][:, i] += tau_dust[ens].mean()
                 else:
                     tau_species.append(copy(self.__opticalDepthSpecies[ens]))
         else:
@@ -959,7 +959,7 @@ class Voxel(object):
                                 intensity_final[-1][i] += intensity_dust_interp(transition)
                         else:
                             for i in range(len(species.molecules)):
-                                intensity_final[-1][i] += intensity_dust[ens].mean(1)
+                                intensity_final[-1][i] += intensity_dust[ens].mean()
                     else:
                         intensity_final.append(np.trapz(intensity, vel, axis=0))
                 else:
@@ -1011,7 +1011,7 @@ class Voxel(object):
         if total:
             return np.asarray(intensity_final).sum(0)
         else:
-            return intensity_final
+            return np.asarray(intensity_final)
   
     def getDustEmissivity(self, fit=True, total=True, minimal=False):
         if self.suggested_calc:
@@ -1076,7 +1076,7 @@ class Voxel(object):
                 else:
                     intensity = copy(self.__intensityDust)
         else:
-            if total:
+            if False:#total:
                 epsilon = [self.getDustEmissivity(total=total)]
                 kappa = [self.getDustAbsorption(total=total)]
             else:
