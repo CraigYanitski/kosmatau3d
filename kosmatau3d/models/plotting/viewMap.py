@@ -268,7 +268,7 @@ class ViewMap(QApplication):
         else:
             dust = value-self.species_length
             self.SPE.setText('Dust: {}'.format(self.dust[dust]))
-            self.updatePlot(self.file[2].data[vel, :, :, dust], '{}'.format(self.dust[dust]))
+            self.updatePlot(self.file[2].data[:, :, dust], '{}'.format(self.dust[dust]))
         
         return
   
@@ -279,12 +279,14 @@ class ViewMap(QApplication):
         
         if spe < self.species_length:
             self.SPE.setText('Species: {}'.format(self.species[spe]))
-            self.updatePlot(self.species_intensity_integrated[spe, :, :], 'integrated {}'.format(self.species[spe]),
+            self.updatePlot(self.species_intensity_integrated[spe, :, :], 
+                            'integrated {}'.format(self.species[spe]),
                             **kwargs)
         else:
             dust = spe-self.species_length
             self.SPE.setText('Dust: {}'.format(self.dust[dust]))
-            self.updatePlot(self.dust_intensity_integrated[:, :, dust], 'integrated {}'.format(self.dust[dust]),
+            self.updatePlot(self.dust_intensity_integrated[:, :, dust], 
+                            'integrated {}'.format(self.dust[dust]),
                             **kwargs)
         
         return
@@ -298,14 +300,16 @@ class ViewMap(QApplication):
         
         if spe < self.species_length:
             self.SPE.setText('Species: {}'.format(self.species[spe]))
-            i_bg = np.where(self.file[1].data[:, lat, :, spe] == self.file[2].data[:, lat, :, 0])
-            data = self.file[1].data[:, lat, :, spe]
+            i_bg = np.where(self.file[1].data[:, lat, :, spe] == self.file[2].data[lat, :, 0])
+            data = (self.file[1].data[:, lat, :, spe] 
+                    - np.asarray([self.file[2].data[lat, :, 0]]*self.velocity.size))
             data[i_bg] = np.nan
             self.updatePlot(data.T, 'PV {}'.format(self.species[spe]), **kwargs)
         else:
             dust = spe-self.species_length
             self.SPE.setText('Dust: {}'.format(self.dust[dust]))
-            self.updatePlot(self.file[2].data[:, lat, :, dust].T, 'PV {}'.format(self.dust[dust]), **kwargs)
+            self.updatePlot(np.asarray([self.file[2].data[lat, :, dust]]*self.velocity.size).T, 
+                            'PV {}'.format(self.dust[dust]), **kwargs)
         
         return
   
@@ -335,11 +339,13 @@ class ViewMap(QApplication):
                 self.maxI.setValue(vmax)
             ax = self.fig.add_axes((0.1, 0.1, 0.8, 0.9))
             cm = ax.pcolormesh(self.lonPV*180/np.pi, self.velPV, data, shading='auto',
-                               norm=colors.SymLogNorm(linthresh=0.1, vmin=vmin, vmax=vmax, base=10), cmap=self.cmappv)
+                               norm=colors.SymLogNorm(linthresh=0.1, vmin=vmin, vmax=vmax, base=10), 
+                               cmap=self.cmappv)
         else:
             ax = self.fig.add_axes((0.1, 0.1, 0.8, 0.9), projection='mollweide')
             cm = ax.pcolormesh(self.lonGrid, self.latGrid, data, shading='auto',
-                               norm=colors.SymLogNorm(linthresh=0.1, vmin=vmin, vmax=vmax, base=10), cmap=self.cmap)
+                               norm=colors.SymLogNorm(linthresh=0.1, vmin=vmin, vmax=vmax, base=10), 
+                               cmap=self.cmap)
         # cm = ax.imshow(data, extent=(-np.pi, np.pi, -np.pi/2, np.pi/2),
         #                norm=colors.SymLogNorm(linthresh=0.1, vmin=vmin, vmax=vmax), cmap='cubehelix')
         cb = self.fig.colorbar(cm, ax=ax, fraction=0.02)
