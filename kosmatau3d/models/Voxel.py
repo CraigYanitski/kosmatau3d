@@ -922,11 +922,11 @@ class Voxel(object):
                 ensembles = 1
             else:
                 epsilon_species = self.getSpeciesEmissivity(kind=kind, include_dust=include_dust,
-                                                            fit=fit, total=total)
+                                                            fit=fit, total=False)
                 kappa_species = self.getSpeciesAbsorption(kind=kind, include_dust=include_dust,
-                                                          fit=fit, total=total)
+                                                          fit=fit, total=False)
                 tau_species = self.getSpeciesOpticalDepth(kind=kind, include_dust=include_dust,
-                                                          fit=fit, total=total)
+                                                          fit=fit, total=False)
                 ensembles = constants.ensembles
             for ens in range(ensembles):
                 clump_vel = self.__clumpVelocities[ens][self.__clumpVelocityIndeces[ens]]+self.__velocity
@@ -950,7 +950,7 @@ class Voxel(object):
                         if False:#total:
                             intensity_dust = [self.getDustIntensity(fit=fit, total=total)]
                         else:
-                            intensity_dust = self.getDustIntensity(fit=fit, total=total)
+                            intensity_dust = self.getDustIntensity(fit=fit, total=False)
                         intensity_final.append(np.trapz(intensity, vel, axis=0))
                         if np.where(constants.nDust)[0].size > 10:
                             intensity_dust_interp = interp1d(constants.wavelengths[constants.nDust],
@@ -1155,11 +1155,12 @@ class Voxel(object):
         if quantity == 'emissivity':
             value = self.getSpeciesEmissivity(kind=kind, include_dust=include_dust, total=total)
             ylabel = r'$\epsilon_{\lambda} \ \left( \frac{K}{pc} \right)$'
-    
         elif quantity == 'absorption':
             value = self.getSpeciesAbsorption(kind=kind, include_dust=include_dust, total=total)
             ylabel = r'$\kappa_{\lambda} \ \left( \frac{1}{pc} \right)$'
-    
+        elif quantity == 'optical depth':
+            value = self.getSpeciesOpticalDepth(kind=kind, include_dust=include_dust, total=total)
+            ylabel = r'$\tau_{\lambda} \ \left( \mathrm{N/A} \right)$'
         elif quantity == 'intensity':
             value = self.getSpeciesIntensity(kind=kind, include_dust=include_dust, total=total)
             ylabel = r'$I_{\lambda} \ \left( K \right)$'
