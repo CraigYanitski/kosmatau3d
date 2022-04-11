@@ -402,8 +402,8 @@ def multiprocessCalculation(slRange=[(-np.pi,np.pi), (-np.pi/2,np.pi/2)], nsl=[5
     if vel_pool:
         v_positions = []
         v_intensity_map_species = []
-        v_intensity_map_species = []
-        v_opticaldepth_map_dust = []
+        v_intensity_map_dust = []
+        v_opticaldepth_map_species = []
         v_opticaldepth_map_dust = []
         sightlines = []
         args = (list(enumerate(constants.velocityRange)), constants.velocityRange.size)
@@ -542,14 +542,14 @@ def calculateVelocityChannel(ivelocity, slRange=[(-np.pi,np.pi), (-np.pi/2,np.pi
     # print('lon/lat arrays created:', time()-t0)
   
     # Find the voxels that exist at the observing velocity
-    nDust = rt.tempDustEmissivity[0].shape[2]
-    if nDust > 1:
-        base = rt.interpDust(species.moleculeWavelengths)[:, :, 0]
+    nDust = rt.tempDustEmissivity[0].shape[1]
+    if nDust > 10:
+        base = rt.interpDust(species.moleculeWavelengths)[:, 0]
     else:
-        base = rt.tempDustEmissivity[0].data[0, i_vel, 0]
+        base = rt.tempDustEmissivity[0].data[0, 0]
       
     rt.i_vox = ((rt.tempSpeciesEmissivity[0].data[:, i_vel, :] > base).any(1) |
-                               rt.tempDustEmissivity[0].data[:, i_vel, :].any(1))
+                               rt.tempDustEmissivity[0].data[:, :].any(1))
     
     # print('Voxels selected (shape={}):'.format(i_vox[i_vox].shape), time()-t0)
   
@@ -647,9 +647,9 @@ def calculateVelocityChannel(ivelocity, slRange=[(-np.pi,np.pi), (-np.pi/2,np.pi
             if multiprocess == 0:
                 rt.slTqdm.update()
             
-            if len(np.shape(positionintensity_species[-1])) > 1:
-                rt.logger.error('Error {}'.format(np.shape(positionintensity_species[-1])))
-                input()
+            # if len(np.shape(positionintensity_species[-1])) > 1:
+            #     rt.logger.error('Error {}'.format(np.shape(positionintensity_species[-1])))
+            #     input()
         
         # Save intensities for each latitude
         intensity_map_species.append(positionintensity_species)
@@ -997,11 +997,11 @@ def setLOS(x=0, y=0, z=0, lon=0, lat=0, i_vox=[], i_vel=0, i_spe=None, i_dust=No
         if reverse:
             # order the voxels in the line-of-sight according to increasing radial distance
             i = np.argsort(x3LoS)
-            iLoS_ordered = i_los[i]
+            i_los_ordered = i_los[i]
         else:
             # order the voxels in the line-of-sight according to decreasing radial distance
             i = np.argsort(x3LoS)[::-1]
-            iLoS_ordered = i_los[i]
+            i_los_ordered = i_los[i]
         
         # print('\n\n', iLoS, i, iLoS_ordered, i_vel,
         #       (rt.tempSpeciesEmissivity[0].data[iLoS_ordered,i_vel,:]>0).any(), '\n\n')
