@@ -1,6 +1,7 @@
 import sys
 import warnings
 import multiprocessing
+from pprint import pprint
 from multiprocessing import Pool
 from functools import partial
 import importlib as il
@@ -93,8 +94,9 @@ def open_voxel_emission(directory):
     return
 
 
-def calculateObservation(directory='', dim='xy', slRange=[(-np.pi,np.pi), (-np.pi/2,np.pi/2)], nsl=[50,25],
-                         terminal=True, vel_pool=False, plotV=False, multiprocessing=0, debug=False, verbose=False):
+def calculateObservation(directory='', dim='xy', terminal=True, vel_pool=False, plotV=False, 
+                         slRange=[(-np.pi,np.pi), (-np.pi/2,np.pi/2)], nsl=[50,25],
+                         multiprocessing=0, debug=False, verbose=False):
 
     if debug:
         sl = [5, 5]
@@ -232,28 +234,36 @@ def calculateObservation(directory='', dim='xy', slRange=[(-np.pi,np.pi), (-np.p
             position_hdu.header['DIREC'] = 'Radial'
             
             # print(VintensityMapSpecies.shape, np.shape(VintensityMapSpecies[0, 0, 0]))
+            if verbose:
+                print(np.shape(result_intensity_species), np.shape(result_intensity_dust))
             rt.intensity_species = result_intensity_species
             intensity_hdu_species = fits.ImageHDU(result_intensity_species)
             intensity_hdu_species = edit_hdu_header(intensity_hdu_species, sl_range=slRange, 
-                                                    species=True, intensity=True)
+                                                    species=True, intensity=True,
+                                                    verbose=verbose)
             
             # print(VintensityMapDust.shape, np.shape(VintensityMapDust[0, 0, 0]))
             rt.intensity_dust = result_intensity_dust
             intensity_hdu_dust = fits.ImageHDU(result_intensity_dust)
             intensity_hdu_dust = edit_hdu_header(intensity_hdu_dust, sl_range=slRange, 
-                                                 dust=True, intensity=True)
+                                                 dust=True, intensity=True,
+                                                 verbose=verbose)
             
             # print(VintensityMapSpecies.shape, np.shape(VintensityMapSpecies[0, 0, 0]))
+            if verbose:
+                print(np.shape(result_optical_depth_species), np.shape(result_optical_depth_dust))
             rt.optical_depth_species = result_optical_depth_species
             optical_depth_hdu_species = fits.ImageHDU(result_optical_depth_species)
             optical_depth_hdu_species = edit_hdu_header(optical_depth_hdu_species, sl_range=slRange, 
-                                                        species=True, optical_depth=True)
+                                                        species=True, optical_depth=True, 
+                                                        verbose=verbose)
             
             # print(VintensityMapDust.shape, np.shape(VintensityMapDust[0, 0, 0]))
             rt.optical_depth_dust = result_optical_depth_dust
             optical_depth_hdu_dust= fits.ImageHDU(result_optical_depth_dust)
             optical_depth_hdu_dust = edit_hdu_header(optical_depth_hdu_dust, sl_range=slRange, 
-                                                     dust=True, optical_depth=True)
+                                                     dust=True, optical_depth=True,
+                                                     verbose=verbose)
       
       
             # IntensityHDUSpecies.header['TYPE'] = 'Species transitions'
@@ -348,7 +358,9 @@ def calculateObservation(directory='', dim='xy', slRange=[(-np.pi,np.pi), (-np.p
 
 
 def edit_hdu_header(hdu, sl_range=(0, 0), species=False, dust=False, 
-                    intensity=False, optical_depth=False):
+                    intensity=False, optical_depth=False, verbose=False):
+    if verbose:
+        pprint(hdu.header)
     if species:
         hdu.header['TYPE'] = 'Species transitions'
     elif dust:
@@ -372,7 +384,7 @@ def edit_hdu_header(hdu, sl_range=(0, 0), species=False, dust=False,
     else:
         hdu.header['CRVAL2'] = sl_range[0][0]
         hdu.header['CDELT2'] = 0
-        hdu.header['CRPIX2'] = (IntensityHDUSpecies.header['NAXIS2'])
+        hdu.header['CRPIX2'] = (hdu.header['NAXIS2'])
     hdu.header['CTYPE3'] = 'GLAT'
     hdu.header['CUNIT3'] = 'rad'
     if hdu.header['NAXIS3'] > 1:
@@ -443,12 +455,16 @@ def multiprocessCalculation(slRange=[(-np.pi,np.pi), (-np.pi/2,np.pi/2)], nsl=[5
                              miniters=1, dynamic_ncols=True)
             for iv in args[0]:
                 intensity.append(velChannel(iv))
+                #print(np.shape(intensity[-1][1][0]))
+                #input()
                 vTqdm.update()
         else:
             rt.slTqdm = tqdm(total=args[1], desc='Sightline', 
                              miniters=1, dynamic_ncols=True)
             for arg in args[0]:
                 intensity.append(calc_los(arg))
+                #print(np.shape(intensity[-1][1][0]))
+                #input()
                 # print(intensity[-1][0][0], '-->', intensity[-1][3])
                 rt.slTqdm.update()
             print('\n\n')
@@ -512,7 +528,7 @@ def multiprocessCalculation(slRange=[(-np.pi,np.pi), (-np.pi/2,np.pi/2)], nsl=[5
 
     if vel_pool:
         return (v_positions[0], (v_intensity_map_species, v_opticaldepth_map_species), 
-                (v_intensity_map_dust, v_opticaldepth_map_dust), sightlines, (vmin, vmax))
+                (v_intensity_map_dust[0], v_opticaldepth_map_dust[0]), sightlines, (vmin, vmax))
     else:
         return (positions, (intensity_map_species, optical_depth_map_species),
                 (intensity_map_dust, optical_depth_map_dust), sightlines, (vmin, vmax))
@@ -626,16 +642,16 @@ def calculateVelocityChannel(ivelocity, slRange=[(-np.pi,np.pi), (-np.pi/2,np.pi
             
             # Integrate along LoS
             if vox == 1:
-                positionintensity_species.append(rt.intensity_species * normfactor)
+                positionintensity_species.append(rt.intensity_species[0] * normfactor)
                 positionintensity_dust.append(rt.intensity_dust * normfactor)
-                positionopticaldepth_species.append(rt.opticaldepth_species * normfactor)
+                positionopticaldepth_species.append(rt.opticaldepth_species[0] * normfactor)
                 positionopticaldepth_dust.append(rt.opticaldepth_dust * normfactor)
             elif vox > 1:
                 calculatert(scale=normfactor)
-                positionintensity_species.append(rt.intensity_species)
+                positionintensity_species.append(rt.intensity_species[0])
                 positionintensity_dust.append(rt.intensity_dust)
-                positionopticaldepth_species.append((rt.opticaldepth_species * normfactor).sum(0))
-                positionopticaldepth_dust.append((rt.opticaldepth_dust * normfactor).sum(0))
+                positionopticaldepth_species.append(rt.opticaldepth_species[0] * normfactor)
+                positionopticaldepth_dust.append(rt.opticaldepth_dust * normfactor)
                 # intensity_species = []
                 # intensity_dust = []
             else:
@@ -682,8 +698,8 @@ def calculateVelocityChannel(ivelocity, slRange=[(-np.pi,np.pi), (-np.pi/2,np.pi
             (intensity_map_dust, opticaldepth_map_dust), sightlines)
 
 
-def calculate_sightline(los, slRange=[(-np.pi,np.pi), (-np.pi/2,np.pi/2)], nsl=[50,25],
-                             dim='spherical', debug=False, multiprocess=0):
+def calculate_sightline(los, slRange=((-np.pi, np.pi), (-np.pi/2, np.pi/2)), nsl=(50, 25),
+                        dim='spherical', debug=False, multiprocess=0):
 
     # # Convert the tuple to the desired index and velocity
     # i_vel = ivelocity[0]
@@ -836,7 +852,7 @@ def calculate_sightline(los, slRange=[(-np.pi,np.pi), (-np.pi/2,np.pi/2)], nsl=[
     return (position, *result, vox)
 
 
-def setLOS(x=0, y=0, z=0, lon=0, lat=0, i_vox=[], i_vel=0, i_spe=None, i_dust=None,
+def setLOS(x=0, y=0, z=0, lon=0, lat=0, i_vox=[], i_vel=None, i_spe=None, i_dust=None,
            dim='xy', reverse=True, debug=False, verbose=False):
     '''
     The emission dimensions should be velocity x species x 2 x voxels.
