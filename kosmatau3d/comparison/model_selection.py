@@ -2407,9 +2407,9 @@ def double_line_plot(obs_path='/mnt/hpc_backup/yanitski/projects/pdr/observation
                 *[np.log10(survey_lines[1][i]) for i in range(len(survey_ratios[1]))]]
         #ax.boxplot(data, labels=labels, widths=boxwidth, notch=notch)
         if ylabel == '':
-            xlabel = r'$log_{10} ' + r'\left( \varpi_{' + r'{}'.format(transitions[0]) 
+            xlabel = r'$log_{10} ' + r'\left( \varpi_{' + r'{}'.format(transitions[0]) \
                      + r'} \right)$'
-            ylabel = r'$log_{10} ' + r'\left( \varpi_{' + r'{}'.format(transitions[1]) 
+            ylabel = r'$log_{10} ' + r'\left( \varpi_{' + r'{}'.format(transitions[1]) \
                      + r'} \right)$'
         #else:
         #    ax.set_xlabel(xlabel)
