@@ -27,8 +27,8 @@ class Model(object):
                  ensemble_mass_factor=(1, 1), interclump_hi_ratio=1,
                  interclump_fillingfactor=None, interclumpLogFUV=None, clumpLogFUV=None,
                  hi_mass_factor=1, h2_mass_factor=1, fuv_factor=1, density_factor=1, globalUV=10, 
-                 r_cmz=0, zeta_cmz=1e-14, zeta_sol=2e-16,
-                 timed=False, verbose=False, debug=False):
+                 r_cmz=0, zeta_cmz=1e-14, zeta_sol=2e-16, suggested_calc=True,
+                 dilled=False, timed=False, verbose=False, debug=False):
       
         if not len(clumpMassRange):
             sys.exit('<<ERROR>> Define mass sets in argument.')
@@ -64,9 +64,12 @@ class Model(object):
         constants.changeVelocityNumber(velocityNumber)
         constants.addClumps(massRange=clumpMassRange, num=clumpMassNumber, Nmax=clumpNmax, reset=True)
         
+        # Read grid & input data, specify transitions, and interpolate
         observations.methods.initialise()
         self.__addSpecies(molecules)
         constants.changeDustWavelengths(dust)
+        interpolations.initialise_grid(dilled=dilled)
+        interpolations.initialise_model()
 
         # Initialise logger
         self.__logger = getLogger()
@@ -75,7 +78,7 @@ class Model(object):
         self.__shape = shape.Shape(x, y, z, modelType=modelType)
         print(self.__shape.getShape())
         # VoxelGrid() object to build the model and calculate the emission
-        self.__grid = VoxelGrid(self.__shape)
+        self.__grid = VoxelGrid(self.__shape, suggested_calc=suggested_calc)
         # Orientation() object to change the viewing angle and expected spectra
         # self.__orientation = Orientation(self.__shape.getDimensions())
         self.__speciesNames = []  # this is a list of the species names for easy printout

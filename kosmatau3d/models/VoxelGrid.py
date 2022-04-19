@@ -30,7 +30,7 @@ class VoxelGrid(object):
     
     # PRIVATE
   
-    def __init__(self, shape, verbose=False, debug=False):
+    def __init__(self, shape, suggested_calc=True, verbose=False, debug=False):
   
         self.__shape = shape
     
@@ -64,6 +64,8 @@ class VoxelGrid(object):
         #                                                 '-'.join(str(f) for f in constants.clumpMassFactor),
         #                                                 constants.densityFactor,
         #                                                 constants.globalUV)
+
+        self.suggested_calc = suggested_calc
 
         self.__verbose = verbose
         self.__debug = debug
@@ -217,7 +219,7 @@ class VoxelGrid(object):
             'crir': crir,
 
             # Calculation
-            'suggested_calc': True,
+            'suggested_calc': self.suggested_calc,
             'velocity_resolution': 1
             }
     
@@ -228,7 +230,7 @@ class VoxelGrid(object):
     def getDimensions(self):
         return self.__shape.getDimensions()
   
-    def calculateEmission(self, index=0, dilled=False, timed=False, verbose=False, debug=False, multiprocessing=0):
+    def calculateEmission(self, index=0, dilled=False, kind='linear', timed=False, verbose=False, debug=False, multiprocessing=0):
         # This will initialise the grid of voxels and calculate their emission. This has to be
         # done in succession for each voxel since the calculations are modular (the temporary
         # voxel terms are changed when calculating different voxels). This can be rerun and it
@@ -238,8 +240,8 @@ class VoxelGrid(object):
             t0 = time()
     
         # print(observations.tauCenterline)
-        interpolations.initialise_grid(dilled=dilled)
-        interpolations.initialise_model()
+        # interpolations.initialise_grid(dilled=dilled)
+        # interpolations.initialise_model()
         self.__initialiseGrid()
         
         if timed:
@@ -382,8 +384,8 @@ class VoxelGrid(object):
                 # ------------------------------------
                 
                 # Save emissivity and absorption
-                shdu_voxel_emissivity_species.write(voxel.getSpeciesEmissivity(include_dust=True))
-                shdu_voxel_absorption_species.write(voxel.getSpeciesAbsorption(include_dust=True))
+                shdu_voxel_emissivity_species.write(voxel.getSpeciesEmissivity(kind=kind, include_dust=True))
+                shdu_voxel_absorption_species.write(voxel.getSpeciesAbsorption(kind=kind, include_dust=True))
                 shdu_voxel_emissivity_dust.write(voxel.getDustEmissivity(minimal=True))
                 shdu_voxel_absorption_dust.write(voxel.getDustAbsorption(minimal=True))
                 
