@@ -250,7 +250,7 @@ def interclumpMassProfile(verbose=False, dilled=True):
                 return dill.load(file)
         if verbose:
             print('Creating interclump mass interpolation')
-        interclumpMass = observations.interclumpMassProfile
+        interclumpMass = observations.clumpMassProfile
         if constants.interpolation == 'linear':
             return interpolate.interp1d(interclumpMass[0], interclumpMass[1], kind='linear')
         elif constants.interpolation == 'cubic' or constants.interpolation == 'radial':
@@ -261,7 +261,7 @@ def interclumpMassProfile(verbose=False, dilled=True):
     return
 
 
-def interpolateFUVfield(verbose=False, dilled=False):
+def interpolateFUVfield(l_range=(912, 2066), verbose=False, dilled=False):
     if constants.directory != '':
         if dilled:
             with open(constants.INPUTPATH+constants.directory + 'dilled/fuv_field_interpolation', 'rb') as file:
@@ -270,10 +270,11 @@ def interpolateFUVfield(verbose=False, dilled=False):
             print('Creating FUV interpolation')
         fuv = observations.FUVfield
         lam = np.array([912, 1350, 1500, 1650, 2000, 2200, 2500, 2800, 3650])
-        wav = np.linspace(912, 2066, num=1000)
+        wav = np.linspace(l_range[0], l_range[1], num=1000)
         f = interpolate.interp1d(lam, fuv[2], axis=1)
         if constants.interpolation == 'linear':
             return interpolate.LinearNDInterpolator(fuv[0], np.trapz(f(wav), wav))
+            # return interpolate.LinearNDInterpolator(fuv[0], fuv[1])
         elif constants.interpolation == 'cubic' or constants.interpolation == 'radial':
             return interpolate.Rbf(fuv[0][:, 0], fuv[0][:, 1], np.trapz(f(wav), wav))
         else:
