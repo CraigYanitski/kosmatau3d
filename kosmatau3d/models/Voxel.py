@@ -345,10 +345,11 @@ class Voxel(object):
         ensemble.initialise(ensembledispersion=self.__ensembleDispersion, ensemblemass=self.__ensembleMass,
                             suggested_calc=self.suggested_calc)
         #print('  ensemble:', (time()-t0)/60)
-        combinations.initialise(clumpcombination=[ensemble.clumpCombinations[ens][ensemble.clumpLargestIndex[ens]]
-                                                  for ens in range(len(constants.clumpMassNumber))],
-                                totalcombination=[ensemble.CLmaxCombinations[ens][0]
-                                                  for ens in range(len(constants.clumpMassNumber))])
+        combinations.initialise(clumpcombination=[
+                ensemble.clumpCombinations[ens][ensemble.clumpLargestIndex[ens]] 
+                for ens in range(len(constants.clumpMassNumber))],
+            totalcombination=[ensemble.CLmaxCombinations[ens][0] 
+                for ens in range(len(constants.clumpMassNumber))])
         
         #print('probabilities calculated:', (time()-t0)/60)
         #print('ensemble velocities:', ensemble.clumpVelocities)
