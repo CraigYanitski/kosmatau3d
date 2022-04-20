@@ -282,7 +282,8 @@ class Voxel(object):
                 constants.addClumps(massRange=clumpMassRange, num=clumpMassNumber, Nmax=clumpNmax, reset=True)
 
             if new_grid or change_interpolation or \
-                    not interpolations.initialised or not observations.initialised:
+                    not interpolations.initialised or not observations.initialised or \
+                    dust != constants.dust:
                 constants.changeDustWavelengths(dust)
                 observations.methods.initialise()
                 species.addMolecules(molecules)

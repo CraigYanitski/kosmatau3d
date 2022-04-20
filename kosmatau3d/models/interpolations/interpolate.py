@@ -55,6 +55,15 @@ def calculateGridInterpolation(verbose=False, dilled=False):
     for the corresponding emission indeces.
     '''
     np.seterr(divide='ignore', invalid='ignore')
+    if interpolations.initialised:
+        del interpolations.intensityInterpolation
+        del interpolations.tauInterpolation
+        del interpolations.dustIntensityInterpolation
+        del interpolations.dustTauInterpolation
+    interpolations.intensityInterpolation = []
+    interpolations.tauInterpolation = []
+    interpolations.dustIntensityInterpolation = []
+    interpolations.dustTauInterpolation = []
     if dilled:
         with open(constants.GRIDPATH + 'dilled/intensity_interpolation', 'rb') as file:
             intensityInterpolation = dill.load(file)
@@ -64,8 +73,8 @@ def calculateGridInterpolation(verbose=False, dilled=False):
             dustIntensityInterpolation = dill.load(file)
         with open(constants.GRIDPATH + 'dilled/dust_tau_interpolation', 'rb') as file:
             dustTauInterpolation = dill.load(file)
-        interpolations.intensityInterpolation = []
-        interpolations.tauInterpolation = []
+        # interpolations.intensityInterpolation = []
+        # interpolations.tauInterpolation = []
         if len(species.moleculeIndeces) == len(intensityInterpolation):
             interpolations.intensityInterpolation = intensityInterpolation
             interpolations.tauInterpolation = tauInterpolation
@@ -88,8 +97,8 @@ def calculateGridInterpolation(verbose=False, dilled=False):
     # indeces = species.molecules.getFileIndeces()
     crnmuvI, I = observations.tbCenterline
     crnmuvTau, Tau = observations.tauCenterline
-    interpolations.intensityInterpolation = []
-    interpolations.tauInterpolation = []
+    # interpolations.intensityInterpolation = []
+    # interpolations.tauInterpolation = []
     
     # Correct for the negative emission values (from Silke's code)
     I[I <= 0] = 1e-100
