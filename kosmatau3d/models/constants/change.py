@@ -126,7 +126,7 @@ def changeDirectory(direc):
     return
 
 
-def changeDustWavelengths(limit=''):
+def changeDustWavelengths(limit='all'):
   
     constants.dustWavelengths = limit
     

@@ -646,14 +646,14 @@ class Voxel(object):
                                                                         for _ in range(self.__opticalDepthDust[ens].shape[0])
                                                                         ]).astype(constants.dtype))
 
-                    if iDust > 1:
+                    if iDust > 10:
                         intensityDustInterp = interp1d(constants.wavelengths[constants.nDust],
                                                        self.__intensityDust[ens].max(0), fill_value='extrapolate')
                         opticalDepthDustInterp = interp1d(constants.wavelengths[constants.nDust],
                                                           self.__opticalDepthDust[ens].max(0), fill_value='extrapolate')
 
                     for i, transition in enumerate(species.moleculeWavelengths):
-                        if iDust > 1:
+                        if iDust > 10:
                             self.__intensitySpecies[ens][:, i] += intensityDustInterp(transition)
                             self.__opticalDepthSpecies[ens][:, i] += opticalDepthDustInterp(transition)
                         else:

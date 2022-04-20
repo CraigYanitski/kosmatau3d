@@ -66,8 +66,9 @@ class Model(object):
         
         # Read grid & input data, specify transitions, and interpolate
         observations.methods.initialise()
+        constants.dust = dust
         self.__addSpecies(molecules)
-        constants.changeDustWavelengths(dust)
+        constants.changeDustWavelengths(constants.dust)
         interpolations.initialise_grid(dilled=dilled)
         interpolations.initialise_model()
 

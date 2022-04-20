@@ -79,7 +79,7 @@ mapCenter = (0, 0)  # center of the desired map in degrees
 # Model species
 molecules = []
 moleculeNumber = 0
-dust = True
+dust = 'all'
 
 # Model characteristics
 n_sigma = 3
