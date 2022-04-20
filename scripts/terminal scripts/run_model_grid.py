@@ -23,9 +23,15 @@ parameters = {
               # Model parameters
               'resolution': 400,
               # 'molecules': 'all',
-              'molecules': ['C+ 1', 'C 1', 'C 2', 'CO 1', 'CO 2', 'CO 3', 'CO 4', 'CO 5', 'CO 6', 'CO 7', 'CO 8',
-                            '13C+ 1', '13C 1', '13C 2', '13CO 1', '13CO 2', '13CO 3', '13CO 4', '13CO 5', '13CO 6',
-                            '13CO 7', '13CO 8', 'HCO+ 1', 'HCO+ 2', 'HCO+ 3', 'HCO+ 4', 'HCO+ 5'],
+              'molecules': ['C+ 1', 
+                            'C 1', 'C 2', 
+                            'CO 1', 'CO 2', 'CO 3', 'CO 4', 'CO 5', 
+                            'CO 6', 'CO 7', 'CO 8', 
+                            '13C+ 1', 
+                            '13C 1', '13C 2', 
+                            '13CO 1', '13CO 2', '13CO 3', '13CO 4', '13CO 5', 
+                            '13CO 6', '13CO 7', '13CO 8', 
+                            'HCO+ 1', 'HCO+ 2', 'HCO+ 3', 'HCO+ 4', 'HCO+ 5'],
               # 'dust': 'PAH',
               'dust': ['240um', '550um'],
               'clumpMassRange': [[0, 2], [-2]],
@@ -35,6 +41,10 @@ parameters = {
               'interclumpLogFUV' : None,
               'velocityRange': [-350, 350],
               'velocityNumber': 701,
+
+              # Flags
+              'suggested_calc': True,
+              'dilled': True,
 
               # Property factors
               'hi_mass_factor': 1,
@@ -56,7 +66,7 @@ f_mass2 = 1.0
 f_m_ens = [1, 1]
 f_hi = 1
 f_density = 1.0
-f_uv = 1
+f_uv = 10
 mass_cl = [0, 2]
 mass_icl = [-2]
 r_cmz = 0
@@ -94,7 +104,7 @@ for resolution in [400]:
                 parameters['clumpMassNumber'] = [len(mass_cl), len(mass_icl)]
                 parameters['clumpLogFUV'] = None
                 parameters['interclumpLogFUV'] = None 
-                parameters['folder'] = 'r{}_modtest_old/'.format(int(resolution))
+                parameters['folder'] = 'r{}_modtest_new/'.format(int(resolution))
 
                 parameters['hi_mass_factor'] = f_mass1
                 parameters['h2_mass_factor'] = f_mass2
@@ -108,14 +118,14 @@ for resolution in [400]:
                 kosma = models.Model(**parameters)
                 print('\n    -> Model {}'.format(models.constants.history))
                 print('       ' + '-'*len('Model {}'.format(models.constants.history)))
-                #kosma.calculateModel(dilled=True, multiprocessing=0)
+                kosma.calculateModel(kind='zero', multiprocessing=0)
 
                 print(models.species.molecules)
 
                 directory = parameters['history_path'] + parameters['directory'] \
                             + '/' + parameters['folder']
                 models.radiativeTransfer.calculateObservation(directory=directory, dim='spherical',
-                                                              multiprocessing=8, vel_pool=True, 
+                                                              multiprocessing=8, vel_pool=False, 
                                                               slRange=[(-np.pi, np.pi), 
                                                                        (-2*np.pi/180, 2*np.pi/180)],
-                                                              nsl=[361, 5], terminal=True, debug=False)
+                                                              nsl=[721, 9], terminal=True, debug=False)
