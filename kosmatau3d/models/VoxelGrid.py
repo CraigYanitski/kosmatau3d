@@ -258,7 +258,8 @@ class VoxelGrid(object):
         # Setup fits files to stream the voxel emissivity and absorption.
         # species
         dim = [len(species.moleculeWavelengths), constants.velocityRange.size, self.__voxelNumber]
-        print('species emission dimension:', dim)
+        if verbose:
+            print('species emission dimension:', dim)
         shdu_voxel_emissivity_species = self.shdu_header(name='Clump species emissivity', units='K/pc', 
                                                          molecules=True, filename='species_emissivity',
                                                          velocity=True, dim=dim)
@@ -268,7 +269,8 @@ class VoxelGrid(object):
         # dust
         nDust = constants.wavelengths[constants.nDust].size
         dim = [nDust, self.__voxelNumber]
-        print('dust emission dimension:', dim)
+        if verbose:
+            print('dust emission dimension:', dim)
         shdu_voxel_emissivity_dust = self.shdu_header(name='Clump dust emissivity', units='K/pc',
                                                       dust=True, filename='dust_emissivity', dim=dim)
         shdu_voxel_absorption_dust = self.shdu_header(name='Clump dust absorption', units='1/pc', 

@@ -69,7 +69,7 @@ def open_voxel_velocities(directory):
     return
 
 
-def open_voxel_emission(directory):
+def open_voxel_emission(directory, verbose=False):
     '''
     Open the file containing the emissivity and absorption of all voxels.
     This will save the contents in a sub-module variable.
@@ -88,8 +88,9 @@ def open_voxel_emission(directory):
     rt.tempDustEmissivity = fits.open(directory+'dust_emissivity.fits', mode='denywrite')
     rt.tempDustAbsorption = fits.open(directory+'dust_absorption.fits', mode='denywrite')
 
-    print(rt.tempSpeciesEmissivity[0].data.mean(0).mean(0))
-    print(rt.tempDustEmissivity[0].data.mean(0))
+    if verbose:
+        print(rt.tempSpeciesEmissivity[0].data.mean(0).mean(0))
+        print(rt.tempDustEmissivity[0].data.mean(0))
 
     return
 
@@ -107,7 +108,7 @@ def calculateObservation(directory='', dim='xy', terminal=True, vel_pool=False, 
 
     rt.open_voxel_positions(directory)
     rt.open_voxel_velocities(directory)
-    rt.open_voxel_emission(directory)
+    rt.open_voxel_emission(directory, verbose=verbose)
   
     nDust = rt.tempDustEmissivity[0].shape[1]
     if nDust > 10:
