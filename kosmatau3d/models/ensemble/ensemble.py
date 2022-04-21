@@ -398,11 +398,11 @@ def createCombinationObjects(ensembleDispersion, dtype=np.float64, suggested_cal
         for i, combinations in enumerate(ensemble.CLmaxCombinations[ens]):
             ensemble.CLmaxCombinations[ens][i] = combinations.T
             maxProbability = np.zeros_like(combinations.T, dtype=dtype)
-            for combination in ensemble.CLmaxCombinations[ens][i]:
+            for index, combination in enumerate(ensemble.CLmaxCombinations[ens][i]):
                     print(combination)
                     if constants.probability == 'binomial':
                         # if verbose:
-                        print(clumpProbableNumber.shape, combination.shape)
+                        print(CLmaxProbableNumber.shape, combination.shape)
 
                         iGauss = ((CLmaxProbableNumber > constants.pnGauss) &
                                   (ensemble.clumpNormalisedNj[ens] > constants.nGauss))[0]
