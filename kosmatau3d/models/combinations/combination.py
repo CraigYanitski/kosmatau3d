@@ -96,7 +96,7 @@ def calculateEmission(test_calc=False, test_opacity=False, test_fv=False, f_v=No
                 CLcombinations = copy(combinations.clumpCombination[ens])
             else:
                 CLcombinations = copy(combinations.CLmaxCombination[ens])
-            for c in CLcombination:
+            for c in CLcombinations:
                 if suggested_calc:
                     intensity = (c * (masspoints.clumpIntensity[ens][:, :iDust]*(masspoints.clumpOpticalDepth[ens][:, :iDust])
                                       /(1-np.exp(-masspoints.clumpOpticalDepth[ens][:, :iDust]))
