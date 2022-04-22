@@ -1038,13 +1038,13 @@ def setLOS(x=0, y=0, z=0, lon=0, lat=0, i_vox=[], i_vel=None, i_spe=None, i_dust
         rt.de_species = (rt.e_species[1:]-rt.e_species[:-1])/(scale)
         rt.k_species = c.copy(rt.tempSpeciesAbsorption[0].data[ix_species]) / constants.pc/100
         rt.dk_species = (rt.k_species[1:]-rt.k_species[:-1])/(scale)
-        rt.opticaldepth_species = scale * rt.tempSpeciesAbsorption[0].data[ix_species].sum(0)
+        rt.opticaldepth_species = scale * rt.tempSpeciesAbsorption[0].data[ix_species].sum(0) / constants.pc/100
             
         rt.e_dust = c.copy(rt.tempDustEmissivity[0].data[ix_dust]) / constants.pc/100
         rt.de_dust = (rt.e_dust[1:]-rt.e_dust[:-1])/(scale)
         rt.k_dust = c.copy(rt.tempDustAbsorption[0].data[ix_dust]) / constants.pc/100
         rt.dk_dust = (rt.k_dust[1:]-rt.k_dust[:-1])/(scale)
-        rt.opticaldepth_dust = scale * rt.tempDustAbsorption[0].data[ix_dust].sum(0)
+        rt.opticaldepth_dust = scale * rt.tempDustAbsorption[0].data[ix_dust].sum(0) / constants.pc/100
     
     else:
         return 0, 0  # ,[]
@@ -1058,7 +1058,8 @@ def setLOS(x=0, y=0, z=0, lon=0, lat=0, i_vox=[], i_vel=None, i_spe=None, i_dust
     #   e_dust,de_dust,k_dust,dk_dust)
 
 
-def calculatert(scale=1, background_intensity=0., species=True, dust=True, verbose=False, test=True):
+def calculatert(scale=1, background_species_intensity=0., background_dust_intensity=0., 
+                species=True, dust=True, verbose=False, test=True):
 
     # Modify data and initialise observed intensity array
     # if not dust:
@@ -1076,8 +1077,14 @@ def calculatert(scale=1, background_intensity=0., species=True, dust=True, verbo
     #   intensity_dust = np.array([backgroundI])
     #   nSteps = rt.de_dust.shape[0]
     # else:
-    rt.intensity_species = np.full(rt.k_species.shape[1:], background_intensity)
-    rt.intensity_dust = np.full(rt.k_dust.shape[1], background_intensity)
+    if isinstance(background_species_intensity, float) or isinstance(background_species_intensity, int):
+        rt.intensity_species = np.full(rt.k_species.shape[1:], background_species_intensity)
+    else:
+        rt.intensity_species = copy(background_species_intensity)
+    if isinstance(background_dust_intensity, float) or isinstance(background_dust_intensity, int):
+        rt.intensity_dust = np.full(rt.k_dust.shape[1], background_dust_intensity)
+    else:
+        rt.intensity_dust = copy(background_dust_intensity)
     n_steps = rt.de_species.shape[0]
     
     # Adjust according to the average voxel depth
