@@ -77,7 +77,6 @@ class Model(object):
 
         # Shape() object to create the parameters for the grid of voxels
         self.__shape = shape.Shape(x, y, z, modelType=modelType)
-        print(self.__shape.getShape())
         # VoxelGrid() object to build the model and calculate the emission
         self.__grid = VoxelGrid(self.__shape, suggested_calc=suggested_calc)
         # Orientation() object to change the viewing angle and expected spectra

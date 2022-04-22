@@ -259,7 +259,7 @@ def interclumpMassProfile(verbose=False, dilled=True):
                 return dill.load(file)
         if verbose:
             print('Creating interclump mass interpolation')
-        interclumpMass = observations.clumpMassProfile
+        interclumpMass = observations.interclumpMassProfile
         if constants.interpolation == 'linear':
             return interpolate.interp1d(interclumpMass[0], interclumpMass[1], kind='linear')
         elif constants.interpolation == 'cubic' or constants.interpolation == 'radial':
