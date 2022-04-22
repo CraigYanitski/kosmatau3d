@@ -76,7 +76,8 @@ class ViewMap(QApplication):
         self.lonGrid, self.latGrid = np.meshgrid(self.longitude, self.latitude)
         self.velPV, self.lonPV = np.meshgrid(self.velocity, self.longitude)
         print(self.file[1].shape, self.file[2].shape)
-        self.species_intensity_integrated = np.trapz([self.file[1].data[:, :, :, i] - self.file[2].data[:, :, 0]
+        self.species_intensity_integrated = np.trapz([self.file[1].data[:, :, :, i] 
+                                                      - self.file[1].data[:, :, :, i].min(0)
                                                       for i in range(self.file[1].shape[3])],
                                                      self.velocity, axis=1)
         self.dust_intensity_integrated = self.file[2].data
@@ -236,7 +237,9 @@ class ViewMap(QApplication):
         
         if spe < self.species_length:
             self.SPE.setText('Species: {}'.format(self.species[spe]))
-            self.updatePlot(self.file[1].data[vel, :, :, spe], '{}'.format(self.species[spe]), **kwargs)
+            self.updatePlot(self.file[1].data[vel, :, :, spe]
+                            - self.file[1].data[:, :, :, spe].min(0), 
+                            '{}'.format(self.species[spe]), **kwargs)
         else:
             dust = spe-self.species_length
             self.SPE.setText('Dust: {}'.format(self.dust[dust]))
@@ -302,7 +305,8 @@ class ViewMap(QApplication):
             self.SPE.setText('Species: {}'.format(self.species[spe]))
             i_bg = np.where(self.file[1].data[:, lat, :, spe] == self.file[2].data[lat, :, 0])
             data = (self.file[1].data[:, lat, :, spe] 
-                    - np.asarray([self.file[2].data[lat, :, 0]]*self.velocity.size))
+                    - self.file[1].data[:, lat, :, spe].min(0))
+                    # - np.asarray([self.file[2].data[lat, :, 0]]*self.velocity.size))
             data[i_bg] = np.nan
             self.updatePlot(data.T, 'PV {}'.format(self.species[spe]), **kwargs)
         else:
