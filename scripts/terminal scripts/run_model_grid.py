@@ -1,4 +1,4 @@
-# python3.7
+# python3.8
 
 import numpy as np
 
@@ -66,7 +66,7 @@ f_mass2 = 1.0
 f_m_ens = [1, 1]
 f_hi = 1
 f_density = 1.0
-f_uv = 10
+f_uv = 1
 mass_cl = [0, 2]
 mass_icl = [-2]
 r_cmz = 0
@@ -104,7 +104,7 @@ for resolution in [400]:
                 parameters['clumpMassNumber'] = [len(mass_cl), len(mass_icl)]
                 parameters['clumpLogFUV'] = None
                 parameters['interclumpLogFUV'] = None 
-                parameters['folder'] = 'r{}_modtest_new/'.format(int(resolution))
+                parameters['folder'] = 'r{}_fhi1.0_fuv10/'.format(int(resolution))
 
                 parameters['hi_mass_factor'] = f_mass1
                 parameters['h2_mass_factor'] = f_mass2
@@ -118,9 +118,9 @@ for resolution in [400]:
                 kosma = models.Model(**parameters)
                 print('\n    -> Model {}'.format(models.constants.history))
                 print('       ' + '-'*len('Model {}'.format(models.constants.history)))
-                kosma.calculateModel(kind='zero', multiprocessing=0)
+                # kosma.calculateModel(kind='zero', multiprocessing=0)
 
-                print(models.species.molecules)
+                # print(models.species.molecules)
 
                 directory = parameters['history_path'] + parameters['directory'] \
                             + '/' + parameters['folder']
