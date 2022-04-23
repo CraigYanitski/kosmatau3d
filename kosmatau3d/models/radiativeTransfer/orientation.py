@@ -944,9 +944,9 @@ def setLOS(x=0, y=0, z=0, lon=0, lat=0, i_vox=[], i_vel=None, i_spe=None, i_dust
                                                       np.sin(np.abs(latGrid+np.pi/4))], axis=0)
         # angular size of voxels
         d_lon = 0.5*np.arctan(width/radGrid)
-        d_lon[(lat > 1.11) | (lat < -1.11)] = 3.142  # check if voxel in los but not in selection criteria 
+        d_lon[(lat > 1) | (lat < -1)] = 3.142  # check if voxel in los but not in selection criteria 
         d_lat = 0.5*np.arctan(height/radGrid)
-        d_lat[(lat > 1.11) | (lat < -1.11)] = 1.571
+        d_lat[(lat > 1) | (lat < -1)] = 1.571
         i_los = np.where((abs(lonGrid-x1LoS) <= d_lon) & (abs(latGrid-x2LoS) <= d_lat) & rt.i_vox)[0]
         # i_los = np.where((abs(lonGrid-x1LoS) <= d_lon) & (abs(latGrid-x2LoS) <= d_lat))[0]
     

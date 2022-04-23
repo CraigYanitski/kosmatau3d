@@ -62,12 +62,12 @@ class ViewMap(QApplication):
         self.file = fits.open(directory+file)
         # pprint(self.file[1].header)
         self.longitude = np.linspace(
-          self.file[1].header['CRVAL2'] - self.file[1].header['CRPIX2'] * self.file[1].header['CDELT2'],
-          self.file[1].header['CRVAL2'] + self.file[1].header['CRPIX2'] * self.file[1].header['CDELT2'],
+          self.file[1].header['CRVAL2'] - (self.file[1].header['CRPIX2']-0.5) * self.file[1].header['CDELT2'],
+          self.file[1].header['CRVAL2'] + (self.file[1].header['CRPIX2']-0.5) * self.file[1].header['CDELT2'],
           num=self.file[1].header['NAXIS2'])
         self.latitude = np.linspace(
-          self.file[1].header['CRVAL3'] - self.file[1].header['CRPIX3'] * self.file[1].header['CDELT3'],
-          self.file[1].header['CRVAL3'] + self.file[1].header['CRPIX3'] * self.file[1].header['CDELT3'],
+          self.file[1].header['CRVAL3'] - (self.file[1].header['CRPIX3']-0.5) * self.file[1].header['CDELT3'],
+          self.file[1].header['CRVAL3'] + (self.file[1].header['CRPIX3']-0.5) * self.file[1].header['CDELT3'],
           num=self.file[1].header['NAXIS3'])
         self.velocity = np.linspace(
           self.file[1].header['CRVAL4'] - self.file[1].header['CRPIX4'] * self.file[1].header['CDELT4'],
