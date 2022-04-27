@@ -69,8 +69,9 @@ class Model(object):
         constants.dust = dust
         self.__addSpecies(molecules)
         constants.changeDustWavelengths(constants.dust)
-        interpolations.initialise_grid(dilled=dilled)
-        interpolations.initialise_model()
+        if not interpolations.initialised:
+            interpolations.initialise_grid(dilled=dilled)
+            interpolations.initialise_model()
 
         # Initialise logger
         self.__logger = getLogger()
