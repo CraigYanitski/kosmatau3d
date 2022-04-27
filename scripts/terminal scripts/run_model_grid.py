@@ -73,10 +73,12 @@ r_cmz = 0
 models.constants.fuv_ism = 1
 fuv = 1.8
 
-for resolution in [400]:
-    # for f_hi in [1.0, 0.8, 0.6, 0.4]:
-    #     for f_uv in 10**np.linspace(-1, 3, num=5):
-    #         for fuv in [1.0, 1.4, 1.8, 2.2]:
+for resolution in [400, 200, 100]:
+    # for f_uv in 10**np.linspace(1.5, 2.5, num=5):
+        # for r_cmz in np.arange(0, 3001, 500, dtype=int):
+                # for f_hi in [1.0, 0.8, 0.6, 0.4]:
+                #     for f_uv in 10**np.linspace(1, 3, num=5):
+                #         for fuv in [1.0, 1.4, 1.8, 2.2]:
                 # for f_hi in [1.0, 0.8, 0.6, 0.4]:
                 #     for f_uv in 10**np.linspace(-1, 3, num=5):
                 #         for fuv in [1.0, 1.4, 1.8, 2.2]:
@@ -104,7 +106,7 @@ for resolution in [400]:
                 parameters['clumpMassNumber'] = [len(mass_cl), len(mass_icl)]
                 parameters['clumpLogFUV'] = None
                 parameters['interclumpLogFUV'] = None 
-                parameters['folder'] = 'r{}_fhi1.0_fuv10/'.format(int(resolution))
+                parameters['folder'] = 'r{}_convergence/'.format(int(resolution))
 
                 parameters['hi_mass_factor'] = f_mass1
                 parameters['h2_mass_factor'] = f_mass2
