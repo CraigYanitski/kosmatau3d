@@ -325,7 +325,7 @@ def regrid_observations(path='/media/hpc_backup/yanitski/projects/pdr/observatio
             iCO2 = True
         elif survey == 'Planck':
             dust = True
-        elif survey == 'COBE-FIRAS':
+        elif survey == 'COBE-FIRAS' or survey == 'COBE-DIRBE':
             cobe = True
         else:
             print('Survey {} not available. Choose another.'.format(survey))
@@ -707,6 +707,8 @@ def regrid_observations(path='/media/hpc_backup/yanitski/projects/pdr/observatio
                                      overwrite=True, output_verify='ignore')
             elif survey == 'COBE-DIRBE':
 
+                if file == 'DIRBE_SKYMAP_INFO.FITS' or file == 'additional_files':
+                    continue
                 print(file)
 
                 # Specify transitions
@@ -715,11 +717,11 @@ def regrid_observations(path='/media/hpc_backup/yanitski/projects/pdr/observatio
 
                 # Open data and convert to brightness temperature
                 obs = fits.open(path + survey + '/' + file)
-                pixcoord = fits.open(path + survey + '/DIRBE_SKYMAP_INFO.FITS')
+                pixcoord = fits.open(path + survey + '/additional_files/DIRBE_SKYMAP_INFO.FITS')
                 linfrq = 2.9979e5 / 240  # convert the relevant DIRBE band to GHz
-                obs_data = (np.nan_to_num(obs[1].data['Resid'], nan=0) * (2.9979**2) / (linfrq**2) / 2
+                obs_data = (np.nan_to_num([obs[1].data['Resid']], nan=0).T * (2.9979**2) / (linfrq**2) / 2
                             / 1.38 * 10 ** 2) #* 1.323e-4  # corresponding beam size in sr
-                obs_error = (np.nan_to_num(obs[1].data['StdDev'], nan=0) * (2.9979**2) / (linfrq**2) / 2
+                obs_error = (np.nan_to_num([obs[1].data['StdDev']], nan=0).T * (2.9979**2) / (linfrq**2) / 2
                              / 1.38 * 10 ** 2) #* 1.323e-4
 
                 # Get axes
