@@ -92,23 +92,23 @@ path = '/mnt/hpc_backup/yanitski/projects/pdr/observational_data/MilkyWay/'
 # target header and kernel for regridding
 target_header = {
     'NAXIS': 3,
-    'NAXIS1': 361,
-    'NAXIS2': 181,
+    'NAXIS1': 721,
+    'NAXIS2': 361,
     'NAXIS3': 701,
     'CTYPE1': 'GLON-CAR',
     'CRVAL1': 0,
-    'CDELT1': 1,
-    'CRPIX1': 181,
+    'CDELT1': 0.5,
+    'CRPIX1': 361,
     'CTYPE2': 'GLAT-CAR',
     'CRVAL2': 0,
-    'CDELT2': 1,
-    'CRPIX2': 91,
+    'CDELT2': 0.5,
+    'CRPIX2': 181,
     'CTYPE3': 'VELO',
     'CRVAL3': 0,
     'CDELT3': 1,
     'CRPIX3': 351,
 }
-kernel_sigma = 0.5
+kernel_sigma = 0.25
 target_kernel = (
     'gauss1d',
     (kernel_sigma,),

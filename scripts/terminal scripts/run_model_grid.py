@@ -70,12 +70,12 @@ f_uv = 1
 mass_cl = [0, 2]
 mass_icl = [-2]
 r_cmz = 0
-models.constants.fuv_ism = 1
+models.constants.fuv_ism = 0
 fuv = 1.8
 
-for resolution in [400, 200, 100]:
-    # for f_uv in 10**np.linspace(1.5, 2.5, num=5):
-        # for r_cmz in np.arange(0, 3001, 500, dtype=int):
+for resolution in [400]:
+    for mass_cl in [[0, 2], [0, 3], [-1, 2], [-1, 3]]:
+        for mass_icl in [[-2], [-3, -2], [-3, -1], [-2, -1]]:
                 # for f_hi in [1.0, 0.8, 0.6, 0.4]:
                 #     for f_uv in 10**np.linspace(1, 3, num=5):
                 #         for fuv in [1.0, 1.4, 1.8, 2.2]:
@@ -105,8 +105,8 @@ for resolution in [400, 200, 100]:
                 parameters['clumpMassRange'] = [mass_cl, mass_icl]
                 parameters['clumpMassNumber'] = [len(mass_cl), len(mass_icl)]
                 parameters['clumpLogFUV'] = None
-                parameters['interclumpLogFUV'] = None 
-                parameters['folder'] = 'r{}_convergence/'.format(int(resolution))
+                parameters['interclumpLogFUV'] = None
+                parameters['folder'] = f'r{int(resolution)}_cm{"_".join(str(_) for _ in mass_cl)}_icm{"_".join(str(_) for _ in mass_icl)}/'
 
                 parameters['hi_mass_factor'] = f_mass1
                 parameters['h2_mass_factor'] = f_mass2
@@ -120,7 +120,7 @@ for resolution in [400, 200, 100]:
                 kosma = models.Model(**parameters)
                 print('\n    -> Model {}'.format(models.constants.history))
                 print('       ' + '-'*len('Model {}'.format(models.constants.history)))
-                # kosma.calculateModel(kind='zero', multiprocessing=0)
+                kosma.calculateModel(kind='zero', multiprocessing=0)
 
                 # print(models.species.molecules)
 
