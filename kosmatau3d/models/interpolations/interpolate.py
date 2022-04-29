@@ -34,7 +34,7 @@ def initialise_model(dilled=False):
     interpolations.densityInterpolation = calculateDensity(dilled=dilled)
     interpolations.clumpMassInterpolation = clumpMassProfile(dilled=dilled)
     interpolations.interclumpMassInterpolation = interclumpMassProfile(dilled=dilled)
-    interpolations.FUVfieldInterpolation = interpolateFUVfield(dilled=dilled)
+    interpolations.FUVfieldInterpolation = interpolateFUVfield(l_range=(912, 2066), dilled=dilled)
     # interpolations.eTildeReal = interpolateETildeReal()
     # interpolations.eTildeImaginary = interpolateETildeImaginary()
     return
