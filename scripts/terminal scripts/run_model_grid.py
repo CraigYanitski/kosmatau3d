@@ -74,60 +74,64 @@ models.constants.fuv_ism = 0
 fuv = 1.8
 
 for resolution in [400]:
-    for mass_cl in [[0, 2], [0, 3], [-1, 2], [-1, 3]]:
-        for mass_icl in [[-2], [-3, -2], [-3, -1], [-2, -1]]:
-                # for f_hi in [1.0, 0.8, 0.6, 0.4]:
-                #     for f_uv in 10**np.linspace(1, 3, num=5):
-                #         for fuv in [1.0, 1.4, 1.8, 2.2]:
-                # for f_hi in [1.0, 0.8, 0.6, 0.4]:
-                #     for f_uv in 10**np.linspace(-1, 3, num=5):
-                #         for fuv in [1.0, 1.4, 1.8, 2.2]:
-                # for fuv in [1.4, 1.6, 1.8, 2.0]:
-                #     for f_hi in [1.0, 0.8, 0.6]:
-                # for f_mass1 in [0.25, 0.5, 1.0, 2.0, 4.0]:
-                #     for f_mass2 in [0.25, 0.5, 1.0, 2.0, 4.0]:
-                # for f_uv in 10**np.linspace(1.5, 2.5, num=5):
-                #     for r_cmz in np.arange(0, 3001, 500, dtype=int):
-                # if (mass_icl == [-2]) and not (f_mass2 == 4.0):
-                #     continue
-                # for mass_cl in [[0, 2], [0, 3], [-1, 2], [-1, 3]]:
-                #     for mass_icl in [[-2], [-3, -2], [-3, -1], [-2, -1]]:
-                #             for f_uv in [10, 50, 100]:
-                #                 for f_density in [0.5, 1.0, 2.0, 4.0]:
-                #                     for f_uv in [10, 100]:
+    for f_mass1 in [1.0, 2.0]:
+        for f_mass2 in [0.5, 1.0, 2.0, 4.0]:
+            for f_density in [0.5, 1.0, 2.0, 4.0]:
+                for f_uv in [10, 100]:
+                    # for mass_cl in [[0, 2], [0, 3], [-1, 2], [-1, 3]]:
+                    #     for mass_icl in [[-2], [-3, -2], [-3, -1], [-2, -1]]:
+                    # for f_hi in [1.0, 0.8, 0.6, 0.4]:
+                    #     for f_uv in 10**np.linspace(1, 3, num=5):
+                    #         for fuv in [1.0, 1.4, 1.8, 2.2]:
+                    # for f_hi in [1.0, 0.8, 0.6, 0.4]:
+                    #     for f_uv in 10**np.linspace(-1, 3, num=5):
+                    #         for fuv in [1.0, 1.4, 1.8, 2.2]:
+                    # for fuv in [1.4, 1.6, 1.8, 2.0]:
+                    #     for f_hi in [1.0, 0.8, 0.6]:
+                    # for f_mass1 in [0.25, 0.5, 1.0, 2.0, 4.0]:
+                    #     for f_mass2 in [0.25, 0.5, 1.0, 2.0, 4.0]:
+                    # for f_uv in 10**np.linspace(1.5, 2.5, num=5):
+                    #     for r_cmz in np.arange(0, 3001, 500, dtype=int):
+                    # for mass_cl in [[0, 2], [0, 3], [-1, 2], [-1, 3]]:
+                    #     for mass_icl in [[-2], [-3, -2], [-3, -1], [-2, -1]]:
+                    #             for f_uv in [10, 50, 100]:
+                    #                 for f_density in [0.5, 1.0, 2.0, 4.0]:
+                    #                     for f_uv in [10, 100]:
 
-                # if f_hi == 1.0 and f_uv < 1000:
-                #     continue
-                # if fuv < 1.8:
-                #     continue
+                    # if (mass_icl == [-2]) and not (f_mass2 == 4.0):
+                    #     continue
+                    # if f_hi == 1.0 and f_uv < 1000:
+                    #     continue
+                    # if fuv < 1.8:
+                    #     continue
 
-                parameters['resolution'] = resolution
-                parameters['clumpMassRange'] = [mass_cl, mass_icl]
-                parameters['clumpMassNumber'] = [len(mass_cl), len(mass_icl)]
-                parameters['clumpLogFUV'] = None
-                parameters['interclumpLogFUV'] = None
-                parameters['folder'] = f'r{int(resolution)}_cm{"_".join(str(_) for _ in mass_cl)}_icm{"_".join(str(_) for _ in mass_icl)}/'
+                    parameters['resolution'] = resolution
+                    parameters['clumpMassRange'] = [mass_cl, mass_icl]
+                    parameters['clumpMassNumber'] = [len(mass_cl), len(mass_icl)]
+                    parameters['clumpLogFUV'] = None
+                    parameters['interclumpLogFUV'] = None
+                    parameters['folder'] = f'r{int(resolution)}_cm{f_mass2:.1f}-{f_mass1:.1f}_d{f_density:.1f}_uv{f_uv}/'
 
-                parameters['hi_mass_factor'] = f_mass1
-                parameters['h2_mass_factor'] = f_mass2
-                parameters['ensemble_mass_factor'] = f_m_ens
-                parameters['density_factor'] = f_density
-                parameters['fuv_factor'] = f_uv
-                parameters['interclump_hi_ratio'] = f_hi
-                parameters['r_cmz'] = r_cmz
+                    parameters['hi_mass_factor'] = f_mass1
+                    parameters['h2_mass_factor'] = f_mass2
+                    parameters['ensemble_mass_factor'] = f_m_ens
+                    parameters['density_factor'] = f_density
+                    parameters['fuv_factor'] = f_uv
+                    parameters['interclump_hi_ratio'] = f_hi
+                    parameters['r_cmz'] = r_cmz
 
 
-                kosma = models.Model(**parameters)
-                print('\n    -> Model {}'.format(models.constants.history))
-                print('       ' + '-'*len('Model {}'.format(models.constants.history)))
-                kosma.calculateModel(kind='zero', multiprocessing=0)
+                    kosma = models.Model(**parameters)
+                    print('\n    -> Model {}'.format(models.constants.history))
+                    print('       ' + '-'*len('Model {}'.format(models.constants.history)))
+                    # kosma.calculateModel(kind='zero', multiprocessing=0)
 
-                # print(models.species.molecules)
+                    # print(models.species.molecules)
 
-                directory = parameters['history_path'] + parameters['directory'] \
-                            + '/' + parameters['folder']
-                models.radiativeTransfer.calculateObservation(directory=directory, dim='spherical',
-                                                              multiprocessing=8, vel_pool=False, 
-                                                              slRange=[(-np.pi, np.pi), 
-                                                                       (-2*np.pi/180, 2*np.pi/180)],
-                                                              nsl=[721, 9], terminal=True, debug=False)
+                    directory = parameters['history_path'] + parameters['directory'] \
+                                + '/' + parameters['folder']
+                    models.radiativeTransfer.calculateObservation(directory=directory, dim='spherical',
+                                                                  multiprocessing=8, vel_pool=False, 
+                                                                  slRange=[(-np.pi, np.pi), 
+                                                                           (-2*np.pi/180, 2*np.pi/180)],
+                                                                  nsl=[721, 9], terminal=True, debug=False)
