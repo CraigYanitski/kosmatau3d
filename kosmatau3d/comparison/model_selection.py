@@ -128,8 +128,47 @@ cobe_idl_transitions = np.array(['CO 1', 'CO 2', 'CO 3', 'CO 4', 'C 3', 'CO 5',
 def determine_rms(hdul, mission='', file=''):
 
     import astrokit
+    print(mission, 'GOT C+', mission=='GOT C+')
 
-    if mission == 'COGAL':
+    if mission == 'GOT C+':
+
+        # Create velocity axis
+        lon = astrokit.get_axis(1, hdul)
+        lat = astrokit.get_axis(2, hdul)
+        vel = astrokit.get_axis(3, hdul)
+
+        # make an empty map
+        map_size = np.zeros_like(hdul[0].data[:, :, 0])
+        hdu = fits.PrimaryHDU(map_size)
+        hdul_rms = fits.HDUList([hdu])
+        hdul_rms[0].header = deepcopy(hdul[0].header)
+
+        # remove 3d attributes from header
+        for attribute in list(hdul_rms[0].header.keys()):
+            if not (attribute == ''):
+                if (attribute[-1] == '3'):
+                    del hdul_rms[0].header[attribute]
+                elif (attribute == 'NAXIS'):
+                    hdul_rms[0].header['NAXIS'] = 2
+
+        clean_noise = deepcopy(np.nan_to_num(hdul[0].data, nan=0))
+
+        rms_mask=np.zeros_like(hdul[0].data)
+        i_mask = (np.where((vel>=-150)&(vel<=50))[0].reshape(-1, 1, 1), np.where((lat<=90)&(lat>=-90))[0].reshape(1, -1, 1), np.where((lon<=-10))[0].reshape(1, 1, -1), )
+        rms_mask[i_mask] = 1
+        i_mask = (np.where((vel>=-100)&(vel<=150))[0].reshape(-1, 1, 1), np.where((lat<=90)&(lat>=-90))[0].reshape(1, -1, 1), np.where((lon>=-10)&(lon<=10))[0].reshape(1, 1, -1), )
+        rms_mask[i_mask] = 1
+        i_mask = (np.where((vel>=-50)&(vel<=200))[0].reshape(-1, 1, 1), np.where((lat<=90)&(lat>=-90))[0].reshape(1, -1, 1), np.where((lon>=10))[0].reshape(1, 1, -1), )
+        rms_mask[i_mask] = 1
+
+        clean_data = np.ma.masked_array(hdul[0].data, rms_mask)
+        clean_noise[clean_data.mask] = np.nan
+        rms = np.nanstd(clean_noise, axis=0)
+        rms[rms == 0] = rms[rms != 0].mean()
+
+        hdul_rms[0].data = deepcopy(rms)
+
+    elif mission == 'COGAL':
 
         mean=True
 
@@ -1933,7 +1972,7 @@ def line_ratio_comparison(obs_path='/mnt/hpc_backup/yanitski/projects/pdr/observ
     return
 
 
-def box_comparison(path='/mnt/hpc_backup/yanitski/projects/pdr/observational_data/MilkyWay/', file_format='',
+def violin_comparison(path='/mnt/hpc_backup/yanitski/projects/pdr/observational_data/MilkyWay/', file_format='',
                    missions=[], model_param=[[]], log_comp=True, lat=None, comp_type='integrated',
                    ylim=[], ylabel='', title='', boxwidth=0.5, label_rotation=30, label_fontsize=16, fontsize=20,
                    figsize=None, save_plot=False, output_file='', output_format='png',
@@ -2181,11 +2220,11 @@ def box_comparison(path='/mnt/hpc_backup/yanitski/projects/pdr/observational_dat
                     i_nan_obs = (map_list[0][i_obs] <= 0) | np.isnan(map_list[0][i_obs])
                     data = [np.log10(map_list[0][i_obs][~i_nan_obs].flatten()),
                             *[np.log10(m[i_model].flatten()) for m in map_list[1:]]]
-                    ax.boxplot(data, labels=map_labels, widths=boxwidth, notch=True)
+                    ax.violinplot(data, labels=map_labels, widths=boxwidth, notch=True)
                     ax.set_ylabel(r'$log_{10} (\varpi) \ \left( K \frac{km}{s} \right)$', fontsize=fontsize)
                 else:
                     data = [map_list[0][i_obs].flatten(), *[m[i_model].flatten() for m in map_list[1:]]]
-                    ax.boxplot(data, labels=map_labels, widths=boxwidth, notch=True)
+                    ax.violinplot(data, labels=map_labels, widths=boxwidth, notch=True)
                     ax.set_ylabel(r'$\varpi \ \left( K \frac{km}{s} \right)$', fontsize=fontsize)
                 xticknames = ax.get_xticklabels()
                 if len(ylim):
@@ -2212,7 +2251,8 @@ def double_line_plot(obs_path='/mnt/hpc_backup/yanitski/projects/pdr/observation
                      model_path='/mnt/hpc_backup/yanitski/projects/pdr/KT3_history/fit_results/MilkyWay/',
                      missions=[], transitions=[], survey_files=[], file_format='', model_param=[[]],
                      log_comp=True, lat=None, comp_type='integrated', bins=50, density=False, 
-                     cmax=None, cmin=None, figsize=(), xlabel='', ylabel='', ylim=(), title='',
+                     cmax=None, cmin=None, vmax=None, vmin=None, figsize=(), 
+                     xlabel='', ylabel='', ylim=(), title='',
                      label_rotation=30, label_fontsize=16, fontsize=20,
                      save_plot=False, output_file='', output_format='png',
                      debug=False, verbose=False, **kwargs):
@@ -2428,7 +2468,7 @@ def double_line_plot(obs_path='/mnt/hpc_backup/yanitski/projects/pdr/observation
         #    ax.set_ylabel(ylabel)
     for i, lines in enumerate(data):
         fig, ax = plt.subplots(1, 1, figsize=figsize)
-        plt.hist2d(lines[0], lines[1], bins=bins, density=density, cmin=cmin, cmax=cmax)
+        plt.hist2d(lines[0], lines[1], bins=bins, density=density, vmin, vmax, cmin=cmin, cmax=cmax)
         ax.set_xlabel(xlabel)
         ax.set_ylabel(ylabel)
         if len(ylim):
