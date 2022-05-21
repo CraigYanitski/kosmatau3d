@@ -28,13 +28,13 @@ def initialise_grid(dilled=False):
     return
 
 
-def initialise_model(dilled=False):
+def initialise_model(dilled=False, l_range=(912, 2066)):
     interpolations.rotationInterpolation = calculateRotationVelocity(dilled=dilled)
     interpolations.dispersionInterpolation = 1  # calculateVelocityDispersion(dilled=dilled)
     interpolations.densityInterpolation = calculateDensity(dilled=dilled)
     interpolations.clumpMassInterpolation = clumpMassProfile(dilled=dilled)
     interpolations.interclumpMassInterpolation = interclumpMassProfile(dilled=dilled)
-    interpolations.FUVfieldInterpolation = interpolateFUVfield(l_range=(912, 2066), dilled=dilled)
+    interpolations.FUVfieldInterpolation = interpolateFUVfield(l_range=l_range, dilled=dilled)
     # interpolations.eTildeReal = interpolateETildeReal()
     # interpolations.eTildeImaginary = interpolateETildeImaginary()
     return

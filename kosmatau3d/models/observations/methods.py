@@ -12,22 +12,34 @@ warnings.simplefilter('ignore', category=NumbaDeprecationWarning)
 warnings.simplefilter('ignore', category=NumbaPendingDeprecationWarning)
 
 
-def initialise():
+def initialise_grid(tau_grid_file='clump_tau_LineCenter.dat', 
+                    tb_grid_file='clump_Tmb_LineCenter', 
+                    tau_fuv_grid_file='RhoMassAFUV.dat'):
     # Grid
-    tauCenterline()
-    tbCenterline()
-    rhoMassAFUV()
+    tauCenterline(tau_grid_file)
+    tbCenterline(tb_grid_file)
+    rhoMassAFUV(tau_fuv_grid_file)
     speciesData()
-  
-    # Model
-    clumpMassProfile()
-    interclumpMassProfile()
-    densityProfile()
-    FUVfield()
-    rotationProfile()
 
-    observations.initialised = True
+    observations.grid_initialised = True
     
+    return
+
+
+def initialise_input(h2_mass_file='mass_profile.dat', 
+                     hi_mass_file='mass_profile_inter.dat', 
+                     density_file='densities_clouds.dat', 
+                     fuv_file='galactic_FUV_complete.dat', 
+                     velocity_file='rot_milki2018_14.dat'):
+    # Model
+    clumpMassProfile(h2_mass_file)
+    interclumpMassProfile(hi_mass_file)
+    densityProfile(density_file)
+    FUVfield(fuv_file)
+    rotationProfile(velocity_file)
+
+    observations.model_initialised = True
+
     return
 
 

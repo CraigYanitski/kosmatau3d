@@ -21,6 +21,15 @@ class Model(object):
     # PRIVATE
   
     def __init__(self, history_path='', directory='', folder='', 
+                 tau_grid_file='clump_tau_LineCenter.dat', 
+                 tb_grid_file='clump_Tmb_LineCenter', 
+                 tau_fuv_grid_file='RhoMassAFUV.dat',
+                 h2_mass_file='h2_mass_profile.dat', 
+                 hi_mass_file='hi_mass_profile.dat', 
+                 density_file='densities_clouds.dat', 
+                 fuv_file='galactic_FUV_complete.dat', 
+                 l_range=(912, 2066),
+                 velocity_file='rot_milki2018_14.dat',
                  x=0, y=0, z=0, modelType='', resolution=1000,
                  molecules='all', dust='molecular', velocityRange=(), velocityNumber=0,
                  clumpMassRange=((0, 2), (-2)), clumpMassNumber=(3, 1), clumpNmax=(1, 100), 
@@ -65,13 +74,20 @@ class Model(object):
         constants.addClumps(massRange=clumpMassRange, num=clumpMassNumber, Nmax=clumpNmax, reset=True)
         
         # Read grid & input data, specify transitions, and interpolate
-        observations.methods.initialise()
+        observations.methods.initialise_grid(tau_grid_file=tau_grid_file, 
+                                             tb_grid_file=tb_grid_file, 
+                                             tau_fuv_file=tau_fuv_file)
+        observations.methods.initialise_input(h2_mass_file=h2_mass_file, 
+                                              hi_mass_file=hi_mass_file, 
+                                              density_file=density_file, 
+                                              fuv_file=fuv_file,
+                                              velocity_file=velocity_file)
         constants.dust = dust
         self.__addSpecies(molecules)
         constants.changeDustWavelengths(constants.dust)
         if not interpolations.initialised:
             interpolations.initialise_grid(dilled=dilled)
-            interpolations.initialise_model()
+            interpolations.initialise_model(l_range=l_range)
 
         # Initialise logger
         self.__logger = getLogger()

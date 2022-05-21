@@ -156,11 +156,17 @@ class Voxel(object):
     def getFUV(self):
         return self.__FUV
   
-    def setProperties(self, voxel_size=1, molecules='all', dust='PAH', alpha=1.84, gamma=2.31, clumpMassNumber=[3,1],
-                      clumpMassRange=[[0,2],[-2]], clumpNmax=[1, 100], velocityRange=[-10,10], velocityNumber=51,
-                      ensembleMass=100, velocity=0., ensembleDispersion=1, velocity_resolution=1, volumeFactor=None,
-                      ensembleDensity=[15000, 1911], FUV=[20000, 1], crir=2e-16, suggested_calc=True,
-                      from_grid=False, new_grid=False, change_interpolation=False, dilled=False,
+    def setProperties(self, voxel_size=1, molecules='all', dust='PAH', alpha=1.84, gamma=2.31, 
+                      tau_grid_file='clump_tau_LineCenter.dat', 
+                      tb_grid_file='clump_Tmb_LineCenter', 
+                      tau_fuv_grid_file='RhoMassAFUV.dat'
+                      clumpMassNumber=[3,1], clumpMassRange=[[0,2],[-2]], clumpNmax=[1, 100], 
+                      velocityRange=[-10,10], velocityNumber=51, velocity=0., velocity_resolution=1, 
+                      ensembleMass=100, ensembleDispersion=1, 
+                      volumeFactor=None, ensembleDensity=[15000, 1911],
+                      FUV=[20000, 1], crir=2e-16,
+                      suggested_calc=True, from_grid=False,
+                      new_grid=False, change_interpolation=False, dilled=False,
                       timed=False, verbose=False, debug=False):
         '''
           This method calculates the radii assuming an origin of (0,0). It then averages
@@ -282,10 +288,12 @@ class Voxel(object):
                 constants.addClumps(massRange=clumpMassRange, num=clumpMassNumber, Nmax=clumpNmax, reset=True)
 
             if new_grid or change_interpolation or \
-                    not interpolations.initialised or not observations.initialised or \
+                    not interpolations.initialised or not observations.grid_initialised or \
                     dust != constants.dust:
                 constants.changeDustWavelengths(dust)
-                observations.methods.initialise()
+                observations.methods.initialise_grid(tau_grid_file=tau_grid_file,
+                                                     tb_grid_file=tb_grid_file,
+                                                     tau_fuv_grid_file=tau_grid_file)
                 species.addMolecules(molecules)
                 interpolations.initialise_grid(dilled=dilled)
 
