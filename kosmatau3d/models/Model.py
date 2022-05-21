@@ -74,9 +74,17 @@ class Model(object):
         constants.addClumps(massRange=clumpMassRange, num=clumpMassNumber, Nmax=clumpNmax, reset=True)
         
         # Read grid & input data, specify transitions, and interpolate
+        constants.tb_grid_file = tb_grid_file
+        constants.tau_grid_file = tau_grid_file
+        constants.tau_fuv_grid_file = tau_fuv_grid_file
         observations.methods.initialise_grid(tau_grid_file=tau_grid_file, 
                                              tb_grid_file=tb_grid_file, 
                                              tau_fuv_file=tau_fuv_file)
+        constants.h2_mass_file = h2_mass_file
+        constants.hi_mass_file = hi_mass_file
+        constants.density_file = density_file
+        constants.fuv_file = fuv_file
+        constants.velocity_file = velocity_file
         observations.methods.initialise_input(h2_mass_file=h2_mass_file, 
                                               hi_mass_file=hi_mass_file, 
                                               density_file=density_file, 
@@ -87,6 +95,7 @@ class Model(object):
         constants.changeDustWavelengths(constants.dust)
         if not interpolations.initialised:
             interpolations.initialise_grid(dilled=dilled)
+            constants.l_range = l_range
             interpolations.initialise_model(l_range=l_range)
 
         # Initialise logger

@@ -26,6 +26,19 @@ GRIDPATH = KOSMAPATH + '/grid/'  # for KOSMA-tau grid intensities, optical depth
 MOLECULARPATH = KOSMAPATH + '/molecular_data/'  # for KOSMA-tau ONION molecular data
 HISTORYPATH = '~/KOSMA-tau^3/history/'  # history path
 
+# Grid files
+tb_grid_file = 'Tmb_LineCenter.dat'
+tau_grid_file = 'tau_LineCenter.dat'
+tau_fuv_grid_file = 'RhoMassAfuv.dat'
+
+# Model input file information
+h2_mass_file = ''
+hi_mass_file = ''
+density_file = ''
+fuv_file = ''
+l_range = (912, 2066)  # for integration
+velocity_file = ''
+
 # Interpolation style (it accepts 'linear' or 'cubic'/'radial')
 interpolation = 'linear'
 
