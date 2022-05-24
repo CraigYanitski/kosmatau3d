@@ -22,13 +22,13 @@ class Model(object):
   
     def __init__(self, history_path='', directory='', folder='', 
                  tau_grid_file='clump_tau_LineCenter.dat', 
-                 tb_grid_file='clump_Tmb_LineCenter', 
+                 tb_grid_file='clump_Tmb_LineCenter.dat', 
                  tau_fuv_grid_file='RhoMassAFUV.dat',
                  h2_mass_file='h2_mass_profile.dat', 
                  hi_mass_file='hi_mass_profile.dat', 
                  density_file='densities_clouds.dat', 
                  fuv_file='galactic_FUV_complete.dat', 
-                 l_range=(912, 2066),
+                 l_range=(912, 2066), average_fuv=False, like_clumps=False,
                  velocity_file='rot_milki2018_14.dat',
                  x=0, y=0, z=0, modelType='', resolution=1000,
                  molecules='all', dust='molecular', velocityRange=(), velocityNumber=0,
@@ -79,7 +79,7 @@ class Model(object):
         constants.tau_fuv_grid_file = tau_fuv_grid_file
         observations.methods.initialise_grid(tau_grid_file=tau_grid_file, 
                                              tb_grid_file=tb_grid_file, 
-                                             tau_fuv_file=tau_fuv_file)
+                                             tau_fuv_grid_file=tau_fuv_grid_file)
         constants.h2_mass_file = h2_mass_file
         constants.hi_mass_file = hi_mass_file
         constants.density_file = density_file
@@ -95,8 +95,11 @@ class Model(object):
         constants.changeDustWavelengths(constants.dust)
         if not interpolations.initialised:
             interpolations.initialise_grid(dilled=dilled)
+            constants.average_fuv = average_fuv
             constants.l_range = l_range
-            interpolations.initialise_model(l_range=l_range)
+            constants.like_clumps = like_clumps
+            interpolations.initialise_model(l_range=l_range, average_fuv=average_fuv, 
+                                            like_clumps=like_clumps)
 
         # Initialise logger
         self.__logger = getLogger()

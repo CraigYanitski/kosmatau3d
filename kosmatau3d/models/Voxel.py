@@ -158,8 +158,8 @@ class Voxel(object):
   
     def setProperties(self, voxel_size=1, molecules='all', dust='PAH', alpha=1.84, gamma=2.31, 
                       tau_grid_file='clump_tau_LineCenter.dat', 
-                      tb_grid_file='clump_Tmb_LineCenter', 
-                      tau_fuv_grid_file='RhoMassAFUV.dat'
+                      tb_grid_file='clump_Tmb_LineCenter.dat', 
+                      tau_fuv_grid_file='RhoMassAFUV.dat',
                       clumpMassNumber=[3,1], clumpMassRange=[[0,2],[-2]], clumpNmax=[1, 100], 
                       velocityRange=[-10,10], velocityNumber=51, velocity=0., velocity_resolution=1, 
                       ensembleMass=100, ensembleDispersion=1, 

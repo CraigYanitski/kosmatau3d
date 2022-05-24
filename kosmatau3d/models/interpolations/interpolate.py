@@ -28,13 +28,16 @@ def initialise_grid(dilled=False):
     return
 
 
-def initialise_model(dilled=False, l_range=(912, 2066)):
+def initialise_model(dilled=False, like_clumps=False, average_fuv=False, l_range=(912, 2066)):
     interpolations.rotationInterpolation = calculateRotationVelocity(dilled=dilled)
     interpolations.dispersionInterpolation = 1  # calculateVelocityDispersion(dilled=dilled)
     interpolations.densityInterpolation = calculateDensity(dilled=dilled)
     interpolations.clumpMassInterpolation = clumpMassProfile(dilled=dilled)
-    interpolations.interclumpMassInterpolation = interclumpMassProfile(dilled=dilled)
-    interpolations.FUVfieldInterpolation = interpolateFUVfield(l_range=l_range, dilled=dilled)
+    interpolations.interclumpMassInterpolation = interclumpMassProfile(dilled=dilled,
+                                                                       like_clumps=like_clumps)
+    interpolations.FUVfieldInterpolation = interpolateFUVfield(l_range=l_range, 
+                                                               average_fuv=average_fuv, 
+                                                               dilled=dilled)
     # interpolations.eTildeReal = interpolateETildeReal()
     # interpolations.eTildeImaginary = interpolateETildeImaginary()
     return
@@ -252,14 +255,17 @@ def clumpMassProfile(verbose=False, dilled=False):
     return
 
 
-def interclumpMassProfile(verbose=False, dilled=True):
+def interclumpMassProfile(like_clumps=False, verbose=False, dilled=True):
     if constants.directory != '':
         if dilled:
             with open(constants.INPUTPATH+constants.directory + 'dilled/interclump_mass_interpolation', 'rb') as file:
                 return dill.load(file)
         if verbose:
             print('Creating interclump mass interpolation')
-        interclumpMass = observations.interclumpMassProfile
+        if like_clumps:
+            interclumpMass = observations.clumpMassProfile
+        else:
+            interclumpMass = observations.interclumpMassProfile
         if constants.interpolation == 'linear':
             return interpolate.interp1d(interclumpMass[0], interclumpMass[1], kind='linear')
         elif constants.interpolation == 'cubic' or constants.interpolation == 'radial':
@@ -270,7 +276,7 @@ def interclumpMassProfile(verbose=False, dilled=True):
     return
 
 
-def interpolateFUVfield(l_range=(912, 2066), verbose=False, dilled=False):
+def interpolateFUVfield(l_range=(912, 2066), average_fuv=False, verbose=False, dilled=False):
     if constants.directory != '':
         if dilled:
             with open(constants.INPUTPATH+constants.directory + 'dilled/fuv_field_interpolation', 'rb') as file:
@@ -282,8 +288,10 @@ def interpolateFUVfield(l_range=(912, 2066), verbose=False, dilled=False):
         wav = np.linspace(l_range[0], l_range[1], num=1000)
         f = interpolate.interp1d(lam, fuv[2], axis=1)
         if constants.interpolation == 'linear':
-            return interpolate.LinearNDInterpolator(fuv[0], np.trapz(f(wav), wav))
-            # return interpolate.LinearNDInterpolator(fuv[0], fuv[1])
+            if average_fuv:
+                return interpolate.LinearNDInterpolator(fuv[0], fuv[1])
+            else:
+                return interpolate.LinearNDInterpolator(fuv[0], np.trapz(f(wav), wav))
         elif constants.interpolation == 'cubic' or constants.interpolation == 'radial':
             return interpolate.Rbf(fuv[0][:, 0], fuv[0][:, 1], np.trapz(f(wav), wav))
         else:
