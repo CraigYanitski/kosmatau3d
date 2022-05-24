@@ -11,6 +11,18 @@ print('KOSMA-tau^3')
 
 # Edit these parameters according to the model you want to produce.
 parameters = {
+              # Data files
+              'tau_grid_file': 'clump_tau_LineCenter.dat',
+              'tb_grid_file': 'clump_Tmb_LineCenter.dat',
+              'tau_fuv_grid_file': 'RhoMassAFUV.dat',
+              'h2_mass_file': 'h2_mass_profile.dat', 
+              'hi_mass_file': 'hi_mass_profile.dat', 
+              'like_clumps': False, 
+              'density_file': 'densities_clouds.dat',
+              'fuv_file': 'galactic_FUV_complete.dat',
+              'average_fuv': False,
+              'l_range': (912, 2066),
+              
               # Model information
               'history_path': r'/mnt/hpc_backup/yanitski/projects/pdr/KT3_history',
               'directory': r'/MilkyWay',
@@ -70,14 +82,14 @@ f_uv = 1
 mass_cl = [0, 2]
 mass_icl = [-2]
 r_cmz = 0
-models.constants.fuv_ism = 0
+models.constants.fuv_ism = 1
 fuv = 1.8
 
 for resolution in [400]:
-    for f_mass1 in [1.0, 2.0]:
-        for f_mass2 in [0.5, 1.0, 2.0, 4.0]:
-            for f_density in [0.5, 1.0, 2.0, 4.0]:
-                for f_uv in [10, 100]:
+    #for f_mass1 in [1.0, 2.0]:
+    #    for f_mass2 in [0.5, 1.0, 2.0, 4.0]:
+    #        for f_density in [0.5, 1.0, 2.0, 4.0]:
+    #            for f_uv in [10, 100]:
                     # for mass_cl in [[0, 2], [0, 3], [-1, 2], [-1, 3]]:
                     #     for mass_icl in [[-2], [-3, -2], [-3, -1], [-2, -1]]:
                     # for f_hi in [1.0, 0.8, 0.6, 0.4]:
@@ -105,12 +117,16 @@ for resolution in [400]:
                     # if fuv < 1.8:
                     #     continue
 
+                    parameters['like_clumps'] = True
+                    parameters['average_fuv'] = False
+                    parameters['l_range'] = (912, 2066)
+
                     parameters['resolution'] = resolution
                     parameters['clumpMassRange'] = [mass_cl, mass_icl]
                     parameters['clumpMassNumber'] = [len(mass_cl), len(mass_icl)]
                     parameters['clumpLogFUV'] = None
                     parameters['interclumpLogFUV'] = None
-                    parameters['folder'] = f'r{int(resolution)}_cm{f_mass2:.1f}-{f_mass1:.1f}_d{f_density:.1f}_uv{f_uv}/'
+                    parameters['folder'] = f'r{int(resolution)}_modtest_new/'
 
                     parameters['hi_mass_factor'] = f_mass1
                     parameters['h2_mass_factor'] = f_mass2
@@ -120,11 +136,13 @@ for resolution in [400]:
                     parameters['interclump_hi_ratio'] = f_hi
                     parameters['r_cmz'] = r_cmz
 
+                    parameters['suggested_calc'] = True
+
 
                     kosma = models.Model(**parameters)
                     print('\n    -> Model {}'.format(models.constants.history))
                     print('       ' + '-'*len('Model {}'.format(models.constants.history)))
-                    # kosma.calculateModel(kind='zero', multiprocessing=0)
+                    kosma.calculateModel(kind='zero', multiprocessing=0)
 
                     # print(models.species.molecules)
 
@@ -135,3 +153,4 @@ for resolution in [400]:
                                                                   slRange=[(-np.pi, np.pi), 
                                                                            (-2*np.pi/180, 2*np.pi/180)],
                                                                   nsl=[721, 9], terminal=True, debug=False)
+
