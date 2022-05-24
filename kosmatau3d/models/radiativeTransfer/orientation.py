@@ -125,8 +125,8 @@ def calculateObservation(directory='', dim='xy', terminal=True, vel_pool=False, 
                                           rt.tempSpeciesEmissivity[0].header['CDELT2'],
                                           num=rt.tempSpeciesEmissivity[0].header['NAXIS2'])
     
-    observations.methods.initialise()
-    species.addMolecules(rt.tempSpeciesEmissivity[0].header['SPECIES'].split(', '))
+    # observations.methods.initialise_grid()
+    # species.addMolecules(rt.tempSpeciesEmissivity[0].header['SPECIES'].split(', '))
     # print(rt.tempSpeciesEmissivity[0].header['SPECIES'].split(', '), '\n', species.moleculeWavelengths)
     
     # print('Data loaded :-)')
