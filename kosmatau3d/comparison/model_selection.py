@@ -2468,7 +2468,7 @@ def double_line_plot(obs_path='/mnt/hpc_backup/yanitski/projects/pdr/observation
         #    ax.set_ylabel(ylabel)
     for i, lines in enumerate(data):
         fig, ax = plt.subplots(1, 1, figsize=figsize)
-        plt.hist2d(lines[0], lines[1], bins=bins, density=density, vmin, vmax, cmin=cmin, cmax=cmax)
+        plt.hist2d(lines[0], lines[1], bins=bins, density=density, vmin=vmin, vmax=vmax, cmin=cmin, cmax=cmax)
         ax.set_xlabel(xlabel)
         ax.set_ylabel(ylabel)
         if len(ylim):
