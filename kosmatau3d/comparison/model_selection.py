@@ -1374,7 +1374,7 @@ def model_selection(path='/mnt/hpc_backup/yanitski/projects/pdr/KT3_history/Milk
                         print('  ' + model_dir.format(*param) + '    \r', end='')
 
                     # Check existance of model
-                    dir_model = model_dir.format(*param) + 'channel_intensity.fits'
+                    dir_model = model_dir.format(*param) + 'synthetic_intensity.fits'
                         # '/r{}_cm{}-{}_d{}_uv{}/channel_intensity.fits'.format(resolution, fcl,
                         #                                                               ficl, fden, fuv)
                     if not os.path.isfile(path + dir_model): continue
@@ -1447,7 +1447,8 @@ def model_selection(path='/mnt/hpc_backup/yanitski/projects/pdr/KT3_history/Milk
                     # Interpolate at the observational axes
                     if (survey == 'COBE-DIRBE') or (survey == 'COBE-FIRAS'):
                         idx_t = np.ix_(np.arange(vel_model.size), i_lat_model, i_lon_model, i_spec)
-                        idx_d = np.ix_(np.arange(vel_model.size), i_lat_model, i_lon_model, [0])
+                        # idx_d = np.ix_(np.arange(vel_model.size), i_lat_model, i_lon_model, [0])
+                        idx_d = np.ix_(i_lat_model, i_lon_model, [0])
                         # print(i_lat_model.size, i_lon_model.size)
                         # print(vel_model.shape,
                         #       model[1].data[idx_t].shape,
@@ -1473,8 +1474,10 @@ def model_selection(path='/mnt/hpc_backup/yanitski/projects/pdr/KT3_history/Milk
                         # print(model_interp.shape, obs_data_final.shape)
 
                     elif survey == 'Planck':
-                        idx_d = np.ix_([0], i_lat_model, np.arange(lon_model.size), [0])
-                        model_interp = model[2].data[idx_d][0, :, :, 0]#[0, i_lat_model, :, i_spec]
+                        # idx_d = np.ix_([0], i_lat_model, np.arange(lon_model.size), [0])
+                        idx_d = np.ix_(i_lat_model, np.arange(lon_model.size), [0])
+                        # model_interp = model[2].data[idx_d][0, :, :, 0]#[0, i_lat_model, :, i_spec]
+                        model_interp = model[2].data[idx_d][:, :, 0]#[0, i_lat_model, :, i_spec]
                         idx_obs = np.ix_(i_lat_obs, np.arange(obs_data.shape[1]))
                         obs_data_final = obs_data[idx_obs]#[i_lat_obs, :]
                         obs_error_final = np.sqrt(obs_error**2+obs_error_conf**2)[idx_obs]#[i_lat_obs, :]
@@ -1488,7 +1491,8 @@ def model_selection(path='/mnt/hpc_backup/yanitski/projects/pdr/KT3_history/Milk
                         #       np.swapaxes(obs_data[:, i_lat_obs, :], 0, 1).shape)
                         # input()
                         idx_t = np.ix_(np.arange(vel_model.size), i_lat_model, np.arange(lon_model.size), i_spec)
-                        idx_d = np.ix_(np.arange(vel_model.size), i_lat_model, np.arange(lon_model.size), [0])
+                        # idx_d = np.ix_(np.arange(vel_model.size), i_lat_model, np.arange(lon_model.size), [0])
+                        idx_d = np.ix_(i_lat_model, np.arange(lon_model.size), [0])
                         model_data = (model[1].data[idx_t]
                                       - model[2].data[idx_d])
                         idx_obs = np.ix_(np.arange(vel_obs.size), i_lat_obs, np.arange(lon_obs.size))
@@ -1738,7 +1742,7 @@ def line_ratio_comparison(obs_path='/mnt/hpc_backup/yanitski/projects/pdr/observ
                           figsize=(), ylabel='', ylim=(), title='', notch=True, boxwidth=0.5,
                           label_rotation=30, label_fontsize=16, fontsize=20,
                           save_plot=False, output_file='', output_format='png',
-                          debug=False, verbose=False, **kwargs):
+                          debug=False, verbose=False, violin_size=1, violin_spacing=1, **kwargs):
 
     survey_paths = [[], []]  # list for paths to plotted data (in order observed, synthetic)
     survey_maps = [[], []]   # list for unprocessed (pre-calculation) data to plot (in order observed, synthetic)
@@ -1781,7 +1785,7 @@ def line_ratio_comparison(obs_path='/mnt/hpc_backup/yanitski/projects/pdr/observ
                 survey_vels[0].append(np.asarray([0]))
                 survey_maps[0].append(obs[0].data[i_trans_obs, :, :][0, :, :])
                 survey_i_lat_init.append(survey_maps[0][i].any(1))
-            if survey == 'COBE-DIRBE':
+            elif survey == 'COBE-DIRBE':
                 survey_vels[0].append(np.asarray([0]))
                 survey_maps[0].append(obs[0].data[i_trans_obs, :, :][0, :, :])
                 survey_i_lat_init.append(survey_maps[0][i].any(1))
@@ -1849,7 +1853,7 @@ def line_ratio_comparison(obs_path='/mnt/hpc_backup/yanitski/projects/pdr/observ
     for param in model_params:
 
         survey_labels[1].append(file_format.format(*param))
-        model_dir = model_path + survey_labels[1][-1] + 'channel_intensity.fits'
+        model_dir = model_path + survey_labels[1][-1] + 'synthetic_intensity.fits'
 
         model = fits.open(model_dir)
 
@@ -1881,14 +1885,16 @@ def line_ratio_comparison(obs_path='/mnt/hpc_backup/yanitski/projects/pdr/observ
         for i, transition in enumerate(transitions):
             if transition == 'Dust':
                 survey_transitions[1].append(np.asarray(model[2].header['DUST'].split(', ')))
-                survey_maps[1][-1].append(deepcopy(model[2].data[0, :, :, 0]))
+                # survey_maps[1][-1].append(deepcopy(model[2].data[0, :, :, 0]))
+                survey_maps[1][-1].append(deepcopy(model[2].data[:, :, 0]))
             else:
                 survey_transitions[1].append(np.asarray(model[1].header['SPECIES'].split(', ')))
                 i_transition = np.where(survey_transitions[1][-1] == transition)[0]
                 if i_transition.size == 1 and (comp_type == 'integrated'
                                                or not ('COBE-FIRAS' in missions or 'Planck' in missions)):
                     survey_maps[1][-1].append(np.trapz(model[1].data[:, :, :, i_transition][:, :, :, 0]
-                                                       - model[2].data[:, :, :, 0], survey_vels[1][0], axis=0))
+                                                       # - model[2].data[:, :, :, 0], survey_vels[1][0], axis=0))
+                                                       - model[2].data[:, :, 0], survey_vels[1][0], axis=0))
                 elif i_transition.size == 1:
                     survey_maps[1][-1].append(model[1].data[:, :, :, i_transition][:, :, :, 0]
                                               - model[2].data[:, :, :, 0])
@@ -1923,37 +1929,48 @@ def line_ratio_comparison(obs_path='/mnt/hpc_backup/yanitski/projects/pdr/observ
 
     if len(figsize) == 0:
         figsize = (1*(len(survey_ratios[0])+len(survey_ratios[1])), 10)
-    fig, ax = plt.subplots(1, 1, figsize=figsize)
+    fig, ax = plt.subplots(1, 1, figsize=(violin_spacing*len(map_list), 7))
+    violin_positions = np.arange(0, violin_spacing*len(map_labels), violin_spacing)
     labels = [*survey_labels[0], *survey_labels[1]]
     if log_comp == True:
         comp = '_logT'
         i_nan_obs = (survey_ratios[0][0] <= 0) | np.isnan(survey_ratios[0][0])
         data = [np.log10(survey_ratios[0][0][~i_nan_obs]),
                 *[np.log10(survey_ratios[1][i]) for i in range(len(survey_ratios[1]))]]
-        ax.boxplot(data, labels=labels, widths=boxwidth, notch=notch)
-        if ylabel == '':
+        ax.violinplot(data, positions=violin_positions, widths=violin_width)
+        if ylabel == '' and comp_type == 'integrated':
             ax.set_ylabel(r'$log_{10} ' + r'\left( \varpi_{' + r'{}'.format(transitions[0]) + r'} \ / \ \varpi_{'
+                          + r'{}'.format(transitions[1]) + r'} \right)$', fontsize=fontsize)
+        if ylabel == '':
+            ax.set_ylabel(r'$log_{10} ' + r'\left( T_\mathrm{B, ' + r'{}'.format(transitions[0]) + r'} \ / \ \varpi_{'
                           + r'{}'.format(transitions[1]) + r'} \right)$', fontsize=fontsize)
         else:
             ax.set_ylabel(ylabel)
     else:
         comp = ''
         data = [survey_ratios[0][0], *survey_ratios[1]]
-        ax.boxplot(data, labels=labels, widths=boxwidth, notch=notch)
-        if ylabel == '':
+        ax.violinplot(data, positions=violin_positions, widths=violin_width)
+        if ylabel == '' and comp_type == 'integrated':
             ax.set_ylabel(r'$\varpi_{' + r'{}'.format(transitions[0]) + r'} \ / \ \varpi_{'
+                          + r'{}'.format(transitions[1]) + r'}$', fontsize=fontsize)
+        elif ylabel == '':
+            ax.set_ylabel(r'$T_\mathrm{B, ' + r'{}'.format(transitions[0]) + r'} \ / \ \varpi_{'
                           + r'{}'.format(transitions[1]) + r'}$', fontsize=fontsize)
         else:
             ax.set_ylabel(ylabel)
     if len(ylim):
         ax.set_ylim(ylim)
-    xticknames = ax.get_xticklabels()
-    plt.setp(xticknames, rotation=label_rotation, fontsize=label_fontsize)
+    ax.set_xticks(violin_positions, labels=map_labels)
+    ax.xaxis.set_tick_params(labelrotation=label_rotation, labelsize=label_fontsize)
+    #xticknames = ax.get_xticklabels()
+    #plt.setp(xticknames, rotation=label_rotation, fontsize=label_fontsize)
+    if len(ylim):
+        ax.set_ylim(ylim)
     if title == '':
         ax.set_title('{} / {}'.format(*transitions), fontsize=fontsize)
     else:
         ax.set_title(title)
-    plt.tight_layout()
+    #plt.tight_layout()
     if save_plot:
         if output_file == '':
             filename = '_'.join(file_format.replace('/', '').split('_')[1:]).replace('{}', '_')
@@ -1972,24 +1989,26 @@ def line_ratio_comparison(obs_path='/mnt/hpc_backup/yanitski/projects/pdr/observ
     return
 
 
-def violin_comparison(path='/mnt/hpc_backup/yanitski/projects/pdr/observational_data/MilkyWay/', file_format='',
-                   missions=[], model_param=[[]], log_comp=True, lat=None, comp_type='integrated',
-                   ylim=[], ylabel='', title='', boxwidth=0.5, label_rotation=30, label_fontsize=16, fontsize=20,
-                   figsize=None, save_plot=False, output_file='', output_format='png',
-                   debug=False, verbose=False, **kwargs):
+def violin_comparison(path='/mnt/hpc_backup/yanitski/projects/pdr/observational_data/MilkyWay/', 
+                      file_format='',
+                      surveys=[], model_param=[[]], log_comp=True, lat=None, comp_type='integrated',
+                      ylim=[], ylabel='', title='', violin_width=0.5, violin_spacing=1, 
+                      label_rotation=30, label_fontsize=16, fontsize=20,
+                      figsize=None, save_plot=False, output_file='', output_format='png',
+                      debug=False, verbose=False, **kwargs):
 
     # Check that the missions are specified properly.
-    if missions == '' or missions == None or missions == []:
-        missions = os.listdir(path)
-    elif isinstance(missions, str):
-        missions = [missions]
-    elif isinstance(missions, list):
+    if surveys == '' or surveys == None or surveys == []:
+        surveys = os.listdir(path)
+    elif isinstance(surveys, str):
+        surveys = [surveys]
+    elif isinstance(surveys, list):
         # Use both COBE instruments if simply 'COBE' is specified
-        if 'COBE' in missions:
-            if 'COBE-FIRAS' in missions: missions.remove('COBE-FIRAS')
-            if 'COBE-DIRBE' in missions: missions.remove('COBE-DIRBE')
-            missions.append('COBE-FIRAS')
-            missions.append('COBE-DIRBE')
+        if 'COBE' in surveys:
+            if 'COBE-FIRAS' in surveys: surveys.remove('COBE-FIRAS')
+            if 'COBE-DIRBE' in surveys: surveys.remove('COBE-DIRBE')
+            surveys.append('COBE-FIRAS')
+            surveys.append('COBE-DIRBE')
     else:
         print('Please specify a list of missions to compare the models.')
         return
@@ -2006,7 +2025,7 @@ def violin_comparison(path='/mnt/hpc_backup/yanitski/projects/pdr/observational_
     model_param_grid = np.meshgrid(*np.asarray(model_param, dtype=object))
     model_params = zip(*[model_param_grid[n].flatten() for n in range(len(model_param_grid))])
 
-    for survey in missions:
+    for survey in surveys:
 
         if survey == 'Plots':
             continue
@@ -2014,7 +2033,7 @@ def violin_comparison(path='/mnt/hpc_backup/yanitski/projects/pdr/observational_
         obs_directory = path + survey + '/regridded/temp/'
 
         # if verbose:
-        print('\n  {}\n'.format(survey))
+        print('\n {}'.format(survey))
 
         if (survey + '_files') in kwargs.keys():
             if isinstance(kwargs[survey + '_files'], list):
@@ -2026,6 +2045,11 @@ def violin_comparison(path='/mnt/hpc_backup/yanitski/projects/pdr/observational_
                 continue
         else:
             survey_files = os.listdir(path + survey + '/regridded/temp/')
+
+        print(survey_files)
+
+        if not os.path.exists(path.replace('observational_data', 'KT3_history') + 'fit_results/' + survey):
+            os.mkdir(path.replace('observational_data', 'KT3_history') + 'fit_results/' + survey)
 
         if not 'Plots' in os.listdir(path.replace('observational_data', 'KT3_history') + 'fit_results/' + survey):
             os.mkdir(path.replace('observational_data', 'KT3_history') + 'fit_results/' + survey + '/Plots/')
@@ -2135,7 +2159,7 @@ def violin_comparison(path='/mnt/hpc_backup/yanitski/projects/pdr/observational_
 
                     map_labels.append(file_format.format(*param))
                     model_dir = path.replace('observational_data', 'KT3_history') + map_labels[-1] \
-                                + 'channel_intensity.fits'
+                                + 'synthetic_intensity.fits'
 
                     model = fits.open(model_dir)
 
@@ -2162,12 +2186,14 @@ def violin_comparison(path='/mnt/hpc_backup/yanitski/projects/pdr/observational_
                         num=model[1].header['NAXIS4'])
 
                     if transition == 'Dust':
-                        map_list.append(deepcopy(model[2].data[0, :, :, 0]))
+                        # map_list.append(deepcopy(model[2].data[0, :, :, 0]))
+                        map_list.append(deepcopy(model[2].data[:, :, 0]))
                     else:
                         i_transition = np.where(np.asarray(model[1].header['SPECIES'].split(', ')) == transition)[0]
                         if i_transition.size:
                             map_list.append(np.trapz(model[1].data[:, :, :, i_transition][:, :, :, 0] -
-                                                     model[2].data[:, :, :, 0], vel_model, axis=0))
+                                                     # model[2].data[:, :, :, 0], vel_model, axis=0))
+                                                     model[2].data[:, :, 0], vel_model, axis=0))
                         else:
                             print('Transition {} not found in file {}'.format(transition, survey_file))
                             break
@@ -2194,7 +2220,7 @@ def violin_comparison(path='/mnt/hpc_backup/yanitski/projects/pdr/observational_
                                              & (lat_obs <= lat_model[i_lat_model].max()))[0]
                     if not survey == 'COBE-FIRAS' and not survey == 'COBE-DIRBE':
                         i_obs = np.ix_(i_lat_obs, i_lon_obs)
-                    if not survey_file == 'craig.idl':
+                    elif not survey_file == 'craig.idl':
                         i_obs = np.ix_([i_trans_obs], i_lat_obs, i_lon_obs)
                     else:
                         i_obs = np.ix_(i_lon_obs, [i_trans_obs])
@@ -2214,24 +2240,36 @@ def violin_comparison(path='/mnt/hpc_backup/yanitski/projects/pdr/observational_
                         print('  full map size: {}, indexed map size: {}'.format(map_list[1].size,
                                                                                  map_list[1][i_model].size))
 
-                fig, ax = plt.subplots(1, 1, figsize=(1*len(map_list), 7))
+                fig, ax = plt.subplots(1, 1, figsize=(violin_spacing*len(map_list), 7))
+                violin_positions = np.arange(0, violin_spacing*len(map_labels), violin_spacing)
                 if log_comp == True:
                     # map_list[0] = np.nan_to_num(map_list[0], nan=0)
                     i_nan_obs = (map_list[0][i_obs] <= 0) | np.isnan(map_list[0][i_obs])
                     data = [np.log10(map_list[0][i_obs][~i_nan_obs].flatten()),
                             *[np.log10(m[i_model].flatten()) for m in map_list[1:]]]
-                    ax.violinplot(data, labels=map_labels, widths=boxwidth, notch=True)
-                    ax.set_ylabel(r'$log_{10} (\varpi) \ \left( K \frac{km}{s} \right)$', fontsize=fontsize)
+                    ax.violinplot(data, positions=violin_positions, widths=violin_width)
+                    if ylabel == '' and comp_type == 'integrated':
+                        ax.set_ylabel(r'$log_{10} (\varpi) \ \left( K \frac{km}{s} \right)$', fontsize=fontsize)
+                    elif ylabel == '':
+                        ax.set_ylabel(r'$log_{10} (T_\mathrm{B}) \ \left( K \right)$', fontsize=fontsize)
+                    else:
+                        ax.set_ylabel(ylabel)
                 else:
                     data = [map_list[0][i_obs].flatten(), *[m[i_model].flatten() for m in map_list[1:]]]
-                    ax.violinplot(data, labels=map_labels, widths=boxwidth, notch=True)
-                    ax.set_ylabel(r'$\varpi \ \left( K \frac{km}{s} \right)$', fontsize=fontsize)
-                xticknames = ax.get_xticklabels()
+                    ax.violinplot(data, positions=violin_positions, widths=violin_width)
+                    if comp_type == 'integrated':
+                        ax.set_ylabel(r'$\varpi \ \left( K \frac{km}{s} \right)$', fontsize=fontsize)
+                    else:
+                        ax.set_ylabel(r'$T_\mathrm{B} \ \left( K \right)$', fontsize=fontsize)
+                ax.set_xticks(violin_positions, labels=map_labels)
+                ax.xaxis.set_tick_params(labelrotation=label_rotation, labelsize=label_fontsize)
+                #xticknames = ax.get_xticklabels()
+                #plt.setp(xticknames, rotation=label_rotation, fontsize=label_fontsize)
                 if len(ylim):
                     ax.set_ylim(ylim)
-                plt.setp(xticknames, rotation=label_rotation, fontsize=label_fontsize)
                 ax.set_title(survey + ' -- ' + transition, fontsize=fontsize)
-                plt.tight_layout()
+                # plt.tight_layout()
+                plt.subplots_adjust(bottom=0.15, left=0.15, right=1, top=0.85)
                 if save_plot:
                     if output_file == '':
                         current_output_file = 'boxplot_{}-{}'.format(survey_file, transition) + comp
@@ -2240,9 +2278,9 @@ def violin_comparison(path='/mnt/hpc_backup/yanitski/projects/pdr/observational_
                     plt.savefig(path.replace('observational_data', 'KT3_history') +
                                 'fit_results/{}/Plots/{}.{}'.format(survey, current_output_file, output_format),
                                 format=output_format)
+                    plt.close()
                 else:
                     plt.show()
-                plt.close()
 
     return
 
@@ -2366,7 +2404,7 @@ def double_line_plot(obs_path='/mnt/hpc_backup/yanitski/projects/pdr/observation
     for param in model_params:
 
         survey_labels[1].append(file_format.format(*param))
-        model_dir = model_path + survey_labels[1][-1] + 'channel_intensity.fits'
+        model_dir = model_path + survey_labels[1][-1] + 'synthetic_intensity.fits'
 
         model = fits.open(model_dir)
 
@@ -2398,17 +2436,20 @@ def double_line_plot(obs_path='/mnt/hpc_backup/yanitski/projects/pdr/observation
         for i, transition in enumerate(transitions):
             if transition == 'Dust':
                 survey_transitions[1].append(np.asarray(model[2].header['DUST'].split(', ')))
-                survey_maps[1][-1].append(deepcopy(model[2].data[0, :, :, 0]))
+                # survey_maps[1][-1].append(deepcopy(model[2].data[0, :, :, 0]))
+                survey_maps[1][-1].append(deepcopy(model[2].data[:, :, 0]))
             else:
                 survey_transitions[1].append(np.asarray(model[1].header['SPECIES'].split(', ')))
                 i_transition = np.where(survey_transitions[1][-1] == transition)[0]
                 if i_transition.size == 1 and (comp_type == 'integrated'
                                                or not ('COBE-FIRAS' in missions or 'Planck' in missions)):
                     survey_maps[1][-1].append(np.trapz(model[1].data[:, :, :, i_transition][:, :, :, 0]
-                                                       - model[2].data[:, :, :, 0], survey_vels[1][0], axis=0))
+                                                       # - model[2].data[:, :, :, 0], survey_vels[1][0], axis=0))
+                                                       - model[2].data[:, :, 0], survey_vels[1][0], axis=0))
                 elif i_transition.size == 1:
                     survey_maps[1][-1].append(model[1].data[:, :, :, i_transition][:, :, :, 0]
-                                              - model[2].data[:, :, :, 0])
+                                              # - model[2].data[:, :, :, 0])
+                                              - model[2].data[:, :, 0])
                 else:
                     print('Transition {} not found in model'.format(transition))
                     return
