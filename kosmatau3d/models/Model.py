@@ -1,13 +1,13 @@
 import importlib as il
+import logging
+import matplotlib.pyplot as plt
+import numpy as np
+import os
 import sys
 
-import numpy as np
-import matplotlib.pyplot as plt
-# from mpl_toolkits.mplot3d import Axes3D
 from logging import getLogger, basicConfig, FileHandler, Formatter
 
 from kosmatau3d.models import shape  # import Shape
-# import statistics
 from kosmatau3d.models import observations
 from kosmatau3d.models import species
 from .VoxelGrid import *
@@ -327,4 +327,192 @@ class Model(object):
         hdu = fits.PrimaryHDU(data=data, header=header)
         hdu.writeto(filename, overwrite=True)
         
+        return
+
+
+class SyntheticModel(object):
+    '''
+    This is an object to load individual `kosmatau3d` models. This in merely for
+    the convenience of examining the model information in a consistent manner.
+    There is an optional argument when initialising to set a base directory, which
+    makes it easier to load multiple models in succession. Due to the complexity
+    of the `kosmatau3d` models, it is not recommended to load multiple models at
+    the same time.
+    '''
+    
+    def __init__(self, base_dir=''):
+        '''
+        This initialises the object along with the base directory.
+        The owned objects of `base_dir` and `files` are created.
+        `files` can be modified again when loading a model, but for now it
+        has the default filenames created with `kosmatau3d`.
+
+        :param base_dir: the base directory to use when loading models. Default: `''`.
+
+
+        '''
+
+        self.base_dir = base_dir
+        self.files = {'intensity': 'synthetic_intensity', 
+                      'optical_depth': 'synthetic_optical_depth', 
+                      'dust_absorption': 'dust_absorption', 
+                      'dust_emissivity': 'dust_emissivity', 
+                      'species_absorption': 'species_absorption', 
+                      'species_emissivity': 'species_emissivity', 
+                      'density': 'voxel_density', 
+                      'ensemble_dispersion': 'voxel_ensemble_dispersion', 
+                      'ensemble_mass': 'voxel_ensemble_mass', 
+                      'fuv_absorption': 'voxel_FUVabsorption', 
+                      'fuv': 'voxel_fuv', 
+                      'position': 'voxel_position', 
+                      'velocity': 'voxel_velocity', 
+                      'los_count': 'sightlines', 
+                      'log': 'log', }
+        
+        return
+    
+    def load_model(self, directory=None, map_units='deg', **kwargs):
+                   # intensity='synthetic_intensity', optical_depth='synthetic_optical_depth', 
+                   # dust_absorption='dust_absorption', dust_emissivity='dust_emissivity', 
+                   # species_absorption='species_absorption', species_emissivity='species_emissivity', 
+                   # density='voxel_density', ensemble_dispersion='voxel_ensemble_dispersion', 
+                   # ensemble_mass='voxel_ensemble_mass', fuv_absorption='voxel_FUVabsorption', 
+                   # fuv='voxel_fuv', position='voxel_position', velocity='voxel_velocity'):
+        '''
+        Load all of the data for one model. Any additional information such as 
+        observing velocities, latitude, and longitude are computed as well.
+
+        **Note** that this can be quite computationally expensive. It is not recommended 
+        to load multiple models at the same time.
+
+        :param directory: The directory of all of the model. Note that this is 
+                          appended to `self.base_dir`.
+        :param kwargs: optional kwargs to modify the model files used (specified in 
+                       `self.files`).
+
+
+        '''
+
+        # Ensure model path exists
+        if os.path.exists(self.base_dir + directory):
+            pass
+        else:
+            print(f'Directory {self.base_dir + directory} is not valid!! Check to see '
+                  +'if `base_dir` was set when initialising or if the specified directory was correct.')
+            return
+
+        # Update model file information
+        kwarg_keys = kwargs.keys()
+        self.files['directory'] = directory
+        if 'intensity' in kwarg_keys:
+            self.files['intensity'] = kwargs['intensity']
+        if 'optical_depth' in kwarg_keys:
+            self.files['optical_depth'] = kwargs['optical_depth']
+        if 'dust_absorption' in kwarg_keys:
+            self.files['dust_absorption'] = kwargs['dust_absorption']
+        if 'dust_emissivity' in kwarg_keys:
+            self.files['dust_emissivity'] = kwargs['dust_emissivity']
+        if 'species_absorption' in kwarg_keys:
+            self.files['species_absorption'] = kwargs['species_absorption']
+        if 'species_emissivity' in kwarg_keys:
+            self.files['species_emissivity'] = kwargs['species_emissivity']
+        if 'density' in kwarg_keys:
+            self.files['density'] = kwargs['density']
+        if 'ensemble_dispersion' in kwarg_keys:
+            self.files['ensemble_dispersion'] = kwargs['ensemble_dispersion']
+        if 'ensemble_mass' in kwarg_keys:
+            self.files['ensemble_mass'] = kwargs['ensemble_mass']
+        if 'fuv_absorption' in kwarg_keys:
+            self.files['fuv_absorption'] = kwargs['fuv_absorption']
+        if 'fuv' in kwarg_keys:
+            self.files['fuv'] = kwargs['fuv']
+        if 'position' in kwarg_keys:
+            self.files['position'] = kwargs['position']
+        if 'velocity' in kwarg_keys:
+            self.files['velocity'] = kwargs['velocity']
+        if 'los_count' in kwarg_keys:
+            self.files['los_count'] = kwargs['los_count']
+        if 'log' in kwarg_keys:
+            self.files['log'] = kwargs['log']
+        
+        # Load all model data (can be expensive for memory)
+        self.intensity_file = fits.open(self.base_dir + directory 
+                                        + self.files['intensity'] + '.fits')
+        self.map_positions = self.intensity_file[0].data
+        self.intensity_species = self.intensity_file[1].data
+        self.intensity_dust = self.intensity_file[2].data
+        self.optical_depth_file = fits.open(self.base_dir + directory 
+                                            + self.files['optical_depth'] + '.fits')
+        self.optical_depth_species = self.optical_depth_file[1].data
+        self.optical_depth_dust = self.optical_depth_file[2].data
+        self.dust_absorption_file = fits.open(self.base_dir + directory 
+                                              + self.files['dust_absorption'] + '.fits')
+        self.dust_absorption = self.dust_absorption_file[0].data
+        self.dust_emissivity_file = fits.open(self.base_dir + directory 
+                                              + self.files['dust_emissivity'] + '.fits')
+        self.dust_emissivity = self.dust_emissivity_file[0].data
+        self.species_absorption_file = fits.open(self.base_dir + directory 
+                                                 + self.files['species_absorption'] + '.fits')
+        self.species_absorption = self.species_absorption_file[0].data
+        self.species_emissivity_file = fits.open(self.base_dir + directory 
+                                                 + self.files['species_emissivity'] + '.fits')
+        self.species_emissivity = self.species_emissivity_file[0].data
+        self.density_file = fits.open(self.base_dir + directory 
+                                      + self.files['density'] + '.fits')
+        self.density = self.density_file[0].data
+        self.ensemble_dispersion_file = fits.open(self.base_dir + directory 
+                                                  + self.files['ensemble_dispersion'] + '.fits')
+        self.ensemble_dispersion = self.ensemble_dispersion_file[0].data
+        self.ensemble_mass_file = fits.open(self.base_dir + directory 
+                                            + self.files['ensemble_mass'] + '.fits')
+        self.ensemble_mass = self.ensemble_mass_file[0].data
+        self.fuv_absorption_file = fits.open(self.base_dir + directory 
+                                             + self.files['fuv_absorption'] + '.fits')
+        self.fuv_absorption = self.fuv_absorption_file[0].data
+        self.fuv_file = fits.open(self.base_dir + directory 
+                                  + self.files['fuv'] + '.fits')
+        self.fuv = self.fuv_file[0].data
+        self.position_file = fits.open(self.base_dir + directory 
+                                       + self.files['position'] + '.fits')
+        self.position = self.position_file[0].data
+        self.velocity_file = fits.open(self.base_dir + directory 
+                                       + self.files['velocity'] + '.fits')
+        self.velocity = self.velocity_file[0].data
+        self.los_count = np.loadtxt(self.base_dir + directory + self.files['los_count'] + '.csv')
+        with open(self.base_dir + directory + self.files['log'] + '.txt') as f:
+            self.log = f.readlines()
+        
+        # Extract and create additional axes
+        self.species_header = self.intensity_file[1].header
+        self.species_header['BUNIT'] = self.intensity_file[1].header['BUNIT'] + '/' \
+                                       + self.optical_depth_file[1].header['BUNIT']
+        self.dust_header = self.intensity_file[2].header
+        self.species = self.species_header['SPECIES'].split(', ')
+        self.dust = self.dust_header['DUST'].split(', ')
+        self.dust_header['BUNIT'] = self.intensity_file[2].header['BUNIT'] + '/' \
+                                    + self.optical_depth_file[2].header['BUNIT']
+        self.map_lon = np.linspace(self.species_header['CRVAL2'] 
+                                   - self.species_header['CDELT2']*(self.species_header['CRPIX2']-0.5), 
+                                   self.species_header['CRVAL2'] 
+                                   + self.species_header['CDELT2']*(self.species_header['NAXIS2']
+                                                                    -self.species_header['CRPIX2']-0.5), 
+                                   num=self.species_header['NAXIS2'])
+        self.map_lat = np.linspace(self.species_header['CRVAL3'] 
+                                   - self.species_header['CDELT3']*(self.species_header['CRPIX3']-0.5), 
+                                   self.species_header['CRVAL3'] 
+                                   + self.species_header['CDELT3']*(self.species_header['NAXIS3']
+                                                                    -self.species_header['CRPIX3']-0.5), 
+                                   num=self.species_header['NAXIS3'])
+        self.map_vel = np.linspace(self.species_header['CRVAL4'] 
+                                   - self.species_header['CDELT4']*(self.species_header['CRPIX4']), 
+                                   self.species_header['CRVAL4'] 
+                                   + self.species_header['CDELT4']*(self.species_header['NAXIS4']
+                                                                    -self.species_header['CRPIX4']-1), 
+                                   num=self.species_header['NAXIS4'])
+        
+        # convert from radians to degrees if specified
+        if map_units == 'deg' or map_units == 'degrees':
+            self.map_lon *= 180/np.pi
+            self.map_lat *= 180/np.pi
+
         return
