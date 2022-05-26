@@ -1742,7 +1742,7 @@ def line_ratio_comparison(obs_path='/mnt/hpc_backup/yanitski/projects/pdr/observ
                           figsize=(), ylabel='', ylim=(), title='', notch=True, boxwidth=0.5,
                           label_rotation=30, label_fontsize=16, fontsize=20,
                           save_plot=False, output_file='', output_format='png',
-                          debug=False, verbose=False, violin_size=1, violin_spacing=1, **kwargs):
+                          debug=False, verbose=False, violin_width=1, violin_spacing=1, **kwargs):
 
     survey_paths = [[], []]  # list for paths to plotted data (in order observed, synthetic)
     survey_maps = [[], []]   # list for unprocessed (pre-calculation) data to plot (in order observed, synthetic)
@@ -1927,11 +1927,11 @@ def line_ratio_comparison(obs_path='/mnt/hpc_backup/yanitski/projects/pdr/observ
         survey_ratios[1].append((survey_maps[1][-1][0][survey_ix[1][0]]
                                  / survey_maps[1][-1][1][survey_ix[1][1]]).flatten())
 
-    if len(figsize) == 0:
-        figsize = (1*(len(survey_ratios[0])+len(survey_ratios[1])), 10)
-    fig, ax = plt.subplots(1, 1, figsize=(violin_spacing*len(map_list), 7))
-    violin_positions = np.arange(0, violin_spacing*len(map_labels), violin_spacing)
     labels = [*survey_labels[0], *survey_labels[1]]
+    if len(figsize) == 0:
+        figsize = (violin_spacing*(len(labels)), 7)
+    fig, ax = plt.subplots(1, 1, figsize=(violin_spacing*len(labels), 7))
+    violin_positions = np.arange(0, violin_spacing*len(labels), violin_spacing)
     if log_comp == True:
         comp = '_logT'
         i_nan_obs = (survey_ratios[0][0] <= 0) | np.isnan(survey_ratios[0][0])
@@ -1960,7 +1960,7 @@ def line_ratio_comparison(obs_path='/mnt/hpc_backup/yanitski/projects/pdr/observ
             ax.set_ylabel(ylabel)
     if len(ylim):
         ax.set_ylim(ylim)
-    ax.set_xticks(violin_positions, labels=map_labels)
+    ax.set_xticks(violin_positions, labels=labels)
     ax.xaxis.set_tick_params(labelrotation=label_rotation, labelsize=label_fontsize)
     #xticknames = ax.get_xticklabels()
     #plt.setp(xticknames, rotation=label_rotation, fontsize=label_fontsize)
