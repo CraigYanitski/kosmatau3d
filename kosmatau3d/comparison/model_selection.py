@@ -1890,14 +1890,14 @@ def line_ratio_comparison(obs_path='/mnt/hpc_backup/yanitski/projects/pdr/observ
             else:
                 survey_transitions[1].append(np.asarray(model[1].header['SPECIES'].split(', ')))
                 i_transition = np.where(survey_transitions[1][-1] == transition)[0]
-                if i_transition.size == 1 and (comp_type == 'integrated'
-                                               or not ('COBE-FIRAS' in missions or 'Planck' in missions)):
+                if i_transition.size == 1 and comp_type == 'integrated' \
+                        and not ('COBE-FIRAS' in missions or 'Planck' in missions):
                     survey_maps[1][-1].append(np.trapz(model[1].data[:, :, :, i_transition][:, :, :, 0]
                                                        # - model[2].data[:, :, :, 0], survey_vels[1][0], axis=0))
                                                        - model[2].data[:, :, 0], survey_vels[1][0], axis=0))
                 elif i_transition.size == 1:
                     survey_maps[1][-1].append(model[1].data[:, :, :, i_transition][:, :, :, 0]
-                                              - model[2].data[:, :, :, 0])
+                                              - model[2].data[:, :, 0])
                 else:
                     print('Transition {} not found in model'.format(transition))
                     return
@@ -1935,8 +1935,9 @@ def line_ratio_comparison(obs_path='/mnt/hpc_backup/yanitski/projects/pdr/observ
     if log_comp == True:
         comp = '_logT'
         i_nan_obs = (survey_ratios[0][0] <= 0) | np.isnan(survey_ratios[0][0])
+        i_nan_model = (survey_ratios[1][0] <= 0) | np.isnan(survey_ratios[1][0])
         data = [np.log10(survey_ratios[0][0][~i_nan_obs]),
-                *[np.log10(survey_ratios[1][i]) for i in range(len(survey_ratios[1]))]]
+                *[np.log10(survey_ratios[1][i][~i_nan_model]) for i in range(len(survey_ratios[1]))]]
         ax.violinplot(data, positions=violin_positions, widths=violin_width)
         if ylabel == '' and comp_type == 'integrated':
             ax.set_ylabel(r'$log_{10} ' + r'\left( \varpi_{' + r'{}'.format(transitions[0]) + r'} \ / \ \varpi_{'
@@ -2089,6 +2090,7 @@ def violin_comparison(path='/mnt/hpc_backup/yanitski/projects/pdr/observational_
                     lon_obs = obs['long']
                     lat_obs = np.array([0])
                     i_lat_obs_init = np.ones(1, dtype=bool)
+                    comp_type = 'integrated'
 
                 else:
 
@@ -2108,6 +2110,7 @@ def violin_comparison(path='/mnt/hpc_backup/yanitski/projects/pdr/observational_
                                           num=obs[0].header['NAXIS2'])
                     i_lat_obs_init = obs_data.any(0).any(1)
                 vel = None
+                comp_type = 'pv'
 
             elif survey == 'Planck':
                 obs_data = obs[0].data
@@ -2126,6 +2129,7 @@ def violin_comparison(path='/mnt/hpc_backup/yanitski/projects/pdr/observational_
                                       num=obs[0].header['NAXIS2'])
                 i_lat_obs_init = obs_data.any(1)
                 vel = None
+                comp_type = 'pv'
 
             else:
                 if debug:
@@ -2145,7 +2149,10 @@ def violin_comparison(path='/mnt/hpc_backup/yanitski/projects/pdr/observational_
                                       obs[0].header['CRVAL3'] + obs[0].header['CDELT3'] * (
                                                   obs[0].header['NAXIS3'] - obs[0].header['CRPIX3']),
                                       num=obs[0].header['NAXIS3'])
-                obs_data = np.trapz(obs[0].data, vel_obs, axis=0)
+                if comp_type == 'pv':
+                    obs_data = obs[0].data
+                else:
+                    obs_data = np.trapz(obs[0].data, vel_obs, axis=0)
                 i_lat_obs_init = obs_data.any(1)
 
             for i_trans_obs, transition in enumerate(transitions):
@@ -2190,7 +2197,11 @@ def violin_comparison(path='/mnt/hpc_backup/yanitski/projects/pdr/observational_
                         map_list.append(deepcopy(model[2].data[:, :, 0]))
                     else:
                         i_transition = np.where(np.asarray(model[1].header['SPECIES'].split(', ')) == transition)[0]
-                        if i_transition.size:
+                        if i_transition.size and comp_type == 'pv':
+                            map_list.append(model[1].data[:, :, :, i_transition][:, :, :, 0] -
+                                            # model[2].data[:, :, :, 0], vel_model, axis=0))
+                                            model[2].data[:, :, 0])
+                        elif i_transition.size and comp_type == 'integrated':
                             map_list.append(np.trapz(model[1].data[:, :, :, i_transition][:, :, :, 0] -
                                                      # model[2].data[:, :, :, 0], vel_model, axis=0))
                                                      model[2].data[:, :, 0], vel_model, axis=0))
@@ -2276,7 +2287,9 @@ def violin_comparison(path='/mnt/hpc_backup/yanitski/projects/pdr/observational_
                     else:
                         current_output_file = output_file
                     plt.savefig(path.replace('observational_data', 'KT3_history') +
-                                'fit_results/{}/Plots/{}.{}'.format(survey, current_output_file, output_format),
+                                'fit_results/{}/Plots/{}.{}'.format(survey, 
+                                                                    current_output_file, 
+                                                                    output_format),
                                 format=output_format)
                     plt.close()
                 else:
@@ -2336,7 +2349,7 @@ def double_line_plot(obs_path='/mnt/hpc_backup/yanitski/projects/pdr/observation
                 survey_vels[0].append(np.asarray([0]))
                 survey_maps[0].append(obs[0].data[i_trans_obs, :, :][0, :, :])
                 survey_i_lat_init.append(survey_maps[0][i].any(1))
-            if survey == 'COBE-DIRBE':
+            elif survey == 'COBE-DIRBE':
                 survey_vels[0].append(np.asarray([0]))
                 survey_maps[0].append(obs[0].data[i_trans_obs, :, :][0, :, :])
                 survey_i_lat_init.append(survey_maps[0][i].any(1))
