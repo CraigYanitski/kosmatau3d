@@ -370,14 +370,59 @@ class SyntheticModel(object):
                       'log': 'log', }
         
         return
-    
+
+    def test_kwargs(model, **kwargs):
+        
+        def change_files(self, **kwargs):
+            
+            # Ensure model path exists
+            if os.path.exists(self.base_dir + kwargs['directory']):
+                pass
+            else:
+                print(f'Directory {self.base_dir + kwargs["directory"]} is not valid!! Check to see '
+                      + 'if `base_dir` was set when initialising or if the specified directory was correct.')
+                return
+            
+            # Update model file information
+            kwarg_keys = kwargs.keys()
+            self.files['directory'] = kwargs['directory']
+            if 'intensity' in kwarg_keys:
+                self.files['intensity'] = kwargs['intensity']
+            if 'optical_depth' in kwarg_keys:
+                self.files['optical_depth'] = kwargs['optical_depth']
+            if 'dust_absorption' in kwarg_keys:
+                self.files['dust_absorption'] = kwargs['dust_absorption']
+            if 'dust_emissivity' in kwarg_keys:
+                self.files['dust_emissivity'] = kwargs['dust_emissivity']
+            if 'species_absorption' in kwarg_keys:
+                self.files['species_absorption'] = kwargs['species_absorption']
+            if 'species_emissivity' in kwarg_keys:
+                self.files['species_emissivity'] = kwargs['species_emissivity']
+            if 'density' in kwarg_keys:
+                self.files['density'] = kwargs['density']
+            if 'ensemble_dispersion' in kwarg_keys:
+                self.files['ensemble_dispersion'] = kwargs['ensemble_dispersion']
+            if 'ensemble_mass' in kwarg_keys:
+                self.files['ensemble_mass'] = kwargs['ensemble_mass']
+            if 'fuv_absorption' in kwarg_keys:
+                self.files['fuv_absorption'] = kwargs['fuv_absorption']
+            if 'fuv' in kwarg_keys:
+                self.files['fuv'] = kwargs['fuv']
+            if 'position' in kwarg_keys:
+                self.files['position'] = kwargs['position']
+            if 'velocity' in kwarg_keys:
+                self.files['velocity'] = kwargs['velocity']
+            if 'los_count' in kwarg_keys:
+                self.files['los_count'] = kwargs['los_count']
+            if 'log' in kwarg_keys:
+                self.files['log'] = kwargs['log']
+
+            return model(self, **kwargs)
+
+        return change_files
+
+    @test_kwargs
     def load_model(self, directory=None, map_units='deg', **kwargs):
-                   # intensity='synthetic_intensity', optical_depth='synthetic_optical_depth', 
-                   # dust_absorption='dust_absorption', dust_emissivity='dust_emissivity', 
-                   # species_absorption='species_absorption', species_emissivity='species_emissivity', 
-                   # density='voxel_density', ensemble_dispersion='voxel_ensemble_dispersion', 
-                   # ensemble_mass='voxel_ensemble_mass', fuv_absorption='voxel_FUVabsorption', 
-                   # fuv='voxel_fuv', position='voxel_position', velocity='voxel_velocity'):
         '''
         Load all of the data for one model. Any additional information such as 
         observing velocities, latitude, and longitude are computed as well.
@@ -393,47 +438,47 @@ class SyntheticModel(object):
 
         '''
 
-        # Ensure model path exists
-        if os.path.exists(self.base_dir + directory):
-            pass
-        else:
-            print(f'Directory {self.base_dir + directory} is not valid!! Check to see '
-                  +'if `base_dir` was set when initialising or if the specified directory was correct.')
-            return
+        # # Ensure model path exists
+        # if os.path.exists(self.base_dir + directory):
+        #     pass
+        # else:
+        #     print(f'Directory {self.base_dir + directory} is not valid!! Check to see '
+        #           +'if `base_dir` was set when initialising or if the specified directory was correct.')
+        #     return
 
-        # Update model file information
-        kwarg_keys = kwargs.keys()
-        self.files['directory'] = directory
-        if 'intensity' in kwarg_keys:
-            self.files['intensity'] = kwargs['intensity']
-        if 'optical_depth' in kwarg_keys:
-            self.files['optical_depth'] = kwargs['optical_depth']
-        if 'dust_absorption' in kwarg_keys:
-            self.files['dust_absorption'] = kwargs['dust_absorption']
-        if 'dust_emissivity' in kwarg_keys:
-            self.files['dust_emissivity'] = kwargs['dust_emissivity']
-        if 'species_absorption' in kwarg_keys:
-            self.files['species_absorption'] = kwargs['species_absorption']
-        if 'species_emissivity' in kwarg_keys:
-            self.files['species_emissivity'] = kwargs['species_emissivity']
-        if 'density' in kwarg_keys:
-            self.files['density'] = kwargs['density']
-        if 'ensemble_dispersion' in kwarg_keys:
-            self.files['ensemble_dispersion'] = kwargs['ensemble_dispersion']
-        if 'ensemble_mass' in kwarg_keys:
-            self.files['ensemble_mass'] = kwargs['ensemble_mass']
-        if 'fuv_absorption' in kwarg_keys:
-            self.files['fuv_absorption'] = kwargs['fuv_absorption']
-        if 'fuv' in kwarg_keys:
-            self.files['fuv'] = kwargs['fuv']
-        if 'position' in kwarg_keys:
-            self.files['position'] = kwargs['position']
-        if 'velocity' in kwarg_keys:
-            self.files['velocity'] = kwargs['velocity']
-        if 'los_count' in kwarg_keys:
-            self.files['los_count'] = kwargs['los_count']
-        if 'log' in kwarg_keys:
-            self.files['log'] = kwargs['log']
+        # # Update model file information
+        # kwarg_keys = kwargs.keys()
+        # self.files['directory'] = directory
+        # if 'intensity' in kwarg_keys:
+        #     self.files['intensity'] = kwargs['intensity']
+        # if 'optical_depth' in kwarg_keys:
+        #     self.files['optical_depth'] = kwargs['optical_depth']
+        # if 'dust_absorption' in kwarg_keys:
+        #     self.files['dust_absorption'] = kwargs['dust_absorption']
+        # if 'dust_emissivity' in kwarg_keys:
+        #     self.files['dust_emissivity'] = kwargs['dust_emissivity']
+        # if 'species_absorption' in kwarg_keys:
+        #     self.files['species_absorption'] = kwargs['species_absorption']
+        # if 'species_emissivity' in kwarg_keys:
+        #     self.files['species_emissivity'] = kwargs['species_emissivity']
+        # if 'density' in kwarg_keys:
+        #     self.files['density'] = kwargs['density']
+        # if 'ensemble_dispersion' in kwarg_keys:
+        #     self.files['ensemble_dispersion'] = kwargs['ensemble_dispersion']
+        # if 'ensemble_mass' in kwarg_keys:
+        #     self.files['ensemble_mass'] = kwargs['ensemble_mass']
+        # if 'fuv_absorption' in kwarg_keys:
+        #     self.files['fuv_absorption'] = kwargs['fuv_absorption']
+        # if 'fuv' in kwarg_keys:
+        #     self.files['fuv'] = kwargs['fuv']
+        # if 'position' in kwarg_keys:
+        #     self.files['position'] = kwargs['position']
+        # if 'velocity' in kwarg_keys:
+        #     self.files['velocity'] = kwargs['velocity']
+        # if 'los_count' in kwarg_keys:
+        #     self.files['los_count'] = kwargs['los_count']
+        # if 'log' in kwarg_keys:
+        #     self.files['log'] = kwargs['log']
         
         # Load all model data (can be expensive for memory)
         self.intensity_file = fits.open(self.base_dir + directory 
