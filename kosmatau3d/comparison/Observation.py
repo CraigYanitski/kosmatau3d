@@ -2,7 +2,13 @@ import numpy as np
 import os
 
 from astropy.io import fits
+from copy import copy, deepcopy
 from scipy.io import readsav
+
+cobe_idl_linfrq = np.array([115.3, 230.5, 345.8, 424.8, 461.0, 492.2, 556.9, 576.3, 691.5, 808.1,
+                            1113, 1460, 2226, 1901, 2060, 2311, 2459, 2589, 921.8])
+cobe_idl_transitions = np.array(['CO 1', 'CO 2', 'CO 3', 'CO 4', 'C 3', 'CO 5',
+                                 'CO 6', 'CO 7 + C 1', 'C+ 1', 'O 1', 'CO 8'])
 
 class Observation(object):
     '''
@@ -11,13 +17,8 @@ class Observation(object):
     There is an optional argument when initialising to set a base directory, which
     makes it easier to load multiple models in succession.
     '''
-
-    cobe_idl_linfrq = np.array([115.3, 230.5, 345.8, 424.8, 461.0, 492.2, 556.9, 576.3, 691.5, 808.1,
-                                1113, 1460, 2226, 1901, 2060, 2311, 2459, 2589, 921.8])
-    cobe_idl_transitions = np.array(['CO 1', 'CO 2', 'CO 3', 'CO 4', 'C 3', 'CO 5',
-                                     'CO 6', 'CO 7 + C 1', 'C+ 1', 'O 1', 'CO 8'])
   
-    def __init__(self, base_dir='', regridded_dir=''):
+    def __init__(self, base_dir='', regridded_dir='/regridded/temp/'):
         '''
         This initialises the object along with the base directory.
         The owned objects of `base_dir` and `files` are created.
@@ -25,11 +26,20 @@ class Observation(object):
         has the default filenames created with `kosmatau3d`.
   
         :param base_dir: the base directory to use when loading observations. Default: `''`.
+        :param regridded_dir: the directory to use to load regridded observations. Default: `'/regridded/temp/'`.
   
   
         '''
-  
+ 
+        if len(base_dir):
+            if not base_dir[-1] == '/':
+                base_dir += '/'
         self.base_dir = base_dir
+        if len(regridded_dir):
+            if not base_dir[0] == '/':
+                base_dir = '/' + base_dir
+            if not base_dir[-1] == '/':
+                base_dir += '/'
         self.regridded_dir = regridded_dir
         self.obs = []
         self.obs_header = []
@@ -58,7 +68,7 @@ class Observation(object):
           
         return
 
-    def load_survey(self, directory=None, survey=None):
+    def load_survey(self, directory='', survey=None):
         '''
         '''
 
@@ -68,15 +78,13 @@ class Observation(object):
         self.survey = survey
 
         if os.path.exists(self.base_dir + directory + self.survey):
-            pass
+            self.directory = directory
         else:
             print(f'ERROR: Survey {self.base_dir + directory + survey} does not exist. Ensure '
                   + 'that base_dir was initialised correctly and that you have the correct survey')
             return
 
-        self.directory = directory
-
-        if os.path.exists(self.base_dir + directory + survey + self.regridded_dir):
+        if os.path.exists(self.base_dir + self.directory + self.survey + self.regridded_dir):
             full_path = self.base_dir + self.directory + self.survey + self.regridded_dir
         else:
             print('ERROR: Either the survey has not been regridded or the directory differs from '
@@ -88,30 +96,36 @@ class Observation(object):
         for f in self.files:
             if '.idl' in f:
                 self.obs.append(readsav(full_path + f))
-                self.obs_header.append[None]
-                self.obs_iid.append(deepcopy(cobe_idl_transitions)
-                self.obs_frequency.append(np.array(cobe_idl_linfrq)*1e9)
+                self.obs_header.append(None)
+                self.obs_iid.append((self.obs[-1]['line'], deepcopy(cobe_idl_transitions)))
+                self.obs_frequency.append(deepcopy(cobe_idl_linfrq)*1e9)
                 self.obs_wavelength.append(299792458/self.obs_frequency[-1])
-                self.obs_data.append(obs['amplitude']/(2.9979**3)*(self.obs_frequency**3)*2*1.38/10**-1)
-                self.obs_lons.append(obs['long'])
-                self.obs_lats.append(np.asarray([0]))
+                self.obs_data.append(self.obs[-1]['amplitude']/(2.9979**3)*(self.obs_frequency[-1]**3)*2*1.38/10**-1)
+                self.obs_lon.append(deepcopy(self.obs[-1]['long']))
+                self.obs_lat.append(np.array([0]))
+                self.obs_vel.append(None)
             else:
                 self.obs.append(fits.open(full_path + f))
-                self.obs_header.append[self.obs[0].header]
+                self.obs_header.append(self.obs[-1][0].header)
                 self.obs_data.append(self.obs[-1][0].data)
-                self.obs_lon.append(np.linspace(obs[0].header['CRVAL1']
-                                                - obs[0].header['CDELT1']*(obs[0].header['CRPIX1']-1),
-                                                obs[0].header['CRVAL1'] 
-                                                + obs[0].header['CDELT1']*(obs[0].header['NAXIS1']
-                                                                           -obs[0].header['CRPIX1']),
-                                                num=obs[0].header['NAXIS1']))
-                self.obs_lat.append(np.linspace(obs[0].header['CRVAL2']
-                                                - obs[0].header['CDELT2']*(obs[0].header['CRPIX2']-1),
-                                                obs[0].header['CRVAL2'] 
-                                                + obs[0].header['CDELT2']*(obs[0].header['NAXIS2']
-                                                                           -obs[0].header['CRPIX2']),
-                                                num=obs[0].header['NAXIS2']))
-                if self.obs_header[-1]['NAXIS'] == 3 and not self.survey == 'COBE-FIRAS':
+                self.obs_lon.append(np.linspace(self.obs_header[-1]['CRVAL1']
+                                                - self.obs_header[-1]['CDELT1']
+                                                *(self.obs_header[-1]['CRPIX1']-1),
+                                                self.obs_header[-1]['CRVAL1'] 
+                                                + self.obs_header[-1]['CDELT1']
+                                                *(self.obs_header[-1]['NAXIS1']
+                                                  -self.obs_header[-1]['CRPIX1']),
+                                                num=self.obs_header[-1]['NAXIS1']))
+                self.obs_lat.append(np.linspace(self.obs_header[-1]['CRVAL2']
+                                                - self.obs_header[-1]['CDELT2']
+                                                *(self.obs_header[-1]['CRPIX2']-1),
+                                                self.obs_header[-1]['CRVAL2'] 
+                                                + self.obs_header[-1]['CDELT2']
+                                                *(self.obs_header[-1]['NAXIS2']
+                                                  -self.obs_header[-1]['CRPIX2']),
+                                                num=self.obs_header[-1]['NAXIS2']))
+                if self.obs_header[-1]['NAXIS'] == 3 and not self.survey == 'COBE-FIRAS' \
+                    and not self.survey == 'COBE-DIRBE':
                     self.obs_vel.append(np.linspace((self.obs_header[-1]['CRVAL3']
                                                      - self.obs_header[-1]['CDELT3']
                                                      *(self.obs_header[-1]['CRPIX3']-1)),
@@ -120,4 +134,18 @@ class Observation(object):
                                                      *(self.obs_header[-1]['NAXIS3']
                                                        -self.obs_header[-1]['CRPIX3'])),
                                                     num=self.obs_header[-1]['NAXIS3']))
-                self.obs_iid.append(self.obs_header[-1])
+                else:
+                    self.obs_vel.append(None)
+
+                self.obs_frequency.append(None)
+                self.obs_wavelength.append(None)
+                self.obs_iid.append(self.obs_header[-1]['TRANSL'])
+
+        return
+
+    def get_obs_indeces(self):
+        
+        for file in self.files:
+            pass
+
+        return
