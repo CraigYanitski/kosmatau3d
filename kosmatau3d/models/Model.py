@@ -375,17 +375,17 @@ class SyntheticModel(object):
         
         def change_files(self, **kwargs):
             
-            # Ensure model path exists
-            if os.path.exists(self.base_dir + kwargs['directory']):
-                pass
-            else:
-                print(f'Directory {self.base_dir + kwargs["directory"]} is not valid!! Check to see '
-                      + 'if `base_dir` was set when initialising or if the specified directory was correct.')
-                return
+            # # Ensure model path exists
+            # if os.path.exists(self.base_dir + kwargs['directory']):
+            #     pass
+            # else:
+            #     print(f'Directory {self.base_dir + kwargs["directory"]} is not valid!! Check to see '
+            #           + 'if `base_dir` was set when initialising or if the specified directory was correct.')
+            #     return
             
             # Update model file information
             kwarg_keys = kwargs.keys()
-            self.files['directory'] = kwargs['directory']
+            # self.files['directory'] = kwargs['directory']
             if 'intensity' in kwarg_keys:
                 self.files['intensity'] = kwargs['intensity']
             if 'optical_depth' in kwarg_keys:
@@ -422,7 +422,7 @@ class SyntheticModel(object):
         return change_files
 
     @test_kwargs
-    def load_model(self, directory=None, map_units='deg', **kwargs):
+    def load_model(self, directory='', map_units='deg', **kwargs):
         '''
         Load all of the data for one model. Any additional information such as 
         observing velocities, latitude, and longitude are computed as well.
@@ -438,17 +438,16 @@ class SyntheticModel(object):
 
         '''
 
-        # # Ensure model path exists
-        # if os.path.exists(self.base_dir + directory):
-        #     pass
-        # else:
-        #     print(f'Directory {self.base_dir + directory} is not valid!! Check to see '
-        #           +'if `base_dir` was set when initialising or if the specified directory was correct.')
-        #     return
+        # Ensure model path exists
+        if os.path.exists(self.base_dir + directory + self.files['intensity'] + '.fits'):
+            self.files['directory'] = directory
+        else:
+            print(f'Directory {self.base_dir + directory} is not valid!! Check to see '
+                  +'if `base_dir` was set when initialising or if the specified directory was correct.')
+            return
 
         # # Update model file information
         # kwarg_keys = kwargs.keys()
-        # self.files['directory'] = directory
         # if 'intensity' in kwarg_keys:
         #     self.files['intensity'] = kwargs['intensity']
         # if 'optical_depth' in kwarg_keys:
