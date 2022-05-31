@@ -42,8 +42,10 @@ class Observation(object):
                 base_dir += '/'
         self.regridded_dir = regridded_dir
         self.obs = []
+        self.obs_error = []
         self.obs_header = []
         self.obs_data = []
+        self.obs_error_data = []
         self.obs_lon = []
         self.obs_lat = []
         self.obs_vel = []
@@ -101,13 +103,16 @@ class Observation(object):
                 self.obs_frequency.append(deepcopy(cobe_idl_linfrq)*1e9)
                 self.obs_wavelength.append(299792458/self.obs_frequency[-1])
                 self.obs_data.append(self.obs[-1]['amplitude']/(2.9979**3)*(self.obs_frequency[-1]**3)*2*1.38/10**-1)
+                self.obs_error_data.append(self.obs[-1]['sigma']/(2.9979**3)*(self.obs_frequency[-1]**3)*2*1.38/10**-1)
                 self.obs_lon.append(deepcopy(self.obs[-1]['long']))
                 self.obs_lat.append(np.array([0]))
                 self.obs_vel.append(None)
             else:
                 self.obs.append(fits.open(full_path + f))
+                self.obs_error.append(fits.open(full_path + f.replace('.fits', '_error.fits')))
                 self.obs_header.append(self.obs[-1][0].header)
                 self.obs_data.append(self.obs[-1][0].data)
+                self.obs_error_data.append(self.obs_error[-1][0].data)
                 self.obs_lon.append(np.linspace(self.obs_header[-1]['CRVAL1']
                                                 - self.obs_header[-1]['CDELT1']
                                                 *(self.obs_header[-1]['CRPIX1']-1),
@@ -143,9 +148,17 @@ class Observation(object):
 
         return
 
-    def get_obs_indeces(self):
+    def get_obs_indeces(self, i):
         
-        for file in self.files:
-            pass
+        # i_lon = []
+        # i_lat = []
+        # i_vel = []
+
+        # for file in self.files:
+        #     pass
+
+        return
+
+    def get_intensity(self):
 
         return
