@@ -41,17 +41,6 @@ class Observation(object):
             if not base_dir[-1] == '/':
                 base_dir += '/'
         self.regridded_dir = regridded_dir
-        self.obs = []
-        self.obs_error = []
-        self.obs_header = []
-        self.obs_data = []
-        self.obs_error_data = []
-        self.obs_lon = []
-        self.obs_lat = []
-        self.obs_vel = []
-        self.obs_iid = []
-        self.obs_wavelength = []
-        self.obs_frequency = []
         # self.files = {'intensity': 'synthetic_intensity',
         #               'optical_depth': 'synthetic_optical_depth',
         #               'dust_absorption': 'dust_absorption',
@@ -68,6 +57,22 @@ class Observation(object):
         #               'los_count': 'sightlines', 
         #               'log': 'log', }
           
+        return
+
+    def reset_attributes(self):
+        
+        self.obs = []
+        self.obs_error = []
+        self.obs_header = []
+        self.obs_data = []
+        self.obs_error_data = []
+        self.obs_lon = []
+        self.obs_lat = []
+        self.obs_vel = []
+        self.obs_iid = []
+        self.obs_wavelength = []
+        self.obs_frequency = []
+
         return
 
     def load_survey(self, directory='', survey=None):
@@ -95,10 +100,13 @@ class Observation(object):
 
         self.files = list(f.name for f in os.scandir(full_path) 
                           if (f.is_file() and not '_error' in f.name))
+
+        self.reset_attributes()
+
         for f in self.files:
             if '.idl' in f:
                 self.obs.append(readsav(full_path + f))
-                self.obs_header.append(None)
+                self.obs_header.append([None])
                 self.obs_iid.append((self.obs[-1]['line'], deepcopy(cobe_idl_transitions)))
                 self.obs_frequency.append(deepcopy(cobe_idl_linfrq)*1e9)
                 self.obs_wavelength.append(299792458/self.obs_frequency[-1])
@@ -106,7 +114,7 @@ class Observation(object):
                 self.obs_error_data.append(self.obs[-1]['sigma']/(2.9979**3)*(self.obs_frequency[-1]**3)*2*1.38/10**-1)
                 self.obs_lon.append(deepcopy(self.obs[-1]['long']))
                 self.obs_lat.append(np.array([0]))
-                self.obs_vel.append(None)
+                self.obs_vel.append([None])
             else:
                 self.obs.append(fits.open(full_path + f))
                 self.obs_error.append(fits.open(full_path + f.replace('.fits', '_error.fits')))
@@ -140,25 +148,94 @@ class Observation(object):
                                                        -self.obs_header[-1]['CRPIX3'])),
                                                     num=self.obs_header[-1]['NAXIS3']))
                 else:
-                    self.obs_vel.append(None)
+                    self.obs_vel.append([None])
 
-                self.obs_frequency.append(None)
-                self.obs_wavelength.append(None)
+                self.obs_frequency.append([None])
+                self.obs_wavelength.append([None])
                 self.obs_iid.append(self.obs_header[-1]['TRANSL'])
 
         return
 
-    def get_obs_indeces(self, i):
+    def get_obs_extent(self, filename=None, idx=None, kind='extent'):
+
+        if filename is None and idx is None:
+            print('ERROR: Please specify a filename or index')
+            return
+        elif not filename is None:
+            idx = self.files.index(filename)
+        else:
+            filename = self.files[idx]
         
-        # i_lon = []
-        # i_lat = []
-        # i_vel = []
+        print(filename)
 
-        # for file in self.files:
-        #     pass
+        data = self.obs_data[idx]
 
-        return
+        if '.idl' in filename:
+            lat = copy(self.obs_lat[idx])
+            lon = copy(self.obs_lon[idx])
+            extent = (lon, lat, None)
+            i_extent = (np.arange(lon), np.array([0]))
+        elif data.ndim == 2:
+            i_nan = np.isnan(data)
+            lon = self.obs_lon[idx][~i_nan.all(0)]
+            lat = self.obs_lat[idx][~i_nan.all(1)]
+            extent = (lon, lat, None)
+            i_extent = (~i_nan.all(1), ~i_nan.all(0))
+        elif data.ndim == 3:
+            i_nan = np.isnan(data)
+            if 'COBE' in self.survey:
+                lon = self.obs_lon[idx][~i_nan.all(1).all(0)]
+                lat = self.obs_lat[idx][~i_nan.all(2).all(0)]
+                extent = (lon, lat, None)
+                i_extent = (np.arange(data.shape[0]), ~i_nan.all(2).all(0), ~i_nan.all(1).all(0))
+            else:
+                vel = self.obs_vel[idx][~i_nan.all(2).all(1)]
+                lon = self.obs_lon[idx][~i_nan.all(1).all(0)]
+                lat = self.obs_lat[idx][~i_nan.all(2).all(0)]
+                extent = (lon, lat, vel)
+                i_extent = (~i_nan.all(2).all(1), ~i_nan.all(2).all(0), ~i_nan.all(1).all(0))
+        else:
+            print('ERROR: Choose a valid filename.')
+            return
+        
+        if kind == 'extent':
+            return extent
+        elif kind == 'index':
+            return i_extent
+        else:
+            print("ERROR: Choose a valid kind ('extent' or 'index').")
+            return
 
-    def get_intensity(self):
+    def get_intensity(self, filename=None, idx=None, log=False, nan=True, trimmed=False):
 
-        return
+        if filename is None and idx is None:
+            print('ERROR: Please specify a filename or index')
+            return
+        elif not filename is None:
+            idx = self.files.index(filename)
+        else:
+            filename = self.files[idx]
+        
+        print(filename)
+
+        data = self.obs_data[idx]
+        i_zero = data <= 0
+        i_nan = np.isnan(data)
+
+        data_temp = np.zeros_like(data)
+
+        if log:
+            data_temp[i_nan|i_zero] = np.nan
+            data_temp[~(i_nan|i_zero)] = np.log10(data[~(i_nan|i_zero)])
+        else:
+            data_temp[i_nan] = np.nan
+            data_temp[~i_nan] = data[~i_nan]
+
+        if nan is False:
+            index = np.isnan(data_temp)
+            return data_temp[index]
+        elif trimmed:
+            index = np.ix_(*self.get_obs_extent(idx=idx, kind='index'))
+            return data_temp[index]
+        else:
+            return data_temp
