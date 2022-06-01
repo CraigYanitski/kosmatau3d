@@ -86,10 +86,12 @@ models.constants.fuv_ism = 1
 fuv = 1.8
 
 for resolution in [400]:
-    #for f_mass1 in [1.0, 2.0]:
-    #    for f_mass2 in [0.5, 1.0, 2.0, 4.0]:
-    #        for f_density in [0.5, 1.0, 2.0, 4.0]:
-    #            for f_uv in [10, 100]:
+    for f_hi in [1.0, 0.8, 0.6, 0.4]:
+        for f_uv in 10**np.linspace(-1, 3, num=9):
+                    #for f_mass1 in [1.0, 2.0]:
+                    #    for f_mass2 in [0.5, 1.0, 2.0, 4.0]:
+                    #        for f_density in [0.5, 1.0, 2.0, 4.0]:
+                    #            for f_uv in [10, 100]:
                     # for mass_cl in [[0, 2], [0, 3], [-1, 2], [-1, 3]]:
                     #     for mass_icl in [[-2], [-3, -2], [-3, -1], [-2, -1]]:
                     # for f_hi in [1.0, 0.8, 0.6, 0.4]:
@@ -117,7 +119,7 @@ for resolution in [400]:
                     # if fuv < 1.8:
                     #     continue
 
-                    parameters['like_clumps'] = True
+                    parameters['like_clumps'] = False
                     parameters['average_fuv'] = False
                     parameters['l_range'] = (912, 2066)
 
@@ -126,7 +128,7 @@ for resolution in [400]:
                     parameters['clumpMassNumber'] = [len(mass_cl), len(mass_icl)]
                     parameters['clumpLogFUV'] = None
                     parameters['interclumpLogFUV'] = None
-                    parameters['folder'] = f'r{int(resolution)}_modtest_new/'
+                    parameters['folder'] = f'r{int(resolution)}_fhi{f_hi:.1f}_fuv{f_uv:.1f}/'
 
                     parameters['hi_mass_factor'] = f_mass1
                     parameters['h2_mass_factor'] = f_mass2
