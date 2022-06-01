@@ -9,6 +9,7 @@ cobe_idl_linfrq = np.array([115.3, 230.5, 345.8, 424.8, 461.0, 492.2, 556.9, 576
                             1113, 1460, 2226, 1901, 2060, 2311, 2459, 2589, 921.8])
 cobe_idl_transitions = np.array(['CO 1', 'CO 2', 'CO 3', 'CO 4', 'C 3', 'CO 5',
                                  'CO 6', 'CO 7 + C 1', 'C+ 1', 'O 1', 'CO 8'])
+missions_2d = ['COBE-FIRAS', 'COBE-DIRBE', 'Planck']
 
 class Observation(object):
     '''
@@ -137,8 +138,7 @@ class Observation(object):
                                                 *(self.obs_header[-1]['NAXIS2']
                                                   -self.obs_header[-1]['CRPIX2']),
                                                 num=self.obs_header[-1]['NAXIS2']))
-                if self.obs_header[-1]['NAXIS'] == 3 and not self.survey == 'COBE-FIRAS' \
-                    and not self.survey == 'COBE-DIRBE':
+                if self.obs_header[-1]['NAXIS'] == 3 and not self.survey in missions_2d:
                     self.obs_vel.append(np.linspace((self.obs_header[-1]['CRVAL3']
                                                      - self.obs_header[-1]['CDELT3']
                                                      *(self.obs_header[-1]['CRPIX3']-1)),
@@ -183,7 +183,7 @@ class Observation(object):
             i_extent = (~i_nan.all(1), ~i_nan.all(0))
         elif data.ndim == 3:
             i_nan = np.isnan(data)
-            if 'COBE' in self.survey:
+            if self.survey in missions_2d:
                 lon = self.obs_lon[idx][~i_nan.all(1).all(0)]
                 lat = self.obs_lat[idx][~i_nan.all(2).all(0)]
                 extent = (lon, lat, None)
@@ -206,7 +206,11 @@ class Observation(object):
             print("ERROR: Choose a valid kind ('extent' or 'index').")
             return
 
-    def get_intensity(self, filename=None, idx=None, log=False, nan=True, trimmed=False):
+    def get_intensity(self, filename=None, idx=None, integrated=False, log=False, 
+                      nan=True, trimmed=False):
+        '''
+        This method will return the intensity data 
+        '''
 
         if filename is None and idx is None:
             print('ERROR: Please specify a filename or index')
@@ -218,7 +222,10 @@ class Observation(object):
         
         print(filename)
 
-        data = self.obs_data[idx]
+        if integrated and not self.survey in missions_2d:
+            data = np.trapz(self.obs_data[idx], self.obs_vel[idx], axis=0)
+        else:
+            data = self.obs_data[idx]
         i_zero = data <= 0
         i_nan = np.isnan(data)
 
