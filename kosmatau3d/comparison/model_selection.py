@@ -1993,7 +1993,7 @@ def line_ratio_comparison(obs_path='/mnt/hpc_backup/yanitski/projects/pdr/observ
 def violin_comparison(path='/mnt/hpc_backup/yanitski/projects/pdr/observational_data/MilkyWay/', 
                       file_format='',
                       surveys=[], model_param=[[]], log_comp=True, lat=None, comp_type='integrated',
-                      ylim=[], ylabel='', title='', violin_width=0.5, violin_spacing=1, 
+                      ylim=[], ylabel='', title='', violin_width=0.5, violin_spacing=1, showextrema=False, 
                       label_rotation=30, label_fontsize=16, fontsize=20,
                       figsize=None, save_plot=False, output_file='', output_format='png',
                       debug=False, verbose=False, **kwargs):
@@ -2006,6 +2006,7 @@ def violin_comparison(path='/mnt/hpc_backup/yanitski/projects/pdr/observational_
     elif isinstance(surveys, list):
         # Use both COBE instruments if simply 'COBE' is specified
         if 'COBE' in surveys:
+            survey.remove('COBE')
             if 'COBE-FIRAS' in surveys: surveys.remove('COBE-FIRAS')
             if 'COBE-DIRBE' in surveys: surveys.remove('COBE-DIRBE')
             surveys.append('COBE-FIRAS')
@@ -2161,6 +2162,7 @@ def violin_comparison(path='/mnt/hpc_backup/yanitski/projects/pdr/observational_
 
                 map_list = [deepcopy(obs_data)]
                 map_labels = [survey + ' ' + transition]
+                i_model = []
 
                 for param in deepcopy(model_params):
 
@@ -2217,6 +2219,8 @@ def violin_comparison(path='/mnt/hpc_backup/yanitski/projects/pdr/observational_
                         lat_min = lat_obs[i_lat_obs_init].min()
                         lat_max = lat_obs[i_lat_obs_init].max()
 
+                    i_vel_obs = np.linspace(0, vel_obs.size-1, num=vel_obs.size, dtype=int)
+                    i_vel_model = np.linspace(0, vel_model.size-1, num=vel_model.size, dtype=int)
                     i_lon_obs = np.linspace(0, lon_obs.size-1, num=lon_obs.size, dtype=int)
                     i_lon_model = np.linspace(0, lon_model.size-1, num=lon_model.size, dtype=int)
                     if survey == 'COBE-FIRAS' or survey == 'DOBE-DIRBE' or survey == 'Planck':
@@ -2229,13 +2233,18 @@ def violin_comparison(path='/mnt/hpc_backup/yanitski/projects/pdr/observational_
                                                & (lat_model <= lat_max))[0]
                         i_lat_obs = np.where((lat_obs >= lat_model[i_lat_model].min())
                                              & (lat_obs <= lat_model[i_lat_model].max()))[0]
-                    if not survey == 'COBE-FIRAS' and not survey == 'COBE-DIRBE':
+                    if not survey == 'COBE-FIRAS' and not survey == 'COBE-DIRBE' and comp_type == 'pv':
+                        i_obs = np.ix_(i_vel_obs, i_lat_obs, i_lon_obs)
+                    elif not survey == 'COBE-FIRAS' and not survey == 'COBE-DIRBE' and comp_type == 'integrated':
                         i_obs = np.ix_(i_lat_obs, i_lon_obs)
                     elif not survey_file == 'craig.idl':
                         i_obs = np.ix_([i_trans_obs], i_lat_obs, i_lon_obs)
                     else:
                         i_obs = np.ix_(i_lon_obs, [i_trans_obs])
-                    i_model = np.ix_(i_lat_model, i_lon_model)
+                    if comp_type == 'pv' and not survey in ['COBE-FIRAS', 'COBE-DIRBE', 'Planck']:
+                        i_model.append(np.ix_(i_vel_model, i_lat_model, i_lon_model))
+                    elif comp_type == 'integrated':
+                        i_model.append(np.ix_(i_lat_model, i_lon_model))
 
                 if len(map_list) == 1:
                     print('No models used in comparison...')
@@ -2253,43 +2262,58 @@ def violin_comparison(path='/mnt/hpc_backup/yanitski/projects/pdr/observational_
 
                 fig, ax = plt.subplots(1, 1, figsize=(violin_spacing*len(map_list), 7))
                 violin_positions = np.arange(0, violin_spacing*len(map_labels), violin_spacing)
+                i_nan_obs = (map_list[0][i_obs] <= 0) | np.isnan(map_list[0][i_obs])
+                i_nan_model = [((m[i_model[i]] <= 0) | np.isnan(m[i_model[i]]))
+                        for i, m in enumerate(map_list[1:])]
                 if log_comp == True:
                     # map_list[0] = np.nan_to_num(map_list[0], nan=0)
-                    i_nan_obs = (map_list[0][i_obs] <= 0) | np.isnan(map_list[0][i_obs])
                     data = [np.log10(map_list[0][i_obs][~i_nan_obs].flatten()),
-                            *[np.log10(m[i_model].flatten()) for m in map_list[1:]]]
-                    ax.violinplot(data, positions=violin_positions, widths=violin_width)
+                            *[np.log10(m[i_model[i]][~i_nan_model[i]].flatten())
+                              for i, m in enumerate(map_list[1:])]]
+                    ax.violinplot(data, positions=violin_positions, widths=violin_width, 
+                                  showextrema=showextrema)
                     if ylabel == '' and comp_type == 'integrated':
-                        ax.set_ylabel(r'$log_{10} (\varpi) \ \left( K \frac{km}{s} \right)$', fontsize=fontsize)
+                        ax.set_ylabel(r'$log_{10} (\varpi) \ \left( K \frac{km}{s} \right)$', 
+                                      fontsize=fontsize)
                     elif ylabel == '':
-                        ax.set_ylabel(r'$log_{10} (T_\mathrm{B}) \ \left( K \right)$', fontsize=fontsize)
+                        ax.set_ylabel(r'$log_{10} (T_\mathrm{B}) \ \left( K \right)$',
+                                      fontsize=fontsize)
                     else:
                         ax.set_ylabel(ylabel)
                 else:
-                    data = [map_list[0][i_obs].flatten(), *[m[i_model].flatten() for m in map_list[1:]]]
-                    ax.violinplot(data, positions=violin_positions, widths=violin_width)
+                    data = [map_list[0][i_obs][~i_nan_obs].flatten(), 
+                            *[m[i_model[i]][~i_nan_model[i]].flatten()
+                              for i, m in enumerate(map_list[1:])]]
+                    ax.violinplot(data, positions=violin_positions, widths=violin_width,
+                                  showextrema=showextrema)
                     if comp_type == 'integrated':
-                        ax.set_ylabel(r'$\varpi \ \left( K \frac{km}{s} \right)$', fontsize=fontsize)
+                        ax.set_ylabel(r'$\varpi \ \left( K \frac{km}{s} \right)$', 
+                                      fontsize=fontsize)
                     else:
-                        ax.set_ylabel(r'$T_\mathrm{B} \ \left( K \right)$', fontsize=fontsize)
+                        ax.set_ylabel(r'$T_\mathrm{B} \ \left( K \right)$', 
+                                      fontsize=fontsize)
                 ax.set_xticks(violin_positions, labels=map_labels)
                 ax.xaxis.set_tick_params(labelrotation=label_rotation, labelsize=label_fontsize)
+                ax.yaxis.set_tick_params(labelsize=label_fontsize)
                 #xticknames = ax.get_xticklabels()
                 #plt.setp(xticknames, rotation=label_rotation, fontsize=label_fontsize)
                 if len(ylim):
                     ax.set_ylim(ylim)
-                ax.set_title(survey + ' -- ' + transition, fontsize=fontsize)
-                # plt.tight_layout()
+                if title is '':
+                    ax.set_title(survey + ' -- ' + transition, fontsize=fontsize)
+                elif isinstance(title, str):
+                    ax.set_title(title, fontsize=fontsize)
+                else:
+                    pass
+                plt.tight_layout()
                 plt.subplots_adjust(bottom=0.15, left=0.15, right=1, top=0.85)
                 if save_plot:
                     if output_file == '':
-                        current_output_file = 'boxplot_{}-{}'.format(survey_file, transition) + comp
+                        current_output_file = path.replace('observational_data', 'KT3_history') + \
+                                              f'fit_results/{survey}/Plots/violinplot_{survey_file}-{transition}' + comp
                     else:
                         current_output_file = output_file
-                    plt.savefig(path.replace('observational_data', 'KT3_history') +
-                                'fit_results/{}/Plots/{}.{}'.format(survey, 
-                                                                    current_output_file, 
-                                                                    output_format),
+                    plt.savefig('{}.{}'.format(current_output_file, output_format),
                                 format=output_format)
                     plt.close()
                 else:
