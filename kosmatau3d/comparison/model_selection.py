@@ -2299,7 +2299,7 @@ def violin_comparison(path='/mnt/hpc_backup/yanitski/projects/pdr/observational_
                 #plt.setp(xticknames, rotation=label_rotation, fontsize=label_fontsize)
                 if len(ylim):
                     ax.set_ylim(ylim)
-                if title is '':
+                if title == '':
                     ax.set_title(survey + ' -- ' + transition, fontsize=fontsize)
                 elif isinstance(title, str):
                     ax.set_title(title, fontsize=fontsize)
