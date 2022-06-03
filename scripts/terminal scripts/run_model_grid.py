@@ -86,8 +86,8 @@ models.constants.fuv_ism = 1
 fuv = 1.8
 
 for resolution in [400]:
-    for f_hi in [1.0, 0.8, 0.6, 0.4]:
-        for f_uv in 10**np.linspace(-1, 3, num=9):
+    for f_hi in [0.7, 0.6, 0.5, 0.4, 0.3]:
+        for f_uv in 10**np.linspace(1, 2, num=9):
                     #for f_mass1 in [1.0, 2.0]:
                     #    for f_mass2 in [0.5, 1.0, 2.0, 4.0]:
                     #        for f_density in [0.5, 1.0, 2.0, 4.0]:
