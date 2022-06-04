@@ -406,15 +406,15 @@ class VoxelGrid(object):
         
         return
     
-    def writeDataAlt(self):
-        # Not yet working.
-        
-        voxel_species_emissivity = fits.ImageHDU(self.__voxelSpeciesEmissivity, header_species)
-        voxel_species_absorption = fits.ImageHDU(self.__voxelSpeciesAbsorption, header_species)
-        voxel_dust_emissivity = fits.ImageHDU(self.__voxelDustEmissivity, header_dust)
-        voxel_dust_absorption = fits.ImageHDU(self.__voxelDustAbsorption, header_dust)
-        
-        return
+#     def writeDataAlt(self):
+#         # Not yet working.
+#         
+#         voxel_species_emissivity = fits.ImageHDU(self.__voxelSpeciesEmissivity, header_species)
+#         voxel_species_absorption = fits.ImageHDU(self.__voxelSpeciesAbsorption, header_species)
+#         voxel_dust_emissivity = fits.ImageHDU(self.__voxelDustEmissivity, header_dust)
+#         voxel_dust_absorption = fits.ImageHDU(self.__voxelDustAbsorption, header_dust)
+#         
+#         return
   
     def writeEmission(self, verbose=False, debug=False):
         # This will stream the model parameters and emission to FITS files in the corresponding
@@ -554,33 +554,36 @@ class VoxelGrid(object):
         
         return
   
-    def getVoxelNumber(self):
-        return self.__voxelNumber
-  
-    def getVoxelPositions(self):
-        return np.array([self.__x, self.__y, self.__z])
-  
     def allVoxels(self):
         # Just in case all of the Voxel() instances need to be retrieved
         return self.__voxels
-  
-    def totalEmission(self):
-        # Return the emission from all of the voxels, separated by observed velocity
-        return np.array([self.__voxelIntensity.sum(1), self.__voxelOpticalDepth.sum(1)])
-  
-    def clumpEmission(self):
-        # Return the emission from all of the voxels, separated by observed velocity
-        return np.array([self.__voxelIntensity[:, 0], self.__voxelOpticalDepth[:, 0]])
-  
-    def interclumpEmission(self):
-        # Return the emission from all of the voxels, separated by observed velocity
-        return np.array([self.__voxelIntensity[:, 1], self.__voxelOpticalDepth[:, 1]])
-  
-    def getFUV(self):
-        return self.__voxelFUV
-  
-    def getFUVabsorption(self):
-        return self.__voxelFUVabsorption
+
+#     # These methods may be used if and when we decide to work with models as objects
+#     # rather than separating the data into files to post-process.
+#   
+#     def getVoxelNumber(self):
+#         return self.__voxelNumber
+#  
+#     def getVoxelPositions(self):
+#         return np.array([self.__x, self.__y, self.__z])
+# 
+#     def totalEmission(self):
+#         # Return the emission from all of the voxels, separated by observed velocity
+#         return np.array([self.__voxelIntensity.sum(1), self.__voxelOpticalDepth.sum(1)])
+#   
+#     def clumpEmission(self):
+#         # Return the emission from all of the voxels, separated by observed velocity
+#         return np.array([self.__voxelIntensity[:, 0], self.__voxelOpticalDepth[:, 0]])
+#   
+#     def interclumpEmission(self):
+#         # Return the emission from all of the voxels, separated by observed velocity
+#         return np.array([self.__voxelIntensity[:, 1], self.__voxelOpticalDepth[:, 1]])
+#   
+#     def getFUV(self):
+#         return self.__voxelFUV
+#   
+#     def getFUVabsorption(self):
+#         return self.__voxelFUVabsorption
   
     def printVoxels(self):
         for voxel in self.__voxels:
@@ -678,6 +681,7 @@ class VoxelGrid(object):
         header['COMMENT'] = ''.ljust(50)
         header['COMMENT'] = 'Model shape: {}'.format(constants.type).ljust(50)
         x, y, z = self.__shape.getShape()
+        header['COMMENT'] = ' voxel_size: {}'.format(constants.voxel_size).ljust(50)
         header['COMMENT'] = '          x: {}'.format(x).ljust(50)
         header['COMMENT'] = '          y: {}'.format(y).ljust(50)
         header['COMMENT'] = '          z: {}'.format(z).ljust(50)
