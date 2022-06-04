@@ -275,6 +275,10 @@ class VoxelGrid(object):
                                                       dust=True, filename='dust_emissivity', dim=dim)
         shdu_voxel_absorption_dust = self.shdu_header(name='Clump dust absorption', units='1/pc', 
                                                       dust=True, filename='dust_absorption', dim=dim)
+        
+        dim = [np.sum(constants.clumpMassNumber), self.__voxelNumber]
+        shdu_clumpNj = self.shdu_header(name='N_j', units='N/A', filename='clump_number', dim=dim)
+        shdu_clumpRj = self.shdu_header(name='Radius', units='pc', filename='clump_radius', dim=dim)
     
         dim = [len(constants.clumpMassNumber), self.__voxelNumber]
         shdu_ensemble_mass = self.shdu_header(name='Ensemble mass', units='Msol', filename='voxel_ensemble_mass',
@@ -333,39 +337,19 @@ class VoxelGrid(object):
                     voxel = getProperties((i, copy(voxel)))
 
         
-                # modified for multiprocessing
-                # ------------------------------
-                # self.__x.append(x[i])
-                # self.__y.append(y[i])
-                # self.__z.append(z[i])
-                # ------------------------------
                 X, Y, Z = voxel.getPosition()
                 self.__x.append(X)
                 self.__y.append(Y)
                 self.__z.append(Z)
-        
-                # moved to getProperties
-                # ------------------------------------------------------
-                # voxel.setIndex(i)#-len(self.__unusedVoxels))
-                # voxel.setPosition(x[i], y[i], z[i], r[i], phi[i])
-                # self.__calculateProperties(x[i], y[i], z[i])
-                # voxel.setProperties(**self.__properties)
-                # ------------------------------------------------------
+                
+                shdu_clumpNj.write(np.hstack(ensemble.clumpNj).flatten())
+                shdu_clumpRj.write(np.hstack(masspoints.clumpRadius).flatten())
                 
                 if timed:
                     self.__logger.info('\nVoxel initialised: {:.4f} s'.format(time()-t2))
         
                 # this is likely unneeded now that I am directly writing to a fits file
                 self.__voxelFUVabsorption.append(voxel.getFUVabsorption())
-                
-                # Save voxel properties
-                # print(np.asarray([self.__properties['velocity']]))
-                # shdu_voxel_position.write(np.asarray([x[i],y[i],z[i]]))
-                # shdu_voxel_velocity.write(np.asarray([self.__properties['velocity']]))
-                # shdu_ensemble_mass.write(np.asarray(self.__properties['ensembleMass']))
-                # shdu_ensemble_density.write(np.asarray(self.__properties['ensembleDensity']))
-                # shdu_FUV.write(np.asarray(self.__properties['FUV']))
-                # shdu_FUVabsorption.write(np.asarray(self.__voxelFUVabsorption[-1]))
                 
                 shdu_voxel_position.write(voxel.getPosition())
                 velocity, dispersion = voxel.getVelocity()
@@ -378,12 +362,6 @@ class VoxelGrid(object):
                 shdu_ensemble_density.write(np.asarray(voxel.getDensity()))
                 shdu_FUV.write(np.array([voxel.getFUV()]))
                 shdu_FUVabsorption.write(np.asarray([voxel.getFUVabsorption()]))
-                
-                # moved to getProperties
-                # ------------------------------------
-                # Calculate emissivity and absorption
-                # voxel.calculateEmission()
-                # ------------------------------------
                 
                 # Save emissivity and absorption
                 shdu_voxel_emissivity_species.write(voxel.getSpeciesEmissivity(kind=kind, include_dust=True))
@@ -417,6 +395,7 @@ class VoxelGrid(object):
 #         return
   
     def writeEmission(self, verbose=False, debug=False):
+        # NO LONGER USED: writing of data is coupled to calculating the emission!
         # This will stream the model parameters and emission to FITS files in the corresponding
         #  directory for the model.
       
@@ -525,8 +504,8 @@ class VoxelGrid(object):
                 #   interclumpVelocity = np.append(interclumpVelocity, [np.nan], axis=0)
         
                 shdu_position.write(voxel.getPosition())
-                shdu_clumpNj.write(np.hstack(ensemble.clumpNj))
-                shdu_clumpRj.write(np.hstack(masspoints.clumpRadius))
+                shdu_clumpNj.write(np.hstack(ensemble.clumpNj).flatten())
+                shdu_clumpRj.write(np.hstack(masspoints.clumpRadius).flatten())
                 velocity = voxel.getVelocity()[0]
                 if isinstance(velocity, float):
                     shdu_velocity.write(np.array([velocity]))

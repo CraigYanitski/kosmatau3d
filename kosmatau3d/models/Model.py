@@ -1,3 +1,4 @@
+import astropy.units as u
 import importlib as il
 import logging
 import matplotlib.pyplot as plt
@@ -5,6 +6,7 @@ import numpy as np
 import os
 import sys
 
+from astropy.io import fits
 from logging import getLogger, basicConfig, FileHandler, Formatter
 
 from kosmatau3d.models import shape  # import Shape
@@ -507,12 +509,14 @@ class SyntheticModel(object):
         self.species_emissivity_file = fits.open(self.base_dir + directory 
                                                  + self.files['species_emissivity'] + '.fits')
         self.species_emissivity = self.species_emissivity_file[0].data
-        self.clump_number_file = fits.open(self.base_dir + directory 
-                                           + self.files['clump_number'] + '.fits')
-        self.clump_number = self.clump_number_file[0].data
-        self.clump_radius_file = fits.open(self.base_dir + directory 
-                                           + self.files['clump_radius'] + '.fits')
-        self.clump_radius = self.clump_radius_file[0].data
+        if os.path.exists(self.base_dir + directory + self.files['clump_number'] + '.fits'):
+            self.clump_number_file = fits.open(self.base_dir + directory 
+                                               + self.files['clump_number'] + '.fits')
+            self.clump_number = self.clump_number_file[0].data
+        if os.path.exists(self.base_dir + directory + self.files['clump_radius'] + '.fits'):
+            self.clump_radius_file = fits.open(self.base_dir + directory 
+                                               + self.files['clump_radius'] + '.fits')
+            self.clump_radius = self.clump_radius_file[0].data
         self.density_file = fits.open(self.base_dir + directory 
                                       + self.files['density'] + '.fits')
         self.density = self.density_file[0].data
@@ -575,3 +579,153 @@ class SyntheticModel(object):
             self.map_lat *= 180/np.pi
 
         return
+
+    def get_dust_wavelengths(self):
+        wav = list(map(u.Unit, self.dust))
+        return list([w.decompose() for w in wav])
+
+    def get_species_intensity(self, transition=None, idx=None, include_dust=False, integrated=False):
+
+        if transition is None and idx is None:
+            transition = self.species
+            idx = range(len(self.species))
+        elif isinstance(transition, (tuple, list, np.ndarray)):
+            idx = (self.species.index(t) for t in transition)
+        elif isinstance(idx, (tuple, list, np.ndarray)):
+            transition = (self.species[i] for i in idx)
+        elif isinstance(transition, str) and transition in self.species:
+            transition = (transition, )
+            idx = (self.species.index(transition[0]), )
+        elif isinstance(idx, int):
+            transition = (self.species[idx], )
+            idx = (idx, )
+        else:
+            print('Please enter a valid value for transition or idx')
+            return
+
+        intensity = []
+
+        for i in idx:
+            if include_dust:
+                intensity_temp = self.intensity_species[:, :, :, i]
+            else:
+                if len(self.dust) > 10:
+                    wav_dust = self.get_dust_wavelengths()
+                    f = interp1d(self.intensity_dust, wav_dust, axis=2, kind='slinear', 
+                                 fill_value='extrapolate')
+                    intensity_dust = f(wav_species[i])
+                else:
+                    intensity_dust = self.intensity_dust.mean(2)
+                intensity_temp = self.intensity_species[:, :, :, i] - intensity_dust
+            if integrated:
+                intensity.append(np.trapz(intensity_temp, self.map_vel, axis=0))
+            else:
+                intensity.append(intensity_temp)
+
+        if len(intensity) > 1:
+            return deepcopy(intensity)
+        else:
+            return deepcopy(intensity[0])
+
+    def get_species_optical_depth(self, transition=None, idx=None, include_dust=False, integrated=False):
+
+        if transition is None and idx is None:
+            transition = self.species
+            idx = range(len(self.species))
+        elif isinstance(transition, (tuple, list, np.ndarray)):
+            idx = (self.species.index(t) for t in transition)
+        elif isinstance(idx, (tuple, list, np.ndarray)):
+            transition = (self.species[i] for i in idx)
+        elif isinstance(transition, str) and transition in self.species:
+            transition = (transition, )
+            idx = (self.species.index(transition[0]), )
+        elif isinstance(idx, int):
+            transition = (self.species[idx], )
+            idx = (idx, )
+        else:
+            print('Please enter a valid value for transition or idx')
+            return
+
+        optical_depth = []
+
+        for i in idx:
+            if include_dust:
+                optical_depth_temp = self.optical_depth_species[:, :, :, i]
+            else:
+                if len(self.dust) > 10:
+                    wav_dust = self.get_dust_wavelengths()
+                    f = interp1d(self.optical_depth_dust, wav_dust, axis=2, kind='slinear', 
+                                 fill_value='extrapolate')
+                    optical_depth_dust = f(wav_species[i])
+                else:
+                    optical_depth_dust = self.optical_depth_dust.mean(2)
+                optical_depth_temp = self.optical_depth_species[:, :, :, i] - optical_depth_dust
+            if integrated:
+                optical_depth.append(np.trapz(optical_depth_temp, self.map_vel, axis=0))
+            else:
+                optical_depth.append(optical_depth_temp)
+
+        if len(optical_depth) > 1:
+            return deepcopy(optical_depth)
+        else:
+            return deepcopy(optical_depth[0])
+
+    def get_dust_intensity(self, wavelength=None, idx=None):
+
+        if wavelength is None and idx is None:
+            wavelength = self.dust
+            idx = range(len(self.dust))
+        elif isinstance(wavelength, (tuple, list, np.ndarray)):
+            idx = (self.dust.index(t) for t in wavelength)
+        elif isinstance(idx, (tuple, list, np.ndarray)):
+            wavelength = (self.dust[i] for i in idx)
+        elif isinstance(wavelength, str) and wavelength in self.dust:
+            wavelength = (wavelength, )
+            idx = (self.dust.index(wavelength[0]), )
+        elif isinstance(idx, int):
+            wavelength = (self.dust[idx], )
+            idx = (idx, )
+        else:
+            print('Please enter a valid value for wavelength or idx')
+            return
+
+        intensity = []
+
+        for i in idx:
+            intensity.append(self.intensity_dust[:, :, i])
+        
+        if len(intensity) > 1:
+            return deepcopy(intensity)
+        else:
+            return deepcopy(intensity[0])
+
+    def get_dust_optical_depth(self, wavelength=None, idx=None):
+
+        if wavelength is None and idx is None:
+            wavelength = self.dust
+            idx = range(len(self.dust))
+        elif isinstance(wavelength, (tuple, list, np.ndarray)):
+            idx = (self.dust.index(t) for t in wavelength)
+        elif isinstance(idx, (tuple, list, np.ndarray)):
+            wavelength = (self.dust[i] for i in idx)
+        elif isinstance(wavelength, str) and wavelength in self.dust:
+            wavelength = (wavelength, )
+            idx = (self.dust.index(wavelength[0]), )
+        elif isinstance(idx, int):
+            wavelength = (self.dust[idx], )
+            idx = (idx, )
+        else:
+            print('Please enter a valid value for wavelength or idx')
+            return
+
+        optical_depth = []
+
+        for i in idx:
+            optical_depth.append(self.optical_depth_dust[:, :, i])
+        
+        if len(optical_depth) > 1:
+            return deepcopy(optical_depth)
+        else:
+            return deepcopy(optical_depth[0])
+
+
