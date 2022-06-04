@@ -359,6 +359,8 @@ class SyntheticModel(object):
                       'dust_emissivity': 'dust_emissivity', 
                       'species_absorption': 'species_absorption', 
                       'species_emissivity': 'species_emissivity', 
+                      'clump_number': 'clump_number',
+                      'clump_radius': 'clump_radius',
                       'density': 'voxel_density', 
                       'ensemble_dispersion': 'voxel_ensemble_dispersion', 
                       'ensemble_mass': 'voxel_ensemble_mass', 
@@ -398,6 +400,10 @@ class SyntheticModel(object):
                 self.files['species_absorption'] = kwargs['species_absorption']
             if 'species_emissivity' in kwarg_keys:
                 self.files['species_emissivity'] = kwargs['species_emissivity']
+            if 'clump_number' in kwarg_keys:
+                self.files['clump_number'] = kwargs['clump_number']
+            if 'clump_radius' in kwarg_keys:
+                self.files['clump_radius'] = kwargs['clump_radius']
             if 'density' in kwarg_keys:
                 self.files['density'] = kwargs['density']
             if 'ensemble_dispersion' in kwarg_keys:
@@ -501,6 +507,12 @@ class SyntheticModel(object):
         self.species_emissivity_file = fits.open(self.base_dir + directory 
                                                  + self.files['species_emissivity'] + '.fits')
         self.species_emissivity = self.species_emissivity_file[0].data
+        self.clump_number_file = fits.open(self.base_dir + directory 
+                                           + self.files['clump_number'] + '.fits')
+        self.clump_number = self.clump_number_file[0].data
+        self.clump_radius_file = fits.open(self.base_dir + directory 
+                                           + self.files['clump_radius'] + '.fits')
+        self.clump_radius = self.clump_radius_file[0].data
         self.density_file = fits.open(self.base_dir + directory 
                                       + self.files['density'] + '.fits')
         self.density = self.density_file[0].data
@@ -526,11 +538,14 @@ class SyntheticModel(object):
         with open(self.base_dir + directory + self.files['log'] + '.txt') as f:
             self.log = f.readlines()
         
-        # Extract and create additional axes
+        # Extract headers and create additional axes
+        self.info = self.species_absorption_file[0].header['COMMENT']
         self.species_header = self.intensity_file[1].header
         self.species_header['BUNIT'] = self.intensity_file[1].header['BUNIT'] + '/' \
                                        + self.optical_depth_file[1].header['BUNIT']
         self.dust_header = self.intensity_file[2].header
+        self.dust_header['BUNIT'] = self.intensity_file[2].header['BUNIT'] + '/' \
+                                    + self.optical_depth_file[2].header['BUNIT']
         self.species = self.species_header['SPECIES'].split(', ')
         self.dust = self.dust_header['DUST'].split(', ')
         self.dust_header['BUNIT'] = self.intensity_file[2].header['BUNIT'] + '/' \
