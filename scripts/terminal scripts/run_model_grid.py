@@ -85,9 +85,9 @@ r_cmz = 0
 models.constants.fuv_ism = 1
 fuv = 1.8
 
-for resolution in [400]:
-    for f_hi in [0.7, 0.6, 0.5, 0.4, 0.3]:
-        for f_uv in 10**np.linspace(1, 2, num=9):
+for resolution in [400, 200, 100]:
+    # for f_hi in [0.7, 0.6, 0.5, 0.4, 0.3]:
+    #     for f_uv in 10**np.linspace(1, 2, num=9):
                     #for f_mass1 in [1.0, 2.0]:
                     #    for f_mass2 in [0.5, 1.0, 2.0, 4.0]:
                     #        for f_density in [0.5, 1.0, 2.0, 4.0]:
@@ -119,16 +119,30 @@ for resolution in [400]:
                     # if fuv < 1.8:
                     #     continue
 
+                    # forces the clump and interclump ensemble masses to be
+                    # equivalent to the H2 mass
                     parameters['like_clumps'] = False
+                    # uses the average fuv energy density
                     parameters['average_fuv'] = False
+                    # set the FUV range to integrate
                     parameters['l_range'] = (912, 2066)
 
                     parameters['resolution'] = resolution
                     parameters['clumpMassRange'] = [mass_cl, mass_icl]
-                    parameters['clumpMassNumber'] = [len(mass_cl), len(mass_icl)]
+                    clump_mass_number = []
+                    if len(mass_cl) > 1:
+                        clump_mass_number.append(int(np.max(mass_cl)-np.min(mass_cl))+1)
+                    else:
+                        clump_mass_number.append(len(mass_cl))
+                    if len(mass_icl) > 1:
+                        clump_mass_number.append(int(np.max(mass_icl)-np.min(mass_icl))+1)
+                    else:
+                        clump_mass_number.append(len(mass_icl))
+                    print(clump_mass_number)
+                    parameters['clumpMassNumber'] = clump_mass_number
                     parameters['clumpLogFUV'] = None
                     parameters['interclumpLogFUV'] = None
-                    parameters['folder'] = f'r{int(resolution)}_fhi{f_hi:.1f}_fuv{f_uv:.1f}/'
+                    parameters['folder'] = f'r{int(resolution)}_convergence/'
 
                     parameters['hi_mass_factor'] = f_mass1
                     parameters['h2_mass_factor'] = f_mass2
