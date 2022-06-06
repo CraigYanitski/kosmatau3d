@@ -508,6 +508,8 @@ def reinitialise():
     # Reinitialise all temporary variables to the correct number of clump sets.
   
     ensemble.clumpMass = 0
+
+    clumpVelocities = [[] for _ in range(len(constants.clumpMassNumber))]
   
     ensemble.clumpNj = [[] for _ in range(len(constants.clumpMassNumber))]
     ensemble.clumpDeltaNji = [[] for _ in range(len(constants.clumpMassNumber))]
