@@ -509,7 +509,7 @@ def reinitialise():
   
     ensemble.clumpMass = 0
 
-    clumpVelocities = [[] for _ in range(len(constants.clumpMassNumber))]
+    ensemble.clumpVelocities = [[] for _ in range(len(constants.clumpMassNumber))]
   
     ensemble.clumpNj = [[] for _ in range(len(constants.clumpMassNumber))]
     ensemble.clumpDeltaNji = [[] for _ in range(len(constants.clumpMassNumber))]
