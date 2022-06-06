@@ -580,11 +580,17 @@ class SyntheticModel(object):
             self.map_lon *= 180/np.pi
             self.map_lat *= 180/np.pi
 
+        # Extract voxel size from model info
+        self.ds = float(self.info[1].split()[1])
+
         return
 
     def get_dust_wavelengths(self):
         wav = list(map(u.Unit, self.dust))
         return list([w.decompose() for w in wav])
+
+    def get_volume_filling_factor(self):
+        return (4/3*np.pi*self.clump_number*self.clump_radius**3).sum(1)/self.ds**3
 
     def get_species_intensity(self, transition=None, idx=None, include_dust=False, integrated=False):
 
