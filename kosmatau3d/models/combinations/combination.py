@@ -136,9 +136,12 @@ def reinitialise():
     # Reinitialise all temporary variables to the correct number of clump sets.
   
     combinations.clumpCombination = [[] for _ in range(len(constants.clumpMassNumber))]
+    combinations.CLmaxCombination = [[] for _ in range(len(constants.clumpMassNumber))]
   
     combinations.clumpIntensity = [[] for _ in range(len(constants.clumpMassNumber))]
     combinations.clumpOpticalDepth = [[] for _ in range(len(constants.clumpMassNumber))]
+    combinations.clumpDustIntensity = [[] for _ in range(len(constants.clumpMassNumber))]
+    combinations.clumpDustOpticalDepth = [[] for _ in range(len(constants.clumpMassNumber))]
   
     return
 

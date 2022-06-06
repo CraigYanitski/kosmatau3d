@@ -243,18 +243,23 @@ def reinitialise():
   
     # Properties
   
+    masspoints.logCRIR = [0 for _ in range(constants.ensembles)]
     masspoints.logFUV = [0 for _ in range(constants.ensembles)]
   
-    masspoints.clumpLogDensity = [np.zeros(constants.clumpMassNumber[_]) for _ in range(constants.ensembles)]
-    masspoints.clumpRadius = [np.zeros(constants.clumpMassNumber[_]) for _ in range(constants.ensembles)]
+    masspoints.clumpLogDensity = [np.zeros(constants.clumpMassNumber[_]) 
+                                  for _ in range(constants.ensembles)]
+    masspoints.clumpRadius = [np.zeros(constants.clumpMassNumber[_]) 
+                              for _ in range(constants.ensembles)]
   
     # Emission
   
     masspoints.clumpIntensity = [np.zeros((constants.clumpMassNumber[_],
-                                           len(species.molecules) + constants.wavelengths[constants.nDust].size))
+                                           len(species.molecules) 
+                                               + constants.wavelengths[constants.nDust].size))
                                  for _ in range(constants.ensembles)]
     masspoints.clumpOpticalDepth = [np.zeros((constants.clumpMassNumber[_],
-                                              len(species.molecules) + constants.wavelengths[constants.nDust].size))
+                                              len(species.molecules) 
+                                                  + constants.wavelengths[constants.nDust].size))
                                     for _ in range(constants.ensembles)]
   
     return
