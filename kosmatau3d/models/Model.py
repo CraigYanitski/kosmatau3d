@@ -11,8 +11,10 @@ from copy import copy, deepcopy
 from logging import getLogger, basicConfig, FileHandler, Formatter
 from scipy.interpolate import interp1d
 
-from kosmatau3d.models import shape  # import Shape
+from kosmatau3d.models import constants
+from kosmatau3d.models import interpolations
 from kosmatau3d.models import observations
+from kosmatau3d.models import shape  # import Shape
 from kosmatau3d.models import species
 from .VoxelGrid import VoxelGrid
 
