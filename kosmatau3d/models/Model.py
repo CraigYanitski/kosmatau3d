@@ -7,12 +7,14 @@ import os
 import sys
 
 from astropy.io import fits
+from copy import copy, deepcopy
 from logging import getLogger, basicConfig, FileHandler, Formatter
+from scipy.interpolate import interp1d
 
 from kosmatau3d.models import shape  # import Shape
 from kosmatau3d.models import observations
 from kosmatau3d.models import species
-from .VoxelGrid import *
+from .VoxelGrid import VoxelGrid
 
 
 class Model(object):
@@ -609,13 +611,14 @@ class SyntheticModel(object):
             if include_dust:
                 intensity_temp = self.intensity_species[:, :, :, i]
             else:
-                if len(self.dust) > 10:
-                    wav_dust = self.get_dust_wavelengths()
-                    f = interp1d(self.intensity_dust, wav_dust, axis=2, kind='slinear', 
-                                 fill_value='extrapolate')
-                    intensity_dust = f(wav_species[i])
-                else:
-                    intensity_dust = self.intensity_dust.mean(2)
+                # if len(self.dust) > 10:
+                #     wav_dust = self.get_dust_wavelengths()
+                #     f = interp1d(self.intensity_dust, wav_dust, axis=2, kind='slinear', 
+                #                  fill_value='extrapolate')
+                #     intensity_dust = f(wav_species[i])
+                # else:
+                #     intensity_dust = self.intensity_dust.mean(2)
+                intensity_dust = self.intensity_species[:, :, :, i].min(0)
                 intensity_temp = self.intensity_species[:, :, :, i] - intensity_dust
             if integrated:
                 intensity.append(np.trapz(intensity_temp, self.map_vel, axis=0))
@@ -652,13 +655,14 @@ class SyntheticModel(object):
             if include_dust:
                 optical_depth_temp = self.optical_depth_species[:, :, :, i]
             else:
-                if len(self.dust) > 10:
-                    wav_dust = self.get_dust_wavelengths()
-                    f = interp1d(self.optical_depth_dust, wav_dust, axis=2, kind='slinear', 
-                                 fill_value='extrapolate')
-                    optical_depth_dust = f(wav_species[i])
-                else:
-                    optical_depth_dust = self.optical_depth_dust.mean(2)
+                # if len(self.dust) > 10:
+                #     wav_dust = self.get_dust_wavelengths()
+                #     f = interp1d(self.optical_depth_dust, wav_dust, axis=2, kind='slinear', 
+                #                  fill_value='extrapolate')
+                #     optical_depth_dust = f(wav_species[i])
+                # else:
+                #     optical_depth_dust = self.optical_depth_dust.mean(2)
+                optical_depth_dust = self.optical_depth_species[:, :, :, i].min(0)
                 optical_depth_temp = self.optical_depth_species[:, :, :, i] - optical_depth_dust
             if integrated:
                 optical_depth.append(np.trapz(optical_depth_temp, self.map_vel, axis=0))
