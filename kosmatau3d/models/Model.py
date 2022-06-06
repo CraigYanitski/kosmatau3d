@@ -40,7 +40,7 @@ class Model(object):
                  ensemble_mass_factor=(1, 1), interclump_hi_ratio=1,
                  interclump_fillingfactor=None, interclumpLogFUV=None, clumpLogFUV=None,
                  hi_mass_factor=1, h2_mass_factor=1, fuv_factor=1, density_factor=1, globalUV=10, 
-                 r_cmz=0, zeta_cmz=1e-14, zeta_sol=2e-16, suggested_calc=True,
+                 r_cmz=0, zeta_cmz=1e-14, zeta_sol=2e-16, new_grid=True, suggested_calc=True,
                  dilled=False, timed=False, verbose=False, debug=False):
       
         if not len(clumpMassRange):
@@ -97,7 +97,7 @@ class Model(object):
         constants.dust = dust
         self.__addSpecies(molecules)
         constants.changeDustWavelengths(constants.dust)
-        if not interpolations.initialised:
+        if not interpolations.initialised or new_grid:
             interpolations.initialise_grid(dilled=dilled)
             constants.average_fuv = average_fuv
             constants.l_range = l_range

@@ -111,15 +111,18 @@ def eTildeImaginary(file='Eimag.dat'):
 def clumpMassProfile(file='mass_profile.dat'):
     # Open file for the mass profile (clump) of the object (Msol/pc**2)
     if constants.directory != '':
-        clumpMass = np.genfromtxt(constants.INPUTPATH+constants.directory+file, names=['radius', 'h2_mass'])
-        observations.clumpMassProfile = (clumpMass['radius']*1000, clumpMass['h2_mass']*constants.voxel_size**2)
+        clumpMass = np.genfromtxt(constants.INPUTPATH+constants.directory+file, 
+                                  names=['radius', 'h2_mass'])
+        observations.clumpMassProfile = (clumpMass['radius']*1000, clumpMass['h2_mass'] *
+                                         constants.voxel_size**2)
     return
 
 
 def interclumpMassProfile(file='mass_profile_inter.dat'):
     # Open file for the mass profile (interclump) of the object (Msol/pc**2)
     if constants.directory != '':
-        interclumpMass = np.genfromtxt(constants.INPUTPATH+constants.directory+file, names=['radius', 'hi_mass'])
+        interclumpMass = np.genfromtxt(constants.INPUTPATH+constants.directory+file, 
+                                       names=['radius', 'hi_mass'])
         observations.interclumpMassProfile = (interclumpMass['radius']*1000, interclumpMass['hi_mass'] *
                                               constants.voxel_size**2)
     return
@@ -128,7 +131,8 @@ def interclumpMassProfile(file='mass_profile_inter.dat'):
 def densityProfile(file='densities_clouds.dat'):
     # Open file for the number density profile of the object (n/cm**3)
     if constants.directory != '':
-        density = np.genfromtxt(constants.INPUTPATH+constants.directory+file, names=['radius', 'h2_density'])
+        density = np.genfromtxt(constants.INPUTPATH+constants.directory+file, 
+                                names=['radius', 'h2_density'])
         observations.densityProfile = ((density['radius']*1000), density['h2_density'])
     return
 
