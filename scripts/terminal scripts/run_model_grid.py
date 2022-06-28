@@ -85,9 +85,24 @@ r_cmz = 0
 models.constants.fuv_ism = 1
 fuv = 1.8
 
-for resolution in [400, 200, 100]:
-    # for f_hi in [0.7, 0.6, 0.5, 0.4, 0.3]:
-    #     for f_uv in 10**np.linspace(1, 2, num=9):
+for resolution in [400]:
+    for f_mass2 in [0.25, 0.5, 1.0, 2.0, 4.0]:
+        for mass_icl in [[0, 2], [0, 3], [-1, 2], [-1, 3]]:
+                    mass_icl_str = '_'.join([str(_) for _ in mass_icl])
+                    #for f_mass1 in [0.25, 0.5, 1.0, 2.0, 4.0]:
+                    #    for mass_cl in [[0, 2], [0, 3], [-1, 2], [-1, 3]]:
+                    #                mass_cl_str = '_'.join([str(_) for _ in mass_cl])
+                    #for f_mass2 in [0.25, 0.5, 1.0, 2.0, 4.0]:
+                    #    for mass_icl in [[0, 2], [0, 3], [-1, 2], [-1, 3]]:
+                    #                mass_icl_str = '_'.join([str(_) for _ in mass_icl])
+                    #for mass_cl in [[0, 2], [0, 3], [-1, 2], [-1, 3]]:
+                    #    for mass_icl in [[-2], [-3, -2], [-3, -1], [-2, -1]]:
+                    #                mass_cl_str = '_'.join([str(_) for _ in mass_cl])
+                    #                mass_icl_str = '_'.join([str(_) for _ in mass_icl])
+                    #for f_uv in 10**np.linspace(0, 2, num=17):
+                    #    for r_cmz in np.arange(0, 1001, 50, dtype=int):
+                    #for f_hi in [0.7, 0.6, 0.5, 0.4, 0.3]:
+                    #    for f_uv in 10**np.linspace(0, 2, num=17):
                     #for f_mass1 in [1.0, 2.0]:
                     #    for f_mass2 in [0.5, 1.0, 2.0, 4.0]:
                     #        for f_density in [0.5, 1.0, 2.0, 4.0]:
@@ -142,7 +157,7 @@ for resolution in [400, 200, 100]:
                     parameters['clumpMassNumber'] = clump_mass_number
                     parameters['clumpLogFUV'] = None
                     parameters['interclumpLogFUV'] = None
-                    parameters['folder'] = f'r{int(resolution)}_convergence/'
+                    parameters['folder'] = f'r{int(resolution)}_ficm{f_mass2}_icm{mass_icl_str}/'
 
                     parameters['hi_mass_factor'] = f_mass1
                     parameters['h2_mass_factor'] = f_mass2
@@ -153,6 +168,7 @@ for resolution in [400, 200, 100]:
                     parameters['r_cmz'] = r_cmz
 
                     parameters['suggested_calc'] = True
+                    parameters['new_grid'] = False
 
 
                     kosma = models.Model(**parameters)
