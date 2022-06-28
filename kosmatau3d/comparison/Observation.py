@@ -152,11 +152,11 @@ class Observation(object):
 
                 self.obs_frequency.append([None])
                 self.obs_wavelength.append([None])
-                self.obs_iid.append(self.obs_header[-1]['TRANSL'])
+                self.obs_iid.append(self.obs_header[-1]['TRANSL'].split(', '))
 
         return
 
-    def get_obs_extent(self, filename=None, idx=None, kind='extent'):
+    def get_obs_extent(self, filename=None, idx=None, kind='extent', verbose=False):
 
         if filename is None and idx is None:
             print('ERROR: Please specify a filename or index')
@@ -166,7 +166,8 @@ class Observation(object):
         else:
             filename = self.files[idx]
         
-        print(filename)
+        if verbose:
+            print(filename)
 
         data = self.obs_data[idx]
 
@@ -174,7 +175,7 @@ class Observation(object):
             lat = copy(self.obs_lat[idx])
             lon = copy(self.obs_lon[idx])
             extent = (lon, lat, None)
-            i_extent = (np.arange(lon), np.array([0]))
+            i_extent = (np.arange(lon.size), np.array([0]))
         elif data.ndim == 2:
             i_nan = np.isnan(data)
             lon = self.obs_lon[idx][~i_nan.all(0)]
@@ -207,7 +208,7 @@ class Observation(object):
             return
 
     def get_intensity(self, filename=None, idx=None, integrated=False, log=False, 
-                      nan=True, trimmed=False):
+                      nan=True, trimmed=False, verbose=False):
         '''
         This method will return the intensity data 
         '''
@@ -220,7 +221,8 @@ class Observation(object):
         else:
             filename = self.files[idx]
         
-        print(filename)
+        if verbose:
+            print(filename)
 
         if integrated and not self.survey in missions_2d:
             data = np.trapz(self.obs_data[idx], self.obs_vel[idx], axis=0)
