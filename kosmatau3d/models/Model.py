@@ -579,8 +579,8 @@ class SyntheticModel(object):
         
         # convert from radians to degrees if specified
         if map_units == 'deg' or map_units == 'degrees':
-            self.map_lon *= 180/np.pi
-            self.map_lat *= 180/np.pi
+            self.map_lon = (self.map_lon * 180/np.pi).round(decimals=8)
+            self.map_lat = (self.map_lat * 180/np.pi).round(decimals=8)
 
         # Extract voxel size from model info
         self.ds = float(self.info[1].split()[1])
