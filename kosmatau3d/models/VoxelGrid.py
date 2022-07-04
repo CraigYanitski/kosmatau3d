@@ -141,13 +141,13 @@ class VoxelGrid(object):
 
         # # Mass (clump mass MH2+(1-f)*MHI, interclump mass f*MHI)
         ensembleMass = [(constants.h2_mass_factor
-                         * interpolations.interpolateClumpMass(rPol)
+                         * interpolations.interpolateClumpMass(rPol, Z)
                          + (1-constants.interclump_hi_ratio) 
                          * constants.hi_mass_factor
-                         * interpolations.interpolateInterclumpMass(rPol)),
+                         * interpolations.interpolateInterclumpMass(rPol, Z)),
                         (constants.interclump_hi_ratio
                          * constants.hi_mass_factor
-                         * interpolations.interpolateInterclumpMass(rPol))]
+                         * interpolations.interpolateInterclumpMass(rPol, Z))]
         ensembleMass = [constants.ensemble_mass_factor[ens]*np.asarray(ensembleMass).mean(1)[ens]
                         for ens in range(constants.ensembles)]
         # Mass (clump mass MH2+MHI, interclump mass determined by voxel size and filling factor)
