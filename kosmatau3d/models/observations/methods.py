@@ -112,9 +112,9 @@ def clumpMassProfile(file='mass_profile.dat'):
     # Open file for the mass profile (clump) of the object (Msol/pc**2)
     if constants.directory != '':
         clumpMass = np.genfromtxt(constants.INPUTPATH+constants.directory+file, 
-                                  names=['radius', 'h2_mass'])
-        observations.clumpMassProfile = (clumpMass['radius']*1000, clumpMass['h2_mass'] *
-                                         constants.voxel_size**2)
+                                  names=['radius', 'h2_mass_density'])
+        observations.clumpMassProfile = (clumpMass['radius']*1000, clumpMass['h2_mass_density'] *
+                                         constants.voxel_size**2*constants.scale_height)
     return
 
 
@@ -122,9 +122,10 @@ def interclumpMassProfile(file='mass_profile_inter.dat'):
     # Open file for the mass profile (interclump) of the object (Msol/pc**2)
     if constants.directory != '':
         interclumpMass = np.genfromtxt(constants.INPUTPATH+constants.directory+file, 
-                                       names=['radius', 'hi_mass'])
-        observations.interclumpMassProfile = (interclumpMass['radius']*1000, interclumpMass['hi_mass'] *
-                                              constants.voxel_size**2)
+                                       names=['radius', 'hi_mass_density'])
+        observations.interclumpMassProfile = (interclumpMass['radius']*1000, 
+                                              interclumpMass['hi_mass_density'] *
+                                              constants.voxel_size**2*constants.scale_height)
     return
 
 
