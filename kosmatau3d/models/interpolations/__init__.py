@@ -208,43 +208,19 @@ def interpolateDensity(radius):
 
 
 def interpolateClumpMass(radius, height):
-    mass = clumpMassInterpolation(radius)
-    height = np.abs(height)
+    mass = clumpMassInterpolation(radius, np.abs(height))
     if (mass < 0).any():
         input('<<ERROR>> clump mass {} at radius {} pc!'.format(mass, radius))
         sys.exit()
-    i_plane = height == 0
-    i_contain = constants.voxel_size >= constants.scale_height
-    i_contain_half = constants.voxel_size >= constants.scale_height / 2
-    if height == 0 and constants.voxel_size >= constants.scale_height:
-        return mass
-    elif height == 0 and constants.voxel_size < constants.scale_height:
-        return constants.voxel_size/constants.scale_height*mass
-    elif (height+constants.voxel_size/2) < constants.scale_height:
-        return constants.voxel_size/constants.scale_height*mass
-    elif (height+constants.voxel_size/2) > constants.scale_height:
-        return (constants.scale_height-(height-constants.voxel_size/2))/constants.scale_height*mass
-    else:
-        return 0
     return mass
 
 
 def interpolateInterclumpMass(radius, height):
-    mass = interclumpMassInterpolation(radius)
-    height = np.abs(height)
+    mass = interclumpMassInterpolation(radius, np.abs(height))
     if (mass < 0).any():
         input('<<ERROR>> interclump mass {} at radius {} pc!'.format(mass, radius))
         sys.exit()
-    if height == 0 and constants.voxel_size >= constants.scale_height:
-        return mass
-    elif height == 0 and constants.voxel_size < constants.scale_height:
-        return constants.voxel_size/constants.scale_height*mass
-    elif (height+constants.voxel_size/2) < constants.scale_height:
-        return constants.voxel_size/constants.scale_height*mass
-    elif (height+constants.voxel_size/2) > constants.scale_height:
-        return (constants.scale_height-(height-constants.voxel_size/2))/constants.scale_height*mass
-    else:
-        return 0
+    return mass
 
 
 def interpolateFUVextinction(density, mass):

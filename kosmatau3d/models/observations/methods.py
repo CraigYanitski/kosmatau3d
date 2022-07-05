@@ -1,6 +1,8 @@
 import warnings
 
 import numpy as np
+import pandas as pd
+
 from numba import jit_module
 from numba.core.errors import NumbaDeprecationWarning, NumbaPendingDeprecationWarning
 
@@ -108,24 +110,60 @@ def eTildeImaginary(file='Eimag.dat'):
 # M O D E L
 
 
-def clumpMassProfile(file='mass_profile.dat'):
+def clumpMassProfile(file='h2_density_profile.dat'):
     # Open file for the mass profile (clump) of the object (Msol/pc**2)
     if constants.directory != '':
-        clumpMass = np.genfromtxt(constants.INPUTPATH+constants.directory+file, 
-                                  names=['radius', 'h2_mass_density'])
-        observations.clumpMassProfile = (clumpMass['radius']*1000, clumpMass['h2_mass_density'] *
-                                         constants.voxel_size**2*constants.scale_height)
+        clumpMass = pd.read_csv(constants.INPUTPATH+constants.directory+file, sep=' ')
+        if constants.voxel_size > 2*constants.scale_height_h2:
+            r = np.hstack((clumpMass['r'] * 1000, clumpMass['r'] * 1000))
+            z = np.hstack((np.zeros_like(clumpMass['r'] * 1000, dtype=float), 
+                           np.full_like(clumpMass['r'] * 1000, constants.voxel_size, dtype=float)))
+            m = np.hstack((clumpMass['n_h2']*2*constants.scale_height_h2,
+                           clumpMass['n_h2']*0))
+        else:
+            n_vox = int(np.ceil((constants.scale_height_h2-constants.voxel_size/2) 
+                                / constants.voxel_size))
+            r = np.hstack(list(clumpMass['r']*1000 for _ in range(n_vox+1)))
+            z = np.hstack(list(np.full_like(clumpMass['r'], _*constants.voxel_size, dtype=float) 
+                               for _ in range(n_vox+1)))
+            m = np.hstack(list(clumpMass['n_h2']*constants.voxel_size if 
+                               (_+0.5)*constants.voxel_size<constants.scale_height_h2 
+                               else 0 if (_-0.5)*constants.voxel_size>constants.scale_height_h2 else 
+                               clumpMass['n_h2']*(constants.scale_height_h2%constants.voxel_size) 
+                               for _ in range(n_vox+1)))
+        observations.clumpMassProfile = pd.DataFrame(data={'R':r, 'Z':z, 
+                                                           'M_h2':m*constants.voxel_size**2})
+        #observations.clumpMassProfile = (clumpMass['radius']*1000, clumpMass['h2_mass_density'] *
+        #                                 constants.voxel_size**2*constants.scale_height)
     return
 
 
-def interclumpMassProfile(file='mass_profile_inter.dat'):
+def interclumpMassProfile(file='hi_density_profile.dat'):
     # Open file for the mass profile (interclump) of the object (Msol/pc**2)
     if constants.directory != '':
-        interclumpMass = np.genfromtxt(constants.INPUTPATH+constants.directory+file, 
-                                       names=['radius', 'hi_mass_density'])
-        observations.interclumpMassProfile = (interclumpMass['radius']*1000, 
-                                              interclumpMass['hi_mass_density'] *
-                                              constants.voxel_size**2*constants.scale_height)
+        interclumpMass = pd.read_csv(constants.INPUTPATH+constants.directory+file, sep=' ')
+        if constants.voxel_size > 2*constants.scale_height_hi:
+            r = np.hstack((interclumpMass['r'] * 1000, interclumpMass['r'] * 1000))
+            z = np.hstack((np.zeros_like(interclumpMass['r'] * 1000, dtype=float), 
+                           np.full_like(interclumpMass['r'] * 1000, constants.voxel_size, dtype=float)))
+            m = np.hstack((interclumpMass['n_hi']*2*constants.scale_height_hi,
+                           interclumpMass['n_hi']*0))
+        else:
+            n_vox = int(np.ceil((constants.scale_height_hi-constants.voxel_size/2) 
+                                / constants.voxel_size))
+            r = np.hstack(list(interclumpMass['r']*1000 for _ in range(n_vox+1)))
+            z = np.hstack(list(np.full_like(interclumpMass['r'], _*constants.voxel_size, dtype=float) 
+                               for _ in range(n_vox+1)))
+            m = np.hstack(list(interclumpMass['n_hi']*constants.voxel_size if 
+                               (_+0.5)*constants.voxel_size<constants.scale_height_hi 
+                               else 0 if (_-0.5)*constants.voxel_size>constants.scale_height_hi else 
+                               interclumpMass['n_hi']*(constants.scale_height_hi%constants.voxel_size) 
+                               for _ in range(n_vox+1)))
+        observations.interclumpMassProfile = pd.DataFrame(data={'R':r, 'Z':z, 
+                                                                'M_hi':m*constants.voxel_size**2})
+        #observations.interclumpMassProfile = (interclumpMass['radius']*1000, 
+        #                                      interclumpMass['hi_mass_density'] *
+        #                                      constants.voxel_size**2*constants.scale_height)
     return
 
 

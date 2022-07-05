@@ -246,9 +246,10 @@ def clumpMassProfile(verbose=False, dilled=False):
             print('Creating clump mass interpolation')
         clumpMass = observations.clumpMassProfile
         if constants.interpolation == 'linear':
-            return interpolate.interp1d(clumpMass[0], clumpMass[1], kind='linear')
+            return interpolate.LinearNDInterpolator(np.array([clumpMass.R, clumpMass.Z]), 
+                                                    clumpMass.M_h2)
         elif constants.interpolation == 'cubic' or constants.interpolation == 'radial':
-            return interpolate.interp1d(clumpMass[0], clumpMass[1], kind='cubic')
+            return interpolate.Rbf(clumpMass.R, clumpMass.Z, clumpMass.M_h2)
         else:
             sys.exit('<<ERROR>>: There is no such method as {} to interpolate '.format(constants.interpolation) +
                      'the KOSMA-tau grid.\n\nExitting...\n\n')
@@ -267,9 +268,10 @@ def interclumpMassProfile(like_clumps=False, verbose=False, dilled=True):
         else:
             interclumpMass = observations.interclumpMassProfile
         if constants.interpolation == 'linear':
-            return interpolate.interp1d(interclumpMass[0], interclumpMass[1], kind='linear')
+            return interpolate.LinearNDInterpolator(np.asarray([interclumpMass.R, interclumpMass.Z]), 
+                                                    interclumpMass.M_hi)
         elif constants.interpolation == 'cubic' or constants.interpolation == 'radial':
-            return interpolate.interp1d(interclumpMass[0], interclumpMass[1], kind='cubic')
+            return interpolate.Rbf(interclumpMass.R, interclumpMass.Z, interclumpMass.M_hi)
         else:
             sys.exit('<<ERROR>>: There is no such method as {} to interpolate '.format(constants.interpolation) +
                      'the KOSMA-tau grid.\n\nExitting...\n\n')
