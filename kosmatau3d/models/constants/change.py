@@ -49,9 +49,9 @@ def change_clump_mass_number(num):
     return
 
 
-def change_clump_mass_range(massRange):
+def change_clump_mass_range(mass_range):
     # This will affect all clump sets, so the `massRange` needs to be a list with length of the number of clump sets.
-    if isinstance(mass_range[0], list) or isinstance(massRange[0], np.ndarray):
+    if isinstance(mass_range[0], list) or isinstance(mass_range[0], np.ndarray):
         constants.clump_log_mass_range = copy(mass_range)
         constants.clump_log_mass = [[] for _ in range(len(mass_range))]
         for i in range(len(mass_range)):
@@ -71,7 +71,7 @@ def add_clumps(mass_range=[], num=0, n_max=1, reset=False):
         constants.clump_n_max = []
         constants.clump_log_mass = []
     if isinstance(mass_range[0], int) or isinstance(mass_range[0], float):
-        massRange = [mass_range]
+        mass_range = [mass_range]
         num = [num]
         n_max = [n_max]
     for i in range(len(num)):
@@ -87,7 +87,7 @@ def add_clumps(mass_range=[], num=0, n_max=1, reset=False):
     return
 
 
-def resetClumps():
+def reset_clumps():
     # This will restore the clump list to its default.
     constants.clump_mass_number = [3, 1]
     constants.clump_log_mass_range = [[0,2], [-2]]

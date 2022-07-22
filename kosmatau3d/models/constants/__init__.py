@@ -129,7 +129,7 @@ interclump_log_fuv = None
 interclump_mass_number = 1
 interclump_log_mass_range = [-2]
 interclump_log_mass = np.linspace(interclump_log_mass_range[0], interclump_log_mass_range[-1], num=interclump_mass_number)
-interclumpLogMass.resize(1, interclump_mass_number)
+interclump_log_mass.resize(1, interclump_mass_number)
 interclump_max_indeces = 0
 interclump_n_max = 100
 
