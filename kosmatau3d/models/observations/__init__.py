@@ -14,16 +14,18 @@ in the folder 'grid'.
 initialised = False
 
 # Grid
-tbCenterline = None
-tauCenterline = None
-rhoMassAFUV = None
-speciesData = None
-eTildeReal = None
-eTildeImaginary = None
+tb_centerline = None
+tau_centerline = None
+rho_mass_taufuv = None
+species_data = None
+e_tilde_real = None
+e_tilde_imaginary = None
 
 # Model
-clumpMassProfile = None
-interclumpMassProfile = None
-densityProfile = None
-FUVfield = None
-rotationProfile = None
+h2_surface_mass_profile = None
+hi_surface_mass_profile = None
+h2_scale_height_profile = None
+hi_scale_height_profile = None
+number_density_profile = None
+fuv_profile = None
+galaxy_rotation_profile = None
