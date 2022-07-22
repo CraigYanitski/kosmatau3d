@@ -22,31 +22,31 @@ warnings.simplefilter('ignore', category=NumbaPendingDeprecationWarning)
 
 
 def initialise_grid(dilled=False):
-    calculateGridInterpolation(dilled=dilled)
-    interpolations.FUVextinctionInterpolation = interpolateFUVextinction(dilled=dilled)
+    calculate_grid_interpolation(dilled=dilled)
+    interpolations.taufuv_interpolation = calculate_taufuv(dilled=dilled)
     interpolations.initialised = True
     return
 
 
 def initialise_model(dilled=False, like_clumps=False, average_fuv=False, l_range=(912, 2066)):
-    interpolations.rotationInterpolation = calculateRotationVelocity(dilled=dilled)
-    interpolations.dispersionInterpolation = 1  # calculateVelocityDispersion(dilled=dilled)
-    interpolations.densityInterpolation = calculateDensity(dilled=dilled)
-    interpolations.clumpMassInterpolation = clumpMassProfile(dilled=dilled)
-    interpolations.interclumpMassInterpolation = interclumpMassProfile(dilled=dilled,
-                                                                       like_clumps=like_clumps)
-    interpolations.FUVfieldInterpolation = interpolateFUVfield(l_range=l_range, 
-                                                               average_fuv=average_fuv, 
-                                                               dilled=dilled)
-    # interpolations.eTildeReal = interpolateETildeReal()
-    # interpolations.eTildeImaginary = interpolateETildeImaginary()
+    interpolations.galaxy_rotation_interpolation = calculate_galaxy_rotation(dilled=dilled)
+    interpolations.velocity_dispersion_interpolation = 1  # calculate_velocity_dispersion(dilled=dilled)
+    interpolations.number_density_interpolation = calculate_number_density(dilled=dilled)
+    interpolations.h2_mass_interpolation = calculate_h2_mass(dilled=dilled)
+    interpolations.hi_mass_interpolation = calculate_hi_mass(dilled=dilled,
+                                                             like_clumps=like_clumps)
+    interpolations.fuv_interpolation = calculate_fuv(l_range=l_range, 
+                                                     average_fuv=average_fuv, 
+                                                     dilled=dilled)
+    # interpolations.e_tilde_real = calculate_e_tilde_real()
+    # interpolations.e_tilde_imaginary = calculate_e_tilde_imaginary()
     return
 
 
 # Grid interpolation
 
 
-def calculateGridInterpolation(verbose=False, dilled=False):
+def calculate_grid_interpolation(verbose=False, dilled=False):
     '''
     This interpolates the needed species from the KOSMA-tau emission grids. It automatically interpolates
     the dust continuum as well, even if there are no molecules specified. This is kept as a separate interpolation
@@ -63,43 +63,45 @@ def calculateGridInterpolation(verbose=False, dilled=False):
         del interpolations.tauInterpolation
         del interpolations.dustIntensityInterpolation
         del interpolations.dustTauInterpolation
-    interpolations.intensityInterpolation = []
-    interpolations.tauInterpolation = []
-    interpolations.dustIntensityInterpolation = []
-    interpolations.dustTauInterpolation = []
+    interpolations.species_intensity_interpolation = []
+    interpolations.species_tau_interpolation = []
+    interpolations.dust_intensity_interpolation = []
+    interpolations.dust_tau_interpolation = []
     if dilled:
         with open(constants.GRIDPATH + 'dilled/intensity_interpolation', 'rb') as file:
-            intensityInterpolation = dill.load(file)
+            species_intensity_interpolation = dill.load(file)
         with open(constants.GRIDPATH + 'dilled/tau_interpolation', 'rb') as file:
-            tauInterpolation = dill.load(file)
+            species_tau_interpolation = dill.load(file)
         with open(constants.GRIDPATH + 'dilled/dust_intensity_interpolation', 'rb') as file:
-            dustIntensityInterpolation = dill.load(file)
+            dust_intensity_interpolation = dill.load(file)
         with open(constants.GRIDPATH + 'dilled/dust_tau_interpolation', 'rb') as file:
-            dustTauInterpolation = dill.load(file)
+            dust_tau_interpolation = dill.load(file)
         # interpolations.intensityInterpolation = []
         # interpolations.tauInterpolation = []
-        if len(species.moleculeIndeces) == len(intensityInterpolation):
-            interpolations.intensityInterpolation = intensityInterpolation
-            interpolations.tauInterpolation = tauInterpolation
+        if len(species.molecule_indeces) == len(species_intensity_interpolation):
+            interpolations.species_intensity_interpolation = intensityInterpolation
+            interpolations.species_tau_interpolation = tauInterpolation
         else:
-            for index in species.moleculeIndeces:
-                interpolations.intensityInterpolation.append(intensityInterpolation[index[0][0]])
-                interpolations.tauInterpolation.append(tauInterpolation[index[0][0]])
+            for index in species.molecule_indeces:
+                interpolations.species_intensity_interpolation.append(
+                        species_intensity_interpolation[index[0][0]])
+                interpolations.species_tau_interpolation.append(species_tau_interpolation[index[0][0]])
         if constants.dust:
-            if np.where(constants.nDust)[0].size == len(dustIntensityInterpolation):
-                interpolations.dustIntensityInterpolation = dustIntensityInterpolation
-                interpolations.dustTauInterpolation = dustTauInterpolation
+            if np.where(constants.n_dust)[0].size == len(dust_intensity_interpolation):
+                interpolations.dust_intensity_interpolation = dust_intensity_interpolation
+                interpolations.dust_tau_interpolation = dust_tau_interpolation
             else:
-                interpolations.dustIntensityInterpolation = []
-                interpolations.dustTauInterpolation = []
+                interpolations.dust_intensity_interpolation = []
+                interpolations.dust_tau_interpolation = []
                 for i in np.where(constants.nDust)[0]:
-                    interpolations.dustIntensityInterpolation.append(copy(dustIntensityInterpolation[i]))
-                    interpolations.dustTauInterpolation.append(copy(dustTauInterpolation[i]))
+                    interpolations.dust_intensity_interpolation.append(
+                            copy(dust_intensity_interpolation[i]))
+                    interpolations.dust_tau_interpolation.append(copy(dust_tau_interpolation[i]))
         return #speciesIntensityInterpolation, speciesTauInterpolation
 
     # indeces = species.molecules.getFileIndeces()
-    crnmuvI, I = observations.tbCenterline
-    crnmuvTau, Tau = observations.tauCenterline
+    crnmuvI, I = observations.tb_centerline
+    crnmuvTau, Tau = observations.tau_centerline
     # interpolations.intensityInterpolation = []
     # interpolations.tauInterpolation = []
     
@@ -111,7 +113,7 @@ def calculateGridInterpolation(verbose=False, dilled=False):
     logI = np.log10(I)
     logTau = np.log10(Tau)
   
-    if constants.logEncoded:
+    if constants.log_encoded:
         # Fully 'encode' the emission grid for interpolation
         logI *= 10
         logTau *= 10
@@ -123,169 +125,250 @@ def calculateGridInterpolation(verbose=False, dilled=False):
   
     if constants.interpolation == 'linear':
         if constants.dust:
-            interpolations.dustIntensityInterpolation = []
-            interpolations.dustTauInterpolation = []
+            interpolations.dust_intensity_interpolation = []
+            interpolations.dust_tau_interpolation = []
             for i in np.where(constants.nDust)[0]:
-                interpolations.dustIntensityInterpolation.append(interpolate.LinearNDInterpolator(crnmuvI,
-                                                                                                  logI[:, constants.moleculeNumber+i]))
-                interpolations.dustTauInterpolation.append(interpolate.LinearNDInterpolator(crnmuvTau,
-                                                                                            logTau[:, constants.moleculeNumber+i]))
-        for index in species.moleculeIndeces:
+                interpolations.dust_intensity_interpolation.append(
+                        interpolate.LinearNDInterpolator(crnmuvI,
+                                                         logI[:, constants.molecule_number+i]))
+                interpolations.dust_tau_interpolation.append(
+                        interpolate.LinearNDInterpolator(crnmuvTau, 
+                                                         logTau[:, constants.molecule_number+i]))
+        for index in species.molecule_indeces:
             if verbose:
                 print('Creating intensity grid interpolation')
             rInterpI = interpolate.LinearNDInterpolator(crnmuvI, logI[:, index])
             if verbose:
                 print('Creating tau grid interpolation')
             rInterpTau = interpolate.LinearNDInterpolator(crnmuvTau, logTau[:, index])
-            interpolations.intensityInterpolation.append(rInterpI)
-            interpolations.tauInterpolation.append(rInterpTau)
+            interpolations.species_intensity_interpolation.append(rInterpI)
+            interpolations.species_tau_interpolation.append(rInterpTau)
         return #intensityInterpolation, tauInterpolation
   
     elif constants.interpolation == 'radial' or constants.interpolation == 'cubic':
         if constants.dust:
-            interpolations.dustIntensityInterpolation = interpolate.Rbf(crnmuvI[:, 0], crnmuvI[:, 1], crnmuvI[:, 2], crnmuvI[:, 3],
-                                                                        logI[:, constants.moleculeNumber:][:, constants.nDust])
-            interpolations.dustTauInterpolation = interpolate.Rbf(crnmuvTau[:, 0], crnmuvTau[:, 1], crnmuvTau[:, 2], crnmuvTau[:, 3], logTau[:, constants.moleculeNumber:][:, constants.nDust])
-        for index in species.moleculeIndeces:
+            interpolations.dust_intensity_interpolation = interpolate.Rbf(
+                    crnmuvI[:, 0], crnmuvI[:, 1], crnmuvI[:, 2], crnmuvI[:, 3], 
+                    logI[:, constants.moleculeNumber:][:, constants.n_dust])
+            interpolations.dust_tau_interpolation = interpolate.Rbf(
+                    crnmuvTau[:, 0], crnmuvTau[:, 1], crnmuvTau[:, 2], crnmuvTau[:, 3], 
+                    logTau[:, constants.moleculeNumber:][:, constants.n_dust])
+        for index in species.molecule_indeces:
             if verbose:
                 print('Creating intensity grid interpolation')
-            rInterpI = interpolate.Rbf(crnmuvI[:, 0], crnmuvI[:, 1], crnmuvI[:, 2], crnmuvI[:, 3], logI[:, index])
+            rInterpI = interpolate.Rbf(
+                    crnmuvI[:, 0], crnmuvI[:, 1], crnmuvI[:, 2], crnmuvI[:, 3], logI[:, index])
             if verbose:
                 print('Creating tau grid interpolation')
-            rInterpTau = interpolate.Rbf(crnmuvTau[:, 0], crnmuvTau[:, 1], crnmuvTau[:, 2], crnmuvTau[:, 3], logTau[:, index])
-            interpolations.intensityInterpolation.append(rInterpI)
-            interpolations.tauInterpolation.append(rInterpTau)
+            rInterpTau = interpolate.Rbf(
+                    crnmuvTau[:, 0], crnmuvTau[:, 1], crnmuvTau[:, 2], crnmuvTau[:, 3], logTau[:, index])
+            interpolations.species_intensity_interpolation.append(rInterpI)
+            interpolations.species_tau_interpolation.append(rInterpTau)
         return #intensityInterpolation, tauInterpolation
       
     else:
-        sys.exit('<<ERROR>>: There is no such method as {} to interpolate the '.format(constants.interpolation) +
+        sys.exit('<<ERROR>>: There is no such method as ' + 
+                 '{} to interpolate the '.format(constants.interpolation) +
                  'KOSMA-tau grid.\n\nExitting...\n\n')
 
 
-def interpolateFUVextinction(verbose=False, dilled=False):
+def calculate_taufuv(verbose=False, dilled=False):
     if dilled:
         with open(constants.GRIDPATH + 'dilled/fuv_extinction_interpolation', 'rb') as file:
             return dill.load(file)
     if verbose:
         print('Creating A_UV grid interpolation')
-    rhomass,AUV = observations.rhoMassAFUV
+    rhomass, taufuv = observations.rho_mass_taufuv
     rhomass /= 10.
-    logAUV = np.log10(AUV)
+    log_taufuv = np.log10(taufuv)
     if constants.interpolation == 'linear':
-        return interpolate.LinearNDInterpolator(rhomass, logAUV)
+        return interpolate.LinearNDInterpolator(rhomass, log_taufuv)
     elif constants.interpolation == 'cubic' or constants.interpolation == 'radial':
-        return interpolate.Rbf(rhomass, logAUV)
+        return interpolate.Rbf(rhomass, log_taufuv)
     else:
-        sys.exit('<<ERROR>>: There is no such method as {} to interpolate '.format(constants.interpolation) +
+        sys.exit('<<ERROR>>: There is no such method as ' + 
+                 '{} to interpolate '.format(constants.interpolation) +
                  'the extinction in the KOSMA-tau grid.\n\nExitting...\n\n')
 
 
 # Model interpolation
 
 
-def calculateRotationVelocity(verbose=False, dilled=False):
+def calculate_galaxy_rotation(verbose=False, dilled=False):
     if constants.directory != '':
         if dilled:
-            with open(constants.INPUTPATH+constants.directory + 'dilled/rotation_interpolation', 'rb') as file:
+            with open(constants.INPUTPATH+constants.directory + 
+                      'dilled/rotation_interpolation', 'rb') as file:
                 return dill.load(file)
         if verbose:
             print('Creating rotation velocity interpolation')
-        rotation = observations.rotationProfile
+        rotation = observations.galaxy_rotation_profile
         if constants.interpolation == 'linear':
             return interpolate.interp1d(rotation[0], rotation[1][:, 0], kind='linear')
         elif constants.interpolation == 'cubic' or constants.interpolation == 'radial':
             return interpolate.interp1d(rotation[0], rotation[1][:, 0], kind='cubic')
         else:
-            sys.exit('<<ERROR>>: There is no such method as {} to interpolate '.format(constants.interpolation) +
+            sys.exit('<<ERROR>>: There is no such method as ' + 
+                     '{} to interpolate '.format(constants.interpolation) +
                      'the velocity profile.\n\nExitting...\n\n')
     return
 
 
-def calculateVelocityDispersion(verbose=False, dilled=False):
+def calculate_velocity_dispersion(verbose=False, dilled=False):
     if constants.directory != '':
         if dilled:
-            with open(constants.INPUTPATH+constants.directory + 'dilled/dispersion_interpolation', 'rb') as file:
+            with open(constants.INPUTPATH+constants.directory + 
+                      'dilled/dispersion_interpolation', 'rb') as file:
                 return dill.load(file)
         if verbose:
             print('Creating velocity dispersion interpolation')
-        rotation = observations.rotationProfile
+        rotation = observations.galaxy_rotation_profile
         if constants.interpolation == 'linear':
             return interpolate.interp1d(rotation[0], rotation[1][:, 1], kind='linear')
         elif constants.interpolation == 'cubic' or constants.interpolation == 'radial':
             return interpolate.interp1d(rotation[0], rotation[1][:, 1], kind='cubic')
         else:
-            sys.exit('<<ERROR>>: There is no such method as {} to interpolate '.format(constants.interpolation) +
+            sys.exit('<<ERROR>>: There is no such method as ' + 
+                     '{} to interpolate '.format(constants.interpolation) +
                      'the velocity profile.\n\nExitting...\n\n')
     return
 
 
-def calculateDensity(verbose=False, dilled=False):
+def calculate_number_density(verbose=False, dilled=False):
     if constants.directory != '':
         if dilled:
-            with open(constants.INPUTPATH+constants.directory * 'dilled/density_interpolation', 'rb') as file:
+            with open(constants.INPUTPATH+constants.directory + 
+                      'dilled/density_interpolation', 'rb') as file:
                 return dill.load(file)
         if verbose:
             print('Creating density interpolation')
-        density = observations.densityProfile
+        density = observations.number_density_profile
         if constants.interpolation == 'linear':
             return interpolate.interp1d(density[0], density[1], kind='linear')
         elif constants.interpolation == 'cubic' or constants.interpolation == 'radial':
             return interpolate.interp1d(density[0], density[1], kind='cubic')
         else:
-            sys.exit('<<ERROR>>: There is no such method as {} to interpolate '.format(constants.interpolation) +
+            sys.exit('<<ERROR>>: There is no such method as ' + 
+                     '{} to interpolate '.format(constants.interpolation) +
                      'the KOSMA-tau grid.\n\nExitting...\n\n')
     return
 
 
-def clumpMassProfile(verbose=False, dilled=False):
+def calculate_h2_mass(verbose=False, dilled=False):
     if constants.directory != '':
         if dilled:
-            with open(constants.INPUTPATH+constants.directory + 'dilled/clump_mass_interpolation', 'rb') as file:
+            with open(constants.INPUTPATH+constants.directory + 
+                      'dilled/h2_mass_interpolation', 'rb') as file:
                 return dill.load(file)
         if verbose:
             print('Creating clump mass interpolation')
-        clumpMass = observations.clumpMassProfile
-        if constants.interpolation == 'linear':
-            return interpolate.LinearNDInterpolator(np.array([clumpMass.R, clumpMass.Z]), 
-                                                    clumpMass.M_h2)
-        elif constants.interpolation == 'cubic' or constants.interpolation == 'radial':
-            return interpolate.Rbf(clumpMass.R, clumpMass.Z, clumpMass.M_h2)
-        else:
-            sys.exit('<<ERROR>>: There is no such method as {} to interpolate '.format(constants.interpolation) +
-                     'the KOSMA-tau grid.\n\nExitting...\n\n')
+        r_s, sigma_h2 = observations.h2_surface_mass_profile
+        f_sigma = interpolate.interp1d(r_s, sigma_h2, kind='quadratic', 
+                                       fill_value=(sigma_h2[0], sigma_h2[-1]))
+        r_h, h_h2 = observations.h2_scale_height_profile
+        f_h = interpolate.interp1d(r_h, h_h2, kind='linear', 
+                                   fill_value='extrapolate')
+        r_new = np.linspace(0, constants.rgal, num=100)*1000
+        half_height = np.sqrt(2*np.log(2))*f_h(r_new)
+        rho_0 = f_sigma(r_new)/2/half_height
+        i_partial = constants.voxel_size >= 2*half_height
+        i_full = constants.voxel_size < 2*half_height
+        n_z = np.ceil(half_height/constants.voxel_size*10).astype(int)
+        r_mass = np.hstack(list(r_new for _ in range(n_z+1)))
+        z_mass = np.hstack(list(np.full_like(r_new, _*0.1*constants.voxel_size, dtype=float) 
+                                for _ in range(n_z+1)))
+        m_mass = list(np.zeros_like(r_new, dtype=float) for _ in range(n_z+1))
+        for _ in range(n_z+1):
+            lim_l = (_*0.1-0.5)*constants.voxel_size
+            lim_u = (_*0.1+0.5)*constants.voxel_size
+            i_full = (lim_l>=-half_height) & (lim_u<=half_height)
+            i_partial = (lim_l>=-half_height) & (lim_u>half_height)
+            i_all = (lim_l<-half_height) & (lim_u>half_height)
+            m_mass[_][i_full] = rho_0[i_full] * constants.voxel_size**3
+            m_mass[_][i_partial] = rho_0[i_partial] * constants.voxel_size**2 * (half_height-lim_l)
+            m_mass[_][i_all] = rho_0[i_all] * constants.voxel_size**2 * 2*half_height
+        interpolations.h2_mass_full = pd.DataFrame(data={'r':r_mass, 
+                                                         'z':z_mass, 
+                                                         'M':np.hstack(m_mass)})
+        return interpolate.LinearNDInterpolator(np.array(interpolations.h2_mass_full.r, 
+                                                         interpolations.h2_mass_full.z),
+                                                interpolations.h2_mass_full.M)
+        # if constants.interpolation == 'linear':
+        #     return interpolate.LinearNDInterpolator(np.array([clumpMass.R, clumpMass.Z]), 
+        #                                             clumpMass.M_h2)
+        # elif constants.interpolation == 'cubic' or constants.interpolation == 'radial':
+        #     return interpolate.Rbf(clumpMass.R, clumpMass.Z, clumpMass.M_h2)
+        # else:
+        #     sys.exit('<<ERROR>>: There is no such method as ' + 
+        #              '{} to interpolate '.format(constants.interpolation) +
+        #              'the KOSMA-tau grid.\n\nExitting...\n\n')
     return
 
 
-def interclumpMassProfile(like_clumps=False, verbose=False, dilled=True):
+def calculate_hi_mass(like_clumps=False, verbose=False, dilled=True):
     if constants.directory != '':
         if dilled:
-            with open(constants.INPUTPATH+constants.directory + 'dilled/interclump_mass_interpolation', 'rb') as file:
+            with open(constants.INPUTPATH+constants.directory + 
+                      'dilled/hi_mass_interpolation', 'rb') as file:
                 return dill.load(file)
         if verbose:
             print('Creating interclump mass interpolation')
         if like_clumps:
-            interclumpMass = observations.clumpMassProfile
+            r_s, sigma_hi = observations.h2_surface_mass_profile
+            r_h, h_hi = observations.h2_scale_height_profile
         else:
-            interclumpMass = observations.interclumpMassProfile
-        if constants.interpolation == 'linear':
-            return interpolate.LinearNDInterpolator(np.asarray([interclumpMass.R, interclumpMass.Z]), 
-                                                    interclumpMass.M_hi)
-        elif constants.interpolation == 'cubic' or constants.interpolation == 'radial':
-            return interpolate.Rbf(interclumpMass.R, interclumpMass.Z, interclumpMass.M_hi)
-        else:
-            sys.exit('<<ERROR>>: There is no such method as {} to interpolate '.format(constants.interpolation) +
-                     'the KOSMA-tau grid.\n\nExitting...\n\n')
+            r_s, sigma_hi = observations.hi_surface_mass_profile
+            r_h, h_hi = observations.hi_scale_height_profile
+        f_sigma = interpolate.interp1d(r_s, sigma_hi, kind='quadratic', 
+                                       fill_value=(sigma_hi[0], sigma_hi[-1]))
+        f_h = interpolate.interp1d(r_h, h_hi, kind='linear', 
+                                   fill_value='extrapolate')
+        r_new = np.linspace(0, constants.rgal, num=100)*1000
+        half_height = np.sqrt(2*np.log(2))*f_h(r_new)
+        rho_0 = f_sigma(r_new)/2/half_height
+        i_partial = constants.voxel_size >= 2*half_height
+        i_full = constants.voxel_size < 2*half_height
+        n_z = np.ceil(half_height/constants.voxel_size*10).astype(int)
+        r_mass = np.hstack(list(r_new for _ in range(n_z+1)))
+        z_mass = np.hstack(list(np.full_like(r_new, _*0.1*constants.voxel_size, dtype=float) 
+                                for _ in range(n_z+1)))
+        m_mass = list(np.zeros_like(r_new, dtype=float) for _ in range(n_z+1))
+        for _ in range(n_z+1):
+            lim_l = (_*0.1-0.5)*constants.voxel_size
+            lim_u = (_*0.1+0.5)*constants.voxel_size
+            i_full = (lim_l>=-half_height) & (lim_u<=half_height)
+            i_partial = (lim_l>=-half_height) & (lim_u>half_height)
+            i_all = (lim_l<-half_height) & (lim_u>half_height)
+            m_mass[_][i_full] = rho_0[i_full] * constants.voxel_size**3
+            m_mass[_][i_partial] = rho_0[i_partial] * constants.voxel_size**2 * (half_height-lim_l)
+            m_mass[_][i_all] = rho_0[i_all] * constants.voxel_size**2 * 2*half_height
+        interpolations.hi_mass_full = pd.DataFrame(data={'r':r_mass, 
+                                                         'z':z_mass, 
+                                                         'M':np.hstack(m_mass)})
+        return interpolate.LinearNDInterpolator(np.array(interpolations.hi_mass_full.r, 
+                                                         interpolations.hi_mass_full.z),
+                                                interpolations.hi_mass_full.M)
+        # if constants.interpolation == 'linear':
+        #     return interpolate.LinearNDInterpolator(np.asarray([interclumpMass.R, interclumpMass.Z]), 
+        #                                             interclumpMass.M_hi)
+        # elif constants.interpolation == 'cubic' or constants.interpolation == 'radial':
+        #     return interpolate.Rbf(interclumpMass.R, interclumpMass.Z, interclumpMass.M_hi)
+        # else:
+        #     sys.exit('<<ERROR>>: There is no such method as ' + 
+        #              '{} to interpolate '.format(constants.interpolation) +
+        #              'the KOSMA-tau grid.\n\nExitting...\n\n')
     return
 
 
-def interpolateFUVfield(l_range=(912, 2066), average_fuv=False, verbose=False, dilled=False):
+def calculate_fuv(l_range=(912, 2066), average_fuv=False, verbose=False, dilled=False):
     if constants.directory != '':
         if dilled:
-            with open(constants.INPUTPATH+constants.directory + 'dilled/fuv_field_interpolation', 'rb') as file:
+            with open(constants.INPUTPATH+constants.directory + 
+                      'dilled/fuv_field_interpolation', 'rb') as file:
                 return dill.load(file)
         if verbose:
             print('Creating FUV interpolation')
-        fuv = observations.FUVfield
+        fuv = observations.fuv_profile
         lam = np.array([912, 1350, 1500, 1650, 2000, 2200, 2500, 2800, 3650])
         wav = np.linspace(l_range[0], l_range[1], num=1000)
         f = interpolate.interp1d(lam, fuv[2], axis=1)
@@ -297,17 +380,20 @@ def interpolateFUVfield(l_range=(912, 2066), average_fuv=False, verbose=False, d
         elif constants.interpolation == 'cubic' or constants.interpolation == 'radial':
             return interpolate.Rbf(fuv[0][:, 0], fuv[0][:, 1], np.trapz(f(wav), wav))
         else:
-            sys.exit('<<ERROR>>: There is no such method as {} to interpolate '.format(constants.interpolation) +
+            sys.exit('<<ERROR>>: There is no such method as ' + 
+                     '{} to interpolate '.format(constants.interpolation) +
                      'the KOSMA-tau grid.\n\nExitting...\n\n')
     return
 
 
-def interpolateETildeReal():
-    return interpolate.interp1d(observations.eTildeReal[0], observations.eTildeReal[1], kind='linear')
+def calculate_e_tilde_real():
+    return interpolate.interp1d(observations.e_tilde_real[0], observations.e_tilde_real[1], 
+                                kind='linear')
 
 
-def interpolateETildeImaginary():
-    return interpolate.interp1d(observations.eTildeImaginary[0], observations.eTildeImaginary[1], kind='linear')
+def calculate_e_tilde_imaginary():
+    return interpolate.interp1d(observations.e_tilde_imaginary[0], observations.e_tilde_imaginary[1], 
+                                kind='linear')
 
 
 # jit_module(nopython=False)

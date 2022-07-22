@@ -23,39 +23,39 @@ warnings.simplefilter('ignore', category=NumbaPendingDeprecationWarning)
 
 
 initialised = False
-intensityInterpolation = None
-tauInterpolation = None
-dustIntensityInterpolation = None
-dustTauInterpolation = None
-rotationInterpolation = None
-dispersionInterpolation = None
-densityInterpolation = None
-clumpMassInterpolation = None
-interclumpMassInterpolation = None
-FUVextinctionInterpolation = None
-FUVfieldInterpolation = None
-eTildeReal = None
-eTildeImaginary = None
+species_intensity_interpolation = None
+species_tau_interpolation = None
+dust_intensity_interpolation = None
+dust_tau_interpolation = None
+galaxy_rotation_interpolation = None
+velocity_dispersion_interpolation = None
+number_density_interpolation = None
+h2_mass_interpolation = None
+hi_mass_interpolation = None
+taufuv_interpolation = None
+fuv_interpolation = None
+e_tilde_real = None
+e_tilde_imaginary = None
 
 
 def reset():
-    intensityInterpolation = None
-    tauInterpolation = None
-    dustIntensityInterpolation = None
-    dustTauInterpolation = None
-    rotationInterpolation = None
-    dispersionInterpolation = None
-    densityInterpolation = None
-    clumpMassInterpolation = None
-    interclumpMassInterpolation = None
-    FUVextinctionInterpolation = None
-    FUVfieldInterpolation = None
-    eTildeReal = None
-    eTildeImaginary = None
+    species_intensity_interpolation = None
+    species_tau_interpolation = None
+    dust_intensity_interpolation = None
+    dust_tau_interpolation = None
+    galaxy_rotation_interpolation = None
+    velocity_dispersion_interpolation = None
+    number_density_interpolation = None
+    h2_mass_interpolation = None
+    hi_mass_interpolation = None
+    taufuv_interpolation = None
+    fuv_interpolation = None
+    e_tilde_real = None
+    e_tilde_imaginary = None
     return
 
 
-def interpolateIntensity(points, verbose=False):
+def interpolate_species_intensity(points, verbose=False):
     '''
     This is converted from brightness temperature to Jansky units.
     '''
@@ -69,15 +69,15 @@ def interpolateIntensity(points, verbose=False):
         for i, index in enumerate(species.moleculeIndeces):
             if constants.logEncoded:
                 if constants.interpolation == 'linear':
-                    intensity[i] = (10**(intensityInterpolation[i](points)/10))
+                    intensity[i] = (10**(species_intensity_interpolation[i](points)/10))
                 elif constants.interpolation == 'radial' or interpolation == 'cubic':
-                    intensity[i] = (10**(intensityInterpolation[i](points[0], points[1], points[2], points[3])/10))
+                    intensity[i] = (10**(species_intensity_interpolation[i](points[0], points[1], points[2], points[3])/10))
             
             else:
                 if constants.interpolation == 'linear':
-                    intensity[i] = (10**intensityInterpolation[i](points))
+                    intensity[i] = (10**species_intensity_interpolation[i](points))
                 elif constants.interpolation == 'radial' or interpolation == 'cubic':
-                    intensity[i] = (10**intensityInterpolation[i](points[0], points[1], points[2], points[3]))
+                    intensity[i] = (10**species_intensity_interpolation[i](points[0], points[1], points[2], points[3]))
             # if (np.isnan(intensity[i]) or intensity[i]==0):
             #   intensity[i] = 10**-100
             # intensity[i] *= 2*constants.kB/4/np.pi/species.moleculeWavelengths[i]**2/10**-26
@@ -91,7 +91,7 @@ def interpolateIntensity(points, verbose=False):
     #   intensity = 0
 
 
-def interpolateTau(points, verbose=False):
+def interpolate_species_tau(points, verbose=False):
     # Fully 'encode' the interpolation points to the fortran standard
     if constants.logEncoded:
         points = np.asarray(points)*10
@@ -99,18 +99,18 @@ def interpolateTau(points, verbose=False):
     # points = np.log10(points)
     if len(species.molecules):
         tau = np.zeros(len(species.molecules))
-        for i, index in enumerate(species.moleculeIndeces):
+        for i, index in enumerate(species.molecule_indeces):
             if constants.logEncoded:
                 if constants.interpolation == 'linear':
-                    tau[i] = (10**(tauInterpolation[i](points)/10))
+                    tau[i] = (10**(species_tau_interpolation[i](points)/10))
                 elif constants.interpolation == 'radial' or interpolation == 'cubic':
-                    tau[i] = (10**(tauInterpolation[i](points[0], points[1], points[2], points[3])/10))
+                    tau[i] = (10**(species_tau_interpolation[i](points[0], points[1], points[2], points[3])/10))
             
             else:
                 if constants.interpolation == 'linear':
-                    tau[i] = (10**tauInterpolation[i](points))
+                    tau[i] = (10**species_tau_interpolation[i](points))
                 elif constants.interpolation == 'radial' or interpolation == 'cubic':
-                    tau[i] = (10**tauInterpolation[i](points[0], points[1], points[2], points[3]))
+                    tau[i] = (10**species_tau_interpolation[i](points[0], points[1], points[2], points[3]))
             # if np.isnan(tau[i]): tau[i] = 10**-100
             if (tau[i] <= 0):
                 # temp = tau[-1]
@@ -127,7 +127,7 @@ def interpolateTau(points, verbose=False):
     #   tau = 0
 
 
-def interpolateDustIntensity(points, verbose=False):
+def interpolate_dust_intensity(points, verbose=False):
     '''
     This will calculate the intensity in Jansky units.
     '''
@@ -137,20 +137,20 @@ def interpolateDustIntensity(points, verbose=False):
   
         if constants.interpolation == 'linear':
             intensity = []
-            for dust in dustIntensityInterpolation:
+            for dust in dust_intensity_interpolation:
                 intensity.append(10**(dust(points)[0]/10))
         
         elif constants.interpolation == 'radial' or interpolation == 'cubic':
-            intensity = (10**(dustIntensityInterpolation(points[0], points[1], points[2], points[3])/10))
+            intensity = (10**(dust_intensity_interpolation(points[0], points[1], points[2], points[3])/10))
     
     else:
         if constants.interpolation == 'linear':
             intensity = []
-            for dust in dustIntensityInterpolation:
+            for dust in dust_intensity_interpolation:
                 intensity.append(10**(dust(points)[0]))
     
         elif constants.interpolation == 'radial' or interpolation == 'cubic':
-            intensity = (10**dustIntensityInterpolation(points[0], points[1], points[2], points[3]))
+            intensity = (10**dust_intensity_interpolation(points[0], points[1], points[2], points[3]))
     
     # Convert specific flux Jansky units to brightness temperature Kelvin units
     intensity = np.asarray(intensity) * 10**-26 * constants.wavelengths[constants.nDust]**2/2/constants.kB
@@ -158,27 +158,27 @@ def interpolateDustIntensity(points, verbose=False):
     return intensity
 
 
-def interpolateDustTau(points, verbose=False):
+def interpolate_dust_tau(points, verbose=False):
     # Fully 'encode' the interpolation points to the fortran standard
     if constants.logEncoded:
         points = np.asarray(points)*10
         
         if constants.interpolation == 'linear':
             tau = []
-            for dust in dustTauInterpolation:
+            for dust in dust_tau_interpolation:
                 tau.append(10**(dust(points)[0]/10))
   
         elif constants.interpolation == 'radial' or interpolation == 'cubic':
-            tau = (10**(dustTauInterpolation(points[0], points[1], points[2], points[3])/10))
+            tau = (10**(dust_tau_interpolation(points[0], points[1], points[2], points[3])/10))
     
     else:
         if constants.interpolation == 'linear':
             tau = []
-            for dust in dustTauInterpolation:
+            for dust in dust_tau_interpolation:
                 tau.append(10**(dust(points)[0]))
     
         elif constants.interpolation == 'radial' or interpolation == 'cubic':
-            tau = (10**dustTauInterpolation(points[0], points[1], points[2], points[3]))
+            tau = (10**dust_tau_interpolation(points[0], points[1], points[2], points[3]))
     # if np.isnan(tau[-1]): tau[-1] = 10**-100
     # elif tau[-1]<=0:
     #   temp = tau[-1]
@@ -191,55 +191,59 @@ def interpolateDustTau(points, verbose=False):
     return tau
 
 
-def interpolateRotationalVelocity(radius):
-    return rotationInterpolation(radius)
+def interpolate_galaxy_rotational(radius):
+    return galaxy_rotation_interpolation(radius)
 
 
-def interpolateVelocityDispersion(radius):
-    return dispersionInterpolation(radius)
+def interpolate_velocity_dispersion(radius):
+    return dispersion_interpolation(radius)
 
 
-def interpolateDensity(radius):
-    density = densityInterpolation(radius)
+def interpolate_number_density(radius):
+    density = number_density_interpolation(radius)
     if (density < 0).any():
         input('<<ERROR>> density {} at radius {} pc!'.format(density, radius))
         sys.exit()
     return density
 
 
-def interpolateClumpMass(radius, height):
-    mass = clumpMassInterpolation(radius, np.abs(height))
+def interpolate_h2_mass(radius, height):
+    mass = h2_mass_interpolation(radius, np.abs(height))
     if (mass < 0).any():
         input('<<ERROR>> clump mass {} at radius {} pc!'.format(mass, radius))
         sys.exit()
     return mass
 
 
-def interpolateInterclumpMass(radius, height):
-    mass = interclumpMassInterpolation(radius, np.abs(height))
+def interpolate_hi_mass(radius, height):
+    mass = hi_mass_interpolation(radius, np.abs(height))
     if (mass < 0).any():
         input('<<ERROR>> interclump mass {} at radius {} pc!'.format(mass, radius))
         sys.exit()
     return mass
 
 
-def interpolateFUVextinction(density, mass):
-    return 10**FUVextinctionInterpolation(density, mass)
+def interpolate_taufuv(density, mass):
+    return 10**taufuv_interpolation(density, mass)
 
 
-def interpolateFUVfield(radius, height):
-    return FUVfieldInterpolation(radius, abs(height))
+def interpolate_fuv(radius, height):
+    return fuv_interpolation(radius, abs(height))
 
 
 def __str__():
     return 'Available Interpolations:\n ' \
-           '-Clump intensity\n ' \
-           '-Clump optical depth\n ' \
-           '-Clump mass (galactic)\n ' \
-           '-Clump density (galactic)\n ' \
+           '-H2 intensity\n ' \
+           '-H2 optical depth\n ' \
+           '-H2 mass (galactic)\n ' \
+           '-H2 density (galactic)\n ' \
+           '-HI intensity\n ' \
+           '-HI optical depth\n ' \
+           '-HI mass (galactic)\n ' \
+           '-HI density (galactic)\n ' \
            '-Voxel rotation (galactic)\n ' \
-           '-UV extinction\n ' \
-           '-FUV field (galactic)'
+           '-FUV extinction\n ' \
+           '-FUV radiation (galactic)'
 
 
 # jit_module(nopython=False)
