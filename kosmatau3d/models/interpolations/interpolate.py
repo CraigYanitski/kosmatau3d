@@ -2,6 +2,7 @@ import sys
 import importlib as il
 
 import numpy as np
+import pandas as pd
 import scipy.interpolate as interpolate
 import dill
 import warnings
@@ -79,8 +80,8 @@ def calculate_grid_interpolation(verbose=False, dilled=False):
         # interpolations.intensityInterpolation = []
         # interpolations.tauInterpolation = []
         if len(species.molecule_indeces) == len(species_intensity_interpolation):
-            interpolations.species_intensity_interpolation = intensityInterpolation
-            interpolations.species_tau_interpolation = tauInterpolation
+            interpolations.species_intensity_interpolation = species_intensity_interpolation
+            interpolations.species_tau_interpolation = species_tau_interpolation
         else:
             for index in species.molecule_indeces:
                 interpolations.species_intensity_interpolation.append(
