@@ -5,6 +5,6 @@ from kosmatau3d.models import observations
 
 
 molecules = []
-moleculeIndeces = []
-moleculeFrequencies = []
-moleculeWavelengths = []
+molecule_indeces = []
+molecule_frequencies = []
+molecule_wavelengths = []

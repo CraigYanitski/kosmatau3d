@@ -18,9 +18,9 @@ def addMolecules(molecules):
         molecules = constants.molecules
   
     species.molecules = []
-    species.moleculeIndeces = []
-    species.moleculeFrequencies = []
-    species.moleculeWavelengths = []
+    species.molecule_indeces = []
+    species.molecule_frequencies = []
+    species.molecule_wavelengths = []
   
     for molecule in molecules:
   
@@ -29,7 +29,7 @@ def addMolecules(molecules):
     
         elif molecule in constants.molecules:
             species.molecules.append(molecule)
-            species.moleculeIndeces.append(np.where(constants.molecules == molecule))
+            species.molecule_indeces.append(np.where(constants.molecules == molecule))
       
             if molecule.split()[0] == '13CO':
                 file = open(constants.MOLECULARPATH+'C13O16.INP').readlines()
@@ -51,8 +51,8 @@ def addMolecules(molecules):
             transition = file[1+int(info[0])+int(molecule.split(' ')[1])].split()[:2]
             nINI = levels == transition[0]
             nFIN = levels == transition[1]
-            species.moleculeFrequencies.append((2.99792458*10**10*(energies[nINI]-energies[nFIN]))[0])
-            species.moleculeWavelengths.append((1./100/(energies[nINI]-energies[nFIN]))[0])
+            species.molecule_frequencies.append((2.99792458*10**10*(energies[nINI]-energies[nFIN]))[0])
+            species.molecule_wavelengths.append((1./100/(energies[nINI]-energies[nFIN]))[0])
     
             # interpolations.initialise()
     
@@ -63,7 +63,7 @@ def addMolecules(molecules):
     return
 
 
-def speciesIndeces(molecules=[]):
+def species_indeces(molecules=[]):
 
     if isinstance(molecules, str):
         molecules = [molecules]
@@ -81,7 +81,7 @@ def speciesIndeces(molecules=[]):
             if len(i) == 0:
                 mol = mol.split()
                 if mol[0] == 'dust':
-                    i = np.where(constants.dustNames == mol[1])[0]
+                    i = np.where(constants.dust_names == mol[1])[0]
                     if len(i) == 0:
                         print('Dust wavelength {} not found.'.format(mol))
                         continue
@@ -90,6 +90,6 @@ def speciesIndeces(molecules=[]):
                     print('Species transition {} not found.'.format(mol))
                     continue
             else:
-                indeces.append(constants.wavelengths[constants.nDust].size+i[0])
+                indeces.append(constants.wavelengths[constants.n_dust].size+i[0])
   
     return indeces
