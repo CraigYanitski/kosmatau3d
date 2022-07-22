@@ -60,9 +60,9 @@ zeta_sol = 2e-16
 fuv_ism = 1
 
 # Grid boundaries
-densityLimits = [3, 7]
-massLimits = [-3, 3]
-uvLimits = [0, 6]
+density_limits = [3, 7]
+mass_limits = [-3, 3]
+uv_limits = [0, 6]
 
 # UV adjustment
 u_draine0 = 8.93717e-14  # erg/cm^-3 #2.89433*10**39 # erg/pc^3 #
@@ -70,8 +70,8 @@ u_draine0 = 8.93717e-14  # erg/cm^-3 #2.89433*10**39 # erg/pc^3 #
 # globalUV = 10  # no longer used..
 
 # Standard constants
-massH = 1.007276466812*1.6605*10**-27  # in [kg]
-massSolar = 1.98852*10**30  # in [kg]
+mass_h = 1.007276466812*1.6605*10**-27  # in [kg]
+mass_solar = 1.98852*10**30  # in [kg]
 pc = 3.08567758149*10**16  # in [m]
 
 h = 6.62606957*10**-34  # in [J s]
@@ -79,114 +79,114 @@ c = 2.99792458*10**8  # in [m/s]
 kB = 1.3806488*10**-23  # in [J/K]
 
 # For observing the Milky Way from Earth (for use in a 3D model)
-fromEarth = True
-rGalEarth = 8178  # from Abuter and the GRAVITY collaboration (2019)
-rGal = 18000
+from_earth = True
+rgal_earth = 8178  # from Abuter and the GRAVITY collaboration (2019)
+rgal = 18000
 scale_height_h2 = 70
 scale_height_hi = 86
 hd = 1000
 
 # Integrated map properties
-mapShape = (150, 100)  # shape in pixels of the desired map
-mapSize = (360, 180)  # size in degrees of the desired map
-mapCenter = (0, 0)  # center of the desired map in degrees
+map_shape = (150, 100)  # shape in pixels of the desired map
+map_size = (360, 180)  # size in degrees of the desired map
+map_center = (0, 0)  # center of the desired map in degrees
 
 # Model species
 molecules = []
-moleculeNumber = 0
+molecule_number = 0
 dust = 'all'
 
 # Model characteristics
 n_sigma = 3
 velocity_resolution = 3
 voxel_size = 1000
-velocityNumber = 1000
-velocityBin = [-300, 300]
-velocityRange = np.linspace(velocityBin[0], velocityBin[-1], num=velocityNumber)
-velocityStep = velocityRange[1] - velocityRange[0]
+velocity_number = 1000
+velocity_bin = [-300, 300]
+velocity_range = np.linspace(velocity_bin[0], velocity_bin[-1], num=velocity_number)
+velocity_step = velocity_range[1] - velocity_range[0]
 
 # Clump characteristics
-clumpDispersion = 1.67/2.3548  # conversion from Gaussian FWHM to velocity dispersion (2.3548 = 2*sqrt(2*ln2))
+clump_dispersion = 1.67/2.3548  # conversion from Gaussian FWHM to velocity dispersion (2.3548 = 2*sqrt(2*ln2))
 
 ensembles = 2
-clumpMassNumber = [3, 1]
-clumpLogMassRange = [[0, 2], [-2]]
-clumpLogMass = [np.resize(np.linspace(clumpLogMassRange[i][0],
-                                      clumpLogMassRange[i][-1],
-                                      num=clumpMassNumber[i]),
-                          (1, clumpMassNumber[i])) for i in range(len(clumpMassNumber))]
-# clumpLogMass[0].resize(1,clumpMassNumber[0])
-clumpMaxIndeces = [0, 0]
-clumpNmax = [1, 100]
+clump_mass_number = [3, 1]
+clump_log_mass_range = [[0, 2], [-2]]
+clump_log_mass = [np.resize(np.linspace(clump_log_mass_range[i][0],
+                                        clump_log_mass_range[i][-1],
+                                        num=clump_mass_number[i]),
+                          (1, clump_mass_number[i])) for i in range(len(clump_mass_number))]
+# clumpLogMass[0].resize(1,clump_mass_number[0])
+clump_max_indeces = [0, 0]
+clump_n_max = [1, 100]
 clump_fillingfactor = None
-clumpDensity = [None, 1911]  # use None to take the voxel density
-clumpLogFUV = None
+clump_density = [None, 1911]  # use None to take the voxel density
+clump_log_fuv = None
 
 interclump_hifactor = 1
 interclump_fillingfactor = None
-interclumpDensity = 1911  # as defined in the old version of this code
-interclumpLogFUV = None
-interclumpMassNumber = 1
-interclumpLogMassRange = [-2]
-interclumpLogMass = np.linspace(interclumpLogMassRange[0], interclumpLogMassRange[-1], num=interclumpMassNumber)
-interclumpLogMass.resize(1, interclumpMassNumber)
-interclumpMaxIndeces = 0
-interclumpNmax = 100
+interclump_density = 1911  # as defined in the old version of this code
+interclump_log_fuv = None
+interclump_mass_number = 1
+interclump_log_mass_range = [-2]
+interclump_log_mass = np.linspace(interclump_log_mass_range[0], interclump_log_mass_range[-1], num=interclump_mass_number)
+interclumpLogMass.resize(1, interclump_mass_number)
+interclump_max_indeces = 0
+interclump_n_max = 100
 
-ensembleDispersion = 10./2.3548
+ensemble_dispersion = 10./2.3548
 
 # Initial mass function parameters (Heithausen et al. (1998))
 alpha = 1.84
 gamma = 2.31
 
 # Statistics
-scipyProbability = True
+scipy_probability = True
 gauss = False
 probability = 'binomial'
-nGauss = 1000
-pnGauss = 5
+n_gauss = 1000
+pn_gauss = 5
 
 # Interpolation
-logEncoded = True
+log_encoded = True
 
 # Finally, these are the wavelengths at which the dust emission will be computed
-dustNames = np.array(['3.1mm', '2.4mm', '1.8mm', '1.3mm', '1.0mm', '850um', '700um', '550um', '420um', '300um',
-                      '240um', '188.4um', '177.8um', '167.9um', '158.5um', '149.6um', '141.3um', '133.4um', '125.9um',
-                      '118.9um', '112.2um', '105.9um', '100.0um', '94.41um', '89.13um', '84.14um', '79.43um', '74.99um',
-                      '70.79um', '66.83um', '63.1um', '59.57um', '56.23um', '53.09um', '50.12um', '47.32um', '44.67um',
-                      '44.28um', '42.75um', '41.33um', '39.99um', '38.74um', '37.57um', '36.47um', '35.42um', '34.44um',
-                      '33.51um', '32.63um', '31.79um', '31.um', '30.24um', '29.52um', '28.83um', '28.18um', '27.55um',
-                      '26.95um', '26.38um', '25.83um', '25.3um', '24.8um', '24.31um', '23.84um', '23.39um', '22.96um',
-                      '22.54um', '22.14um', '21.75um', '21.38um', '21.01um', '20.66um', '20.32um', '20.um', '19.68um',
-                      '19.37um', '19.07um', '18.79um', '18.5um', '18.23um', '17.97um', '17.71um', '17.46um', '17.22um',
-                      '16.98um', '16.75um', '16.53um', '16.31um', '16.1um', '15.89um', '15.69um', '15.5um', '15.31um',
-                      '15.12um', '14.94um', '14.42um', '13.93um', '13.78um', '13.62um', '13.48um', '13.33um', '13.19um',
-                      '13.05um', '12.91um', '12.78um', '12.65um', '12.52um', '12.4um', '12.28um', '12.15um', '12.04um',
-                      '11.92um', '11.81um', '11.7um', '11.59um', '11.48um', '11.37um', '11.27um', '11.17um', '11.07um',
-                      '10.97um', '10.88um', '10.78um', '10.69um', '10.6um', '10.51um', '10.42um', '10.33um', '10.16um',
-                      '10.08um', '9.998um', '9.918um', '9.84um', '9.762um', '9.686um', '9.611um', '9.537um', '9.464um',
-                      '9.392um', '9.322um', '9.252um', '9.184um', '9.116um', '9.05um', '8.984um', '8.919um', '8.856um',
-                      '8.793um', '8.731um', '8.67um', '8.61um', '8.55um', '8.492um', '8.434um', '8.377um', '8.321um',
-                      '8.265um', '8.211um', '8.157um', '8.103um', '8.051um', '7.999um', '7.947um', '7.897um', '7.847um',
-                      '7.797um', '7.749um', '7.701um', '7.653um', '7.606um', '7.56um', '7.514um', '7.424um', '7.38um',
-                      '7.336um', '7.293um', '7.25um', '7.208um', '7.166um', '7.125um', '7.085um', '7.044um', '7.005um',
-                      '6.965um', '6.926um', '6.888um', '6.85um', '6.812um', '6.775um', '6.738um', '6.702um', '6.595um',
-                      '6.491um', '6.391um', '6.293um', '6.199um', '6.107um', '5.989um', '5.904um', '5.793um', '5.61um',
-                      '5.39um', '5.209um', '4.999um', '4.805um', '4.592um', '4.396um', '4.203um', '3.999um', '3.936um',
-                      '3.874um', '3.815um', '3.757um', '3.701um', '3.647um', '3.594um', '3.542um', '3.492um', '3.444um',
-                      '3.397um', '3.342um', '3.324um', '3.306um', '3.297um', '3.29um', '3.28um', '3.246um', '3.204um',
-                      '3.099um', '3.002um', '2.8um', '2.661um', '2.512um', '2.371um', '2.239um', '2.113um', '1.995um',
-                      '1.884um', '1.778um', '1.679um', '1.585um', '1.496um', '1.413um', '1.334um', '1.259um', '1.189um',
-                      '1.122um', '1.059um', '1.um', '944.1nm', '891.3nm', '841.4nm', '794.3nm', '749.9nm', '707.9nm',
-                      '668.3nm', '631nm', '595.7nm', '562.3nm', '530.9nm', '501.2nm', '473.2nm', '446.7nm', '421.7nm',
-                      '398.1nm', '375.8nm', '354.8nm', '335nm', '316.2nm', '298.5nm', '281.8nm', '266.1nm', '251.2nm',
-                      '237.1nm', '223.9nm', '211.3nm', '199.5nm', '188.4nm', '177.8nm', '167.9nm', '158.5nm', '149.6nm',
-                      '141.3nm', '133.4nm', '125.9nm', '121.6nm', '118.9nm', '112.2nm', '105.9nm', '100nm', '94.41nm',
-                      '89.13nm', '84.14nm', '79.43nm', '74.99nm', '70.79nm', '66.83nm', '63.1nm', '59.57nm', '58.4nm',
-                      '56.23nm', '53.09nm', '50.12nm', '47.32nm', '44.67nm', '42.17nm', '39.81nm', '37.58nm', '35.48nm',
-                      '33.5nm', '31.62nm', '30.4nm', '29.85nm', '28.18nm', '26.61nm', '25.12nm', '23.71nm', '22.39nm',
-                      '19.95nm', '17.78nm', '15.85nm', '14.13nm', '12.59nm', '11.22nm', '10.6nm', '10nm', '9nm', '8nm',
-                      '7nm', '6nm', '5nm', '4nm', '3nm', '2nm', '1nm'])
+dust_names = np.array(['3.1mm', '2.4mm', '1.8mm', '1.3mm', '1.0mm', '850um', '700um', '550um', '420um', '300um',
+                       '240um', '188.4um', '177.8um', '167.9um', '158.5um', '149.6um', '141.3um', '133.4um', '125.9um',
+                       '118.9um', '112.2um', '105.9um', '100.0um', '94.41um', '89.13um', '84.14um', '79.43um', '74.99um',
+                       '70.79um', '66.83um', '63.1um', '59.57um', '56.23um', '53.09um', '50.12um', '47.32um', '44.67um',
+                       '44.28um', '42.75um', '41.33um', '39.99um', '38.74um', '37.57um', '36.47um', '35.42um', '34.44um',
+                       '33.51um', '32.63um', '31.79um', '31.um', '30.24um', '29.52um', '28.83um', '28.18um', '27.55um',
+                       '26.95um', '26.38um', '25.83um', '25.3um', '24.8um', '24.31um', '23.84um', '23.39um', '22.96um',
+                       '22.54um', '22.14um', '21.75um', '21.38um', '21.01um', '20.66um', '20.32um', '20.um', '19.68um',
+                       '19.37um', '19.07um', '18.79um', '18.5um', '18.23um', '17.97um', '17.71um', '17.46um', '17.22um',
+                       '16.98um', '16.75um', '16.53um', '16.31um', '16.1um', '15.89um', '15.69um', '15.5um', '15.31um',
+                       '15.12um', '14.94um', '14.42um', '13.93um', '13.78um', '13.62um', '13.48um', '13.33um', '13.19um',
+                       '13.05um', '12.91um', '12.78um', '12.65um', '12.52um', '12.4um', '12.28um', '12.15um', '12.04um',
+                       '11.92um', '11.81um', '11.7um', '11.59um', '11.48um', '11.37um', '11.27um', '11.17um', '11.07um',
+                       '10.97um', '10.88um', '10.78um', '10.69um', '10.6um', '10.51um', '10.42um', '10.33um', '10.16um',
+                       '10.08um', '9.998um', '9.918um', '9.84um', '9.762um', '9.686um', '9.611um', '9.537um', '9.464um',
+                       '9.392um', '9.322um', '9.252um', '9.184um', '9.116um', '9.05um', '8.984um', '8.919um', '8.856um',
+                       '8.793um', '8.731um', '8.67um', '8.61um', '8.55um', '8.492um', '8.434um', '8.377um', '8.321um',
+                       '8.265um', '8.211um', '8.157um', '8.103um', '8.051um', '7.999um', '7.947um', '7.897um', '7.847um',
+                       '7.797um', '7.749um', '7.701um', '7.653um', '7.606um', '7.56um', '7.514um', '7.424um', '7.38um',
+                       '7.336um', '7.293um', '7.25um', '7.208um', '7.166um', '7.125um', '7.085um', '7.044um', '7.005um',
+                       '6.965um', '6.926um', '6.888um', '6.85um', '6.812um', '6.775um', '6.738um', '6.702um', '6.595um',
+                       '6.491um', '6.391um', '6.293um', '6.199um', '6.107um', '5.989um', '5.904um', '5.793um', '5.61um',
+                       '5.39um', '5.209um', '4.999um', '4.805um', '4.592um', '4.396um', '4.203um', '3.999um', '3.936um',
+                       '3.874um', '3.815um', '3.757um', '3.701um', '3.647um', '3.594um', '3.542um', '3.492um', '3.444um',
+                       '3.397um', '3.342um', '3.324um', '3.306um', '3.297um', '3.29um', '3.28um', '3.246um', '3.204um',
+                       '3.099um', '3.002um', '2.8um', '2.661um', '2.512um', '2.371um', '2.239um', '2.113um', '1.995um',
+                       '1.884um', '1.778um', '1.679um', '1.585um', '1.496um', '1.413um', '1.334um', '1.259um', '1.189um',
+                       '1.122um', '1.059um', '1.um', '944.1nm', '891.3nm', '841.4nm', '794.3nm', '749.9nm', '707.9nm',
+                       '668.3nm', '631nm', '595.7nm', '562.3nm', '530.9nm', '501.2nm', '473.2nm', '446.7nm', '421.7nm',
+                       '398.1nm', '375.8nm', '354.8nm', '335nm', '316.2nm', '298.5nm', '281.8nm', '266.1nm', '251.2nm',
+                       '237.1nm', '223.9nm', '211.3nm', '199.5nm', '188.4nm', '177.8nm', '167.9nm', '158.5nm', '149.6nm',
+                       '141.3nm', '133.4nm', '125.9nm', '121.6nm', '118.9nm', '112.2nm', '105.9nm', '100nm', '94.41nm',
+                       '89.13nm', '84.14nm', '79.43nm', '74.99nm', '70.79nm', '66.83nm', '63.1nm', '59.57nm', '58.4nm',
+                       '56.23nm', '53.09nm', '50.12nm', '47.32nm', '44.67nm', '42.17nm', '39.81nm', '37.58nm', '35.48nm',
+                       '33.5nm', '31.62nm', '30.4nm', '29.85nm', '28.18nm', '26.61nm', '25.12nm', '23.71nm', '22.39nm',
+                       '19.95nm', '17.78nm', '15.85nm', '14.13nm', '12.59nm', '11.22nm', '10.6nm', '10nm', '9nm', '8nm',
+                       '7nm', '6nm', '5nm', '4nm', '3nm', '2nm', '1nm'])
 wavelengths = np.array([3100., 2400., 1800., 1300., 1000., 850., 700., 550., 420., 300., 240., 188.4, 177.8, 167.9,
                         158.5, 149.6, 141.3, 133.4, 125.9, 118.9, 112.2, 105.9, 100., 94.41, 89.13, 84.14, 79.43, 74.99,
                         70.79, 66.83, 63.1, 59.57, 56.23, 53.09, 50.12, 47.32, 44.67, 44.28, 42.75, 41.33, 39.99, 38.74,
@@ -214,13 +214,13 @@ wavelengths = np.array([3100., 2400., 1800., 1300., 1000., 850., 700., 550., 420
                         0.01585, 0.01413, 0.01259, 0.01122, 0.0106, 0.01, 0.009, 0.008, 0.007, 0.006, 0.005, 0.004,
                         0.003, 0.002, 0.001]) * 10**-6
 # These are the flag and indeces to limit how many dust emission lines are calculated
-dustWavelengths = ''
-limitMolecular = 5*10**-5
-limitPAH = 5*10**-6
-nDust = wavelengths > 0
+dust_wavelengths = ''
+limit_molecular = 5*10**-5
+limit_pah = 5*10**-6
+n_dust = wavelengths > 0
 # [DEACTIVATED] These are variables to sort the wavelengths
-sortedWavelengths = []
-sortedIndeces = wavelengths.argsort()
+sorted_wavelengths = []
+sorted_indeces = wavelengths.argsort()
 
 hclambda = h*c/wavelengths  # to aid in calculations
 

@@ -17,71 +17,71 @@ This is a script to contain all of the methods needed to change the model parame
 '''
 
 
-def changeVelocityNumber(num):
+def change_velocity_number(num):
     num = np.max((num, 2))
-    constants.velocityNumber = copy(num)
-    constants.velocityRange = np.linspace(constants.velocityBin[0],
-                                          constants.velocityBin[-1],
-                                          num=constants.velocityNumber)
-    constants.velocityStep = constants.velocityRange[1] - constants.velocityRange[0]
+    constants.velocity_number = copy(num)
+    constants.velocity_range = np.linspace(constants.velocity_bin[0],
+                                           constants.velocity_bin[-1],
+                                           num=constants.velocity_number)
+    constants.velocity_step = constants.velocity_range[1] - constants.velocity_range[0]
     return
 
 
-def changeVelocityRange(range):
-    constants.velocityBin = copy(range)
-    constants.velocityRange = np.linspace(constants.velocityBin[0],
-                                          constants.velocityBin[-1],
-                                          num=constants.velocityNumber)
-    constants.velocityStep = constants.velocityRange[1] - constants.velocityRange[0]
+def change_velocity_range(range):
+    constants.velocity_bin = copy(range)
+    constants.velocity_range = np.linspace(constants.velocity_bin[0],
+                                          constants.velocity_bin[-1],
+                                          num=constants.velocity_number)
+    constants.velocity_step = constants.velocity_range[1] - constants.velocity_range[0]
     return
 
 
-def changeClumpMassNumber(num):
+def change_clump_mass_number(num):
     # This will affect all clump sets, so the `num` needs to be a list with length of the number of clump sets.
     if isinstance(num, list) or isinstance(num, np.ndarray):
-        constants.clumpMassNumber = copy(num)
-        constants.clumpLogMass = [[] for _ in range(len(num))]
+        constants.clump_mass_number = copy(num)
+        constants.clump_log_mass = [[] for _ in range(len(num))]
         for i in range(len(num)):
-            constants.clumpLogMass[i] = np.linspace(constants.clumpLogMassRange[i][0],
-                                                    constants.clumpLogMassRange[i][-1],
-                                                    num=constants.clumpMassNumber[i])
-            constants.clumpLogMass[i].resize(1, constants.clumpMassNumber[i])
+            constants.clump_log_mass[i] = np.linspace(constants.clump_log_mass_range[i][0],
+                                                      constants.clump_log_mass_range[i][-1],
+                                                      num=constants.clump_mass_number[i])
+            constants.clump_log_mass[i].resize(1, constants.clump_mass_number[i])
     return
 
 
-def changeClumpMassRange(massRange):
+def change_clump_mass_range(massRange):
     # This will affect all clump sets, so the `massRange` needs to be a list with length of the number of clump sets.
-    if isinstance(massRange[0], list) or isinstance(massRange[0], np.ndarray):
-        constants.clumpLogMassRange = copy(massRange)
-        constants.clumpLogMass = [[] for _ in range(len(massRange))]
-        for i in range(len(massRange)):
-            constants.clumpLogMass[i] = np.linspace(min(constants.clumpLogMassRange[i]),
-                                                    max(constants.clumpLogMassRange[i]),
-                                                    num=constants.clumpMassNumber[i])
-            constants.clumpLogMass[i].resize(1, constants.clumpMassNumber[i])
+    if isinstance(mass_range[0], list) or isinstance(massRange[0], np.ndarray):
+        constants.clump_log_mass_range = copy(mass_range)
+        constants.clump_log_mass = [[] for _ in range(len(mass_range))]
+        for i in range(len(mass_range)):
+            constants.clump_log_mass[i] = np.linspace(min(constants.clump_log_mass_range[i]),
+                                                      max(constants.clump_log_mass_range[i]),
+                                                      num=constants.clump_mass_number[i])
+            constants.clump_log_mass[i].resize(1, constants.clump_mass_number[i])
     return
 
 
-def addClumps(massRange=[], num=0, Nmax=1, reset=False):
+def add_clumps(mass_range=[], num=0, n_max=1, reset=False):
     # Add another set of clumps to evaluate. Set the density kwarg if you do not want to use the voxel density.
     if reset:
-        constants.clumpLogMassRange = []
-        constants.clumpMassNumber = []
-        constants.clumpMaxIndeces = []
-        constants.clumpNmax = []
-        constants.clumpLogMass = []
-    if isinstance(massRange[0], int) or isinstance(massRange[0], float):
-        massRange = [massRange]
+        constants.clump_log_mass_range = []
+        constants.clump_mass_number = []
+        constants.clump_max_indeces = []
+        constants.clump_n_max = []
+        constants.clump_log_mass = []
+    if isinstance(mass_range[0], int) or isinstance(mass_range[0], float):
+        massRange = [mass_range]
         num = [num]
-        Nmax = [Nmax]
+        n_max = [n_max]
     for i in range(len(num)):
-        constants.clumpLogMassRange.append(massRange[i])
-        constants.clumpMassNumber.append(num[i])
-        constants.clumpMaxIndeces.append(0)
-        constants.clumpNmax.append(Nmax[i])
-        constants.clumpLogMass.append(np.resize(np.linspace(min(massRange[i]),
-                                                            max(massRange[i]),
-                                                            num=num[i]),
+        constants.clump_log_mass_range.append(mass_range[i])
+        constants.clump_mass_number.append(num[i])
+        constants.clump_max_indeces.append(0)
+        constants.clump_n_max.append(n_max[i])
+        constants.clump_log_mass.append(np.resize(np.linspace(min(mass_range[i]),
+                                                              max(mass_range[i]),
+                                                              num=num[i]),
                                                 (1,num[i])))
         constants.ensembles = len(num)
     return
@@ -89,20 +89,20 @@ def addClumps(massRange=[], num=0, Nmax=1, reset=False):
 
 def resetClumps():
     # This will restore the clump list to its default.
-    constants.clumpMassNumber = [3, 1]
-    constants.clumpLogMassRange = [[0,2], [-2]]
-    constants.clumpLogMass = [[], []]
+    constants.clump_mass_number = [3, 1]
+    constants.clump_log_mass_range = [[0,2], [-2]]
+    constants.clump_log_mass = [[], []]
     # constants.clumpDensity = [None, 1911]
     # constants.clumpFUV = [None, 10]
     for i in range(2):
-        constants.clumpLogMass[i] = np.linspace(constants.clumpLogMassRange[i][0],
-                                                constants.clumpLogMassRange[i][-1],
-                                                num=constants.clumpMassNumber[i])
-        constants.clumpLogMass[i].resize(1,constants.clumpMassNumber[i])
+        constants.clump_log_mass[i] = np.linspace(constants.clump_log_mass_range[i][0],
+                                                  constants.clump_log_mass_range[i][-1],
+                                                  num=constants.clump_mass_number[i])
+        constants.clump_log_mass[i].resize(1,constants.clump_mass_number[i])
     return
 
 
-def changeMassFunctionParameters(alpha=1.84, gamma=2.31):
+def change_mass_function_parameters(alpha=1.84, gamma=2.31):
     # Use this to change the parameters of power-law distribution used
     #  to calculate the clump properties. The default are those from
     #  Heithausen et al. (1998).
@@ -111,7 +111,7 @@ def changeMassFunctionParameters(alpha=1.84, gamma=2.31):
     return
 
 
-def changeDirectory(direc):
+def change_directory(direc):
 
     constants.directory = direc
     if constants.directory[-1] != '/':
@@ -126,7 +126,7 @@ def changeDirectory(direc):
     return
 
 
-def changeDustWavelengths(limit='all'):
+def change_dust_wavelengths(limit='all'):
   
     # constants.dustWavelengths = limit
     constants.dust = limit
@@ -136,44 +136,44 @@ def changeDustWavelengths(limit='all'):
     if isinstance(limit, str):
         if limit == 'reduced':
             limit = ['3.1mm']
-        elif limit in constants.dustNames:
+        elif limit in constants.dust_names:
             limit = [limit]
       
     # Check if individual wavelengths of the dust continuum are specified
     if isinstance(limit, list):
-        constants.dustWavelengths = copy(limit)
-        nDust = [line == np.asarray(constants.dustNames) for line in limit]
-        constants.nDust = np.any(nDust, 0)
+        constants.dust_wavelengths = copy(limit)
+        n_dust = [line == np.asarray(constants.dust_names) for line in limit]
+        constants.n_dust = np.any(n_dust, 0)
     # Use PAH to include the PAH features of the dust continuum
     elif limit == 'PAH':
-        constants.nDust = constants.wavelengths>constants.limitPAH
-        constants.dustWavelengths = constants.dustNames[constants.nDust]
+        constants.n_dust = constants.wavelengths>constants.limit_pah
+        constants.dust_wavelengths = constants.dust_names[constants.n_dust]
     # Use molecular to use just the section of the dust continuum relevant for the species transitions
     elif limit == 'molecular':
-        constants.nDust = constants.wavelengths>constants.limitMolecular
-        constants.dustWavelengths = constants.dustNames[constants.nDust]
+        constants.n_dust = constants.wavelengths>constants.limit_molecular
+        constants.dust_wavelengths = constants.dust_names[constants.n_dust]
     # Otherwise include the entire dust continuum.
     else:
-        constants.nDust = constants.wavelengths>0
-        constants.dustWavelengths = constants.dustNames[constants.nDust]
+        constants.n_dust = constants.wavelengths>0
+        constants.dust_wavelengths = constants.dust_names[constants.n_dust]
       
     return
 
 
 def setupMolecules(species):
     constants.molecules = species
-    constants.moleculeNumber = len(species)
+    constants.molecule_number = len(species)
     return
 
 
-def resortWavelengths():
-    allWavelengths = np.append(constants.wavelengths[constants.nDust], species.moleculeWavelengths)
-    constants.sortedIndeces = allWavelengths.argsort()
-    constants.sortedWavelengths = allWavelengths[constants.sortedIndeces]
+def resort_wavelengths():
+    all_wavelengths = np.append(constants.wavelengths[constants.n_dust], species.molecule_wavelengths)
+    constants.sorted_indeces = all_wavelengths.argsort()
+    constants.sorted_wavelengths = all_wavelengths[constants.sorted_indeces]
     return
 
 
-def dustWavelengths():
-    return constants.wavelengths[constants.nDust]
+def dust_wavelengths():
+    return constants.wavelengths[constants.n_dust]
 
 # jit_module(nopython=False)
