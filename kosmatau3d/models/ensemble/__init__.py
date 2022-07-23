@@ -7,31 +7,31 @@ from kosmatau3d.models import constants
 
 clumpMass = 0
 
-clumpVelocities = [[] for _ in range(len(constants.clumpMassNumber))]
+clumpVelocities = [[] for _ in range(len(constants.clump_mass_number))]
 
-clumpNj = [[] for _ in range(len(constants.clumpMassNumber))]
-clumpDeltaNji = [[] for _ in range(len(constants.clumpMassNumber))]
-clumpNormalisedNj = [[] for _ in range(len(constants.clumpMassNumber))]
-clumpNormalisedDeltaNji = [[] for _ in range(len(constants.clumpMassNumber))]
-clumpSurfaceProbability = [[] for _ in range(len(constants.clumpMassNumber))]
-clumpProbableNumber = [[] for _ in range(len(constants.clumpMassNumber))]
-clumpStandardDeviation = [[] for _ in range(len(constants.clumpMassNumber))]
-CLmaxSurfaceProbability = [[] for _ in range(len(constants.clumpMassNumber))]
-CLmaxProbableNumber = [[] for _ in range(len(constants.clumpMassNumber))]
-CLmaxStandardDeviation = [[] for _ in range(len(constants.clumpMassNumber))]
+clumpNj = [[] for _ in range(len(constants.clump_mass_number))]
+clumpDeltaNji = [[] for _ in range(len(constants.clump_mass_number))]
+clumpNormalisedNj = [[] for _ in range(len(constants.clump_mass_number))]
+clumpNormalisedDeltaNji = [[] for _ in range(len(constants.clump_mass_number))]
+clumpSurfaceProbability = [[] for _ in range(len(constants.clump_mass_number))]
+clumpProbableNumber = [[] for _ in range(len(constants.clump_mass_number))]
+clumpStandardDeviation = [[] for _ in range(len(constants.clump_mass_number))]
+CLmaxSurfaceProbability = [[] for _ in range(len(constants.clump_mass_number))]
+CLmaxProbableNumber = [[] for _ in range(len(constants.clump_mass_number))]
+CLmaxStandardDeviation = [[] for _ in range(len(constants.clump_mass_number))]
 
-clumpNumberRange = [[] for _ in range(len(constants.clumpMassNumber))]
-CLmaxNumberRange = [[] for _ in range(len(constants.clumpMassNumber))]
+clumpNumberRange = [[] for _ in range(len(constants.clump_mass_number))]
+CLmaxNumberRange = [[] for _ in range(len(constants.clump_mass_number))]
 
-clumpCombinations = [[] for _ in range(len(constants.clumpMassNumber))]
-CLmaxCombinations = [[] for _ in range(len(constants.clumpMassNumber))]
+clumpCombinations = [[] for _ in range(len(constants.clump_mass_number))]
+CLmaxCombinations = [[] for _ in range(len(constants.clump_mass_number))]
 
-clumpLargestCombination = [0 for _ in range(len(constants.clumpMassNumber))]
-clumpLargestIndex = [0 for _ in range(len(constants.clumpMassNumber))]
+clumpLargestCombination = [0 for _ in range(len(constants.clump_mass_number))]
+clumpLargestIndex = [0 for _ in range(len(constants.clump_mass_number))]
 
-clumpProbability = [[] for _ in range(len(constants.clumpMassNumber))]
-CLmaxProbability = [[] for _ in range(len(constants.clumpMassNumber))]
+clumpProbability = [[] for _ in range(len(constants.clump_mass_number))]
+CLmaxProbability = [[] for _ in range(len(constants.clump_mass_number))]
 
-clumpIndeces = [[] for _ in range(len(constants.clumpMassNumber))]
+clumpIndeces = [[] for _ in range(len(constants.clump_mass_number))]
 
 # jit_module(nopython=False)

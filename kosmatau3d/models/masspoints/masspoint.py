@@ -20,65 +20,65 @@ an future update to perform the interpolation for all species at the same time.
 '''
 
 
-def setMasspointData(density=[], FUV=[0], crir=2e-16):
+def setMasspointData(density=[], fuv=[0], crir=2e-16):
     '''
     This sets the information for the masspoints used in a given voxel. The density should be in units of
     cm^-3, and the FUV field should be in units of the Draine field (2.7 * 10^-3 erg cm^-2)
     '''
 
-    masspoints.logCRIR = np.log10(crir)
+    masspoints.log_crir = np.log10(crir)
 
     for ens in range(constants.ensembles):
-        masspoints.clumpLogDensity[ens] = np.log10(10.**(constants.clumpLogMass[ens]*(1-3./constants.gamma)) *
-                                                   (10.**(constants.clumpLogMass[ens] *
-                                                    (1+3./constants.gamma-constants.alpha))).sum() /
-                                                   (10.**(constants.clumpLogMass[ens]*(2-constants.alpha))).sum() *
-                                                   density[ens]/1.91)
-        masspoints.clumpRadius[ens] = ((3./(4.*np.pi)*(10.**constants.clumpLogMass[ens]*constants.massSolar) /
-                                       (10.**masspoints.clumpLogDensity[ens]*constants.massH*1.91))**(1./3.) /
-                                       constants.pc/100.)
-        masspoints.logFUV[ens] = np.log10(FUV[ens])
+        masspoints.clump_log_density[ens] = np.log10(10.**(constants.clump_log_mass[ens]*(1-3./constants.gamma)) *
+                                                     (10.**(constants.clump_log_mass[ens] *
+                                                      (1+3./constants.gamma-constants.alpha))).sum() /
+                                                     (10.**(constants.clump_log_mass[ens]*(2-constants.alpha))).sum() *
+                                                     density[ens]/1.91)
+        masspoints.clump_radius[ens] = ((3./(4.*np.pi)*(10.**constants.clump_log_mass[ens]*constants.mass_solar) /
+                                        (10.**masspoints.clump_log_density[ens]*constants.mass_h*1.91))**(1./3.) /
+                                        constants.pc/100.)
+        masspoints.log_fuv[ens] = np.log10(fuv[ens])
         
-        i = (masspoints.clumpLogDensity[ens] < 3) & (np.around(masspoints.clumpLogDensity[ens]) == 3)
+        i = (masspoints.clump_log_density[ens] < 3) & (np.around(masspoints.clump_log_density[ens]) == 3)
         if i.any():
-            masspoints.clumpLogDensity[ens][i] = 3
-        i = (masspoints.clumpLogDensity[ens] > 7) & (np.around(masspoints.clumpLogDensity[ens]) == 7)
+            masspoints.clump_log_density[ens][i] = 3
+        i = (masspoints.clump_log_density[ens] > 7) & (np.around(masspoints.clump_log_density[ens]) == 7)
         if i.any():
-            masspoints.clumpLogDensity[ens][i] = 7
+            masspoints.clump_log_density[ens][i] = 7
     
     return
 
 
-def getAfuv(debug=False):
-    clumpAfuv = [[] for _ in range(len(constants.clumpMassNumber))]
-    for ens in range(len(constants.clumpMassNumber)):
-        clumpAfuv[ens] = interpolations.interpolateFUVextinction(masspoints.clumpLogDensity[ens],
-                                                                 constants.clumpLogMass[ens])[0]
+def get_fuv_extinction(debug=False):
+    clumpAfuv = [[] for _ in range(len(constants.clump_mass_number))]
+    for ens in range(len(constants.clump_mass_number)):
+        clumpAfuv[ens] = interpolations.interpolate_taufuv(masspoints.clump_log_density[ens],
+                                                           constants.clump_log_mass[ens])[0]
     return clumpAfuv
 
 
-def masspointEmission(interpolationPoint, ens, masspoint, velocity=0, verbose=False, debug=False, test=False):
+def masspoint_emission(interpolation_point, ens, masspoint, velocity=0, verbose=False, debug=False, test=False):
     '''
     This function calculates the emission of a single clump of the given mass/density/radius.
     '''
     
-    radius = masspoints.clumpRadius[ens][0, masspoint]
+    radius = masspoints.clump_radius[ens][0, masspoint]
   
     if debug:
-        print('\n', interpolationPoint)
+        print('\n', interpolation_point)
   
     # indeces = species.molecules.getInterpolationIndeces()
   
     intensity_xi = []
-    opticalDepth_xi = []
+    opticaldepth_xi = []
   
     if len(species.molecules):
         # Intensity currently in converted to Jansky, to coinside with the dust continuum
-        intensity = interpolations.interpolateIntensity(interpolationPoint)
-        tau = interpolations.interpolateTau(interpolationPoint)
+        intensity = interpolations.interpolate_intensity(interpolation_point)
+        tau = interpolations.interpolate_tau(interpolation_point)
     
         intensity_xi.append(intensity)
-        opticalDepth_xi.append(tau)
+        opticaldepth_xi.append(tau)
   
     else:
         intensity_xi.append([])
@@ -89,24 +89,24 @@ def masspointEmission(interpolationPoint, ens, masspoint, velocity=0, verbose=Fa
     
     if constants.dust != '' and constants.dust != None and constants.dust != 'none':
         # Must convert Janskys in dust intensity file using I/2/constants.kB*(constants.wavelengths)**2*10**-26) -- now calculated in interpolation function
-        intensity = (interpolations.interpolateDustIntensity(interpolationPoint))
-        tau = interpolations.interpolateDustTau(interpolationPoint)
+        intensity = (interpolations.interpolate_dust_intensity(interpolation_point))
+        tau = interpolations.interpolate_dust_tau(interpolation_point)
     
         # Append clump-corrected dust emission
         intensity_xi.append(intensity/np.pi/(np.arcsin(radius/10.)**2))
-        opticalDepth_xi.append(tau)
+        opticaldepth_xi.append(tau)
   
     else:
         intensity_xi.append([])
-        opticalDepth_xi.append([])
+        opticaldepth_xi.append([])
   
-    masspoints.clumpIntensity[ens][masspoint, :] = np.append(intensity_xi[1], intensity_xi[0])
-    masspoints.clumpOpticalDepth[ens][masspoint, :] = np.append(opticalDepth_xi[1], opticalDepth_xi[0])
+    masspoints.clump_intensity[ens][masspoint, :] = np.append(intensity_xi[1], intensity_xi[0])
+    masspoints.clump_optical_depth[ens][masspoint, :] = np.append(opticaldepth_xi[1], opticaldepth_xi[0])
   
     return  # (intensity,opticalDepth)
 
 
-def calculateEmission(tauFUV=0, timed=False):
+def calculate_emission(tauFUV=0, timed=False):
     '''
     This function can be called to set-up the clump emissions in the masspoints module. It calls masspointEmission() for
     each clump.
@@ -115,13 +115,13 @@ def calculateEmission(tauFUV=0, timed=False):
     # clumpOpticalDepth = [[] for _ in range(len(constants.clumpMassNumber))]
   
     for ens in range(constants.ensembles):
-        for i in range(constants.clumpLogMass[ens].size):
+        for i in range(constants.clump_log_mass[ens].size):
             t0 = time()
-            gridpoint = [masspoints.logCRIR,
-                         masspoints.clumpLogDensity[ens][0, i],
-                         constants.clumpLogMass[ens][0, i],
-                         masspoints.logFUV[ens]]
-            masspointEmission(gridpoint, ens, i)
+            gridpoint = [masspoints.log_crir,
+                         masspoints.clump_log_density[ens][0, i],
+                         constants.clump_log_mass[ens][0, i],
+                         masspoints.log_fuv[ens]]
+            masspoint_emission(gridpoint, ens, i)
             # clumpIntensity[ens].append(emission[0])
             # clumpOpticalDepth[ens].append(emission[1])
             if timed:
@@ -133,8 +133,8 @@ def calculateEmission(tauFUV=0, timed=False):
     return
 
 
-def plotIntensity(molecule='all', quantity='intensity', n_cl=[], title='', velocity=None, logscale=None,
-                  test_calc=False):
+def plot_intensity(molecule='all', quantity='intensity', n_cl=[], title='', velocity=None, logscale=None,
+                   test_calc=False):
 
     if isinstance(molecule, str) and molecule in species.molecules:
         molecule = [molecule]
@@ -145,20 +145,20 @@ def plotIntensity(molecule='all', quantity='intensity', n_cl=[], title='', veloc
     else:
         molecule = species.molecules
   
-    nDust = constants.wavelengths[constants.nDust].size
+    nDust = constants.wavelengths[constants.n_dust].size
     if not velocity:
         velocity = np.linspace(-5, 5, num=1000)
-    profile = np.exp(-velocity**2/2/constants.clumpDispersion**2)
+    profile = np.exp(-velocity**2/2/constants.clump_dispersion**2)
   
     # ylabel = r'$I_\nu \ (K)$'
   
     for ens in range(constants.ensembles):
   
         if not len(n_cl):
-            n_cl = np.ones(masspoints.clumpIntensity[ens].shape[0])
+            n_cl = np.ones(masspoints.clump_species_intensity[ens].shape[0])
     
-        fig, axes = plt.subplots(masspoints.clumpIntensity[ens].shape[0],
-                                 figsize=(10, 5*masspoints.clumpIntensity[ens].shape[0]))
+        fig, axes = plt.subplots(masspoints.clump_intensity[ens].shape[0],
+                                 figsize=(10, 5*masspoints.clump_intensity[ens].shape[0]))
     
         if isinstance(axes, np.ndarray):
             ax = axes
@@ -175,7 +175,7 @@ def plotIntensity(molecule='all', quantity='intensity', n_cl=[], title='', veloc
         elif quantity == 'intensity':
             ylabel = r'$I_{\lambda} \ \left( K \right)$'
     
-        for clump in range(masspoints.clumpIntensity[ens].shape[0]):
+        for clump in range(masspoints.clump_intensity[ens].shape[0]):
     
             labels = []
       
@@ -185,13 +185,13 @@ def plotIntensity(molecule='all', quantity='intensity', n_cl=[], title='', veloc
                     print('Species {} not in model.'.format(mol))
                     continue
         
-                i = nDust + np.where(mol == np.asarray(species.molecules))[0][0]
-                Icl = masspoints.clumpIntensity[ens][clump, i]*profile
-                tcl = masspoints.clumpOpticalDepth[ens][clump, i]*profile
+                i = n_dust + np.where(mol == np.asarray(species.molecules))[0][0]
+                Icl = masspoints.clump_intensity[ens][clump, i]*profile
+                tcl = masspoints.clump_optical_depth[ens][clump, i]*profile
                 intensity = Icl/tcl*(1-np.exp(-tcl))
                 if test_calc:
                     ds = constants.voxel_size
-                    rcl = masspoints.clumpRadius[ens][clump, 0]
+                    rcl = masspoints.clump_radius[ens][clump, 0]
                     eps = Icl * tcl/(1-np.exp(-tcl)) / ds
                     kap = tcl / ds
         
@@ -199,12 +199,12 @@ def plotIntensity(molecule='all', quantity='intensity', n_cl=[], title='', veloc
                     if test_calc:
                         value = eps
                     else:
-                        value = n_cl[clump]*Icl/masspoints.clumpRadius[ens][0, clump]/2
+                        value = n_cl[clump]*Icl/masspoints.clump_radius[ens][0, clump]/2
                 elif quantity == 'absorption':
                     if test_calc:
                         value = kap
                     else:
-                        value = n_cl[clump]*tcl/masspoints.clumpRadius[ens][0, clump]/2
+                        value = n_cl[clump]*tcl/masspoints.clump_radius[ens][0, clump]/2
                 elif quantity == 'intensity':
                     if test_calc:
                         value = eps/kap * (1-np.exp(-kap*ds))
@@ -219,7 +219,7 @@ def plotIntensity(molecule='all', quantity='intensity', n_cl=[], title='', veloc
                 labels.append(mol)
       
             ax[clump].legend(labels=labels, fontsize=14, bbox_to_anchor=(1.05, 1))
-            ax[clump].set_title(r'{mass} $M_\odot$ clump {q}'.format(mass=10**constants.clumpLogMass[ens][0, clump],
+            ax[clump].set_title(r'{mass} $M_\odot$ clump {q}'.format(mass=10**constants.clump_log_mass[ens][0, clump],
                                                                      q=quantity), fontsize=20)
             ax[clump].set_xlabel(r'$V_r \ (\frac{km}{s})$', fontsize=20)
             ax[clump].set_ylabel(ylabel, fontsize=20)
@@ -243,24 +243,24 @@ def reinitialise():
   
     # Properties
   
-    masspoints.logCRIR = [0 for _ in range(constants.ensembles)]
-    masspoints.logFUV = [0 for _ in range(constants.ensembles)]
+    masspoints.log_crir = [0 for _ in range(constants.ensembles)]
+    masspoints.log_fuv = [0 for _ in range(constants.ensembles)]
   
-    masspoints.clumpLogDensity = [np.zeros(constants.clumpMassNumber[_]) 
-                                  for _ in range(constants.ensembles)]
-    masspoints.clumpRadius = [np.zeros(constants.clumpMassNumber[_]) 
-                              for _ in range(constants.ensembles)]
+    masspoints.clump_log_density = [np.zeros(constants.clump_mass_number[_]) 
+                                    for _ in range(constants.ensembles)]
+    masspoints.clump_radius = [np.zeros(constants.clump_mass_number[_]) 
+                               for _ in range(constants.ensembles)]
   
     # Emission
   
-    masspoints.clumpIntensity = [np.zeros((constants.clumpMassNumber[_],
-                                           len(species.molecules) 
-                                               + constants.wavelengths[constants.nDust].size))
-                                 for _ in range(constants.ensembles)]
-    masspoints.clumpOpticalDepth = [np.zeros((constants.clumpMassNumber[_],
-                                              len(species.molecules) 
-                                                  + constants.wavelengths[constants.nDust].size))
-                                    for _ in range(constants.ensembles)]
+    masspoints.clump_intensity = [np.zeros((constants.clump_mass_number[_],
+                                            len(species.molecules) 
+                                                + constants.wavelengths[constants.n_dust].size))
+                                  for _ in range(constants.ensembles)]
+    masspoints.clump_optical_depth = [np.zeros((constants.clump_mass_number[_],
+                                                len(species.molecules) 
+                                                    + constants.wavelengths[constants.n_dust].size))
+                                      for _ in range(constants.ensembles)]
   
     return
 

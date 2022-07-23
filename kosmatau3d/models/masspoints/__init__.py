@@ -8,19 +8,19 @@ from kosmatau3d.models import constants
 
 # Properties
 
-logCRIR = 0
-logFUV = [0 for _ in range(len(constants.clumpMassNumber))]
+log_crir = 0
+log_fuv = [0 for _ in range(len(constants.clump_mass_number))]
 
-clumpLogDensity = [np.zeros(constants.clumpMassNumber[_]) for _ in range(len(constants.clumpMassNumber))]
-clumpRadius = [np.zeros(constants.clumpMassNumber[_]) for _ in range(len(constants.clumpMassNumber))]
+clump_log_density = [np.zeros(constants.clump_mass_number[_]) for _ in range(len(constants.clump_mass_number))]
+clump_radius = [np.zeros(constants.clump_mass_number[_]) for _ in range(len(constants.clump_mass_number))]
 
 # KOSMA-tau outputs
 
-clumpIntensity = [np.zeros((constants.clumpMassNumber[_],
-                            len(species.molecules)+constants.wavelengths[constants.nDust].size))
-                  for _ in range(len(constants.clumpMassNumber))]
-clumpOpticalDepth = [np.zeros((constants.clumpMassNumber[_],
-                               len(species.molecules)+constants.wavelengths[constants.nDust].size))
-                     for _ in range(len(constants.clumpMassNumber))]
+clump_intensity = [np.zeros((constants.clump_mass_number[_],
+                             len(species.molecules)+constants.wavelengths[constants.n_dust].size))
+                   for _ in range(len(constants.clumpMassNumber))]
+clump_opticalDepth = [np.zeros((constants.clumpMassNumber[_],
+                                len(species.molecules)+constants.wavelengths[constants.n_dust].size))
+                      for _ in range(len(constants.clump_mass_number))]
 
 # jit_module(nopython=False)

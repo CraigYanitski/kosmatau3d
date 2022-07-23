@@ -31,7 +31,7 @@ def initialise(ensembledispersion=0, ensemblemass=0, suggested_calc=True, verbos
     return
 
 
-def calculateCombinations(clumpN, test=True, verbose=False):
+def calculate_combinations(clumpN, test=True, verbose=False):
     '''
     This function calculates all of the different combinations of clump masses that may be in a line-of-sight.
     It is basically the essence of the probabilistic approach used to create the superposition of clumps.
@@ -99,7 +99,7 @@ def calculateCombinations(clumpN, test=True, verbose=False):
     return combinations
 
 
-def createCombinationObjects(ensembleDispersion, dtype=np.float64, suggested_calc=True, verbose=False, debug=False):
+def create_combination_objects(ensembleDispersion, dtype=np.float64, suggested_calc=True, verbose=False, debug=False):
     '''
     This function removes all of the unnecessary degenerate looping during this calculation.
     Of course it is possible because of the wonders of numpy.ndarray(). . .
@@ -107,22 +107,22 @@ def createCombinationObjects(ensembleDispersion, dtype=np.float64, suggested_cal
     # verbose = self.__verbose or verbose
     # if verbose: print(self.__clumpType)
     
-    for ens in range(len(constants.clumpMassNumber)):
+    for ens in range(len(constants.clump_mass_number)):
   
         # This can be used to add more dispersion if needed. It is left over from Silke's Orion Bar application.
         # It has moved to the VoxelGrid setup.
         # ensembleDispersion[ens] = np.sqrt(constants.ensembleDispersion**2+ensembleDispersion[ens]**2)
         
-        ensemble.clumpNj[ens] = (ensemble.clumpMass[ens]*10.**(constants.clumpLogMass[ens]*(1-constants.alpha))) / \
-                                (10.**(constants.clumpLogMass[ens]*(2-constants.alpha))).sum()
+        ensemble.clumpNj[ens] = (ensemble.clumpMass[ens]*10.**(constants.clump_log_mass[ens]*(1-constants.alpha))) / \
+                                (10.**(constants.clump_log_mass[ens]*(2-constants.alpha))).sum()
     
         if verbose:
             print('\nClump Nj:\n', ensemble.clumpNj[ens])
             print('\nInterclump Nj:\n', ensemble.interclumpNj)
     
-        clumpMassEnsemble = (ensemble.clumpNj[ens]*10.**constants.clumpLogMass[ens]).sum()
-        clumpRadiusEnsemble = (ensemble.clumpNj[ens]*masspoints.clumpRadius[ens]).sum()
-        clumpVolumeEnsemble = (ensemble.clumpNj[ens]*np.pi*4./3.*masspoints.clumpRadius[ens].T**3).sum()
+        clumpMassEnsemble = (ensemble.clumpNj[ens]*10.**constants.clump_log_mass[ens]).sum()
+        clumpRadiusEnsemble = (ensemble.clumpNj[ens]*masspoints.clump_radius[ens]).sum()
+        clumpVolumeEnsemble = (ensemble.clumpNj[ens]*np.pi*4./3.*masspoints.clump_radius[ens].T**3).sum()
         
         if verbose:
             print(clumpMassEnsemble, clumpVolumeEnsemble)
@@ -133,9 +133,9 @@ def createCombinationObjects(ensembleDispersion, dtype=np.float64, suggested_cal
         if verbose:
             print('velocity, mean, dispersion', self.__velocity, self.__velocity.mean(), self.__velocityDispersion)
 
-        system_dispersion = np.sqrt(np.abs(ensembleDispersion[ens]**2 - constants.clumpDispersion**2))
+        system_dispersion = np.sqrt(np.abs(ensembleDispersion[ens]**2 - constants.clump_dispersion**2))
         if suggested_calc:
-            dispersion = np.maximum(ensembleDispersion[ens], constants.clumpDispersion)
+            dispersion = np.maximum(ensemble_dispersion[ens], constants.clump_dispersion)
             velocityStep = dispersion/constants.velocity_resolution
             ensemble.clumpVelocities[ens] = np.linspace(-constants.n_sigma*dispersion,
                                                         constants.n_sigma*dispersion,
@@ -143,11 +143,11 @@ def createCombinationObjects(ensembleDispersion, dtype=np.float64, suggested_cal
                                                                      velocityStep).astype(np.int)+1)
             velocityStep = ensemble.clumpVelocities[ens][1]-ensemble.clumpVelocities[ens][0]
             ensemble.clumpDeltaNji[ens] = (np.array(ensemble.clumpNj[ens]).T
-                                           * constants.clumpDispersion/dispersion *
+                                           * constants.clump_dispersion/dispersion *
                                            (np.exp(-0.5*(ensemble.clumpVelocities[ens]/dispersion)**2)).T)
         else:
             velocityStep = np.minimum(system_dispersion/constants.velocity_resolution,
-                                      constants.clumpDispersion/constants.velocity_resolution)
+                                      constants.clump_dispersion/constants.velocity_resolution)
             ensemble.clumpVelocities[ens] = np.linspace(-constants.n_sigma*system_dispersion,
                                                         constants.n_sigma*system_dispersion,
                                                         num=np.round(2*constants.n_sigma*system_dispersion /
@@ -160,11 +160,11 @@ def createCombinationObjects(ensembleDispersion, dtype=np.float64, suggested_cal
         warnings.filterwarnings('ignore', category=RuntimeWarning)
     
         # print('\n\nC L U M P S\n\n')
-        pj = np.pi*masspoints.clumpRadius[ens].T**2 / constants.voxel_size**2
+        pj = np.pi*masspoints.clump_radius[ens].T**2 / constants.voxel_size**2
 
-        if constants.clumpNmax[ens]:
+        if constants.clump_n_max[ens]:
             # scaling factor to set the maximum number of the largest clump
-            normalise = constants.clumpNmax[ens]/ensemble.clumpDeltaNji[ens][-1, :]
+            normalise = constants.clump_n_max[ens]/ensemble.clumpDeltaNji[ens][-1, :]
         else:
             normalise = np.clip(np.around(ensemble.clumpDeltaNji[ens][-1, :]), 1, None)\
                         / ensemble.clumpDeltaNji[ens][-1, :]
@@ -187,7 +187,7 @@ def createCombinationObjects(ensembleDispersion, dtype=np.float64, suggested_cal
     
         if constants.clumpNmax[ens]:
             # scaling factor to set the maximum number of the largest clump
-            normaliseMax = constants.clumpNmax[ens]/ensemble.clumpNj[ens][0,-1]
+            normaliseMax = constants.clump_n_max[ens]/ensemble.clumpNj[ens][0,-1]
         else:
             normaliseMax = np.clip(ensemble.clumpNj[ens][0, -1], 1, None) / ensemble.clumpNj[ens][0, -1]
         ensemble.clumpNormalisedNj[ens] = np.around(ensemble.clumpNj[ens]*normaliseMax)
@@ -218,7 +218,7 @@ def createCombinationObjects(ensembleDispersion, dtype=np.float64, suggested_cal
                   '\n', probableNumber, '\n', standardDeviation)
             input()
     
-        lower = np.zeros([constants.clumpLogMass[ens].size, 1])
+        lower = np.zeros([constants.clump_log_mass[ens].size, 1])
         clumpLower = np.maximum(lower,
                                 np.floor(clumpProbableNumber-constants.n_sigma*clumpStandardDeviation))
         clumpUpper = np.minimum(ensemble.clumpNormalisedDeltaNji[ens],
@@ -267,7 +267,7 @@ def createCombinationObjects(ensembleDispersion, dtype=np.float64, suggested_cal
         # loop over combinations of masspoints in each velocity bin
         for i,combinations in enumerate(ensemble.clumpCombinations[ens]):
             ensemble.clumpCombinations[ens][i] = combinations.T
-            probability = np.zeros((ensemble.clumpLargestCombination[ens], constants.clumpLogMass[ens].size),
+            probability = np.zeros((ensemble.clumpLargestCombination[ens], constants.clump_log_mass[ens].size),
                                    dtype=dtype)
             # maxProbability = np.zeros((ensemble.clumpLargestCombination[ens], constants.clumpLogMass[ens].size),
             #                           dtype=dtype)
@@ -287,8 +287,8 @@ def createCombinationObjects(ensembleDispersion, dtype=np.float64, suggested_cal
                     if constants.probability == 'binomial':
                         if verbose:
                             print(clumpProbableNumber.shape, combination.shape)
-                        iGauss = (clumpProbableNumber[:, i] > constants.pnGauss) & \
-                                 (ensemble.clumpNormalisedDeltaNji[ens][:, i] > constants.nGauss)
+                        iGauss = (clumpProbableNumber[:, i] > constants.pn_gauss) & \
+                                 (ensemble.clumpNormalisedDeltaNji[ens][:, i] > constants.n_gauss)
                         # print(iGauss.shape, iGauss)
                         if iGauss.any():
                             # use gauss!
@@ -350,8 +350,8 @@ def createCombinationObjects(ensembleDispersion, dtype=np.float64, suggested_cal
                         #     #   maxProbability[index,~iGauss] = (b.binomfunc(combination))[~iGauss]
           
                     elif constants.probability == 'poisson':
-                        iGauss = (clumpProbableNumber[:, i] > constants.pnGauss) & \
-                                 (ensemble.clumpNormalisedDeltaNji[ens][:, i] > constants.nGauss)
+                        iGauss = (clumpProbableNumber[:, i] > constants.pn_gauss) & \
+                                 (ensemble.clumpNormalisedDeltaNji[ens][:, i] > constants.n_gauss)
                         if iGauss.any():
                             # use gauss
                             if verbose:
@@ -379,8 +379,8 @@ def createCombinationObjects(ensembleDispersion, dtype=np.float64, suggested_cal
             #     input()
             #print((probability))
             while(len(probability) < ensemble.clumpLargestCombination[ens]):
-                probability.append(np.zeros((constants.clumpLogMass[ens].size)))
-                maxProbability.append(np.zeros((constants.clumpLogMass[ens].size)))
+                probability.append(np.zeros((constants.clump_log_mass[ens].size)))
+                maxProbability.append(np.zeros((constants.clump_log_mass[ens].size)))
                 if debug:
                     print('Probability length:', len(probability), ', last element shape:', probability[-1].shape)
                     input()
@@ -405,8 +405,8 @@ def createCombinationObjects(ensembleDispersion, dtype=np.float64, suggested_cal
                         if verbose:
                             print(CLmaxProbableNumber.shape, combination.shape)
 
-                        iGauss = ((CLmaxProbableNumber > constants.pnGauss) &
-                                  (ensemble.clumpNormalisedNj[ens] > constants.nGauss))[0]
+                        iGauss = ((CLmaxProbableNumber > constants.pn_gauss) &
+                                  (ensemble.clumpNormalisedNj[ens] > constants.n_gauss))[0]
                         
                         if iGauss.any():
                             # print(combination)
@@ -427,8 +427,8 @@ def createCombinationObjects(ensembleDispersion, dtype=np.float64, suggested_cal
                                                                              ensemble.clumpNormalisedNj[ens].flatten(),
                                                                              CLmaxSurfaceProbability.flatten())[~iGauss]
                     elif constants.probability == 'poisson':
-                        iGauss = ((CLmaxProbableNumber > constants.pnGauss) &
-                                  (ensemble.clumpNormalisedNj[ens] > constants.nGauss))[0]
+                        iGauss = ((CLmaxProbableNumber > constants.pn_gauss) &
+                                  (ensemble.clumpNormalisedNj[ens] > constants.n_gauss))[0]
                         if iGauss.any():
                             maxProbability[index, iGauss] = stats.norm.pdf(combination,
                                                                            loc=CLmaxProbableNumber.flatten(),
@@ -455,8 +455,8 @@ def createCombinationObjects(ensembleDispersion, dtype=np.float64, suggested_cal
                     print('Combination sizes:\n{}\n'.format(np.array(ensemble.clumpCombinations[ens][i].size)))
             input()
         ensemble.clumpIndeces[ens] = ensemble.clumpProbability[ens].prod(2).sum(1).nonzero()[0]
-        if ensemble.clumpIndeces[ens].size > constants.clumpMaxIndeces[ens]:
-            constants.clumpMaxIndeces[ens] = ensemble.clumpIndeces[ens].size
+        if ensemble.clumpIndeces[ens].size > constants.clump_max_indeces[ens]:
+            constants.clump_max_indeces[ens] = ensemble.clumpIndeces[ens].size
         # print(type(ensemble.clumpCombinations[ens]))
         ensemble.clumpCombinations[ens] = ensemble.clumpCombinations[ens][ensemble.clumpIndeces[ens][0]:
                                                                           (ensemble.clumpIndeces[ens][-1]+1)]
@@ -487,9 +487,9 @@ def calculate(afuv, debug=False, test=False):
     
     for combination in ensemble.clumpCombinationObjects:
         if (combination in ensemble.clumpCombinationObjects[-10:]) and test:
-            result = combination.calculateEmission(Afuv=afuv, test=True)
+            result = combination.calculate_emission(Afuv=afuv, test=True)
         else:
-            result = combination.calculateEmission(Afuv=afuv)
+            result = combination.calculate_emission(Afuv=afuv)
     
         intensityresult.append(result[0])
         opticaldepthresult.append(result[1])
@@ -509,32 +509,32 @@ def reinitialise():
   
     ensemble.clumpMass = 0
 
-    ensemble.clumpVelocities = [[] for _ in range(len(constants.clumpMassNumber))]
+    ensemble.clumpVelocities = [[] for _ in range(len(constants.clump_mass_number))]
   
-    ensemble.clumpNj = [[] for _ in range(len(constants.clumpMassNumber))]
-    ensemble.clumpDeltaNji = [[] for _ in range(len(constants.clumpMassNumber))]
-    ensemble.clumpNormalisedNj = [[] for _ in range(len(constants.clumpMassNumber))]
-    ensemble.clumpNormalisedDeltaNji = [[] for _ in range(len(constants.clumpMassNumber))]
-    ensemble.clumpSurfaceProbability = [[] for _ in range(len(constants.clumpMassNumber))]
-    ensemble.clumpProbableNumber = [[] for _ in range(len(constants.clumpMassNumber))]
-    ensemble.clumpStandardDeviation = [[] for _ in range(len(constants.clumpMassNumber))]
-    ensemble.CLmaxSurfaceProbability = [[] for _ in range(len(constants.clumpMassNumber))]
-    ensemble.CLmaxProbableNumber = [[] for _ in range(len(constants.clumpMassNumber))]
-    ensemble.CLmaxStandardDeviation = [[] for _ in range(len(constants.clumpMassNumber))]
+    ensemble.clumpNj = [[] for _ in range(len(constants.clump_mass_number))]
+    ensemble.clumpDeltaNji = [[] for _ in range(len(constants.clump_mass_number))]
+    ensemble.clumpNormalisedNj = [[] for _ in range(len(constants.clump_mass_number))]
+    ensemble.clumpNormalisedDeltaNji = [[] for _ in range(len(constants.clump_mass_number))]
+    ensemble.clumpSurfaceProbability = [[] for _ in range(len(constants.clump_mass_number))]
+    ensemble.clumpProbableNumber = [[] for _ in range(len(constants.clump_mass_number))]
+    ensemble.clumpStandardDeviation = [[] for _ in range(len(constants.clump_mass_number))]
+    ensemble.CLmaxSurfaceProbability = [[] for _ in range(len(constants.clump_mass_number))]
+    ensemble.CLmaxProbableNumber = [[] for _ in range(len(constants.clump_mass_number))]
+    ensemble.CLmaxStandardDeviation = [[] for _ in range(len(constants.clump_mass_number))]
   
-    ensemble.clumpNumberRange = [[] for _ in range(len(constants.clumpMassNumber))]
-    ensemble.CLmaxNumberRange = [[] for _ in range(len(constants.clumpMassNumber))]
+    ensemble.clumpNumberRange = [[] for _ in range(len(constants.clump_mass_number))]
+    ensemble.CLmaxNumberRange = [[] for _ in range(len(constants.clump_mass_number))]
 
-    ensemble.clumpCombinations = [[] for _ in range(len(constants.clumpMassNumber))]
-    ensemble.CLmaxCombinations = [[] for _ in range(len(constants.clumpMassNumber))]
+    ensemble.clumpCombinations = [[] for _ in range(len(constants.clump_mass_number))]
+    ensemble.CLmaxCombinations = [[] for _ in range(len(constants.clump_mass_number))]
 
-    ensemble.clumpLargestCombination = [0 for _ in range(len(constants.clumpMassNumber))]
-    ensemble.clumpLargestIndex = [0 for _ in range(len(constants.clumpMassNumber))]
+    ensemble.clumpLargestCombination = [0 for _ in range(len(constants.clump_mass_number))]
+    ensemble.clumpLargestIndex = [0 for _ in range(len(constants.clump_mass_number))]
   
-    ensemble.clumpProbability = [[] for _ in range(len(constants.clumpMassNumber))]
-    ensemble.CLmaxProbability = [[] for _ in range(len(constants.clumpMassNumber))]
+    ensemble.clumpProbability = [[] for _ in range(len(constants.clump_mass_number))]
+    ensemble.CLmaxProbability = [[] for _ in range(len(constants.clump_mass_number))]
   
-    ensemble.clumpIndeces = [[] for _ in range(len(constants.clumpMassNumber))]
+    ensemble.clumpIndeces = [[] for _ in range(len(constants.clump_mass_number))]
   
     return
 
