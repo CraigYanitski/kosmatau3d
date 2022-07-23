@@ -72,13 +72,13 @@ def interpolate_species_intensity(points, verbose=False):
             if constants.logEncoded:
                 if constants.interpolation == 'linear':
                     intensity[i] = (10**(species_intensity_interpolation[i](points)/10))
-                elif constants.interpolation == 'radial' or interpolation == 'cubic':
+                elif constants.interpolation == 'radial' or constants.interpolation == 'cubic':
                     intensity[i] = (10**(species_intensity_interpolation[i](points[0], points[1], points[2], points[3])/10))
             
             else:
                 if constants.interpolation == 'linear':
                     intensity[i] = (10**species_intensity_interpolation[i](points))
-                elif constants.interpolation == 'radial' or interpolation == 'cubic':
+                elif constants.interpolation == 'radial' or constants.interpolation == 'cubic':
                     intensity[i] = (10**species_intensity_interpolation[i](points[0], points[1], points[2], points[3]))
             # if (np.isnan(intensity[i]) or intensity[i]==0):
             #   intensity[i] = 10**-100
@@ -105,13 +105,13 @@ def interpolate_species_tau(points, verbose=False):
             if constants.logEncoded:
                 if constants.interpolation == 'linear':
                     tau[i] = (10**(species_tau_interpolation[i](points)/10))
-                elif constants.interpolation == 'radial' or interpolation == 'cubic':
+                elif constants.interpolation == 'radial' or constants.interpolation == 'cubic':
                     tau[i] = (10**(species_tau_interpolation[i](points[0], points[1], points[2], points[3])/10))
             
             else:
                 if constants.interpolation == 'linear':
                     tau[i] = (10**species_tau_interpolation[i](points))
-                elif constants.interpolation == 'radial' or interpolation == 'cubic':
+                elif constants.interpolation == 'radial' or constants.interpolation == 'cubic':
                     tau[i] = (10**species_tau_interpolation[i](points[0], points[1], points[2], points[3]))
             # if np.isnan(tau[i]): tau[i] = 10**-100
             if (tau[i] <= 0):
@@ -142,7 +142,7 @@ def interpolate_dust_intensity(points, verbose=False):
             for dust in dust_intensity_interpolation:
                 intensity.append(10**(dust(points)[0]/10))
         
-        elif constants.interpolation == 'radial' or interpolation == 'cubic':
+        elif constants.interpolation == 'radial' or constants.interpolation == 'cubic':
             intensity = (10**(dust_intensity_interpolation(points[0], points[1], points[2], points[3])/10))
     
     else:
@@ -151,7 +151,7 @@ def interpolate_dust_intensity(points, verbose=False):
             for dust in dust_intensity_interpolation:
                 intensity.append(10**(dust(points)[0]))
     
-        elif constants.interpolation == 'radial' or interpolation == 'cubic':
+        elif constants.interpolation == 'radial' or constants.interpolation == 'cubic':
             intensity = (10**dust_intensity_interpolation(points[0], points[1], points[2], points[3]))
     
     # Convert specific flux Jansky units to brightness temperature Kelvin units
@@ -170,7 +170,7 @@ def interpolate_dust_tau(points, verbose=False):
             for dust in dust_tau_interpolation:
                 tau.append(10**(dust(points)[0]/10))
   
-        elif constants.interpolation == 'radial' or interpolation == 'cubic':
+        elif constants.interpolation == 'radial' or constants.interpolation == 'cubic':
             tau = (10**(dust_tau_interpolation(points[0], points[1], points[2], points[3])/10))
     
     else:
@@ -179,7 +179,7 @@ def interpolate_dust_tau(points, verbose=False):
             for dust in dust_tau_interpolation:
                 tau.append(10**(dust(points)[0]))
     
-        elif constants.interpolation == 'radial' or interpolation == 'cubic':
+        elif constants.interpolation == 'radial' or constants.interpolation == 'cubic':
             tau = (10**dust_tau_interpolation(points[0], points[1], points[2], points[3]))
     # if np.isnan(tau[-1]): tau[-1] = 10**-100
     # elif tau[-1]<=0:
@@ -198,7 +198,7 @@ def interpolate_galaxy_rotational(radius):
 
 
 def interpolate_velocity_dispersion(radius):
-    return dispersion_interpolation(radius)
+    return velocity_dispersion_interpolation(radius)
 
 
 def interpolate_number_density(radius):
