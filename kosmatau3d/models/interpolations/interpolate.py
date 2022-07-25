@@ -94,7 +94,7 @@ def calculate_grid_interpolation(verbose=False, dilled=False):
             else:
                 interpolations.dust_intensity_interpolation = []
                 interpolations.dust_tau_interpolation = []
-                for i in np.where(constants.nDust)[0]:
+                for i in np.where(constants.n_dust)[0]:
                     interpolations.dust_intensity_interpolation.append(
                             copy(dust_intensity_interpolation[i]))
                     interpolations.dust_tau_interpolation.append(copy(dust_tau_interpolation[i]))
@@ -128,7 +128,7 @@ def calculate_grid_interpolation(verbose=False, dilled=False):
         if constants.dust:
             interpolations.dust_intensity_interpolation = []
             interpolations.dust_tau_interpolation = []
-            for i in np.where(constants.nDust)[0]:
+            for i in np.where(constants.n_dust)[0]:
                 interpolations.dust_intensity_interpolation.append(
                         interpolate.LinearNDInterpolator(crnmuvI,
                                                          logI[:, constants.molecule_number+i]))

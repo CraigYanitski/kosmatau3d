@@ -27,7 +27,7 @@ def initialise(ensembledispersion=0, ensemblemass=0, suggested_calc=True, verbos
     if verbose:
         print('Ensemble instance initialised\n')
     ensemble.clumpMass = ensemblemass
-    createCombinationObjects(ensembledispersion, dtype=constants.dtype, suggested_calc=suggested_calc)
+    create_combination_objects(ensembledispersion, dtype=constants.dtype, suggested_calc=suggested_calc)
     return
 
 
@@ -99,7 +99,7 @@ def calculate_combinations(clumpN, test=True, verbose=False):
     return combinations
 
 
-def create_combination_objects(ensembleDispersion, dtype=np.float64, suggested_calc=True, verbose=False, debug=False):
+def create_combination_objects(ensemble_dispersion, dtype=np.float64, suggested_calc=True, verbose=False, debug=False):
     '''
     This function removes all of the unnecessary degenerate looping during this calculation.
     Of course it is possible because of the wonders of numpy.ndarray(). . .
@@ -133,7 +133,7 @@ def create_combination_objects(ensembleDispersion, dtype=np.float64, suggested_c
         if verbose:
             print('velocity, mean, dispersion', self.__velocity, self.__velocity.mean(), self.__velocityDispersion)
 
-        system_dispersion = np.sqrt(np.abs(ensembleDispersion[ens]**2 - constants.clump_dispersion**2))
+        system_dispersion = np.sqrt(np.abs(ensemble_dispersion[ens]**2 - constants.clump_dispersion**2))
         if suggested_calc:
             dispersion = np.maximum(ensemble_dispersion[ens], constants.clump_dispersion)
             velocityStep = dispersion/constants.velocity_resolution
@@ -185,7 +185,7 @@ def create_combination_objects(ensembleDispersion, dtype=np.float64, suggested_c
         ensemble.clumpProbableNumber[ens] = clumpProbableNumber
         ensemble.clumpStandardDeviation[ens] = clumpStandardDeviation
     
-        if constants.clumpNmax[ens]:
+        if constants.clump_n_max[ens]:
             # scaling factor to set the maximum number of the largest clump
             normaliseMax = constants.clump_n_max[ens]/ensemble.clumpNj[ens][0,-1]
         else:
@@ -237,8 +237,8 @@ def create_combination_objects(ensembleDispersion, dtype=np.float64, suggested_c
             print('\nMasspoint number range:\n', ensemble.clumpNumberRange[ens].round())
             print('\nMasspoint number range:\n', ensemble.interclumpNumberRange.round())
         
-        ensemble.clumpCombinations[ens] = calculateCombinations(ensemble.clumpNumberRange[ens])
-        ensemble.CLmaxCombinations[ens] = calculateCombinations(ensemble.CLmaxNumberRange[ens])
+        ensemble.clumpCombinations[ens] = calculate_combinations(ensemble.clumpNumberRange[ens])
+        ensemble.CLmaxCombinations[ens] = calculate_combinations(ensemble.CLmaxNumberRange[ens])
 
         #########################################################################################
     
@@ -362,7 +362,7 @@ def create_combination_objects(ensembleDispersion, dtype=np.float64, suggested_c
                             # use poisson
                             if verbose:
                                 print('Poisson')
-                            probability[index, ~iGauss] = stats.pmf(combination, clumpProbableNumber[:, i])[~iGauss]
+                            probability[index, ~iGauss] = stats.poisson.pmf(combination, clumpProbableNumber[:, i])[~iGauss]
                         # iGauss = ((CLmaxProbableNumber > constants.pnGauss) &
                         #           (ensemble.clumpNormalisedNj[ens] > constants.nGauss))[0]
                         # if iGauss.any():
@@ -434,14 +434,14 @@ def create_combination_objects(ensembleDispersion, dtype=np.float64, suggested_c
                                                                            loc=CLmaxProbableNumber.flatten(),
                                                                            scale=CLmaxStandardDeviation.flatten())[iGauss]
                         if (~iGauss).any():
-                            maxProbability[index, ~iGauss] = stats.pmf(combination, clumpProbableNumber[:, i])[~iGauss]
+                            maxProbability[index, ~iGauss] = stats.poisson.pmf(combination, clumpProbableNumber[:, i])[~iGauss]
         maxProbability = np.array(maxProbability, dtype=dtype)
         ensemble.CLmaxProbability[ens] = maxProbability
 
         # ensemble.CLmaxProbability[ens] = np.array([maxProbability[i]/maxProbability.prod(1).sum(0)
         #                                            for i in range(maxProbability.shape[0])], dtype=np.float128)
   
-    for ens in range(len(constants.clumpMassNumber)):
+    for ens in range(len(constants.clump_mass_number)):
         if debug:
             print('Clump')
             for i in range(len(ensemble.clumpProbability[ens])):

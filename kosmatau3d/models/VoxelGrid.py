@@ -102,19 +102,19 @@ class VoxelGrid(object):
         rPol = np.linalg.norm(rPol, axis=1)
     
         # Velocity
-        velocity = interpolations.interpolateRotationalVelocity(rPol)
+        velocity = interpolations.interpolate_galaxy_rotation(rPol)
         
         if constants.fromEarth:
     
             # Calculate the correction to the voxel velocity vectors
-            relativeRpol = np.sqrt((x.flatten()-constants.rGalEarth)**2+y.flatten()**2)
-            relativePhi = np.arctan2(y.flatten(), constants.rGalEarth-x.flatten())
-            relativeSigma = np.arccos((rPol**2+relativeRpol**2-constants.rGalEarth**2)/(2*rPol*relativeRpol))
+            relativeRpol = np.sqrt((x.flatten()-constants.r_gal_earth)**2+y.flatten()**2)
+            relativePhi = np.arctan2(y.flatten(), constants.r_gal_earth-x.flatten())
+            relativeSigma = np.arccos((rPol**2+relativeRpol**2-constants.r_gal_earth**2)/(2*rPol*relativeRpol))
             relativeTheta = np.arctan(Z / relativeRpol)
       
             # Correct the relative velocity of the voxel
-            velocityEarth = interpolations.interpolateRotationalVelocity(constants.rGalEarth)
-            velocityCirc = velocity - velocityEarth*rPol/constants.rGalEarth
+            velocityEarth = interpolations.interpolate_galaxy_rotation(constants.r_gal_earth)
+            velocityCirc = velocity - velocityEarth*rPol/constants.r_gal_earth
       
             velocity = (np.sign(relativePhi) * velocityCirc * np.sin(relativeSigma) * np.cos(relativeTheta))
             # velocity = (np.sign(relativePhi) * velocityCirc * np.sin(relativeSigma))
@@ -125,12 +125,12 @@ class VoxelGrid(object):
             # self.__velocity = (velocity.mean()) * np.sin(self.__phi)
             
             # this is leftover from Silke's version
-            ensembleDispersion = np.sqrt(velocity.std()**2+(constants.ensembleDispersion)**2)
+            ensembleDispersion = np.sqrt(velocity.std()**2+(constants.ensemble_dispersion)**2)
             velocity = velocity.mean()
         
         else:
             velocity = velocity.mean()
-            ensembleDispersion = constants.ensembleDispersion
+            ensembleDispersion = constants.ensemble_dispersion
     
         # Use this to check the evaluation of the velocity field. It is still not working correctly...
         #print(self.__velocity)
@@ -141,13 +141,13 @@ class VoxelGrid(object):
 
         # # Mass (clump mass MH2+(1-f)*MHI, interclump mass f*MHI)
         ensembleMass = [(constants.h2_mass_factor
-                         * interpolations.interpolateClumpMass(rPol, Z)
+                         * interpolations.interpolate_h2_mass(rPol, Z)
                          + (1-constants.interclump_hi_ratio) 
                          * constants.hi_mass_factor
-                         * interpolations.interpolateInterclumpMass(rPol, Z)),
+                         * interpolations.interpolate_hi_mass(rPol, Z)),
                         (constants.interclump_hi_ratio
                          * constants.hi_mass_factor
-                         * interpolations.interpolateInterclumpMass(rPol, Z))]
+                         * interpolations.interpolate_hi_mass(rPol, Z))]
         ensembleMass = [constants.ensemble_mass_factor[ens]*np.asarray(ensembleMass).mean(1)[ens]
                         for ens in range(constants.ensembles)]
         # Mass (clump mass MH2+MHI, interclump mass determined by voxel size and filling factor)
@@ -158,14 +158,14 @@ class VoxelGrid(object):
         # ensembleDensity = interpolations.interpolateDensity(rPol)
         # ensembleDensity = [constants.densityFactor*ensembleDensity.mean(), constants.interclumpDensity]
         # Ensemble density (interclump density determined by maximum 0.01*n_cl and constant interclump density value)
-        ensembleDensity = interpolations.interpolateDensity(rPol)
+        ensembleDensity = interpolations.interpolate_number_density(rPol)
         ensembleDensity = constants.density_factor*ensembleDensity.mean()
 
         # clump_fillingfactor = ensembleMass * constants.massSolar / constants.massH \
         #                       / ensembleDensity / (constants.voxel_size*constants.pc*100)**3
         # if constants.interclump_fillingfactor == None:
         #     constants.interclump_fillingfactor = 1 - clump_fillingfactor
-        ensembleDensity = [ensembleDensity, np.max([0.01*ensembleDensity, constants.interclumpDensity])]
+        ensembleDensity = [ensembleDensity, np.max([0.01*ensembleDensity, constants.interclump_density])]
 
         # Mass (clump mass MH2+MHI, interclump mass determined by voxel size and filling factor)
         # ensembleMass = [constants.clumpMassFactor[0] * ensembleMass,
@@ -173,14 +173,14 @@ class VoxelGrid(object):
         #                 * (constants.pc*100)**3 * ensembleDensity[1] * constants.clumpMassFactor[1]]
     
         # FUV
-        fuv = constants.fuv_factor * interpolations.interpolateFUVfield(rPol, Z)
-        if not constants.clumpLogFUV is None:
-            clump_fuv = 10**constants.clumpLogFUV
+        fuv = constants.fuv_factor * interpolations.interpolate_fuv(rPol, Z)
+        if not constants.clump_log_fuv is None:
+            clump_fuv = 10**constants.clump_log_fuv
         else:
             # clump_fuv = np.clip(fuv, np.max((1, 10**constants.interclumpLogFUV)), None).mean()
             clump_fuv = np.clip(fuv, constants.fuv_ism, None).mean()
-        if not constants.interclumpLogFUV is None:
-            interclump_fuv = 10**constants.interclumpLogFUV
+        if not constants.interclump_log_fuv is None:
+            interclump_fuv = 10**constants.interclump_log_fuv
         else:
             # interclump_fuv = np.clip(fuv, np.max((1, 10**constants.clumpLogFUV)), None).mean()
             interclump_fuv = np.clip(fuv, constants.fuv_ism, None).mean()
@@ -204,18 +204,18 @@ class VoxelGrid(object):
             # Model parameters
             'from_grid': True,
             'voxel_size': constants.voxel_size,
-            'clumpMassRange': constants.clumpLogMassRange,
-            'clumpMassNumber': constants.clumpMassNumber,
-            'clumpNmax': constants.clumpNmax,
-            'velocityRange': constants.velocityBin,
-            'velocityNumber': constants.velocityNumber,
+            'clump_mass_range': constants.clumpLogMassRange,
+            'clump_mass_number': constants.clumpMassNumber,
+            'clump_n_max': constants.clumpNmax,
+            'velocity_range': constants.velocityBin,
+            'velocity_number': constants.velocityNumber,
     
             # Voxel properties
             'velocity': velocity,
-            'ensembleDispersion': ensembleDispersion,
-            'ensembleMass': ensembleMass,
-            'ensembleDensity': ensembleDensity,
-            'FUV': FUV,
+            'ensemble_dispersion': ensembleDispersion,
+            'ensemble_mass': ensembleMass,
+            'ensemble_density': ensembleDensity,
+            'fuv': FUV,
             'crir': crir,
 
             # Calculation
@@ -257,7 +257,7 @@ class VoxelGrid(object):
         
         # Setup fits files to stream the voxel emissivity and absorption.
         # species
-        dim = [len(species.moleculeWavelengths), constants.velocityRange.size, self.__voxelNumber]
+        dim = [len(species.molecule_wavelengths), constants.velocity_range.size, self.__voxelNumber]
         if verbose:
             print('species emission dimension:', dim)
         shdu_voxel_emissivity_species = self.shdu_header(name='Clump species emissivity', units='K/pc', 
@@ -267,7 +267,7 @@ class VoxelGrid(object):
                                                          molecules=True, filename='species_absorption',
                                                          velocity=True, dim=dim)
         # dust
-        nDust = constants.wavelengths[constants.nDust].size
+        nDust = constants.wavelengths[constants.n_dust].size
         dim = [nDust, self.__voxelNumber]
         if verbose:
             print('dust emission dimension:', dim)
@@ -276,14 +276,14 @@ class VoxelGrid(object):
         shdu_voxel_absorption_dust = self.shdu_header(name='Clump dust absorption', units='1/pc', 
                                                       dust=True, filename='dust_absorption', dim=dim)
         
-        dim = [np.sum(constants.clumpMassNumber), self.__voxelNumber]
+        dim = [np.sum(constants.clump_mass_number), self.__voxelNumber]
         shdu_clumpNj = self.shdu_header(name='N_j', units='N/A', filename='clump_number', dim=dim)
         shdu_clumpRj = self.shdu_header(name='Radius', units='pc', filename='clump_radius', dim=dim)
     
-        dim = [len(constants.clumpMassNumber), self.__voxelNumber]
+        dim = [len(constants.clump_mass_number), self.__voxelNumber]
         shdu_ensemble_mass = self.shdu_header(name='Ensemble mass', units='Msol', filename='voxel_ensemble_mass',
                                               dim=dim)
-        dim = [len(constants.clumpMassNumber), self.__voxelNumber]
+        dim = [len(constants.clump_mass_number), self.__voxelNumber]
         shdu_ensemble_density = self.shdu_header(name='Density', units='cm^-3', filename='voxel_density', dim=dim)
         dim = [3, self.__voxelNumber]
         shdu_voxel_position = self.shdu_header(name='Position', units='pc', filename='voxel_position', dim=dim)
@@ -291,7 +291,7 @@ class VoxelGrid(object):
         shdu_voxel_velocity = self.shdu_header(name='Velocity', units='km/s', filename='voxel_velocity', dim=dim)
         shdu_voxel_dispersion = self.shdu_header(name='Velocity dispersion', units='km/s',
                                                  filename='voxel_ensemble_dispersion', dim=dim)
-        dim = [len(constants.clumpMassNumber), self.__voxelNumber]
+        dim = [len(constants.clump_mass_number), self.__voxelNumber]
         shdu_FUV = self.shdu_header(name='FUV', units='Draine', filename='voxel_fuv', dim=dim)
         shdu_FUVabsorption = self.shdu_header(name='FUV optical depth', units='mag', filename='voxel_FUVabsorption', dim=dim)
         
@@ -303,14 +303,14 @@ class VoxelGrid(object):
             self.__y.append(y[i])
             self.__z.append(z[i])
       
-            voxel.setIndex(i)  # -len(self.__unusedVoxels))
-            voxel.setPosition(x[i], y[i], z[i], r[i], phi[i])
+            voxel.set_index(i)  # -len(self.__unusedVoxels))
+            voxel.set_position(x[i], y[i], z[i], r[i], phi[i])
             self.__calculateProperties(x[i], y[i], z[i], average=3)
             #t0 = time()
             #pprint(self.__properties)
-            voxel.setProperties(**self.__properties)
+            voxel.set_properties(**self.__properties)
             #print('Initialised:', (time()-t0)/60)
-            voxel.calculateEmission()
+            voxel.calculate_emission()
             #print('Calculated:', (time()-t0)/60)
             #print()
             
@@ -337,13 +337,13 @@ class VoxelGrid(object):
                     voxel = getProperties((i, copy(voxel)))
 
         
-                X, Y, Z = voxel.getPosition()
+                X, Y, Z = voxel.get_position()
                 self.__x.append(X)
                 self.__y.append(Y)
                 self.__z.append(Z)
                 
                 shdu_clumpNj.write(np.hstack(ensemble.clumpNj).flatten())
-                shdu_clumpRj.write(np.hstack(masspoints.clumpRadius).flatten())
+                shdu_clumpRj.write(np.hstack(masspoints.clump_radius).flatten())
                 
                 if timed:
                     self.__logger.info('\nVoxel initialised: {:.4f} s'.format(time()-t2))
@@ -351,23 +351,23 @@ class VoxelGrid(object):
                 # this is likely unneeded now that I am directly writing to a fits file
                 self.__voxelFUVabsorption.append(voxel.getFUVabsorption())
                 
-                shdu_voxel_position.write(voxel.getPosition())
-                velocity, dispersion = voxel.getVelocity()
+                shdu_voxel_position.write(voxel.get_position())
+                velocity, dispersion = voxel.get_velocity()
                 if isinstance(velocity, float):
                     shdu_voxel_velocity.write(np.array([velocity]))
                 else:
                     shdu_voxel_velocity.write(np.linalg.norm(velocity))
                 shdu_voxel_dispersion.write(np.array([dispersion[0]]))
-                shdu_ensemble_mass.write(np.asarray(voxel.getEnsembleMass()))
-                shdu_ensemble_density.write(np.asarray(voxel.getDensity()))
-                shdu_FUV.write(np.array([voxel.getFUV()]))
-                shdu_FUVabsorption.write(np.asarray([voxel.getFUVabsorption()]))
+                shdu_ensemble_mass.write(np.asarray(voxel.get_ensemble_mass()))
+                shdu_ensemble_density.write(np.asarray(voxel.get_density()))
+                shdu_FUV.write(np.array([voxel.get_fuv()]))
+                shdu_FUVabsorption.write(np.asarray([voxel.get_taufuv()]))
                 
                 # Save emissivity and absorption
-                shdu_voxel_emissivity_species.write(voxel.getSpeciesEmissivity(kind=kind, include_dust=True))
-                shdu_voxel_absorption_species.write(voxel.getSpeciesAbsorption(kind=kind, include_dust=True))
-                shdu_voxel_emissivity_dust.write(voxel.getDustEmissivity(minimal=True))
-                shdu_voxel_absorption_dust.write(voxel.getDustAbsorption(minimal=True))
+                shdu_voxel_emissivity_species.write(voxel.get_species_emissivity(kind=kind, include_dust=True))
+                shdu_voxel_absorption_species.write(voxel.get_species_absorption(kind=kind, include_dust=True))
+                shdu_voxel_emissivity_dust.write(voxel.get_dust_emissivity(minimal=True))
+                shdu_voxel_absorption_dust.write(voxel.get_dust_absorption(minimal=True))
                 
                 voxels[i] = None
                 # self.__voxels[i] = None
@@ -406,14 +406,14 @@ class VoxelGrid(object):
             # dim = [1, self.__voxelNumber]
             # shdu_mass = self.shdu_header(name='Mass', units='Msol', filename='voxel_mass', dim=dim)
       
-            dim = [len(constants.clumpMassNumber), self.__voxelNumber]
+            dim = [len(constants.clump_mass_number), self.__voxelNumber]
             shdu_clump_mass = self.shdu_header(name='Ensemble Mass', units='Msol', filename='voxel_ensemble_mass', dim=dim)
       
             # dim = [1, self.__voxelNumber]
             # shdu_interclump_mass = self.shdu_header(name='Interclump Mass', units='Msol',
             #                                         filename='voxel_interclump_mass', dim=dim)
       
-            dim = [len(constants.clumpMassNumber), self.__voxelNumber]
+            dim = [len(constants.clump_mass_number), self.__voxelNumber]
             shdu_density = self.shdu_header(name='Density', units='cm^-3', filename='voxel_density', dim=dim)
     
         dim = [3, self.__voxelNumber]
@@ -434,19 +434,19 @@ class VoxelGrid(object):
         shdu_clumpNj = self.shdu_header(name='N_j', units='N/A', filename='clump_number', dim=dim)
         shdu_clumpRj = self.shdu_header(name='Radius', units='pc', filename='clump_radius', dim=dim)
         
-        dim = [len(constants.clumpMassNumber), self.__voxelNumber]
+        dim = [len(constants.clump_mass_number), self.__voxelNumber]
         shdu_FUV = self.shdu_header(name='FUV', units='Draine', filename='voxel_fuv', dim=dim)
         shdu_FUVabsorption = self.shdu_header(name='tau_FUV', units='mag', filename='voxel_FUVabsorption', dim=dim)
     
         # This is for a test of the voxel Emissions before streaming
-        wav = np.append(constants.wavelengths[constants.nDust], species.moleculeWavelengths)
-        nDust = constants.wavelengths[constants.nDust].size
+        wav = np.append(constants.wavelengths[constants.n_dust], species.molecule_wavelengths)
+        nDust = constants.wavelengths[constants.n_dust].size
     
         # The dimensions of the emissions are the expected velocity range (5 for clumps, 9 for interclumps),
         # the number of wavelengths at which the emission is calculated (#molecules + 333 dust wavelengths),
         # and finally the number of voxels.
         # dim = [len(species.moleculeWavelengths)+nDust, constants.clumpMaxIndeces[0], self.__voxelNumber]
-        dim = [len(species.moleculeWavelengths), constants.velocityRange.size, self.__voxelNumber]
+        dim = [len(species.molecule_wavelengths), constants.velocity_range.size, self.__voxelNumber]
         shdu_clump_emissivity_species = self.shdu_header(name='Clump species emissivity', units='K/pc', molecules=True,
                                                          filename='species_emissivity_clump', dim=dim)
         shdu_clump_absorption_species = self.shdu_header(name='Clump species absorption', units='1/pc', molecules=True,
@@ -505,7 +505,7 @@ class VoxelGrid(object):
         
                 shdu_position.write(voxel.getPosition())
                 shdu_clumpNj.write(np.hstack(ensemble.clumpNj).flatten())
-                shdu_clumpRj.write(np.hstack(masspoints.clumpRadius).flatten())
+                shdu_clumpRj.write(np.hstack(masspoints.clump_radius).flatten())
                 velocity = voxel.getVelocity()[0]
                 if isinstance(velocity, float):
                     shdu_velocity.write(np.array([velocity]))
@@ -596,7 +596,7 @@ class VoxelGrid(object):
         if molecules:
             header['SPECIES'] = ', '.join(species.molecules)
         if dust:
-            header['DUST'] = ', '.join(constants.dustNames[constants.nDust])
+            header['DUST'] = ', '.join(constants.dust_names[constants.n_dust])
     
         header['NAME'] = name
         header['UNITS'] = units
@@ -614,7 +614,7 @@ class VoxelGrid(object):
                 header['CUNIT2'] = 'km/s'
                 header['CRPIX2'] = (header['NAXIS2']-1)/2
                 header['CRVAL2'] = 0
-                header['CDELT2'] = ((constants.velocityRange[-1]-constants.velocityRange[0])
+                header['CDELT2'] = ((constants.velocity_range[-1]-constants.velocity_range[0])
                                     /(header['NAXIS2']-1))
             elif velocity & i == 2:
                 header['CTYPE3'] = 'Voxel'
@@ -670,19 +670,19 @@ class VoxelGrid(object):
         header['COMMENT'] = 'x (pc): {}'.rjust(kw).format(x).ljust(cw)
         header['COMMENT'] = 'y (pc): {}'.rjust(kw).format(y).ljust(cw)
         header['COMMENT'] = 'z (pc): {}'.rjust(kw).format(z).ljust(cw)
-        header['COMMENT'] = 'radius (pc): {}'.rjust(kw).format(constants.rGal).ljust(cw)
-        header['COMMENT'] = 'R_gal,Sun (pc): {}'.rjust(kw).format(constants.rGalEarth).ljust(cw)
+        header['COMMENT'] = 'radius (pc): {}'.rjust(kw).format(constants.r_gal).ljust(cw)
+        header['COMMENT'] = 'R_gal,Sun (pc): {}'.rjust(kw).format(constants.r_gal_earth).ljust(cw)
         #header['COMMENT'] = '  thickness:'.ljust(50)
         header['COMMENT'] = ''.ljust(cw)
         header['COMMENT'] = ''.ljust(cw)
         header['COMMENT'] = 'Ensemble properties'.center(cw)
         header['COMMENT'] = ''.ljust(cw)
-        header['COMMENT'] = 'mass range (M_Sun): {}'.rjust(kw).format(constants.clumpLogMassRange).ljust(cw)
-        header['COMMENT'] = '# clumps: {}'.rjust(kw).format(constants.clumpMassNumber).ljust(cw)
-        header['COMMENT'] = 'log m_cl (M_Sun): {}'.rjust(kw).format(constants.clumpLogMass).ljust(cw)
-        header['COMMENT'] = 'N_m_cl: {}'.rjust(kw).format(constants.clumpMassNumber).ljust(cw)
-        header['COMMENT'] = 'v_obs_range (km/s): {}'.rjust(kw).format(constants.velocityBin).ljust(cw)
-        header['COMMENT'] = 'N_v_obs: {}'.rjust(kw).format(constants.velocityNumber).ljust(cw)
+        header['COMMENT'] = 'mass range (M_Sun): {}'.rjust(kw).format(constants.clump_log_mass_range).ljust(cw)
+        header['COMMENT'] = '# clumps: {}'.rjust(kw).format(constants.clump_mass_number).ljust(cw)
+        header['COMMENT'] = 'log m_cl (M_Sun): {}'.rjust(kw).format(constants.clump_log_mass).ljust(cw)
+        header['COMMENT'] = 'N_m_cl: {}'.rjust(kw).format(constants.clump_n_max).ljust(cw)
+        header['COMMENT'] = 'v_obs_range (km/s): {}'.rjust(kw).format(constants.velocity_bin).ljust(cw)
+        header['COMMENT'] = 'N_v_obs: {}'.rjust(kw).format(constants.velocity_number).ljust(cw)
         header['COMMENT'] = ''.ljust(cw)
         header['COMMENT'] = ''.ljust(cw)
         header['COMMENT'] = 'Parameters'.center(cw)

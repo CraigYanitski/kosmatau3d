@@ -5,7 +5,7 @@ from kosmatau3d.models import interpolations
 from kosmatau3d.models import species
 
 
-def addMolecules(molecules):
+def add_molecules(molecules):
     # This is currently setup to accept an acsii input only, in the format:
     # '{molecule} {transition}'. This will be cross-referenced with the molecules in
     # the model to determine what needs to be interpolated, and an error will

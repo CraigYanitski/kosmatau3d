@@ -20,7 +20,7 @@ an future update to perform the interpolation for all species at the same time.
 '''
 
 
-def setMasspointData(density=[], fuv=[0], crir=2e-16):
+def set_masspoint_data(density=[], fuv=[0], crir=2e-16):
     '''
     This sets the information for the masspoints used in a given voxel. The density should be in units of
     cm^-3, and the FUV field should be in units of the Draine field (2.7 * 10^-3 erg cm^-2)
@@ -49,7 +49,7 @@ def setMasspointData(density=[], fuv=[0], crir=2e-16):
     return
 
 
-def get_fuv_extinction(debug=False):
+def get_taufuv(debug=False):
     clumpAfuv = [[] for _ in range(len(constants.clump_mass_number))]
     for ens in range(len(constants.clump_mass_number)):
         clumpAfuv[ens] = interpolations.interpolate_taufuv(masspoints.clump_log_density[ens],
@@ -74,8 +74,8 @@ def masspoint_emission(interpolation_point, ens, masspoint, velocity=0, verbose=
   
     if len(species.molecules):
         # Intensity currently in converted to Jansky, to coinside with the dust continuum
-        intensity = interpolations.interpolate_intensity(interpolation_point)
-        tau = interpolations.interpolate_tau(interpolation_point)
+        intensity = interpolations.interpolate_species_intensity(interpolation_point)
+        tau = interpolations.interpolate_species_tau(interpolation_point)
     
         intensity_xi.append(intensity)
         opticaldepth_xi.append(tau)
@@ -106,7 +106,7 @@ def masspoint_emission(interpolation_point, ens, masspoint, velocity=0, verbose=
     return  # (intensity,opticalDepth)
 
 
-def calculate_emission(tauFUV=0, timed=False):
+def calculate_emission(taufuv=0, timed=False):
     '''
     This function can be called to set-up the clump emissions in the masspoints module. It calls masspointEmission() for
     each clump.

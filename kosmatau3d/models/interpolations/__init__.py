@@ -62,14 +62,14 @@ def interpolate_species_intensity(points, verbose=False):
     This is converted from brightness temperature to Jansky units.
     '''
     # Fully 'encode' the interpolation points to the fortran standard
-    if constants.logEncoded:
+    if constants.log_encoded:
         points = np.asarray(points)*10
     verbose = verbose or verbose
     if len(species.molecules):
         intensity = np.zeros(len(species.molecules))
         intensity_xi = 0
-        for i, index in enumerate(species.moleculeIndeces):
-            if constants.logEncoded:
+        for i, index in enumerate(species.molecule_indeces):
+            if constants.log_encoded:
                 if constants.interpolation == 'linear':
                     intensity[i] = (10**(species_intensity_interpolation[i](points)/10))
                 elif constants.interpolation == 'radial' or constants.interpolation == 'cubic':
@@ -95,14 +95,14 @@ def interpolate_species_intensity(points, verbose=False):
 
 def interpolate_species_tau(points, verbose=False):
     # Fully 'encode' the interpolation points to the fortran standard
-    if constants.logEncoded:
+    if constants.log_encoded:
         points = np.asarray(points)*10
     verbose = verbose or verbose
     # points = np.log10(points)
     if len(species.molecules):
         tau = np.zeros(len(species.molecules))
         for i, index in enumerate(species.molecule_indeces):
-            if constants.logEncoded:
+            if constants.log_encoded:
                 if constants.interpolation == 'linear':
                     tau[i] = (10**(species_tau_interpolation[i](points)/10))
                 elif constants.interpolation == 'radial' or constants.interpolation == 'cubic':
@@ -134,7 +134,7 @@ def interpolate_dust_intensity(points, verbose=False):
     This will calculate the intensity in Jansky units.
     '''
     # Fully 'encode' the interpolation points to the fortran standard
-    if constants.logEncoded:
+    if constants.log_encoded:
         points = np.asarray(points)*10
   
         if constants.interpolation == 'linear':
@@ -155,14 +155,14 @@ def interpolate_dust_intensity(points, verbose=False):
             intensity = (10**dust_intensity_interpolation(points[0], points[1], points[2], points[3]))
     
     # Convert specific flux Jansky units to brightness temperature Kelvin units
-    intensity = np.asarray(intensity) * 10**-26 * constants.wavelengths[constants.nDust]**2/2/constants.kB
+    intensity = np.asarray(intensity) * 10**-26 * constants.wavelengths[constants.n_dust]**2/2/constants.kB
   
     return intensity
 
 
 def interpolate_dust_tau(points, verbose=False):
     # Fully 'encode' the interpolation points to the fortran standard
-    if constants.logEncoded:
+    if constants.log_encoded:
         points = np.asarray(points)*10
         
         if constants.interpolation == 'linear':
@@ -193,7 +193,7 @@ def interpolate_dust_tau(points, verbose=False):
     return tau
 
 
-def interpolate_galaxy_rotational(radius):
+def interpolate_galaxy_rotation(radius):
     return galaxy_rotation_interpolation(radius)
 
 

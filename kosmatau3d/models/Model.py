@@ -36,12 +36,12 @@ class Model(object):
                  fuv_file='galactic_FUV_complete.dat', 
                  l_range=(912, 2066), average_fuv=False, like_clumps=False,
                  velocity_file='rot_milki2018_14.dat',
-                 x=0, y=0, z=0, modelType='', resolution=1000,
-                 molecules='all', dust='molecular', velocityRange=(), velocityNumber=0,
-                 clumpMassRange=((0, 2), (-2)), clumpMassNumber=(3, 1), clumpNmax=(1, 100), 
+                 x=0, y=0, z=0, model_type='', resolution=1000,
+                 molecules='all', dust='molecular', velocity_range=(), velocity_number=0,
+                 clump_mass_range=((0, 2), (-2)), clump_mass_number=(3, 1), clump_n_max=(1, 100), 
                  ensemble_mass_factor=(1, 1), interclump_hi_ratio=1,
-                 interclump_fillingfactor=None, interclumpLogFUV=None, clumpLogFUV=None,
-                 hi_mass_factor=1, h2_mass_factor=1, fuv_factor=1, density_factor=1, globalUV=10, 
+                 interclump_fillingfactor=None, interclump_log_fuv=None, clump_log_fuv=None,
+                 hi_mass_factor=1, h2_mass_factor=1, fuv_factor=1, density_factor=1, global_uv=10, 
                  r_cmz=0, zeta_cmz=1e-14, zeta_sol=2e-16, new_grid=True, suggested_calc=True,
                  dilled=False, timed=False, verbose=False, debug=False):
       
@@ -53,11 +53,11 @@ class Model(object):
             # sys.exit()
         
         # this just adds a label to the type of model being created. ie 'disk', 'bar', 'sphere', etc.
-        constants.type = modelType
+        constants.type = model_type
         constants.voxel_size = float(resolution)
         constants.HISTORYPATH = history_path
         constants.history = folder
-        constants.changeDirectory(directory)
+        constants.change_directory(directory)
         
         # Factors
         constants.ensemble_mass_factor = ensemble_mass_factor
@@ -68,16 +68,16 @@ class Model(object):
         constants.density_factor = density_factor
         constants.fuv_factor = fuv_factor
         # constants.globalUV = globalUV
-        constants.clumpLogFUV = clumpLogFUV
-        constants.interclumpLogFUV = interclumpLogFUV
+        constants.clump_log_fuv = clump_log_fuv
+        constants.interclump_log_fuv = interclump_log_fuv
         constants.r_cmz = r_cmz
         constants.zeta_cmz = zeta_cmz
         constants.zeta_sol = zeta_sol
 
         # Clump properties
-        constants.changeVelocityRange(velocityRange)
-        constants.changeVelocityNumber(velocityNumber)
-        constants.addClumps(massRange=clumpMassRange, num=clumpMassNumber, Nmax=clumpNmax, reset=True)
+        constants.change_velocity_range(velocityRange)
+        constants.change_velocity_number(velocityNumber)
+        constants.add_clumps(mass_range=clump_mass_range, num=clump_mass_number, n_max=clump_n_max, reset=True)
         
         # Read grid & input data, specify transitions, and interpolate
         constants.tb_grid_file = tb_grid_file
@@ -98,7 +98,7 @@ class Model(object):
                                               velocity_file=velocity_file)
         constants.dust = dust
         self.__addSpecies(molecules)
-        constants.changeDustWavelengths(constants.dust)
+        constants.change_dust_wavelengths(constants.dust)
         if not interpolations.initialised or new_grid:
             interpolations.initialise_grid(dilled=dilled)
             constants.average_fuv = average_fuv
@@ -111,7 +111,7 @@ class Model(object):
         self.__logger = getLogger()
 
         # Shape() object to create the parameters for the grid of voxels
-        self.__shape = shape.Shape(x, y, z, modelType=modelType)
+        self.__shape = shape.Shape(x, y, z, modelType=model_type)
         # VoxelGrid() object to build the model and calculate the emission
         self.__grid = VoxelGrid(self.__shape, suggested_calc=suggested_calc)
         # Orientation() object to change the viewing angle and expected spectra
@@ -124,15 +124,15 @@ class Model(object):
         self.__mapPositions = []
         return
   
-    def __addSpecies(self, speciesTransition):
-        species.addMolecules(speciesTransition)
+    def __addSpecies(self, species_transition):
+        species.add_molecules(species_transition)
         return
   
     def __str__(self):
         printout = 'A {} model of {} voxels'.format(constants.type, self.getGrid().getVoxelNumber())
         if self.__verbose:
             printout += '\n  arranged in {}'.format(self.__shape.getDimensions())
-            printout += '\n\nConsidering {} species:\n{}\n{}'.format(len(self.speciesNames),
+            printout += '\n\nConsidering {} species:\n{}\n{}'.format(len(self.species_names),
                                                                      self.__molecules,
                                                                      self.__dust)
         emission = self.__grid.totalEmission()
@@ -158,10 +158,10 @@ class Model(object):
     #   return self.__observations
   
     def getSpecies(self):
-        return species.speciesNames
+        return species.species_names
   
     def getSpeciesNames(self):
-        return species.speciesNames
+        return species.species_names
   
     # def reloadModules(self):
     #   il.reload(Shape)
@@ -321,9 +321,9 @@ class Model(object):
         header['UNITS'] = units
         
         if '.fits' not in filename:
-            filename = constants.HISTORYPATH + constants.directory + 'r{}_n{}/'.format(constants.resolution,
-                                                                                       self.__shape.voxelNumber()) + \
-                                               filename + '.fits'
+            filename = constants.HISTORYPATH + constants.directory + \
+                       'r{}_n{}/'.format(constants.resolution, self.__shape.voxelNumber()) + \
+                       filename + '.fits'
         else:
             filename = constants.HISTORYPATH + constants.directory + filename
         
