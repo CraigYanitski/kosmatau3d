@@ -28,15 +28,19 @@ def initialise_grid(tau_grid_file='clump_tau_LineCenter.dat',
     return
 
 
-def initialise_input(h2_mass_file='mass_profile.dat', 
-                     hi_mass_file='mass_profile_inter.dat', 
-                     density_file='densities_clouds.dat', 
+def initialise_input(h2_surface_density_file='h2_surface-density.dat', 
+                     hi_surface_density_file='hi_surface-density.dat', 
+                     h2_scale_height_file='h2_scale-height.dat', 
+                     hi_scale_height_file='hi_scale-height.dat', 
+                     h_number_density_file='h_number-density.dat', 
                      fuv_file='galactic_FUV_complete.dat', 
                      velocity_file='rot_milki2018_14.dat'):
     # Model
-    h2_surface__mass_profile(h2_mass_file)
-    hi_surface_mass_profile(hi_mass_file)
-    number_density_profile(density_file)
+    h2_surface_mass_profile(h2_surface_density_file)
+    hi_surface_mass_profile(hi_surface_density_file)
+    h2_scale_height_profile(h2_scale_height_file)
+    hi_scale_height_profile(hi_scale_height_file)
+    number_density_profile(h_number_density_file)
     fuv_profile(fuv_file)
     galaxy_rotation_profile(velocity_file)
 
@@ -113,7 +117,8 @@ def e_tilde_imaginary(file='Eimag.dat'):
 def h2_surface_mass_profile(file='h2_surface-density.dat'):
     # Open file for the mass profile (clump) of the object (Msol/pc**2)
     if constants.directory != '':
-        sigma_h2 = pd.read_csv(constants.INPUTPATH+constants.directory+file, sep=' ')
+        sigma_h2 = pd.read_csv(constants.INPUTPATH+constants.directory+file, 
+                               delim_whitespace=True, skiprows=1)
         # if constants.voxel_size > 2*constants.scale_height_h2:
         #     r = np.hstack((clumpMass['r'] * 1000, clumpMass['r'] * 1000))
         #     z = np.hstack((np.zeros_like(clumpMass['r'] * 1000, dtype=float), 
@@ -142,7 +147,8 @@ def h2_surface_mass_profile(file='h2_surface-density.dat'):
 def hi_surface_mass_profile(file='hi_surface-density.dat'):
     # Open file for the mass profile (interclump) of the object (Msol/pc**2)
     if constants.directory != '':
-        sigma_hi = pd.read_csv(constants.INPUTPATH+constants.directory+file, sep=' ')
+        sigma_hi = pd.read_csv(constants.INPUTPATH+constants.directory+file, 
+                               delim_whitespace=True, skiprows=1)
         # if constants.voxel_size > 2*constants.scale_height_hi:
         #     r = np.hstack((interclumpMass['r'] * 1000, interclumpMass['r'] * 1000))
         #     z = np.hstack((np.zeros_like(interclumpMass['r'] * 1000, dtype=float), 
@@ -187,7 +193,7 @@ def hi_scale_height_profile(file='hi_scale-height.dat'):
     return
 
 
-def number_density_profile(file='densities_clouds.dat'):
+def number_density_profile(file='number-densities.dat'):
     # Open file for the number density profile of the object (n/cm**3)
     if constants.directory != '':
         density = np.genfromtxt(constants.INPUTPATH+constants.directory+file, 

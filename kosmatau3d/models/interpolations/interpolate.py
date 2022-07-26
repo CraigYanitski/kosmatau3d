@@ -264,35 +264,36 @@ def calculate_h2_mass(verbose=False, dilled=False):
         if verbose:
             print('Creating clump mass interpolation')
         r_s, sigma_h2 = observations.h2_surface_mass_profile
-        f_sigma = interpolate.interp1d(r_s, sigma_h2, kind='quadratic', 
-                                       fill_value=(sigma_h2[0], sigma_h2[-1]))
+        f_sigma = interpolate.interp1d(r_s.values, sigma_h2.values, kind='quadratic', 
+                                       bounds_error=False, 
+                                       fill_value=(sigma_h2.values[0], sigma_h2.values[-1]))
         r_h, h_h2 = observations.h2_scale_height_profile
-        f_h = interpolate.interp1d(r_h, h_h2, kind='linear', 
+        f_h = interpolate.interp1d(r_h.values, h_h2.values, kind='linear', 
                                    fill_value='extrapolate')
-        r_new = np.linspace(0, constants.rgal, num=100)*1000
+        r_new = np.linspace(0, constants.rgal, num=100)
         half_height = np.sqrt(2*np.log(2))*f_h(r_new)
         rho_0 = f_sigma(r_new)/2/half_height
         i_partial = constants.voxel_size >= 2*half_height
         i_full = constants.voxel_size < 2*half_height
         n_z = np.ceil(half_height/constants.voxel_size*10).astype(int)
-        r_mass = np.hstack(list(r_new for _ in range(n_z+1)))
+        r_mass = np.hstack(list(r_new for _ in range(n_z.max()+1)))
         z_mass = np.hstack(list(np.full_like(r_new, _*0.1*constants.voxel_size, dtype=float) 
-                                for _ in range(n_z+1)))
-        m_mass = list(np.zeros_like(r_new, dtype=float) for _ in range(n_z+1))
-        for _ in range(n_z+1):
+                                for _ in range(n_z.max()+1)))
+        m_mass = list(np.zeros_like(r_new, dtype=float) for _ in range(n_z.max()+1))
+        for _ in range(n_z.max()+1):
             lim_l = (_*0.1-0.5)*constants.voxel_size
             lim_u = (_*0.1+0.5)*constants.voxel_size
             i_full = (lim_l>=-half_height) & (lim_u<=half_height)
             i_partial = (lim_l>=-half_height) & (lim_u>half_height)
             i_all = (lim_l<-half_height) & (lim_u>half_height)
             m_mass[_][i_full] = rho_0[i_full] * constants.voxel_size**3
-            m_mass[_][i_partial] = rho_0[i_partial] * constants.voxel_size**2 * (half_height-lim_l)
-            m_mass[_][i_all] = rho_0[i_all] * constants.voxel_size**2 * 2*half_height
+            m_mass[_][i_partial] = rho_0[i_partial] * constants.voxel_size**2 * (half_height[i_partial]-lim_l)
+            m_mass[_][i_all] = rho_0[i_all] * constants.voxel_size**2 * 2*half_height[i_all]
         interpolations.h2_mass_full = pd.DataFrame(data={'r':r_mass, 
                                                          'z':z_mass, 
                                                          'M':np.hstack(m_mass)})
-        return interpolate.LinearNDInterpolator(np.array(interpolations.h2_mass_full.r, 
-                                                         interpolations.h2_mass_full.z),
+        return interpolate.LinearNDInterpolator(np.array([interpolations.h2_mass_full.r, 
+                                                          interpolations.h2_mass_full.z]).T,
                                                 interpolations.h2_mass_full.M)
         # if constants.interpolation == 'linear':
         #     return interpolate.LinearNDInterpolator(np.array([clumpMass.R, clumpMass.Z]), 
@@ -320,34 +321,35 @@ def calculate_hi_mass(like_clumps=False, verbose=False, dilled=True):
         else:
             r_s, sigma_hi = observations.hi_surface_mass_profile
             r_h, h_hi = observations.hi_scale_height_profile
-        f_sigma = interpolate.interp1d(r_s, sigma_hi, kind='quadratic', 
-                                       fill_value=(sigma_hi[0], sigma_hi[-1]))
-        f_h = interpolate.interp1d(r_h, h_hi, kind='linear', 
+        f_sigma = interpolate.interp1d(r_s.values, sigma_hi.values, kind='quadratic', 
+                                       bounds_error=False, 
+                                       fill_value=(sigma_hi.values[0], sigma_hi.values[-1]))
+        f_h = interpolate.interp1d(r_h.values, h_hi.values, kind='linear', 
                                    fill_value='extrapolate')
-        r_new = np.linspace(0, constants.rgal, num=100)*1000
+        r_new = np.linspace(0, constants.rgal, num=100)
         half_height = np.sqrt(2*np.log(2))*f_h(r_new)
         rho_0 = f_sigma(r_new)/2/half_height
         i_partial = constants.voxel_size >= 2*half_height
         i_full = constants.voxel_size < 2*half_height
         n_z = np.ceil(half_height/constants.voxel_size*10).astype(int)
-        r_mass = np.hstack(list(r_new for _ in range(n_z+1)))
+        r_mass = np.hstack(list(r_new for _ in range(n_z.max()+1)))
         z_mass = np.hstack(list(np.full_like(r_new, _*0.1*constants.voxel_size, dtype=float) 
-                                for _ in range(n_z+1)))
-        m_mass = list(np.zeros_like(r_new, dtype=float) for _ in range(n_z+1))
-        for _ in range(n_z+1):
+                                for _ in range(n_z.max()+1)))
+        m_mass = list(np.zeros_like(r_new, dtype=float) for _ in range(n_z.max()+1))
+        for _ in range(n_z.max()+1):
             lim_l = (_*0.1-0.5)*constants.voxel_size
             lim_u = (_*0.1+0.5)*constants.voxel_size
             i_full = (lim_l>=-half_height) & (lim_u<=half_height)
             i_partial = (lim_l>=-half_height) & (lim_u>half_height)
             i_all = (lim_l<-half_height) & (lim_u>half_height)
             m_mass[_][i_full] = rho_0[i_full] * constants.voxel_size**3
-            m_mass[_][i_partial] = rho_0[i_partial] * constants.voxel_size**2 * (half_height-lim_l)
-            m_mass[_][i_all] = rho_0[i_all] * constants.voxel_size**2 * 2*half_height
+            m_mass[_][i_partial] = rho_0[i_partial] * constants.voxel_size**2 * (half_height[i_partial]-lim_l)
+            m_mass[_][i_all] = rho_0[i_all] * constants.voxel_size**2 * 2*half_height[i_all]
         interpolations.hi_mass_full = pd.DataFrame(data={'r':r_mass, 
                                                          'z':z_mass, 
                                                          'M':np.hstack(m_mass)})
-        return interpolate.LinearNDInterpolator(np.array(interpolations.hi_mass_full.r, 
-                                                         interpolations.hi_mass_full.z),
+        return interpolate.LinearNDInterpolator(np.array([interpolations.hi_mass_full.r, 
+                                                          interpolations.hi_mass_full.z]).T,
                                                 interpolations.hi_mass_full.M)
         # if constants.interpolation == 'linear':
         #     return interpolate.LinearNDInterpolator(np.asarray([interclumpMass.R, interclumpMass.Z]), 

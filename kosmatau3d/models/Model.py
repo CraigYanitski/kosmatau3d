@@ -30,9 +30,11 @@ class Model(object):
                  tau_grid_file='clump_tau_LineCenter.dat', 
                  tb_grid_file='clump_Tmb_LineCenter.dat', 
                  tau_fuv_grid_file='RhoMassAFUV.dat',
-                 h2_mass_file='h2_density_profile.dat', 
-                 hi_mass_file='hi_density_profile.dat', 
-                 density_file='densities_clouds.dat', 
+                 h2_surface_density_file='h2_surface-density.dat', 
+                 hi_surface_density_file='hi_surface-density.dat', 
+                 h2_scale_height_file='h2_scale-height.dat', 
+                 hi_scale_height_file='hi_scale-height.dat', 
+                 h_number_density_file='h_number-density.dat', 
                  fuv_file='galactic_FUV_complete.dat', 
                  l_range=(912, 2066), average_fuv=False, like_clumps=False,
                  velocity_file='rot_milki2018_14.dat',
@@ -45,10 +47,10 @@ class Model(object):
                  r_cmz=0, zeta_cmz=1e-14, zeta_sol=2e-16, new_grid=True, suggested_calc=True,
                  dilled=False, timed=False, verbose=False, debug=False):
       
-        if not len(clumpMassRange):
+        if not len(clump_mass_range):
             sys.exit('<<ERROR>> Define mass sets in argument.')
             # sys.exit()
-        if not len(velocityRange):
+        if not len(velocity_range):
             sys.exit('<<ERROR>> Define observing velocities in argument.')
             # sys.exit()
         
@@ -75,8 +77,8 @@ class Model(object):
         constants.zeta_sol = zeta_sol
 
         # Clump properties
-        constants.change_velocity_range(velocityRange)
-        constants.change_velocity_number(velocityNumber)
+        constants.change_velocity_range(velocity_range)
+        constants.change_velocity_number(velocity_number)
         constants.add_clumps(mass_range=clump_mass_range, num=clump_mass_number, n_max=clump_n_max, reset=True)
         
         # Read grid & input data, specify transitions, and interpolate
@@ -86,14 +88,18 @@ class Model(object):
         observations.methods.initialise_grid(tau_grid_file=tau_grid_file, 
                                              tb_grid_file=tb_grid_file, 
                                              tau_fuv_grid_file=tau_fuv_grid_file)
-        constants.h2_mass_file = h2_mass_file
-        constants.hi_mass_file = hi_mass_file
-        constants.density_file = density_file
+        constants.h2_surface_density_file = h2_surface_density_file
+        constants.hi_surface_density_file = hi_surface_density_file
+        constants.h2_scale_height_file = h2_scale_height_file
+        constants.hi_scale_height_file = hi_scale_height_file
+        constants.h_number_density_file = h_number_density_file
         constants.fuv_file = fuv_file
         constants.velocity_file = velocity_file
-        observations.methods.initialise_input(h2_mass_file=h2_mass_file, 
-                                              hi_mass_file=hi_mass_file, 
-                                              density_file=density_file, 
+        observations.methods.initialise_input(h2_surface_density_file=h2_surface_density_file, 
+                                              hi_surface_density_file=hi_surface_density_file, 
+                                              h2_scale_height_file=h2_scale_height_file, 
+                                              hi_scale_height_file=hi_scale_height_file, 
+                                              h_number_density_file=h_number_density_file, 
                                               fuv_file=fuv_file,
                                               velocity_file=velocity_file)
         constants.dust = dust
