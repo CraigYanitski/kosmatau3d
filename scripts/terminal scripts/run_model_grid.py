@@ -30,7 +30,7 @@ parameters = {
               'x': 36,
               'y': 36,
               'z': 0,
-              'modelType': 'disk',
+              'model_type': 'disk',
 
               # Model parameters
               'resolution': 400,
@@ -46,13 +46,13 @@ parameters = {
                             'HCO+ 1', 'HCO+ 2', 'HCO+ 3', 'HCO+ 4', 'HCO+ 5'],
               # 'dust': 'PAH',
               'dust': ['240um', '550um'],
-              'clumpMassRange': [[0, 2], [-2]],
-              'clumpMassNumber': [3, 1],
-              'clumpNmax': [1, 100],
-              'clumpLogFUV' : None,
-              'interclumpLogFUV' : None,
-              'velocityRange': [-350, 350],
-              'velocityNumber': 701,
+              'clump_mass_range': [[0, 2], [-2]],
+              'clump_mass_number': [3, 1],
+              'clump_n_max': [1, 100],
+              'clump_log_fuv' : None,
+              'interclump_log_fuv' : None,
+              'velocity_range': [-350, 350],
+              'velocity_number': 701,
 
               # Flags
               'suggested_calc': True,
