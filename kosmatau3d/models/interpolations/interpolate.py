@@ -264,13 +264,13 @@ def calculate_h2_mass(verbose=False, dilled=False):
         if verbose:
             print('Creating clump mass interpolation')
         r_s, sigma_h2 = observations.h2_surface_mass_profile
-        f_sigma = interpolate.interp1d(r_s.values, sigma_h2.values, kind='quadratic', 
+        f_sigma = interpolate.interp1d(r_s.values, sigma_h2.values, kind='linear', 
                                        bounds_error=False, 
                                        fill_value=(sigma_h2.values[0], sigma_h2.values[-1]))
         r_h, h_h2 = observations.h2_scale_height_profile
         f_h = interpolate.interp1d(r_h.values, h_h2.values, kind='linear', 
                                    fill_value='extrapolate')
-        r_new = np.linspace(0, constants.rgal, num=100)
+        r_new = np.linspace(0, constants.rgal*1.1, num=100)
         half_height = np.sqrt(2*np.log(2))*f_h(r_new)
         rho_0 = f_sigma(r_new)/2/half_height
         i_partial = constants.voxel_size >= 2*half_height
@@ -321,12 +321,12 @@ def calculate_hi_mass(like_clumps=False, verbose=False, dilled=True):
         else:
             r_s, sigma_hi = observations.hi_surface_mass_profile
             r_h, h_hi = observations.hi_scale_height_profile
-        f_sigma = interpolate.interp1d(r_s.values, sigma_hi.values, kind='quadratic', 
+        f_sigma = interpolate.interp1d(r_s.values, sigma_hi.values, kind='linear', 
                                        bounds_error=False, 
                                        fill_value=(sigma_hi.values[0], sigma_hi.values[-1]))
         f_h = interpolate.interp1d(r_h.values, h_hi.values, kind='linear', 
                                    fill_value='extrapolate')
-        r_new = np.linspace(0, constants.rgal, num=100)
+        r_new = np.linspace(0, constants.rgal*1.1, num=100)
         half_height = np.sqrt(2*np.log(2))*f_h(r_new)
         rho_0 = f_sigma(r_new)/2/half_height
         i_partial = constants.voxel_size >= 2*half_height
