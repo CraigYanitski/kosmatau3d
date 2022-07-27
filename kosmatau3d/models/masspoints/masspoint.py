@@ -2,6 +2,7 @@ import importlib as il
 from time import time
 
 import numpy as np
+from copy import copy, deepcopy
 from numba import jit_module
 import matplotlib.pyplot as plt
 
@@ -82,7 +83,7 @@ def masspoint_emission(interpolation_point, ens, masspoint, velocity=0, verbose=
   
     else:
         intensity_xi.append([])
-        opticalDepth_xi.append([])
+        opticaldepth_xi.append([])
   
     if debug:
         print(intensity)
@@ -100,8 +101,10 @@ def masspoint_emission(interpolation_point, ens, masspoint, velocity=0, verbose=
         intensity_xi.append([])
         opticaldepth_xi.append([])
   
-    masspoints.clump_intensity[ens][masspoint, :] = np.append(intensity_xi[1], intensity_xi[0])
-    masspoints.clump_optical_depth[ens][masspoint, :] = np.append(opticaldepth_xi[1], opticaldepth_xi[0])
+    masspoints.clump_species_intensity[ens][masspoint, :] = copy(intensity_xi[0])
+    masspoints.clump_species_optical_depth[ens][masspoint, :] = copy(opticaldepth_xi[0])
+    masspoints.clump_dust_intensity[ens][masspoint, :] = copy(intensity_xi[1])
+    masspoints.clump_dust_optical_depth[ens][masspoint, :] = copy(opticaldepth_xi[1])
   
     return  # (intensity,opticalDepth)
 
@@ -261,6 +264,16 @@ def reinitialise():
                                                 len(species.molecules) 
                                                     + constants.wavelengths[constants.n_dust].size))
                                       for _ in range(constants.ensembles)]
+    clump_species_intensity = [np.zeros((constants.clump_mass_number[_], len(species.molecules)))
+                               for _ in range(len(constants.clump_mass_number))]
+    clump_species_optical_depth = [np.zeros((constants.clump_mass_number[_], len(species.molecules)))
+                                   for _ in range(len(constants.clump_mass_number))]
+    clump_dust_intensity = [np.zeros((constants.clump_mass_number[_],
+                                      constants.wavelengths[constants.n_dust].size))
+                            for _ in range(len(constants.clump_mass_number))]
+    clump_dust_optical_depth = [np.zeros((constants.clump_mass_number[_],
+                                         constants.wavelengths[constants.n_dust].size))
+                                for _ in range(len(constants.clump_mass_number))]
   
     return
 

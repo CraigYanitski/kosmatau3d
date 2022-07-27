@@ -84,7 +84,7 @@ def interpolate_species_intensity(points, verbose=False):
             #   intensity[i] = 10**-100
             # intensity[i] *= 2*constants.kB/4/np.pi/species.moleculeWavelengths[i]**2/10**-26
         if verbose:
-            print('Calculated the intensity for {} species.'.format(len(speciesNumber)))
+            print('Calculated the intensity for {} species.'.format(len(species.molecules)))
         return intensity
     else: return
     # else:
@@ -119,7 +119,7 @@ def interpolate_species_tau(points, verbose=False):
                 # tau[i] = 10**-100
                 input('\n<<ERROR>> Negative opacity {} found.\n'.format(temp))
         if verbose:
-            print('Calculated the optical depth for {} species.'.format(len(speciesNumber)))
+            print('Calculated the optical depth for {} species.'.format(len(species.molecules)))
         return np.array(tau)
     else:
       return

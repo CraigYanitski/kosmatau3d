@@ -110,7 +110,7 @@ def calculateObservation(directory='', dim='xy', terminal=True, vel_pool=False, 
     rt.open_voxel_velocities(directory)
     rt.open_voxel_emission(directory, verbose=verbose)
   
-    nDust = rt.tempDustEmissivity[0].shape[1]
+    nDust = rt.temp_dust_emissivity[0].shape[1]
     if nDust > 10:
         # default interpolation is along the last axis, which is what we need
         rt.interpDust = interpolate.interp1d(constants.wavelengths[:nDust],
@@ -431,7 +431,7 @@ def multiprocessCalculation(slRange=[(-np.pi,np.pi), (-np.pi/2,np.pi/2)], nsl=[5
                                           rt.temp_species_emissivity[0].shape[2]))
         optical_depth_map_species = np.zeros((rt.temp_species_absorption[0].shape[1], lat.size, lon.size,
                                               rt.temp_species_absorption[0].shape[2]))
-        intensity_map_dust = np.zeros((lat.size, lon.size, rt.temp_dust_Emissivity[0].shape[1]))
+        intensity_map_dust = np.zeros((lat.size, lon.size, rt.temp_dust_emissivity[0].shape[1]))
         optical_depth_map_dust = np.zeros((lat.size, lon.size, rt.temp_dust_absorption[0].shape[1]))
         sightlines = np.zeros((lon.size, lat.size))
         args = (list(enumerate(zip(longrid, latgrid))), longrid.size)
@@ -565,8 +565,8 @@ def calculateVelocityChannel(ivelocity, slRange=[(-np.pi,np.pi), (-np.pi/2,np.pi
     else:
         base = rt.temp_dust_emissivity[0].data[0, 0]
       
-    rt.i_vox = ((rt.tempSpeciesEmissivity[0].data[:, i_vel, :] > base).any(1) |
-                               rt.tempDustEmissivity[0].data[:, :].any(1))
+    rt.i_vox = ((rt.temp_species_emissivity[0].data[:, i_vel, :] > base).any(1) |
+                               rt.temp_dust_emissivity[0].data[:, :].any(1))
     
     # print('Voxels selected (shape={}):'.format(i_vox[i_vox].shape), time()-t0)
   
@@ -1385,12 +1385,12 @@ if __name__ == '__main__':
   
     constants.velocityRange = np.linspace(-300, 300, 500)
   
-    rt.voxelPositions = fits.open(directory+'/voxel_position.fits', mode='denywrite')
-    rt.voxelVelocities = fits.open(directory+'/voxel_velocity.fits', mode='denywrite')
-    rt.tempSpeciesEmissivity = fits.open(directory+'/species_emissivity.fits', mode='denywrite')
-    rt.tempSpeciesAbsorption = fits.open(directory+'/species_absorption.fits', mode='denywrite')
-    rt.tempDustEmissivity = fits.open(directory+'/dust_emissivity.fits', mode='denywrite')
-    rt.tempDustAbsorption = fits.open(directory+'/dust_absorption.fits', mode='denywrite')
+    rt.voxel_positions = fits.open(directory+'/voxel_position.fits', mode='denywrite')
+    rt.voxel_velocities = fits.open(directory+'/voxel_velocity.fits', mode='denywrite')
+    rt.temp_species_emissivity = fits.open(directory+'/species_emissivity.fits', mode='denywrite')
+    rt.temp_species_absorption = fits.open(directory+'/species_absorption.fits', mode='denywrite')
+    rt.temp_dust_emissivity = fits.open(directory+'/dust_emissivity.fits', mode='denywrite')
+    rt.temp_dust_absorption = fits.open(directory+'/dust_absorption.fits', mode='denywrite')
   
     multiprocessCalculation(slRange=[(-np.pi, np.pi), (-np.pi/2, np.pi/2)], nsl=[50, 25], dim='spherical',
                             multiprocessing=2)
