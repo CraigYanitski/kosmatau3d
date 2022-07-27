@@ -674,7 +674,7 @@ class Voxel(object):
                         opticalDepthDustInterp = interp1d(constants.wavelengths[constants.n_dust],
                                                           self.__optical_depth_dust[ens].max(0), fill_value='extrapolate')
 
-                    for i, transition in enumerate(species.moleculeWavelengths):
+                    for i, transition in enumerate(species.molecule_wavelengths):
                         if iDust > 10:
                             self.__intensity_species[ens][:, i] += intensityDustInterp(transition)
                             self.__optical_depth_species[ens][:, i] += opticalDepthDustInterp(transition)
@@ -782,7 +782,7 @@ class Voxel(object):
                         if np.where(constants.n_dust)[0].size > 10:
                             epsilon_dust_interp = interp1d(constants.wavelengths[constants.n_dust],
                                                            epsilon_dust[ens].max(0), fill_value='extrapolate')
-                            for i, transition in enumerate(species.moleculeWavelengths):
+                            for i, transition in enumerate(species.molecule_wavelengths):
                                 epsilon_species[ens][:, i] += epsilon_dust_interp(transition)
                         else:
                             for i in range(len(species.molecules)):
@@ -849,7 +849,7 @@ class Voxel(object):
                         if np.where(constants.n_dust)[0].size > 10:
                             kappa_dust_interp = interp1d(constants.wavelengths[constants.n_dust],
                                                          kappa_dust[ens].max(0), fill_value='extrapolate')
-                            for i, transition in enumerate(species.moleculeWavelengths):
+                            for i, transition in enumerate(species.molecule_wavelengths):
                                 kappa_species[ens][:, i] += kappa_dust_interp(transition)
                         else:
                             for i in range(len(species.molecules)):
@@ -1010,7 +1010,7 @@ class Voxel(object):
                     if np.where(constants.nDust)[0].size > 1:
                         intensity_dust_interp = interp1d(constants.wavelengths[constants.n_dust],
                                                        intensity_dust[ens].max(0), fill_value='extrapolate')
-                        for i, transition in enumerate(species.moleculeWavelengths):
+                        for i, transition in enumerate(species.molecule_wavelengths):
                             if intensity_dust[ens].shape[1] > 1:
                                 intensity[ens][:, i] -= intensity_dust_interp(transition)
                     else:
@@ -1024,7 +1024,7 @@ class Voxel(object):
                         if np.where(constants.n_dust)[0].size > 1:
                             intensity_dust_interp = interp1d(constants.wavelengths[constants.n_dust],
                                                            intensity_dust[ens].max(0), fill_value='extrapolate')
-                            for i, transition in enumerate(species.moleculeWavelengths):
+                            for i, transition in enumerate(species.molecule_wavelengths):
                                 intensity_final[ens][i] += intensity_dust_interp(transition)
                         else:
                             intensity_final[ens] += intensity_dust[ens].max(0)
