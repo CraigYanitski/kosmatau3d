@@ -15,10 +15,12 @@ parameters = {
               'tau_grid_file': 'clump_tau_LineCenter.dat',
               'tb_grid_file': 'clump_Tmb_LineCenter.dat',
               'tau_fuv_grid_file': 'RhoMassAFUV.dat',
-              'h2_mass_file': 'h2_mass_profile.dat', 
-              'hi_mass_file': 'hi_mass_profile.dat', 
+              'h2_surface_density_file': 'h2_surface-density_bacchini.dat', 
+              'hi_surface_density_file': 'hi_surface-density_bacchini.dat', 
+              'h2_scale_height_file': 'h2_scale-height_bacchini.dat', 
+              'hi_scale_height_file': 'hi_scale-height_bacchini.dat', 
               'like_clumps': False, 
-              'density_file': 'densities_clouds.dat',
+              'h_number_density_file': 'h_number-density_cubick.dat',
               'fuv_file': 'galactic_FUV_complete.dat',
               'average_fuv': False,
               'l_range': (912, 2066),
@@ -56,7 +58,7 @@ parameters = {
 
               # Flags
               'suggested_calc': True,
-              'dilled': True,
+              'dilled': False,
 
               # Property factors
               'hi_mass_factor': 1,
@@ -86,9 +88,6 @@ models.constants.fuv_ism = 1
 fuv = 1.8
 
 for resolution in [400]:
-    for f_mass2 in [0.25, 0.5, 1.0, 2.0, 4.0]:
-        for mass_icl in [[0, 2], [0, 3], [-1, 2], [-1, 3]]:
-                    mass_icl_str = '_'.join([str(_) for _ in mass_icl])
                     #for f_mass1 in [0.25, 0.5, 1.0, 2.0, 4.0]:
                     #    for mass_cl in [[0, 2], [0, 3], [-1, 2], [-1, 3]]:
                     #                mass_cl_str = '_'.join([str(_) for _ in mass_cl])
@@ -143,7 +142,7 @@ for resolution in [400]:
                     parameters['l_range'] = (912, 2066)
 
                     parameters['resolution'] = resolution
-                    parameters['clumpMassRange'] = [mass_cl, mass_icl]
+                    parameters['clump_mass_range'] = [mass_cl, mass_icl]
                     clump_mass_number = []
                     if len(mass_cl) > 1:
                         clump_mass_number.append(int(np.max(mass_cl)-np.min(mass_cl))+1)
@@ -154,10 +153,10 @@ for resolution in [400]:
                     else:
                         clump_mass_number.append(len(mass_icl))
                     print(clump_mass_number)
-                    parameters['clumpMassNumber'] = clump_mass_number
-                    parameters['clumpLogFUV'] = None
-                    parameters['interclumpLogFUV'] = None
-                    parameters['folder'] = f'r{int(resolution)}_ficm{f_mass2}_icm{mass_icl_str}/'
+                    parameters['clump_mass_number'] = clump_mass_number
+                    parameters['clump_log_fuv'] = None
+                    parameters['interclump_log_fuv'] = None
+                    parameters['folder'] = f'r{int(resolution)}_convergence/'
 
                     parameters['hi_mass_factor'] = f_mass1
                     parameters['h2_mass_factor'] = f_mass2

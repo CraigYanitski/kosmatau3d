@@ -34,7 +34,7 @@ class VoxelGrid(object):
   
         self.__shape = shape
     
-        self.__voxelNumber = self.__shape.voxelNumber()
+        self.__voxel_number = self.__shape.voxelNumber()
     
         self.__voxels = []
     
@@ -42,19 +42,19 @@ class VoxelGrid(object):
     
         #self.__species = None
     
-        self.__voxelSpeciesEmissivity = []
-        self.__voxelSpeciesAbsorption = []
-        self.__voxelDustEmissivity = []
-        self.__voxelDustAbsorption = []
+        self.__voxel_species_emissivity = []
+        self.__voxel_species_absorption = []
+        self.__voxel_dust_emissivity = []
+        self.__voxel_dust_absorption = []
     
-        self.__voxelMass = []
-        self.__voxelDensity = []
-        self.__voxelCRIR = []
-        self.__voxelFUV = []
-        self.__voxelFUVabsorption = []
+        self.__voxel_mass = []
+        self.__voxel_density = []
+        self.__voxel_crir = []
+        self.__voxel_fuv = []
+        self.__voxel_taufuv = []
         
-        self.__voxelVelocities = []
-        self.__voxelDispersion = []
+        self.__voxel_velocities = []
+        self.__voxel_dispersion = []
     
         self.__x = []
         self.__y = []
@@ -82,12 +82,12 @@ class VoxelGrid(object):
   
     def __initialiseGrid(self):
         self.__voxels = []
-        for i in range(self.__voxelNumber):
+        for i in range(self.__voxel_number):
           self.__voxels.append(Voxel(i))
         return
   
     def __str__(self):
-        return 'VoxelGrid\n  ->{} voxels\n'.format(self.__voxelNumber)
+        return 'VoxelGrid\n  ->{} voxels\n'.format(self.__voxel_number)
   
     def __calculateProperties(self, X, Y, Z, average=False):
         # This is a method to calculate the dict to unpack into the argument for Voxel.setProperties().
@@ -100,21 +100,22 @@ class VoxelGrid(object):
             y = np.array([Y])
         rPol = np.array([x.flatten(), y.flatten()]).T
         rPol = np.linalg.norm(rPol, axis=1)
+        # print(f'radius{rPol}')
     
         # Velocity
         velocity = interpolations.interpolate_galaxy_rotation(rPol)
         
-        if constants.fromEarth:
+        if constants.from_earth:
     
             # Calculate the correction to the voxel velocity vectors
-            relativeRpol = np.sqrt((x.flatten()-constants.r_gal_earth)**2+y.flatten()**2)
-            relativePhi = np.arctan2(y.flatten(), constants.r_gal_earth-x.flatten())
-            relativeSigma = np.arccos((rPol**2+relativeRpol**2-constants.r_gal_earth**2)/(2*rPol*relativeRpol))
+            relativeRpol = np.sqrt((x.flatten()-constants.rgal_earth)**2+y.flatten()**2)
+            relativePhi = np.arctan2(y.flatten(), constants.rgal_earth-x.flatten())
+            relativeSigma = np.arccos((rPol**2+relativeRpol**2-constants.rgal_earth**2)/(2*rPol*relativeRpol))
             relativeTheta = np.arctan(Z / relativeRpol)
       
             # Correct the relative velocity of the voxel
-            velocityEarth = interpolations.interpolate_galaxy_rotation(constants.r_gal_earth)
-            velocityCirc = velocity - velocityEarth*rPol/constants.r_gal_earth
+            velocityEarth = interpolations.interpolate_galaxy_rotation(constants.rgal_earth)
+            velocityCirc = velocity - velocityEarth*rPol/constants.rgal_earth
       
             velocity = (np.sign(relativePhi) * velocityCirc * np.sin(relativeSigma) * np.cos(relativeTheta))
             # velocity = (np.sign(relativePhi) * velocityCirc * np.sin(relativeSigma))
@@ -193,22 +194,22 @@ class VoxelGrid(object):
             crir = constants.zeta_cmz
         
         # Save the properties in private lists
-        self.__voxelVelocities.append(velocity)
-        self.__voxelDispersion.append(ensembleDispersion)
-        self.__voxelMass.append(ensembleMass)
-        self.__voxelDensity.append(ensembleDensity)
-        self.__voxelFUV.append(FUV)
-        self.__voxelCRIR.append(crir)
+        self.__voxel_velocities.append(velocity)
+        self.__voxel_dispersion.append(ensembleDispersion)
+        self.__voxel_mass.append(ensembleMass)
+        self.__voxel_density.append(ensembleDensity)
+        self.__voxel_fuv.append(FUV)
+        self.__voxel_crir.append(crir)
     
         self.__properties = {
-            # Model parameters
+                # Model parameters
             'from_grid': True,
             'voxel_size': constants.voxel_size,
-            'clump_mass_range': constants.clumpLogMassRange,
-            'clump_mass_number': constants.clumpMassNumber,
-            'clump_n_max': constants.clumpNmax,
-            'velocity_range': constants.velocityBin,
-            'velocity_number': constants.velocityNumber,
+            'clump_mass_range': constants.clump_log_mass_range,
+            'clump_mass_number': constants.clump_mass_number,
+            'clump_n_max': constants.clump_n_max,
+            'velocity_range': constants.velocity_bin,
+            'velocity_number': constants.velocity_number,
     
             # Voxel properties
             'velocity': velocity,
@@ -257,7 +258,7 @@ class VoxelGrid(object):
         
         # Setup fits files to stream the voxel emissivity and absorption.
         # species
-        dim = [len(species.molecule_wavelengths), constants.velocity_range.size, self.__voxelNumber]
+        dim = [len(species.molecule_wavelengths), constants.velocity_range.size, self.__voxel_number]
         if verbose:
             print('species emission dimension:', dim)
         shdu_voxel_emissivity_species = self.shdu_header(name='Clump species emissivity', units='K/pc', 
@@ -268,7 +269,7 @@ class VoxelGrid(object):
                                                          velocity=True, dim=dim)
         # dust
         nDust = constants.wavelengths[constants.n_dust].size
-        dim = [nDust, self.__voxelNumber]
+        dim = [nDust, self.__voxel_number]
         if verbose:
             print('dust emission dimension:', dim)
         shdu_voxel_emissivity_dust = self.shdu_header(name='Clump dust emissivity', units='K/pc',
@@ -276,24 +277,24 @@ class VoxelGrid(object):
         shdu_voxel_absorption_dust = self.shdu_header(name='Clump dust absorption', units='1/pc', 
                                                       dust=True, filename='dust_absorption', dim=dim)
         
-        dim = [np.sum(constants.clump_mass_number), self.__voxelNumber]
+        dim = [np.sum(constants.clump_mass_number), self.__voxel_number]
         shdu_clumpNj = self.shdu_header(name='N_j', units='N/A', filename='clump_number', dim=dim)
         shdu_clumpRj = self.shdu_header(name='Radius', units='pc', filename='clump_radius', dim=dim)
     
-        dim = [len(constants.clump_mass_number), self.__voxelNumber]
+        dim = [len(constants.clump_mass_number), self.__voxel_number]
         shdu_ensemble_mass = self.shdu_header(name='Ensemble mass', units='Msol', filename='voxel_ensemble_mass',
                                               dim=dim)
-        dim = [len(constants.clump_mass_number), self.__voxelNumber]
+        dim = [len(constants.clump_mass_number), self.__voxel_number]
         shdu_ensemble_density = self.shdu_header(name='Density', units='cm^-3', filename='voxel_density', dim=dim)
-        dim = [3, self.__voxelNumber]
+        dim = [3, self.__voxel_number]
         shdu_voxel_position = self.shdu_header(name='Position', units='pc', filename='voxel_position', dim=dim)
-        dim = [1, self.__voxelNumber]
+        dim = [1, self.__voxel_number]
         shdu_voxel_velocity = self.shdu_header(name='Velocity', units='km/s', filename='voxel_velocity', dim=dim)
         shdu_voxel_dispersion = self.shdu_header(name='Velocity dispersion', units='km/s',
                                                  filename='voxel_ensemble_dispersion', dim=dim)
-        dim = [len(constants.clump_mass_number), self.__voxelNumber]
-        shdu_FUV = self.shdu_header(name='FUV', units='Draine', filename='voxel_fuv', dim=dim)
-        shdu_FUVabsorption = self.shdu_header(name='FUV optical depth', units='mag', filename='voxel_FUVabsorption', dim=dim)
+        dim = [len(constants.clump_mass_number), self.__voxel_number]
+        shdu_fuv = self.shdu_header(name='FUV', units='Draine', filename='voxel_fuv', dim=dim)
+        shdu_taufuv = self.shdu_header(name='FUV optical depth', units='mag', filename='voxel_FUVabsorption', dim=dim)
         
         # test of multiprocessing
         def getProperties(ivoxel):
@@ -349,7 +350,7 @@ class VoxelGrid(object):
                     self.__logger.info('\nVoxel initialised: {:.4f} s'.format(time()-t2))
         
                 # this is likely unneeded now that I am directly writing to a fits file
-                self.__voxelFUVabsorption.append(voxel.getFUVabsorption())
+                self.__voxel_taufuv.append(voxel.get_taufuv())
                 
                 shdu_voxel_position.write(voxel.get_position())
                 velocity, dispersion = voxel.get_velocity()
@@ -360,8 +361,8 @@ class VoxelGrid(object):
                 shdu_voxel_dispersion.write(np.array([dispersion[0]]))
                 shdu_ensemble_mass.write(np.asarray(voxel.get_ensemble_mass()))
                 shdu_ensemble_density.write(np.asarray(voxel.get_density()))
-                shdu_FUV.write(np.array([voxel.get_fuv()]))
-                shdu_FUVabsorption.write(np.asarray([voxel.get_taufuv()]))
+                shdu_fuv.write(np.array([voxel.get_fuv()]))
+                shdu_taufuv.write(np.asarray([voxel.get_taufuv()]))
                 
                 # Save emissivity and absorption
                 shdu_voxel_emissivity_species.write(voxel.get_species_emissivity(kind=kind, include_dust=True))
@@ -656,7 +657,7 @@ class VoxelGrid(object):
         header['COMMENT'] = ' same as h2: {}'.format(constants.hi_mass_file).ljust(cw)
         header['COMMENT'] = constants.h2_scale_height_file.ljust(cw)
         header['COMMENT'] = constants.hi_scale_height_file.ljust(cw)
-        header['COMMENT'] = constants.h_numberdensity_file.ljust(cw)
+        header['COMMENT'] = constants.h_number_density_file.ljust(cw)
         header['COMMENT'] = constants.fuv_file.ljust(cw)
         header['COMMENT'] = '  average spectrum: {}'.format(constants.average_fuv).ljust(cw)
         header['COMMENT'] = '  integration range: {}'.format(constants.l_range).ljust(cw)
@@ -669,11 +670,12 @@ class VoxelGrid(object):
         header['COMMENT'] = ''.ljust(cw)
         header['COMMENT'] = 'Model shape: {}'.rjust(kw).format(constants.type).ljust(cw)
         x, y, z = self.__shape.getShape()
+        header['COMMENT'] = 'voxels: {}'.rjust(kw).format(self.__voxel_number).ljust(cw)
         header['COMMENT'] = 'x (pc): {}'.rjust(kw).format(x).ljust(cw)
         header['COMMENT'] = 'y (pc): {}'.rjust(kw).format(y).ljust(cw)
         header['COMMENT'] = 'z (pc): {}'.rjust(kw).format(z).ljust(cw)
-        header['COMMENT'] = 'radius (pc): {}'.rjust(kw).format(constants.r_gal).ljust(cw)
-        header['COMMENT'] = 'R_gal,Sun (pc): {}'.rjust(kw).format(constants.r_gal_earth).ljust(cw)
+        header['COMMENT'] = 'radius (pc): {}'.rjust(kw).format(constants.rgal).ljust(cw)
+        header['COMMENT'] = 'R_gal,Sun (pc): {}'.rjust(kw).format(constants.rgal_earth).ljust(cw)
         #header['COMMENT'] = '  thickness:'.ljust(50)
         header['COMMENT'] = ''.ljust(cw)
         header['COMMENT'] = ''.ljust(cw)
@@ -695,8 +697,8 @@ class VoxelGrid(object):
         header['COMMENT'] = 'f_n: {}'.rjust(kw).format(constants.density_factor).ljust(cw)
         header['COMMENT'] = 'f_FUV: {}'.rjust(kw).format(constants.fuv_factor).ljust(cw)
         header['COMMENT'] = 'f_HI: {}'.rjust(kw).format(constants.interclump_hi_ratio).ljust(cw)
-        header['COMMENT'] = 'log chi_cl: {}'.rjust(kw).format(constants.clumpLogFUV).ljust(cw)
-        header['COMMENT'] = 'log chi_icl: {}'.rjust(kw).format(constants.interclumpLogFUV).ljust(cw)
+        header['COMMENT'] = 'log chi_cl: {}'.rjust(kw).format(constants.clump_log_fuv).ljust(cw)
+        header['COMMENT'] = 'log chi_icl: {}'.rjust(kw).format(constants.interclump_log_fuv).ljust(cw)
         header['COMMENT'] = 'R_gal,CMZ: {}'.rjust(kw).format(constants.r_cmz).ljust(cw)
         header['COMMENT'] = 'zeta_CMZ: {}'.rjust(kw).format(constants.zeta_cmz).ljust(cw)
         header['COMMENT'] = 'zeta_Sun: {}'.rjust(kw).format(constants.zeta_sol).ljust(cw)

@@ -669,9 +669,9 @@ class Voxel(object):
                                                                         ]).astype(constants.dtype))
 
                     if iDust > 10:
-                        intensityDustInterp = interp1d(constants.wavelengths[constants.nDust],
+                        intensityDustInterp = interp1d(constants.wavelengths[constants.n_dust],
                                                        self.__intensity_dust[ens].max(0), fill_value='extrapolate')
-                        opticalDepthDustInterp = interp1d(constants.wavelengths[constants.nDust],
+                        opticalDepthDustInterp = interp1d(constants.wavelengths[constants.n_dust],
                                                           self.__optical_depth_dust[ens].max(0), fill_value='extrapolate')
 
                     for i, transition in enumerate(species.moleculeWavelengths):
@@ -779,8 +779,8 @@ class Voxel(object):
                                       kind=kind, fill_value=0, bounds_error=False, axis=0)
                         epsilon_species.append(fn(constants.velocity_range))
                     if include_dust:
-                        if np.where(constants.nDust)[0].size > 10:
-                            epsilon_dust_interp = interp1d(constants.wavelengths[constants.nDust],
+                        if np.where(constants.n_dust)[0].size > 10:
+                            epsilon_dust_interp = interp1d(constants.wavelengths[constants.n_dust],
                                                            epsilon_dust[ens].max(0), fill_value='extrapolate')
                             for i, transition in enumerate(species.moleculeWavelengths):
                                 epsilon_species[ens][:, i] += epsilon_dust_interp(transition)
@@ -794,7 +794,7 @@ class Voxel(object):
             if not include_dust:
                 epsilon_dust = self.__emissivity_dust
                 for ens in range(len(constants.clump_mass_number)):
-                    if np.where(constants.nDust)[0].size > 1:
+                    if np.where(constants.n_dust)[0].size > 1:
                         epsilon_dust_interp = interp1d(constants.wavelengths[constants.n_dust],
                                                        epsilon_dust[ens].max(0), fill_value='extrapolate')
                         for i, transition in enumerate(species.molecule_wavelengths):
@@ -975,7 +975,7 @@ class Voxel(object):
                             intensity_dust = self.get_dust_intensity(fit=fit, total=False)
                         intensity_final.append(np.trapz(intensity, vel, axis=0))
                         if np.where(constants.n_dust)[0].size > 10:
-                            intensity_dust_interp = interp1d(constants.wavelengths[constants.nDust],
+                            intensity_dust_interp = interp1d(constants.wavelengths[constants.n_dust],
                                                              intensity_dust[ens].max(0), fill_value='extrapolate')
                             for i, transition in enumerate(species.molecule_wavelengths):
                                 intensity_final[-1][i] += intensity_dust_interp(transition)
@@ -1051,7 +1051,7 @@ class Voxel(object):
         else:
             return np.asarray(emissivity)
   
-    def getDust_absorption(self, fit=True, total=True, minimal=False):
+    def get_dust_absorption(self, fit=True, total=True, minimal=False):
         if self.suggested_calc:
             if fit:
                 absorption = [([self.__absorption_dust[ens].max(0)]*constants.velocity_range.size)

@@ -134,11 +134,11 @@ def calculateObservation(directory='', dim='xy', terminal=True, vel_pool=False, 
     xPositions, yPositions, zPositions = rt.voxel_positions[0].data[:, 0], \
         rt.voxel_positions[0].data[:, 1], \
         rt.voxel_positions[0].data[:, 2]
-    r = np.sqrt((xPositions-constants.r_gal_earth)**2 + yPositions**2)
+    r = np.sqrt((xPositions-constants.rgal_earth)**2 + yPositions**2)
   
-    radGrid = np.sqrt((xPositions-constants.r_gal_earth)**2 + yPositions**2 + zPositions**2)
-    lonGrid = np.arctan2(yPositions, -(xPositions-constants.r_gal_earth))
-    rPolar = np.sqrt((xPositions-constants.r_gal_earth)**2+yPositions**2)
+    radGrid = np.sqrt((xPositions-constants.rgal_earth)**2 + yPositions**2 + zPositions**2)
+    lonGrid = np.arctan2(yPositions, -(xPositions-constants.rgal_earth))
+    rPolar = np.sqrt((xPositions-constants.rgal_earth)**2+yPositions**2)
     latGrid = np.arctan2(zPositions, rPolar)
   
     np.set_printoptions(threshold=100000)
@@ -152,8 +152,8 @@ def calculateObservation(directory='', dim='xy', terminal=True, vel_pool=False, 
         #  the galaxy. This can be post-processed to convert to galactic coordinates.
     
         # Define the boundaries separating the inner and outer disk
-        xBoundary = (xPositions > 0) & (r > constants.r_gal_earth)
-        yBoundary = (yPositions < constants.r_gal_earth) & (yPositions > -constants.r_gal_earth)
+        xBoundary = (xPositions > 0) & (r > constants.rgal_earth)
+        yBoundary = (yPositions < constants.rgal_earth) & (yPositions > -constants.rgal_earth)
     
         # np.set_printoptions(threshold=1000000)
     
@@ -536,7 +536,7 @@ def multiprocessCalculation(slRange=[(-np.pi,np.pi), (-np.pi/2,np.pi/2)], nsl=[5
 
 
 def sightlength(x, l):
-    return constants.r_gal_earth**2 - constants.r_gal**2 + x**2 - 2*constants.r_gal_earth*x*np.cos(l)
+    return constants.rgal_earth**2 - constants.rgal**2 + x**2 - 2*constants.rgal_earth*x*np.cos(l)
 
 # for i_vel,velocity in enumerate(constants.velocityRange):
 
@@ -616,7 +616,7 @@ def calculateVelocityChannel(ivelocity, slRange=[(-np.pi,np.pi), (-np.pi/2,np.pi
             # print('lon,lat before scipy call', lon, lat, ':', time()-t0)
       
             # Calculate sightline length
-            Rslh = op.root_scalar(sightlength, args=lon, x0=constants.rG_gal_earth, x1=constants.r_gal).root
+            Rslh = op.root_scalar(sightlength, args=lon, x0=constants.rG_gal_earth, x1=constants.rgal).root
             thetaC = np.arctan(constants.hd/Rslh)
             # if verbose:
             #   print('\n',thetaC,'\n')
@@ -771,7 +771,7 @@ def calculate_sightline(los, slRange=((-np.pi, np.pi), (-np.pi/2, np.pi/2)), nsl
     # print('lon,lat before scipy call', lon, lat, ':', time()-t0)
 
     # Calculate sightline length
-    Rslh = op.root_scalar(sightlength, args=lon, x0=constants.r_gal_earth, x1=constants.r_gal).root
+    Rslh = op.root_scalar(sightlength, args=lon, x0=constants.rgal_earth, x1=constants.rgal).root
     thetaC = np.arctan(constants.hd/Rslh)
     # if verbose:
     #   print('\n',thetaC,'\n')
@@ -921,13 +921,13 @@ def set_los(x=0, y=0, z=0, lon=0, lat=0, i_vox=[], i_vel=None, i_spe=None, i_dus
         x2LoS = lat
     
         # Convert voxel positions to spherical
-        radGrid = np.sqrt((xGrid-constants.r_gal_earth)**2 + yGrid**2 + zGrid**2)
-        lonGrid = np.arctan2(yGrid, -(xGrid-constants.r_gal_earth))
+        radGrid = np.sqrt((xGrid-constants.rgal_earth)**2 + yGrid**2 + zGrid**2)
+        lonGrid = np.arctan2(yGrid, -(xGrid-constants.rgal_earth))
         if lon < 0:
             lonGrid[lonGrid > 0] = lonGrid[lonGrid > 0] - 2*np.pi
         if lon > 0:
             lonGrid[lonGrid < 0] = lonGrid[lonGrid < 0] + 2*np.pi
-        rPolar = np.sqrt((xGrid-constants.r_gal_earth)**2+yGrid**2)
+        rPolar = np.sqrt((xGrid-constants.rgal_earth)**2+yGrid**2)
         latGrid = np.arctan2(zGrid, rPolar)
         if lat < 0:
             latGrid[latGrid > 0] = latGrid[latGrid > 0] - np.pi
