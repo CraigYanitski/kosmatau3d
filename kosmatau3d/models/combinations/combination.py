@@ -58,11 +58,11 @@ def calculate_emission(test_calc=False, test_opacity=False, test_fv=False, f_v=N
 
         for c in combinations.clump_combination[ens]:
             if suggested_calc:
-                intensity = (c * (masspoints.clump_intensity[ens][:, i_dust:]*(masspoints.clump_optical_depth[ens][:, i_dust:])
-                                  /(1-np.exp(-masspoints.clump_optical_depth[ens][:, i_dust:]))
+                intensity = (c * (masspoints.clump_species_intensity[ens]*(masspoints.clump_species_optical_depth[ens])
+                                  /(1-np.exp(-masspoints.clump_species_optical_depth[ens]))
                                   ).T).T#/constants.voxel_size/f_ds*(4/3*masspoints.clump_radius[ens].T)
                 i_nan = np.isnan(intensity) | np.isinf(intensity)
-                intensity[i_nan] = ((c * (masspoints.clump_intensity[ens][:, i_dust:]
+                intensity[i_nan] = ((c * (masspoints.clump_species_intensity[ens]
                                           ).T).T)[i_nan]#/constants.voxel_size/f_ds*(4/3*masspoints.clumpRadius[ens].T)
                 species_intensity_list[ens].append(copy(intensity))
                 # intensitylist[ens].append((c * (masspoints.clumpIntensity[ens]*(masspoints.clumpOpticalDepth[ens])
