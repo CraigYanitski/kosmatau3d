@@ -602,7 +602,7 @@ class Voxel(object):
 
                         intensity = copy(combinations.clump_species_intensity[ens])
                         # shape (v_obs, combination, wavelength)
-                        intensity = np.array([intensity*factor[ensemble.clump_indeces[ens][i], j]
+                        intensity = np.array([intensity*factor[ensemble.clumpIndeces[ens][i], j]
                                               for j in range(factor.shape[1])])
                         # shape (v_sys, v_obs, combination, wavelength)
                         clumpIntensity[ens].append(np.array([(p_i * intensity[j].T).T
@@ -719,7 +719,7 @@ class Voxel(object):
             self.__absorption_species = [self.__optical_depth_species[ens]/constants.voxel_size
                                          for ens in range(len(constants.clump_mass_number))]
             self.__absorption_dust = [self.__optical_depth_dust[ens]/constants.voxel_size
-                                      for ens in range(len(constants.clump_Mass_number))]
+                                      for ens in range(len(constants.clump_mass_number))]
 
         self.__logger.info('NaN in species intensity: {}'.format(np.isnan(self.__intensity_species).any()))
         self.__logger.info('NaN in species optical depth: {}'.format(np.isnan(self.__optical_depth_species).any()))
@@ -1007,7 +1007,7 @@ class Voxel(object):
                 intensity[ens][i_nan] = epsilon[ens][i_nan]
 
                 if not include_dust or (include_dust and integrated):
-                    if np.where(constants.nDust)[0].size > 1:
+                    if np.where(constants.n_dust)[0].size > 1:
                         intensity_dust_interp = interp1d(constants.wavelengths[constants.n_dust],
                                                        intensity_dust[ens].max(0), fill_value='extrapolate')
                         for i, transition in enumerate(species.molecule_wavelengths):
@@ -1105,7 +1105,7 @@ class Voxel(object):
                 epsilon = self.get_dust_emissivity(total=total)
                 kappa = self.get_dust_absorption(total=total)
             intensity = np.zeros_like(epsilon)
-            for ens in range(len(constants.clumpMassNumber)):
+            for ens in range(len(constants.clump_mass_number)):
                 if self.__volume_factor[ens] > 1 and self.test_fv:
                     ds = self.__volume_factor[ens]*constants.voxel_size
                 else:
