@@ -15,8 +15,8 @@ parameters = {
               'tau_grid_file': 'clump_tau_LineCenter.dat',
               'tb_grid_file': 'clump_Tmb_LineCenter.dat',
               'tau_fuv_grid_file': 'RhoMassAFUV.dat',
-              'h2_surface_density_file': 'h2_surface-density_bacchini.dat', 
-              'hi_surface_density_file': 'hi_surface-density_bacchini.dat', 
+              'h2_surface_density_file': 'h2_surface-density_marasco-bacchini.dat', 
+              'hi_surface_density_file': 'hi_surface-density_marasco-bacchini.dat', 
               'h2_scale_height_file': 'h2_scale-height_bacchini.dat', 
               'hi_scale_height_file': 'hi_scale-height_bacchini.dat', 
               'like_clumps': False, 
@@ -87,7 +87,7 @@ r_cmz = 0
 models.constants.fuv_ism = 1
 fuv = 1.8
 
-for resolution in [400]:
+for resolution in [400, 200, 100]:
                     #for f_mass1 in [0.25, 0.5, 1.0, 2.0, 4.0]:
                     #    for mass_cl in [[0, 2], [0, 3], [-1, 2], [-1, 3]]:
                     #                mass_cl_str = '_'.join([str(_) for _ in mass_cl])
