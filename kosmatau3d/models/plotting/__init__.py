@@ -7,6 +7,7 @@ import matplotlib.colors as colors
 from scipy.interpolate import interp2d
 
 from .viewMap import *
+from .diagram import *
 from kosmatau3d.models import constants
 
 
