@@ -6,7 +6,7 @@ from mpl_toolkits.mplot3d import Axes3D
 from pprint import pprint
 
 
-def plot_box(x=0, y=0, z=0, ds=1, ax=None, set_proj=True, **kwargs):
+def plot_box(x=0, y=0, z=0, ds=1, ax=None, set_proj=False, **kwargs):
     '''
     This is a short function to plot a box with a shaded surface.
     The input coordinates are the *zero* position of the region
