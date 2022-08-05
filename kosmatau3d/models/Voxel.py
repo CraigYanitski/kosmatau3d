@@ -546,7 +546,7 @@ class Voxel(object):
                 for i, probability in enumerate(ensemble.clumpProbability[ens]):
                     clumpIntensity[ens].append((probability.prod(1)#/probability.prod(1).sum(0)
                                                 * intensity_comb.T).sum(1))
-                    clumpOpticalDepth[ens].append(-np.log(((probability.prod(1)#/probability.prod(1).sum(0))
+                    clumpOpticalDepth[ens].append(-np.log((probability.prod(1)#/probability.prod(1).sum(0)
                                                            * np.exp(-optical_depth_comb.T)).sum(1)))
 
                 self.__intensity_species[ens] += np.asarray(clumpIntensity[ens])
