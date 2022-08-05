@@ -533,7 +533,7 @@ class Voxel(object):
                 intensity_comb_dust[~i_nan] = (intensity_comb_dust[~i_nan]
                                                / optical_depth_comb_dust[~i_nan]#*constants.voxel_size
                                                * (1-np.exp(-optical_depth_comb_dust[~i_nan])))
-                p_tot = ensemble.CLmaxProbability[ens].prod(1)/ensemble.CLmaxProbability[ens].prod(1).sum(0)
+                p_tot = ensemble.CLmaxProbability[ens].prod(1)#/ensemble.CLmaxProbability[ens].prod(1).sum(0)
                 clumpIntensityDust[ens].append((p_tot * intensity_comb_dust.T).sum(1))
                 clumpOpticalDepthDust[ens].append(-np.log((p_tot * np.exp(-optical_depth_comb_dust.T)).sum(1)))
                 # transition calculation
@@ -544,9 +544,9 @@ class Voxel(object):
                                           / optical_depth_comb[~i_nan]#*constants.voxel_size
                                           * (1-np.exp(-optical_depth_comb[~i_nan])))
                 for i, probability in enumerate(ensemble.clumpProbability[ens]):
-                    clumpIntensity[ens].append((probability.prod(1)/probability.prod(1).sum(0)
+                    clumpIntensity[ens].append((probability.prod(1)#/probability.prod(1).sum(0)
                                                 * intensity_comb.T).sum(1))
-                    clumpOpticalDepth[ens].append(-np.log(((probability.prod(1)/probability.prod(1).sum(0))
+                    clumpOpticalDepth[ens].append(-np.log(((probability.prod(1)#/probability.prod(1).sum(0))
                                                            * np.exp(-optical_depth_comb.T)).sum(1)))
 
                 self.__intensity_species[ens] += np.asarray(clumpIntensity[ens])
