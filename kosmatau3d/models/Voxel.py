@@ -985,7 +985,19 @@ class Voxel(object):
                     else:
                         intensity_final.append(np.trapz(intensity, vel, axis=0))
                 else:
-                    intensity_final.append(copy(intensity))
+                    if include_dust:
+                        intensity_dust = self.get_dust_intensity(fit=fit, total=False)
+                        intensity_final.append(copy(intensity))
+                        if np.where(constants.n_dust)[0].size > 10:
+                            intensity_dust_interp = interp1d(constants.wavelengths[constants.n_dust],
+                                                             intensity_dust[ens].max(0), fill_value='extrapolate')
+                            for i, transition in enumerate(species.molecule_wavelengths):
+                                intensity_final[-1][i] += intensity_dust_interp(transition)
+                        else:
+                            for i in range(len(species.molecules)):
+                                intensity_final[-1][i] += intensity_dust[ens].mean()
+                    else:
+                        intensity_final.append(copy(intensity))
         else:
             if total:
                 epsilon = [self.get_species_emissivity(include_dust=True, total=total)]
