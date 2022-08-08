@@ -529,30 +529,43 @@ class Voxel(object):
                 # dust calculation
                 optical_depth_comb_dust = copy(combinations.clump_dust_optical_depth[ens])
                 intensity_comb_dust = copy(combinations.clump_dust_intensity[ens])
-                i_nan = optical_depth_comb_dust == 0
+                i_nan = optical_depth_comb_dust < 1e-16
                 intensity_comb_dust[~i_nan] = (intensity_comb_dust[~i_nan]
                                                / optical_depth_comb_dust[~i_nan]#*constants.voxel_size
                                                * (1-np.exp(-optical_depth_comb_dust[~i_nan])))
-                p_tot = ensemble.CLmaxProbability[ens].prod(1)#/ensemble.CLmaxProbability[ens].prod(1).sum(0)
+                p_tot = ensemble.CLmaxProbability[ens].prod(1)/ensemble.CLmaxProbability[ens].prod(1).sum(0)
                 clumpIntensityDust[ens].append((p_tot * intensity_comb_dust.T).sum(1))
-                clumpOpticalDepthDust[ens].append(-np.log((p_tot * np.exp(-optical_depth_comb_dust.T)).sum(1)))
+                optical_depth_exp_dust = np.exp(-optical_depth_comb_dust)
+                #optical_depth_exp_dust[i_nan] = 1
+                optical_depth_prob_dust = (p_tot * optical_depth_exp_dust.T).sum(1)
+                i_zero = (optical_depth_exp_dust%1 == 0).all(0)
+                clumpOpticalDepthDust[ens].append(-np.log(optical_depth_prob_dust))
+                clumpOpticalDepthDust[ens][-1][i_zero] = 0
+                #clumpOpticalDepthDust[ens].append(-np.log((p_tot * np.exp(-optical_depth_comb_dust.T)).sum(1)))
                 # transition calculation
                 optical_depth_comb = copy(combinations.clump_species_optical_depth[ens])
                 intensity_comb = copy(combinations.clump_species_intensity[ens])
-                i_nan = optical_depth_comb == 0
+                i_nan = optical_depth_comb < 1e-16
+                optical_depth_exp = np.exp(-optical_depth_comb)
                 intensity_comb[~i_nan] = (intensity_comb[~i_nan]
                                           / optical_depth_comb[~i_nan]#*constants.voxel_size
                                           * (1-np.exp(-optical_depth_comb[~i_nan])))
                 for i, probability in enumerate(ensemble.clumpProbability[ens]):
-                    clumpIntensity[ens].append((probability.prod(1)#/probability.prod(1).sum(0)
-                                                * intensity_comb.T).sum(1))
-                    clumpOpticalDepth[ens].append(-np.log((probability.prod(1)#/probability.prod(1).sum(0)
-                                                           * np.exp(-optical_depth_comb.T)).sum(1)))
+                    p_i = probability.prod(1)/probability.prod(1).sum(0)
+                    #clumpIntensity[ens].append((probability.prod(1)#/probability.prod(1).sum(0)
+                    #                            intensity_comb.T))
+                    clumpIntensity[ens].append((p_i * intensity_comb.T).sum(1))
+                    optical_depth_prob = (p_i + optical_depth_comb.T).sum(1)
+                    i_zero = (optical_depth_comb%1 == 0).all(0)
+                    clumpOpticalDepth[ens].append(-np.log(optical_depth_prob))
+                    clumpOpticalDepth[ens][-1][i_zero] = 0
+                    #clumpOpticalDepth[ens].append(-np.log((probability.prod(1)#/probability.prod(1).sum(0)
+                    #                                       * np.exp(-optical_depth_comb.T)).sum(1)))
 
                 self.__intensity_species[ens] += np.asarray(clumpIntensity[ens])
                 self.__optical_depth_species[ens] += np.asarray(clumpOpticalDepth[ens])
                 self.__absorption_species[ens] = self.__optical_depth_species[ens] / constants.voxel_size/f_ds[ens]
-                i_undef = self.__absorption_species[ens] == 0
+                i_undef = self.__optical_depth_species[ens] < 1e-16
                 self.__emissivity_species[ens][~i_undef] = (self.__intensity_species[ens][~i_undef] * self.__absorption_species[ens][~i_undef]
                                                   / (1-np.exp(-self.__optical_depth_species[ens][~i_undef])))
                 self.__emissivity_species[ens][i_undef] = self.__intensity_species[ens][i_undef]
