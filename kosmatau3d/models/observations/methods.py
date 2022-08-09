@@ -94,8 +94,8 @@ def species_data(file='frequencies.dat'):
 
 
 def init_rad_transfer():
-    eTildeReal()
-    eTildeImaginary()
+    e_tilde_real()
+    e_tilde_imaginary()
     return
 
 

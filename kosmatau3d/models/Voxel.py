@@ -296,7 +296,7 @@ class Voxel(object):
                 constants.change_dust_wavelengths(dust)
                 observations.methods.initialise_grid(tau_grid_file=tau_grid_file,
                                                      tb_grid_file=tb_grid_file,
-                                                     tau_fuv_grid_file=tau_grid_file)
+                                                     tau_fuv_grid_file=tau_fuv_grid_file)
                 species.add_molecules(molecules)
                 interpolations.initialise_grid(dilled=dilled)
 
@@ -493,7 +493,7 @@ class Voxel(object):
         
         if timed:
             t1 = time()
-            self.__logger.info('Masspoint emission calculated:',format(t1-t0))
+            self.__logger.info('Masspoint emission calculated: {}'.format(t1-t0))
         #print('masspoint emission calculated:', (time()-t0)/60)
 
         combinations.calculate_emission(test_calc=test_calc, test_opacity=test_opacity,
@@ -502,7 +502,7 @@ class Voxel(object):
         
         if timed:
             t2 = time()
-            self.__logger.info('Combination emission calculated:'.format(t2-t1))
+            self.__logger.info('Combination emission calculated: {}'.format(t2-t1))
         #print('combination emission calculated:', (time()-t0)/60)
 
         clumpIntensity = [[] for _ in range(len(constants.clump_mass_number))]
@@ -531,12 +531,16 @@ class Voxel(object):
                 intensity_comb_dust = copy(combinations.clump_dust_intensity[ens])
                 i_nan = optical_depth_comb_dust < 1e-16
                 intensity_comb_dust[~i_nan] = (intensity_comb_dust[~i_nan]
-                                               / optical_depth_comb_dust[~i_nan]#*constants.voxel_size
+                                               / optical_depth_comb_dust[~i_nan]
+                                               #*constants.voxel_size
                                                * (1-np.exp(-optical_depth_comb_dust[~i_nan])))
-                p_tot = ensemble.CLmaxProbability[ens].prod(1)/ensemble.CLmaxProbability[ens].prod(1).sum(0)
+                intensity_comb_dust[i_nan] = intensity_comb_dust[i_nan] / constants.voxel_size
+                p_tot = (ensemble.CLmaxProbability[ens].prod(1)
+                         /ensemble.CLmaxProbability[ens].prod(1).sum(0)
+                         )
                 clumpIntensityDust[ens].append((p_tot * intensity_comb_dust.T).sum(1))
                 optical_depth_exp_dust = np.exp(-optical_depth_comb_dust)
-                #optical_depth_exp_dust[i_nan] = 1
+                optical_depth_exp_dust[i_nan] = 1
                 optical_depth_prob_dust = (p_tot * optical_depth_exp_dust.T).sum(1)
                 i_zero = (optical_depth_exp_dust%1 == 0).all(0)
                 clumpOpticalDepthDust[ens].append(-np.log(optical_depth_prob_dust))
@@ -547,15 +551,19 @@ class Voxel(object):
                 intensity_comb = copy(combinations.clump_species_intensity[ens])
                 i_nan = optical_depth_comb < 1e-16
                 optical_depth_exp = np.exp(-optical_depth_comb)
+                optical_depth_exp[i_nan] = 1
                 intensity_comb[~i_nan] = (intensity_comb[~i_nan]
                                           / optical_depth_comb[~i_nan]#*constants.voxel_size
                                           * (1-np.exp(-optical_depth_comb[~i_nan])))
+                intensity_comb[i_nan] = intensity_comb[i_nan] / constants.voxel_size
                 for i, probability in enumerate(ensemble.clumpProbability[ens]):
-                    p_i = probability.prod(1)/probability.prod(1).sum(0)
+                    p_i = (probability.prod(1)
+                           / probability.prod(1).sum(0)
+                           )
                     #clumpIntensity[ens].append((probability.prod(1)#/probability.prod(1).sum(0)
                     #                            intensity_comb.T))
                     clumpIntensity[ens].append((p_i * intensity_comb.T).sum(1))
-                    optical_depth_prob = (p_i + optical_depth_comb.T).sum(1)
+                    optical_depth_prob = (p_i * optical_depth_exp.T).sum(1)
                     i_zero = (optical_depth_comb%1 == 0).all(0)
                     clumpOpticalDepth[ens].append(-np.log(optical_depth_prob))
                     clumpOpticalDepth[ens][-1][i_zero] = 0
