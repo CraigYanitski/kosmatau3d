@@ -968,7 +968,7 @@ class Voxel(object):
                 if fit:
                     vel = constants.velocity_range
                     if kind == 'gaussian':
-                        i_nan = kappa_species[ens] == 0
+                        i_nan = kappa_species[ens] < 1e-16
                         intensity = copy(epsilon_species[ens])
                         intensity[~i_nan] = intensity[~i_nan]/kappa_species[ens][~i_nan] * \
                                             (1-np.exp(-tau_species[ens][~i_nan]))
@@ -1005,10 +1005,10 @@ class Voxel(object):
                             intensity_dust_interp = interp1d(constants.wavelengths[constants.n_dust],
                                                              intensity_dust[ens].max(0), fill_value='extrapolate')
                             for i, transition in enumerate(species.molecule_wavelengths):
-                                intensity_final[-1][i] += intensity_dust_interp(transition)
+                                intensity_final[-1][:, i] += intensity_dust_interp(transition)
                         else:
                             for i in range(len(species.molecules)):
-                                intensity_final[-1][i] += intensity_dust[ens].mean()
+                                intensity_final[-1][:, i] += intensity_dust[ens].mean()
                     else:
                         intensity_final.append(copy(intensity))
         else:
