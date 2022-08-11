@@ -854,7 +854,7 @@ def calculate_sightline(los, slRange=((-np.pi, np.pi), (-np.pi/2, np.pi/2)), nsl
 
 
 def set_los(x=0, y=0, z=0, lon=0, lat=0, i_vox=[], i_vel=None, i_spe=None, i_dust=None,
-           dim='xy', reverse=True, debug=False, verbose=False):
+           dim='xy', reverse=False, debug=False, verbose=False):
     '''
     The emission dimensions should be velocity x species x 2 x voxels.
     Axis 1 should be split for intensity and optical depth.
@@ -886,7 +886,7 @@ def set_los(x=0, y=0, z=0, lon=0, lat=0, i_vox=[], i_vel=None, i_spe=None, i_dus
             line-of-sight.
     '''
   
-    scale = constants.voxel_size*constants.pc*100   # pc should be in cm
+    scale = constants.voxel_size
   
     # #print(rt.tempClumpEmission.shape)
     #
@@ -987,11 +987,24 @@ def set_los(x=0, y=0, z=0, lon=0, lat=0, i_vox=[], i_vel=None, i_spe=None, i_dus
         else:
             ix_species = np.ix_(i_los, np.arange(n_vel), np.arange(n_spe))
             ix_dust = np.ix_(i_los, np.arange(n_dust))
-  
-        rt.intensity_species = scale * rt.temp_species_emissivity[0].data[ix_species][0, :, :]
-        rt.intensity_dust = scale * rt.temp_dust_emissivity[0].data[ix_dust][0, :]
-        rt.opticaldepth_species = scale * rt.temp_species_absorption[0].data[ix_species][0, :, :]
-        rt.opticaldepth_dust = scale * rt.temp_dust_absorption[0].data[ix_dust][0, :]
+        
+        eps_species = rt.temp_species_emissivity[0].data[ix_species][0, :, :]
+        kap_species = rt.temp_species_emissivity[0].data[ix_species][0, :, :]
+        eps_dust = rt.temp_dust_emissivity[0].data[ix_dust][0, :]
+        kap_dust = rt.temp_dust_emissivity[0].data[ix_dust][0, :]
+
+        #rt.intensity_species = rt.temp_species_emissivity[0].data[ix_species][0, :, :]
+        rt.intensity_species = c.copy(eps_species)
+        i_nan = kap_species < 1e-16
+        rt.intensity_species = rt.intensity_species[~i_nan] / kap_species[~i_nan] \
+                               * (1-np.exp(-kap_species[~i_nan]*scale))
+        #rt.intensity_dust = rt.temp_dust_emissivity[0].data[ix_dust][0, :]
+        rt.intensity_dust = c.copy(eps_dust)
+        i_nan = kap_dust < 1e-16
+        rt.intensity_dust= rt.intensity_dust[~i_nan] / kap_dust[~i_nan] \
+                           * (1-np.exp(-kap_dust[~i_nan]*scale))
+        rt.opticaldepth_species = scale * kap_species
+        rt.opticaldepth_dust = scale * kap_dust
         
         # print('\n\n', (rt.tempSpeciesEmissivity[0].data[iLOS,i_vel,:]>0).any(), '\n\n')
     
@@ -1011,11 +1024,13 @@ def set_los(x=0, y=0, z=0, lon=0, lat=0, i_vox=[], i_vel=None, i_spe=None, i_dus
             x3LoS = zGrid[i_los]
           
         if reverse:
-            # order the voxels in the line-of-sight according to increasing radial distance
+            # order the voxels in the line-of-sight according to increasing radial distance,
+            # compute RT from observer to edge of model
             i = np.argsort(x3LoS)
             i_los_ordered = i_los[i]
         else:
-            # order the voxels in the line-of-sight according to decreasing radial distance
+            # order the voxels in the line-of-sight according to decreasing radial distance,
+            # compute RT from edge of model to observer
             i = np.argsort(x3LoS)[::-1]
             i_los_ordered = i_los[i]
         
@@ -1033,31 +1048,43 @@ def set_los(x=0, y=0, z=0, lon=0, lat=0, i_vox=[], i_vel=None, i_spe=None, i_dus
             ix_dust = np.ix_(i_los_ordered, np.arange(n_dust))
         
         # if (i_spe is None) & (i_dust is None):
-        rt.e_species = c.copy(rt.temp_species_emissivity[0].data[ix_species]) / constants.pc/100
+        eps0_species = rt.temp_species_emissivity[0].data[0]
+        kap0_species = rt.temp_species_absorption[0].data[0]
+        rt.i0_species = c.copy(eps0_species)
+        i_nan = kap0_species < 1e-16
+        rt.i0_species[~i_nan] = eps0_species[~i_nan] / kap0_species[~i_nan] \
+                                * (1-np.exp(-kap0_species[~i_nan])*scale)
+        rt.e_species = c.copy(rt.temp_species_emissivity[0].data[ix_species][1:])
         rt.de_species = (rt.e_species[1:]-rt.e_species[:-1])/(scale)
-        rt.k_species = c.copy(rt.temp_species_absorption[0].data[ix_species]) / constants.pc/100
+        rt.k_species = c.copy(rt.temp_species_absorption[0].data[ix_species][1:])
         rt.dk_species = (rt.k_species[1:]-rt.k_species[:-1])/(scale)
-        rt.opticaldepth_species = scale * rt.temp_species_absorption[0].data[ix_species].sum(0) / constants.pc/100
+        rt.opticaldepth_species = scale * rt.temp_species_absorption[0].data[ix_species].sum(0)
             
-        rt.e_dust = c.copy(rt.temp_dust_emissivity[0].data[ix_dust]) / constants.pc/100
+        eps0_dust = rt.temp_dust_emissivity[0].data[0]
+        kap0_dust = rt.temp_dust_absorption[0].data[0]
+        rt.i0_dust = c.copy(eps0_dust)
+        i_nan = kap0_dust < 1e-16
+        rt.i0_dust[~i_nan] = eps0_dust[~i_nan] / kap0_dust[~i_nan] \
+                             * (1-np.exp(-kap0_dust[~i_nan])*scale)
+        rt.e_dust = c.copy(rt.temp_dust_emissivity[0].data[ix_dust][1:])
         rt.de_dust = (rt.e_dust[1:]-rt.e_dust[:-1])/(scale)
-        rt.k_dust = c.copy(rt.temp_dust_absorption[0].data[ix_dust]) / constants.pc/100
+        rt.k_dust = c.copy(rt.temp_dust_absorption[0].data[ix_dust][1:])
         rt.dk_dust = (rt.k_dust[1:]-rt.k_dust[:-1])/(scale)
-        rt.opticaldepth_dust = scale * rt.temp_dust_absorption[0].data[ix_dust].sum(0) / constants.pc/100
+        rt.opticaldepth_dust = scale * rt.temp_dust_absorption[0].data[ix_dust].sum(0)
     
     else:
         return 0, 0  # ,[]
   
     vel = rt.voxel_velocities[0].data[i_los]
     
-    rt.logger.info('voxels:', i)
+    rt.logger.info(f'voxels: {i}')
     
     return 2, vel.size
     # ,(e_species,de_species,k_species,dk_species,
     #   e_dust,de_dust,k_dust,dk_dust)
 
 
-def calculatert(scale=1, background_species_intensity=0., background_dust_intensity=0., 
+def calculatert(scale=1, background_species_intensity=None, background_dust_intensity=None, 
                 species=True, dust=True, verbose=False, test=True):
 
     # Modify data and initialise observed intensity array
@@ -1077,13 +1104,15 @@ def calculatert(scale=1, background_species_intensity=0., background_dust_intens
     #   nSteps = rt.de_dust.shape[0]
     # else:
     if isinstance(background_species_intensity, float) or isinstance(background_species_intensity, int):
-        rt.intensity_species = np.full(rt.k_species.shape[1:], background_species_intensity)
+        rt.intensity_species = np.full(rt.k_species.shape[1:], background_species_intensity) \
+                               + rt.i0_species
     else:
-        rt.intensity_species = copy(background_species_intensity)
+        rt.intensity_species = c.copy(rt.i0_species)
     if isinstance(background_dust_intensity, float) or isinstance(background_dust_intensity, int):
-        rt.intensity_dust = np.full(rt.k_dust.shape[1], background_dust_intensity)
+        rt.intensity_dust = np.full(rt.k_dust.shape[1], background_dust_intensity) \
+                            + rt.i0_dust
     else:
-        rt.intensity_dust = copy(background_dust_intensity)
+        rt.intensity_dust = c.copy(rt.i0_dust)
     n_steps = rt.de_species.shape[0]
     
     # Adjust according to the average voxel depth
@@ -1098,10 +1127,10 @@ def calculatert(scale=1, background_species_intensity=0., background_dust_intens
         rt.k_dust /= scale
         rt.dk_dust /= scale**2
   
-    scale = scale*constants.voxel_size*constants.pc*100  # pc should be in cm
+    scale = scale*constants.voxel_size  # scale voxel size
     # print(scale)
     
-    np.set_printoptions(threshold=100000)
+    #np.set_printoptions(threshold=100000)
     warnings.filterwarnings('error')
     
     # # Boolean indeces to separate how the intensity is calculated
