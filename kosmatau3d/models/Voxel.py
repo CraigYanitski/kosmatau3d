@@ -964,37 +964,42 @@ class Voxel(object):
                                                               fit=fit, total=total)]
                 ensembles = 1
             else:
-                epsilon_species = self.get_species_emissivity(kind=kind, include_dust=include_dust,
+                epsilon_species = self.get_species_emissivity(kind=kind, include_dust=True,
                                                               fit=fit, total=False)
-                kappa_species = self.get_species_absorption(kind=kind, include_dust=include_dust,
+                kappa_species = self.get_species_absorption(kind=kind, include_dust=True,
                                                             fit=fit, total=False)
-                tau_species = self.get_species_optical_depth(kind=kind, include_dust=include_dust,
+                tau_species = self.get_species_optical_depth(kind=kind, include_dust=True,
                                                              fit=fit, total=False)
+                intensity_dust = self.get_dust_intensity(fit=fit, total=False)
                 ensembles = constants.ensembles
             for ens in range(ensembles):
                 clump_vel = self.__clump_velocities[ens][self.__clump_velocity_indeces[ens]]+self.__velocity
                 if fit:
                     vel = constants.velocity_range
-                    if kind == 'gaussian':
-                        i_nan = kappa_species[ens] < 1e-16
-                        intensity = copy(epsilon_species[ens])
-                        intensity[~i_nan] = intensity[~i_nan]/kappa_species[ens][~i_nan] * \
-                                            (1-np.exp(-tau_species[ens][~i_nan]))
-                    else:
-                        intensity_species = self.__intensity_species[ens]
-                        intensity_interp = interp1d(clump_vel, intensity_species,
-                                                    kind=kind, fill_value=0, bounds_error=False, axis=0)
-                        intensity = intensity_interp(vel)
+                    #if kind == 'gaussian':
+                    i_nan = kappa_species[ens] < 1e-16
+                    intensity = copy(epsilon_species[ens])
+                    intensity[~i_nan] = intensity[~i_nan]/kappa_species[ens][~i_nan] * \
+                                        (1-np.exp(-tau_species[ens][~i_nan]))
+                    # else:
+                    #     intensity_species = self.__intensity_species[ens]
+                    #     intensity_interp = interp1d(clump_vel, intensity_species,
+                    #                                 kind=kind, fill_value=0, bounds_error=False, axis=0)
+                    #     intensity = intensity_interp(vel)
                 else:
                     vel = clump_vel
                     intensity = copy(self.__intensity_species[ens])
                 if integrated:
+                    if np.where(constants.n_dust)[0].size > 10:
+                        intensity_dust_interp = interp1d(constants.wavelengths[constants.n_dust],
+                                                         intensity_dust[ens].max(0), fill_value='extrapolate')
+                        for i, transition in enumerate(species.molecule_wavelengths):
+                            intensity[:, i] -= intensity_dust_interp(transition)
+                    else:
+                        for i in range(len(species.molecules)):
+                            intensity[:, i] -= intensity_dust[ens].mean()
+                    intensity_final.append(np.trapz(intensity, vel, axis=0))
                     if include_dust:
-                        if False:#total:
-                            intensity_dust = [self.get_dust_intensity(fit=fit, total=total)]
-                        else:
-                            intensity_dust = self.get_dust_intensity(fit=fit, total=False)
-                        intensity_final.append(np.trapz(intensity, vel, axis=0))
                         if np.where(constants.n_dust)[0].size > 10:
                             intensity_dust_interp = interp1d(constants.wavelengths[constants.n_dust],
                                                              intensity_dust[ens].max(0), fill_value='extrapolate')
@@ -1003,22 +1008,20 @@ class Voxel(object):
                         else:
                             for i in range(len(species.molecules)):
                                 intensity_final[-1][i] += intensity_dust[ens].mean()
-                    else:
-                        intensity_final.append(np.trapz(intensity, vel, axis=0))
                 else:
                     if include_dust:
+                        intensity_final.append(copy(intensity))
+                    else:
                         intensity_dust = self.get_dust_intensity(fit=fit, total=False)
                         intensity_final.append(copy(intensity))
                         if np.where(constants.n_dust)[0].size > 10:
                             intensity_dust_interp = interp1d(constants.wavelengths[constants.n_dust],
                                                              intensity_dust[ens].max(0), fill_value='extrapolate')
                             for i, transition in enumerate(species.molecule_wavelengths):
-                                intensity_final[-1][:, i] += intensity_dust_interp(transition)
+                                intensity_final[-1][:, i] -= intensity_dust_interp(transition)
                         else:
                             for i in range(len(species.molecules)):
-                                intensity_final[-1][:, i] += intensity_dust[ens].mean()
-                    else:
-                        intensity_final.append(copy(intensity))
+                                intensity_final[-1][:, i] -= intensity_dust[ens].mean()
         else:
             if total:
                 epsilon = [self.get_species_emissivity(include_dust=True, total=total)]
