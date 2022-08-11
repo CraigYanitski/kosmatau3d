@@ -13,15 +13,20 @@ from kosmatau3d.models import constants
 logger = getLogger(__name__)
 
 positions = []
+
 intensity_species = []
 intensity_dust = []
+
 opticaldepth_species = []
 opticaldepth_dust = []
+
 los_voxels = []
 voxel_velocities = []
 voxel_positions = []
 i_vox = []
+
 sightlines = []
+
 x1LoS = 0
 x2LoS = 0
 x3LoS = []
@@ -29,18 +34,24 @@ x3LoS = []
 # tempClumpVelocity = []
 temp_species_emissivity = []
 temp_species_absorption = []
+
 temp_dust_emissivity = []
 temp_dust_absorption = []
+
 temp_position = []
+
 # tempInterclumpVelocity = []
 # tempInterclumpEmission = []
 # tempInterclumpPosition = []
 
 # This is used for the integration of each individual sightline
+i0_species = 0
 e_species = []
 de_species = 0
 k_species = []
 dk_species = 0
+
+i0_dust = 0
 e_dust = []
 de_dust = 0
 k_dust = []
@@ -68,7 +79,7 @@ allBimagDust = []
 allIntensityDust = []
 
 # Here are the values for interpolating the real and imaginary emission
-eTildeRealObs = orientation.eTildeReal()
-eTildeImaginaryObs = orientation.eTildeImaginary()
-eTildeReal = interpolate.interp1d(eTildeRealObs[0], eTildeRealObs[1], kind='linear')
-eTildeImaginary = interpolate.interp1d(eTildeImaginaryObs[0], eTildeImaginaryObs[1], kind='linear')
+#eTildeRealObs = rt.e_tilde_real()
+#eTildeImaginaryObs = rt.e_tilde_imaginary()
+#eTildeReal = interpolate.interp1d(eTildeRealObs[0], eTildeRealObs[1], kind='linear')
+#eTildeImaginary = interpolate.interp1d(eTildeImaginaryObs[0], eTildeImaginaryObs[1], kind='linear')
