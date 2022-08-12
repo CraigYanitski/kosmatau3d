@@ -886,7 +886,7 @@ def set_los(x=0, y=0, z=0, lon=0, lat=0, i_vox=[], i_vel=None, i_spe=None, i_dus
             line-of-sight.
     '''
   
-    scale = constants.voxel_size
+    scale = c.copy(constants.voxel_size)
   
     # #print(rt.tempClumpEmission.shape)
     #
@@ -1055,9 +1055,11 @@ def set_los(x=0, y=0, z=0, lon=0, lat=0, i_vox=[], i_vel=None, i_spe=None, i_dus
         rt.i0_species[~i_nan] = eps0_species[~i_nan] / kap0_species[~i_nan] \
                                 * (1-np.exp(-kap0_species[~i_nan])*scale)
         rt.e_species = c.copy(rt.temp_species_emissivity[0].data[ix_species][:-1])
-        rt.de_species = (rt.e_species[1:]-rt.e_species[:-1])/(scale)
+        rt.de_species = (rt.temp_species_emissivity[0].data[ix_species][1:]
+                         - rt.temp_species_emissivity[0].data[ix_species][:-1]) / (scale)
         rt.k_species = c.copy(rt.temp_species_absorption[0].data[ix_species][:-1])
-        rt.dk_species = (rt.k_species[1:]-rt.k_species[:-1])/(scale)
+        rt.dk_species = (rt.temp_species_absorption[0].data[ix_species][1:]
+                         - rt.temp_species_absorption[0].data[ix_species][:-1]) / (scale)
         rt.opticaldepth_species = scale * rt.temp_species_absorption[0].data[ix_species].sum(0)
             
         eps0_dust = rt.temp_dust_emissivity[0].data[0]
@@ -1067,9 +1069,11 @@ def set_los(x=0, y=0, z=0, lon=0, lat=0, i_vox=[], i_vel=None, i_spe=None, i_dus
         rt.i0_dust[~i_nan] = eps0_dust[~i_nan] / kap0_dust[~i_nan] \
                              * (1-np.exp(-kap0_dust[~i_nan])*scale)
         rt.e_dust = c.copy(rt.temp_dust_emissivity[0].data[ix_dust][:-1])
-        rt.de_dust = (rt.e_dust[1:]-rt.e_dust[:-1])/(scale)
+        rt.de_dust = (rt.temp_dust_emissivity[0].data[ix_dust][1:]
+                      - rt.temp_dust_emissivity[0].data[ix_dust][:-1]) / (scale)
         rt.k_dust = c.copy(rt.temp_dust_absorption[0].data[ix_dust][:-1])
-        rt.dk_dust = (rt.k_dust[1:]-rt.k_dust[:-1])/(scale)
+        rt.dk_dust = (rt.temp_dust_absorption[0].data[ix_dust][1:]
+                      - rt.temp_dust_absorption[0].data[ix_dust][:-1]) / (scale)
         rt.opticaldepth_dust = scale * rt.temp_dust_absorption[0].data[ix_dust].sum(0)
     
     else:
@@ -1104,30 +1108,30 @@ def calculatert(scale=1, background_species_intensity=None, background_dust_inte
     #   nSteps = rt.de_dust.shape[0]
     # else:
     
-    if isinstance(background_species_intensity, float) or isinstance(background_species_intensity, int):
-        rt.intensity_species = np.full(rt.k_species.shape[1:], background_species_intensity) \
-                               + rt.i0_species
+    if isinstance(background_species_intensity, (float, int)):
+        rt.intensity_species = np.full(rt.k_species.shape[1:], background_species_intensity)
     else:
-        rt.intensity_species = c.copy(rt.i0_species)
-    if isinstance(background_dust_intensity, float) or isinstance(background_dust_intensity, int):
-        rt.intensity_dust = np.full(rt.k_dust.shape[1], background_dust_intensity) \
-                            + rt.i0_dust
+        #rt.intensity_species = c.copy(rt.i0_species)
+        rt.intensity_species = np.full(rt.k_species.shape[1:], 0.)
+    if isinstance(background_dust_intensity, (float, int)):
+        rt.intensity_dust = np.full(rt.k_dust.shape[1], background_dust_intensity)
     else:
-        rt.intensity_dust = c.copy(rt.i0_dust)
+        #rt.intensity_dust = c.copy(rt.i0_dust)
+        rt.intensity_dust = np.full(rt.k_dust.shape[1], 0.)
     
     n_steps = rt.e_species.shape[0]
     
     # Adjust according to the average voxel depth
-    if species:
-        rt.e_species /= scale
-        rt.de_species /= scale**2
-        rt.k_species /= scale
-        rt.dk_species /= scale**2
-    if dust:
-        rt.e_dust /= scale
-        rt.de_dust /= scale**2
-        rt.k_dust /= scale
-        rt.dk_dust /= scale**2
+    # if species:
+    #     rt.e_species /= scale
+    #     rt.de_species /= scale**2
+    #     rt.k_species /= scale
+    #     rt.dk_species /= scale**2
+    # if dust:
+    #     rt.e_dust /= scale
+    #     rt.de_dust /= scale**2
+    #     rt.k_dust /= scale
+    #     rt.dk_dust /= scale**2
   
     scale = scale*constants.voxel_size  # scale voxel size
     # print(scale)
@@ -1146,11 +1150,11 @@ def calculatert(scale=1, background_species_intensity=None, background_dust_inte
     with warnings.catch_warnings():
         warnings.simplefilter('ignore')
         if species:
-            a_species = (rt.k_species[:-1, :, :] / np.sqrt(2*np.abs(rt.dk_species)))
-            b_species = ((rt.k_species[:-1, :, :] + rt.dk_species*scale) / np.sqrt(2*np.abs(rt.dk_species)))
+            a_species = (rt.k_species / np.sqrt(2*np.abs(rt.dk_species)))
+            b_species = ((rt.k_species + rt.dk_species*scale) / np.sqrt(2*np.abs(rt.dk_species)))
         if dust:
-            a_dust = (rt.k_dust[:-1, :] / np.sqrt(2*np.abs(rt.dk_dust)))
-            b_dust = ((rt.k_dust[:-1, :] + rt.dk_dust*scale) / np.sqrt(2*np.abs(rt.dk_dust)))
+            a_dust = (rt.k_dust / np.sqrt(2*np.abs(rt.dk_dust)))
+            b_dust = ((rt.k_dust + rt.dk_dust*scale) / np.sqrt(2*np.abs(rt.dk_dust)))
     
     rt.logger.info(rt.k_species.shape[0])
         
@@ -1231,8 +1235,8 @@ def calculatert(scale=1, background_species_intensity=None, background_dust_inte
     
             # Determine which form of integration the dust continuum requires
             k0_dust = ((rt.dk_dust[i, :] == 0) &
-                       (abs(rt.k_dust[:-1, :][i, :]*scale) < 10**-10))
-            kg_dust = (~k0_dust & (np.abs(rt.k_dust[:-1, :][i, :])
+                       (abs(rt.k_dust[i, :]*scale) < 10**-10))
+            kg_dust = (~k0_dust & (np.abs(rt.k_dust[i, :])
                                    > (10**3*abs(rt.dk_dust[i, :])*scale)))
             keg_dust = (~k0_dust & ~kg_dust & (rt.dk_dust[i, :] > 0))
             kel_dust = (~k0_dust & ~kg_dust & (rt.dk_dust[i, :] < 0))
