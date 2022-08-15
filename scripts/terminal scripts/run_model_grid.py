@@ -173,7 +173,7 @@ for resolution in [400]:
                     kosma = models.Model(**parameters)
                     print('\n    -> Model {}'.format(models.constants.history))
                     print('       ' + '-'*len('Model {}'.format(models.constants.history)))
-                    #kosma.calculateModel(kind='zero', multiprocessing=0)
+                    kosma.calculateModel(kind='zero', multiprocessing=0)
 
                     # print(models.species.molecules)
 
