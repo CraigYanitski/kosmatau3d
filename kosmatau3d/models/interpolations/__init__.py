@@ -1,3 +1,4 @@
+import sys
 import warnings
 
 import numpy as np
@@ -30,8 +31,10 @@ dust_tau_interpolation = None
 galaxy_rotation_interpolation = None
 velocity_dispersion_interpolation = None
 number_density_interpolation = None
+h2_scale_height = None
 h2_mass_full = None
 h2_mass_interpolation = None
+hi_scale_height = None
 hi_mass_full = None
 hi_mass_interpolation = None
 taufuv_interpolation = None
@@ -209,7 +212,17 @@ def interpolate_number_density(radius):
     return density
 
 
+def interpolate_h2_voxel_filling_factor(radius, height):
+    # Calculate voxel-filling factor
+    h = h2_scale_height(radius)
+    h_min = np.min((-h, height-constants.voxel_size/2))
+    h_max = np.min((h, height+constants.voxel_size/2))
+    f_vox = (h_max-h_min)/constants.voxel_size
+    return f_vox
+
+
 def interpolate_h2_mass(radius, height):
+    # Calculate mass
     mass = h2_mass_interpolation(radius, np.abs(height))
     if (mass < 0).any():
         input('<<ERROR>> clump mass {} at radius {} pc!'.format(mass, radius))
@@ -217,7 +230,17 @@ def interpolate_h2_mass(radius, height):
     return mass
 
 
+def interpolate_hi_voxel_filling_factor(radius, height):
+    # Calculate voxel-filling factor
+    h = hi_scale_height(radius)
+    h_min = np.min((-h, height-constants.voxel_size/2))
+    h_max = np.min((h, height+constants.voxel_size/2))
+    f_vox = (h_max-h_min)/constants.voxel_size
+    return f_vox
+
+
 def interpolate_hi_mass(radius, height):
+    # Calculate mass
     mass = hi_mass_interpolation(radius, np.abs(height))
     if (mass < 0).any():
         input('<<ERROR>> interclump mass {} at radius {} pc!'.format(mass, radius))

@@ -165,7 +165,7 @@ class Voxel(object):
                        velocity_range=[-10,10], velocity_number=51, 
                        velocity=0., velocity_resolution=1, 
                        ensemble_mass=100, ensemble_dispersion=1, 
-                       volume_factor=None, ensemble_density=[15000, 1911],
+                       volume_factor=None, voxel_factor=1, ensemble_density=[15000, 1911],
                        fuv=[20000, 1], crir=2e-16,
                        suggested_calc=True, from_grid=False,
                        new_grid=False, change_interpolation=False, dilled=False,
@@ -322,6 +322,11 @@ class Voxel(object):
         else:
             self.__ensemble_dispersion = [ensemble_dispersion] * len(constants.clump_mass_number)
 
+        if isinstance(volume_factor, (int, float)):
+            self.__voxel_filling_factor = [voxel_factor] * len(constants.clump_mass_number)
+        else:
+            self.__voxel_filling_factor = voxel_factor
+
         if isinstance(volume_factor, float) or isinstance(volume_factor, int):
             volume_factor = [volume_factor] * len(constants.clump_mass_number)
         if volume_factor:
@@ -466,6 +471,9 @@ class Voxel(object):
   
     def get_volume_filling_factor(self):
         return self.__volume_factor
+  
+    def get_voxel_filling_factor(self):
+        return self.__voxel_filling_factor
   
     def get_velocity(self):
         return self.__velocity, self.__ensemble_dispersion

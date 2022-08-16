@@ -140,7 +140,11 @@ class VoxelGrid(object):
         #
         # ensembleDispersion = ensembleDispersion.mean()
 
-        # # Mass (clump mass MH2+(1-f)*MHI, interclump mass f*MHI)
+        # Voxel-filling factor
+        f_vox = [interpolations.interpolate_h2_voxel_filling_factor(rPol, Z), 
+                 interpolations.interpolate_hi_voxel_filling_factor(rPol, Z)]
+
+        # Mass (clump mass MH2+(1-f)*MHI, interclump mass f*MHI)
         ensembleMass = [(constants.h2_mass_factor
                          * interpolations.interpolate_h2_mass(rPol, Z)
                          + (1-constants.interclump_hi_ratio) 
@@ -151,28 +155,12 @@ class VoxelGrid(object):
                          * interpolations.interpolate_hi_mass(rPol, Z))]
         ensembleMass = [constants.ensemble_mass_factor[ens]*np.asarray(ensembleMass).mean(1)[ens]
                         for ens in range(constants.ensembles)]
-        # Mass (clump mass MH2+MHI, interclump mass determined by voxel size and filling factor)
-        # ensembleMass = interpolations.interpolateClumpMass(rPol) + interpolations.interpolateInterclumpMass(rPol)
-        # ensembleMass = np.asarray(ensembleMass).mean()
 
-        # # Ensemble density (specified constant interclump density)
-        # ensembleDensity = interpolations.interpolateDensity(rPol)
-        # ensembleDensity = [constants.densityFactor*ensembleDensity.mean(), constants.interclumpDensity]
-        # Ensemble density (interclump density determined by maximum 0.01*n_cl and constant interclump density value)
+        # Ensemble density
         ensembleDensity = interpolations.interpolate_number_density(rPol)
         ensembleDensity = constants.density_factor*ensembleDensity.mean()
-
-        # clump_fillingfactor = ensembleMass * constants.massSolar / constants.massH \
-        #                       / ensembleDensity / (constants.voxel_size*constants.pc*100)**3
-        # if constants.interclump_fillingfactor == None:
-        #     constants.interclump_fillingfactor = 1 - clump_fillingfactor
         ensembleDensity = [ensembleDensity, np.max([0.01*ensembleDensity, constants.interclump_density])]
 
-        # Mass (clump mass MH2+MHI, interclump mass determined by voxel size and filling factor)
-        # ensembleMass = [constants.clumpMassFactor[0] * ensembleMass,
-        #                 constants.interclump_fillingfactor * constants.massH/constants.massSolar
-        #                 * (constants.pc*100)**3 * ensembleDensity[1] * constants.clumpMassFactor[1]]
-    
         # FUV
         fuv = constants.fuv_factor * interpolations.interpolate_fuv(rPol, Z)
         if not constants.clump_log_fuv is None:
@@ -214,6 +202,7 @@ class VoxelGrid(object):
             # Voxel properties
             'velocity': velocity,
             'ensemble_dispersion': ensembleDispersion,
+            'f_vox': f_vox
             'ensemble_mass': ensembleMass,
             'ensemble_density': ensembleDensity,
             'fuv': FUV,
@@ -282,9 +271,9 @@ class VoxelGrid(object):
         shdu_clumpRj = self.shdu_header(name='Radius', units='pc', filename='clump_radius', dim=dim)
     
         dim = [len(constants.clump_mass_number), self.__voxel_number]
+        shdu_f_vox = self.shdu_header(name='f_vox', units='N/A', filename='voxel-filling_factor', dim=dim)
         shdu_ensemble_mass = self.shdu_header(name='Ensemble mass', units='Msol', filename='voxel_ensemble_mass',
                                               dim=dim)
-        dim = [len(constants.clump_mass_number), self.__voxel_number]
         shdu_ensemble_density = self.shdu_header(name='Density', units='cm^-3', filename='voxel_density', dim=dim)
         dim = [3, self.__voxel_number]
         shdu_voxel_position = self.shdu_header(name='Position', units='pc', filename='voxel_position', dim=dim)
@@ -359,6 +348,7 @@ class VoxelGrid(object):
                 else:
                     shdu_voxel_velocity.write(np.linalg.norm(velocity))
                 shdu_voxel_dispersion.write(np.array([dispersion[0]]))
+                shdu_f_vox.write(voxel.get_voxel_filling_factor())
                 shdu_ensemble_mass.write(np.asarray(voxel.get_ensemble_mass()))
                 shdu_ensemble_density.write(np.asarray(voxel.get_density()))
                 shdu_fuv.write(np.array([voxel.get_fuv()]))

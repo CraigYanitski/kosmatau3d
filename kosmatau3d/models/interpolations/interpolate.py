@@ -33,7 +33,9 @@ def initialise_model(dilled=False, like_clumps=False, average_fuv=False, l_range
     interpolations.galaxy_rotation_interpolation = calculate_galaxy_rotation(dilled=dilled)
     interpolations.velocity_dispersion_interpolation = 1  # calculate_velocity_dispersion(dilled=dilled)
     interpolations.number_density_interpolation = calculate_number_density(dilled=dilled)
+    interpolations.h2_scale_height = calculate_h2_height()
     interpolations.h2_mass_interpolation = calculate_h2_mass(dilled=dilled)
+    interpolations.hi_scale_height = calculate_hi_height(like_clumps=like_clumps)
     interpolations.hi_mass_interpolation = calculate_hi_mass(dilled=dilled,
                                                              like_clumps=like_clumps)
     interpolations.fuv_interpolation = calculate_fuv(l_range=l_range, 
@@ -255,6 +257,12 @@ def calculate_number_density(verbose=False, dilled=False):
     return
 
 
+def calculate_h2_height():
+        r_h, h_h2 = observations.h2_scale_height_profile
+        return = interpolate.interp1d(r_h.values, h_h2.values, kind='linear', 
+                                      fill_value='extrapolate')
+
+
 def calculate_h2_mass(verbose=False, dilled=False):
     if constants.directory != '':
         if dilled:
@@ -267,11 +275,8 @@ def calculate_h2_mass(verbose=False, dilled=False):
         f_sigma = interpolate.interp1d(r_s.values, sigma_h2.values, kind='linear', 
                                        bounds_error=False, 
                                        fill_value=(sigma_h2.values[0], sigma_h2.values[-1]))
-        r_h, h_h2 = observations.h2_scale_height_profile
-        f_h = interpolate.interp1d(r_h.values, h_h2.values, kind='linear', 
-                                   fill_value='extrapolate')
         r_new = np.linspace(0, constants.rgal*1.1, num=100)
-        half_height = np.sqrt(2*np.log(2))*f_h(r_new)
+        half_height = np.sqrt(2*np.log(2))*interpolations.h2_scale_height(r_new)
         rho_0 = f_sigma(r_new)/2/half_height
         i_partial = constants.voxel_size >= 2*half_height
         i_full = constants.voxel_size < 2*half_height
@@ -307,6 +312,15 @@ def calculate_h2_mass(verbose=False, dilled=False):
     return
 
 
+def calculate_hi_height(like_clumps=False):
+    if like_clumps:
+        r_h, h_hi = observations.h2_scale_height_profile
+    else:
+        r_h, h_hi = observations.hi_scale_height_profile
+    return = interpolate.interp1d(r_h.values, h_hi.values, kind='linear', 
+                                  fill_value='extrapolate')
+
+
 def calculate_hi_mass(like_clumps=False, verbose=False, dilled=True):
     if constants.directory != '':
         if dilled:
@@ -317,17 +331,17 @@ def calculate_hi_mass(like_clumps=False, verbose=False, dilled=True):
             print('Creating interclump mass interpolation')
         if like_clumps:
             r_s, sigma_hi = observations.h2_surface_mass_profile
-            r_h, h_hi = observations.h2_scale_height_profile
+            #r_h, h_hi = observations.h2_scale_height_profile
         else:
             r_s, sigma_hi = observations.hi_surface_mass_profile
-            r_h, h_hi = observations.hi_scale_height_profile
+            #r_h, h_hi = observations.hi_scale_height_profile
         f_sigma = interpolate.interp1d(r_s.values, sigma_hi.values, kind='linear', 
                                        bounds_error=False, 
                                        fill_value=(sigma_hi.values[0], sigma_hi.values[-1]))
-        f_h = interpolate.interp1d(r_h.values, h_hi.values, kind='linear', 
-                                   fill_value='extrapolate')
+        #f_h = interpolate.interp1d(r_h.values, h_hi.values, kind='linear', 
+        #                           fill_value='extrapolate')
         r_new = np.linspace(0, constants.rgal*1.1, num=100)
-        half_height = np.sqrt(2*np.log(2))*f_h(r_new)
+        half_height = np.sqrt(2*np.log(2))*interpolations.hi_scale_height(r_new)
         rho_0 = f_sigma(r_new)/2/half_height
         i_partial = constants.voxel_size >= 2*half_height
         i_full = constants.voxel_size < 2*half_height
