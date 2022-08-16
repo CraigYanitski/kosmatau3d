@@ -259,7 +259,7 @@ def calculate_number_density(verbose=False, dilled=False):
 
 def calculate_h2_height():
         r_h, h_h2 = observations.h2_scale_height_profile
-        return = interpolate.interp1d(r_h.values, h_h2.values, kind='linear', 
+        return interpolate.interp1d(r_h.values, h_h2.values, kind='linear', 
                                       fill_value='extrapolate')
 
 
@@ -317,7 +317,7 @@ def calculate_hi_height(like_clumps=False):
         r_h, h_hi = observations.h2_scale_height_profile
     else:
         r_h, h_hi = observations.hi_scale_height_profile
-    return = interpolate.interp1d(r_h.values, h_hi.values, kind='linear', 
+    return interpolate.interp1d(r_h.values, h_hi.values, kind='linear', 
                                   fill_value='extrapolate')
 
 
