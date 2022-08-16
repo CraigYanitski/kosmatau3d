@@ -202,7 +202,7 @@ class VoxelGrid(object):
             # Voxel properties
             'velocity': velocity,
             'ensemble_dispersion': ensembleDispersion,
-            'f_vox': f_vox
+            'f_vox': f_vox,
             'ensemble_mass': ensembleMass,
             'ensemble_density': ensembleDensity,
             'fuv': FUV,
