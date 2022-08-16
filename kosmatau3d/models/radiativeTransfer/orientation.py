@@ -1067,13 +1067,13 @@ def set_los(x=0, y=0, z=0, lon=0, lat=0, i_vox=[], i_vel=None, i_spe=None, i_dus
             ix_dust = np.ix_(i_los_ordered, np.arange(n_dust))
         
         # Species transitions
-        voxel_filling = rt.voxel_filling_factors[i_los_ordered][:-1].reshape(-1, 1, 1)
+        #voxel_filling = rt.voxel_filling_factors[i_los_ordered][:-1]
         rt.e_species = c.copy(rt.temp_species_emissivity[0].data[ix_species][:-1] 
-                              / voxel_filling)
+                / rt.voxel_filling_factors[i_los_ordered][:-1, np.newaxis, np.newaxis])
         rt.de_species = (rt.temp_species_emissivity[0].data[ix_species][1:]
                          - rt.temp_species_emissivity[0].data[ix_species][:-1]) / (scale)
         rt.k_species = c.copy(rt.temp_species_absorption[0].data[ix_species][:-1]
-                              / voxel_filling)
+                / rt.voxel_filling_factors[i_los_ordered][:-1, np.newaxis, np.newaxis])
         rt.dk_species = (rt.temp_species_absorption[0].data[ix_species][1:]
                          - rt.temp_species_absorption[0].data[ix_species][:-1]) / (scale)
         eps0_species = rt.e_species[0]
@@ -1085,13 +1085,12 @@ def set_los(x=0, y=0, z=0, lon=0, lat=0, i_vox=[], i_vel=None, i_spe=None, i_dus
         rt.opticaldepth_species = scale * rt.temp_species_absorption[0].data[ix_species].sum(0)
             
         # Dust continuum
-        voxel_filling = voxel_filling.reshape(-1, 1)
         rt.e_dust = c.copy(rt.temp_dust_emissivity[0].data[ix_dust][:-1]
-                           / voxel_filling)
+                / rt.voxel_filling_factors[i_los_ordered][:-1, np.newaxis])
         rt.de_dust = (rt.temp_dust_emissivity[0].data[ix_dust][1:]
                       - rt.temp_dust_emissivity[0].data[ix_dust][:-1]) / (scale)
         rt.k_dust = c.copy(rt.temp_dust_absorption[0].data[ix_dust][:-1]
-                           / voxel_filling)
+                / rt.voxel_filling_factors[i_los_ordered][:-1, np.newaxis])
         rt.dk_dust = (rt.temp_dust_absorption[0].data[ix_dust][1:]
                       - rt.temp_dust_absorption[0].data[ix_dust][:-1]) / (scale)
         eps0_dust = rt.e_dust[0]
