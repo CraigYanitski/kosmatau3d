@@ -322,7 +322,7 @@ class Voxel(object):
         else:
             self.__ensemble_dispersion = [ensemble_dispersion] * len(constants.clump_mass_number)
 
-        if isinstance(volume_factor, (int, float)):
+        if isinstance(voxel_factor, (int, float)):
             self.__voxel_filling_factor = [voxel_factor] * len(constants.clump_mass_number)
         else:
             self.__voxel_filling_factor = voxel_factor
