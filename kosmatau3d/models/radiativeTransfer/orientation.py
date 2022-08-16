@@ -80,7 +80,8 @@ def open_voxel_filling_factors(directory):
     shape -> (n_voxels, 1)
     '''
 
-    rt.voxel_filling_factors = fits.open(directory+'voxel_voxel-filling_factor.fits', mode='denywrite').data.mean(0)
+    rt.voxel_filling_factors = fits.open(directory+'voxel-filling_factor.fits', 
+                                         mode='denywrite')[0].data.mean(1)
     return
 
 
@@ -121,6 +122,7 @@ def calculateObservation(directory='', dim='xy', terminal=True, vel_pool=False, 
     
     # print('Load data')
 
+    rt.open_voxel_filling_factors(directory)
     rt.open_voxel_positions(directory)
     rt.open_voxel_velocities(directory)
     rt.open_voxel_emission(directory, verbose=verbose)
@@ -1003,8 +1005,10 @@ def set_los(x=0, y=0, z=0, lon=0, lat=0, i_vox=[], i_vel=None, i_spe=None, i_dus
             ix_species = np.ix_(i_los, np.arange(n_vel), np.arange(n_spe))
             ix_dust = np.ix_(i_los, np.arange(n_dust))
         
-        eps_species = rt.temp_species_emissivity[0].data[ix_species][0, :, :] / rt.voxel_filling_factors[i_los]
-        kap_species = rt.temp_species_emissivity[0].data[ix_species][0, :, :] / rt.voxel_filling_factors[i_los]
+        eps_species = rt.temp_species_emissivity[0].data[ix_species][0, :, :] \
+                      / rt.voxel_filling_factors[i_los]
+        kap_species = rt.temp_species_emissivity[0].data[ix_species][0, :, :] \
+                      / rt.voxel_filling_factors[i_los]
         eps_dust = rt.temp_dust_emissivity[0].data[ix_dust][0, :] / rt.voxel_filling_factors[i_los]
         kap_dust = rt.temp_dust_emissivity[0].data[ix_dust][0, :] / rt.voxel_filling_factors[i_los]
 
@@ -1062,33 +1066,40 @@ def set_los(x=0, y=0, z=0, lon=0, lat=0, i_vox=[], i_vel=None, i_spe=None, i_dus
             ix_species = np.ix_(i_los_ordered, np.arange(n_vel), np.arange(n_spe))
             ix_dust = np.ix_(i_los_ordered, np.arange(n_dust))
         
-        # if (i_spe is None) & (i_dust is None):
-        eps0_species = rt.temp_species_emissivity[0].data[0] / rt.voxel_filling_factors[i_los_ordered]
-        kap0_species = rt.temp_species_absorption[0].data[0] / rt.voxel_filling_factors[i_los_ordered]
+        # Species transitions
+        voxel_filling = rt.voxel_filling_factors[i_los_ordered][:-1].reshape(-1, 1, 1)
+        rt.e_species = c.copy(rt.temp_species_emissivity[0].data[ix_species][:-1] 
+                              / voxel_filling)
+        rt.de_species = (rt.temp_species_emissivity[0].data[ix_species][1:]
+                         - rt.temp_species_emissivity[0].data[ix_species][:-1]) / (scale)
+        rt.k_species = c.copy(rt.temp_species_absorption[0].data[ix_species][:-1]
+                              / voxel_filling)
+        rt.dk_species = (rt.temp_species_absorption[0].data[ix_species][1:]
+                         - rt.temp_species_absorption[0].data[ix_species][:-1]) / (scale)
+        eps0_species = rt.e_species[0]
+        kap0_species = rt.k_species[0]
         rt.i0_species = c.copy(eps0_species)
         i_nan = kap0_species < 1e-16
         rt.i0_species[~i_nan] = eps0_species[~i_nan] / kap0_species[~i_nan] \
                                 * (1-np.exp(-kap0_species[~i_nan])*scale)
-        rt.e_species = c.copy(rt.temp_species_emissivity[0].data[ix_species][:-1] / rt.voxel_filling_factors[i_los_ordered])
-        rt.de_species = (rt.temp_species_emissivity[0].data[ix_species][1:]
-                         - rt.temp_species_emissivity[0].data[ix_species][:-1]) / (scale)
-        rt.k_species = c.copy(rt.temp_species_absorption[0].data[ix_species][:-1] / rt.voxel_filling_factors[i_los_ordered])
-        rt.dk_species = (rt.temp_species_absorption[0].data[ix_species][1:]
-                         - rt.temp_species_absorption[0].data[ix_species][:-1]) / (scale)
         rt.opticaldepth_species = scale * rt.temp_species_absorption[0].data[ix_species].sum(0)
             
-        eps0_dust = rt.temp_dust_emissivity[0].data[0] / rt.voxel_filling_factors[i_los_ordered]
-        kap0_dust = rt.temp_dust_absorption[0].data[0] / rt.voxel_filling_factors[i_los_ordered]
+        # Dust continuum
+        voxel_filling = voxel_filling.reshape(-1, 1)
+        rt.e_dust = c.copy(rt.temp_dust_emissivity[0].data[ix_dust][:-1]
+                           / voxel_filling)
+        rt.de_dust = (rt.temp_dust_emissivity[0].data[ix_dust][1:]
+                      - rt.temp_dust_emissivity[0].data[ix_dust][:-1]) / (scale)
+        rt.k_dust = c.copy(rt.temp_dust_absorption[0].data[ix_dust][:-1]
+                           / voxel_filling)
+        rt.dk_dust = (rt.temp_dust_absorption[0].data[ix_dust][1:]
+                      - rt.temp_dust_absorption[0].data[ix_dust][:-1]) / (scale)
+        eps0_dust = rt.e_dust[0]
+        kap0_dust = rt.k_dust[0]
         rt.i0_dust = c.copy(eps0_dust)
         i_nan = kap0_dust < 1e-16
         rt.i0_dust[~i_nan] = eps0_dust[~i_nan] / kap0_dust[~i_nan] \
-                             * (1-np.exp(-kap0_dust[~i_nan])*scale)
-        rt.e_dust = c.copy(rt.temp_dust_emissivity[0].data[ix_dust][:-1] / rt.voxel_filling_factors[i_los_ordered])
-        rt.de_dust = (rt.temp_dust_emissivity[0].data[ix_dust][1:]
-                      - rt.temp_dust_emissivity[0].data[ix_dust][:-1]) / (scale)
-        rt.k_dust = c.copy(rt.temp_dust_absorption[0].data[ix_dust][:-1] / rt.voxel_filling_factors[i_los_ordered])
-        rt.dk_dust = (rt.temp_dust_absorption[0].data[ix_dust][1:]
-                      - rt.temp_dust_absorption[0].data[ix_dust][:-1]) / (scale)
+                             * (1-np.exp(-kap0_dust[~i_nan]*scale))
         rt.opticaldepth_dust = scale * rt.temp_dust_absorption[0].data[ix_dust].sum(0)
     
     else:

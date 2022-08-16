@@ -214,8 +214,8 @@ def interpolate_number_density(radius):
 
 def interpolate_h2_voxel_filling_factor(radius, height):
     # Calculate voxel-filling factor
-    h = h2_scale_height(radius)
-    h_min = np.min((-h, height-constants.voxel_size/2))
+    h = h2_scale_height(radius).mean()
+    h_min = np.max((-h, height-constants.voxel_size/2))
     h_max = np.min((h, height+constants.voxel_size/2))
     f_vox = (h_max-h_min)/constants.voxel_size
     return f_vox
@@ -232,8 +232,8 @@ def interpolate_h2_mass(radius, height):
 
 def interpolate_hi_voxel_filling_factor(radius, height):
     # Calculate voxel-filling factor
-    h = hi_scale_height(radius)
-    h_min = np.min((-h, height-constants.voxel_size/2))
+    h = hi_scale_height(radius).mean()
+    h_min = np.max((-h, height-constants.voxel_size/2))
     h_max = np.min((h, height+constants.voxel_size/2))
     f_vox = (h_max-h_min)/constants.voxel_size
     return f_vox

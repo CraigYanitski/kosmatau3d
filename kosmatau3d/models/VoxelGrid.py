@@ -202,7 +202,7 @@ class VoxelGrid(object):
             # Voxel properties
             'velocity': velocity,
             'ensemble_dispersion': ensembleDispersion,
-            'f_vox': f_vox,
+            'voxel_factor': f_vox,
             'ensemble_mass': ensembleMass,
             'ensemble_density': ensembleDensity,
             'fuv': FUV,
@@ -348,7 +348,7 @@ class VoxelGrid(object):
                 else:
                     shdu_voxel_velocity.write(np.linalg.norm(velocity))
                 shdu_voxel_dispersion.write(np.array([dispersion[0]]))
-                shdu_f_vox.write(voxel.get_voxel_filling_factor())
+                shdu_f_vox.write(np.asarray(voxel.get_voxel_filling_factor()))
                 shdu_ensemble_mass.write(np.asarray(voxel.get_ensemble_mass()))
                 shdu_ensemble_density.write(np.asarray(voxel.get_density()))
                 shdu_fuv.write(np.array([voxel.get_fuv()]))
