@@ -7,7 +7,7 @@ from kosmatau3d import models
 timed = False
 debug = False
 
-print('KOSMA-tau^3')
+#print('KOSMA-tau^3')
 
 # Edit these parameters according to the model you want to produce.
 parameters = {
@@ -88,6 +88,13 @@ models.constants.fuv_ism = 1
 fuv = 1.8
 
 for resolution in [400]:
+    for f_mass1 in [0.25, 0.5, 1.0, 2.0, 4.0]:
+        for mass_cl in [[0, 2], [0, 3], [-1, 2], [-1, 3]]:
+                    mass_cl_str = '_'.join([str(_) for _ in mass_cl])
+                    
+                    parameters['folder'] = f'r{int(resolution)}_fcm{f_mass1}_cm{mass_cl_str}/'
+                    
+
                     #for f_mass1 in [0.25, 0.5, 1.0, 2.0, 4.0]:
                     #    for mass_cl in [[0, 2], [0, 3], [-1, 2], [-1, 3]]:
                     #                mass_cl_str = '_'.join([str(_) for _ in mass_cl])
@@ -156,7 +163,6 @@ for resolution in [400]:
                     parameters['clump_mass_number'] = clump_mass_number
                     parameters['clump_log_fuv'] = None
                     parameters['interclump_log_fuv'] = None
-                    parameters['folder'] = f'r{int(resolution)}_convergence/'
 
                     parameters['hi_mass_factor'] = f_mass1
                     parameters['h2_mass_factor'] = f_mass2
@@ -173,7 +179,7 @@ for resolution in [400]:
                     kosma = models.Model(**parameters)
                     print('\n    -> Model {}'.format(models.constants.history))
                     print('       ' + '-'*len('Model {}'.format(models.constants.history)))
-                    kosma.calculateModel(kind='zero', multiprocessing=0)
+                    #kosma.calculateModel(kind='zero', multiprocessing=0)
 
                     # print(models.species.molecules)
 
