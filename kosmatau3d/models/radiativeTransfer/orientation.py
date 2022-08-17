@@ -1183,6 +1183,7 @@ def calculatert(scale=1, background_species_intensity=None, background_dust_inte
     
     rt.logger.info(rt.k_species.shape[0])
         
+    warnings.filterwarnings('ignore')
     # if test:
     #     print(n_steps)
     
