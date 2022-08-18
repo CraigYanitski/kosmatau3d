@@ -309,7 +309,10 @@ for i, param in enumerate(zip(*params)):
     # parameters['suggested_calc'] = True
     # parameters['new_grid'] = False
 
+    # Initialise model instance
     kosma = models.Model(**parameters)
+
+    # Print details
     print('\n    -> Model {}'.format(models.constants.history))
     print('       ' + '-'*len('Model {}'.format(models.constants.history)))
     if args.verbose:
@@ -328,11 +331,19 @@ for i, param in enumerate(zip(*params)):
     print("clump density factor: ".rjust(25) + f"{parameters['density_factor']}")
     print("FUV factor: ".rjust(25) + f"{parameters['fuv_factor']}")
     print()
+    print('parameters changed:')
+    for _, p in enumerate(param_keys):
+        print(f'  {p} -> {param[_]}')
+
+    # Run model if selected
     if run_model:
         kosma.calculateModel(kind='zero', multiprocessing=0)
 
+    # Set model folder directory
     directory = parameters['history_path'] + parameters['directory'] \
                 + '/' + parameters['folder']
+
+    # Run radiative transfer if selected
     if run_rt:
         models.radiativeTransfer.calculateObservation(directory=directory, dim='spherical',
                                                       multiprocessing=args.mp, 
