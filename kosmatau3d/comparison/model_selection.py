@@ -759,9 +759,9 @@ def regrid_observations(path='/media/hpc_backup/yanitski/projects/pdr/observatio
                 pixcoord = fits.open(path + survey + '/additional_files/DIRBE_SKYMAP_INFO.FITS')
                 linfrq = 2.9979e5 / 240  # convert the relevant DIRBE band to GHz
                 obs_data = (np.nan_to_num([obs[1].data['Resid']], nan=0).T * (2.9979**2) / (linfrq**2) / 2
-                            / 1.38 * 10 ** 2) #* 1.323e-4  # corresponding beam size in sr
+                            / 1.38 / 10)
                 obs_error = (np.nan_to_num([obs[1].data['StdDev']], nan=0).T * (2.9979**2) / (linfrq**2) / 2
-                             / 1.38 * 10 ** 2) #* 1.323e-4
+                             / 1.38 / 10) 
 
                 # Get axes
                 lon_mesh = pixcoord[1].data['GLON-CSC']
