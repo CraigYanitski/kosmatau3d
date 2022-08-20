@@ -1,4 +1,5 @@
 from . import fuv_models
+from . import grid_interpolation
 from .data_check import *
 
 
