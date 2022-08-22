@@ -14,8 +14,8 @@ parser = argparse.ArgumentParser()
 parser.add_argument('-f', '--folder', type=str, default='/mnt/hpc_backup/yanitski/projects/pdr/KT3_history', 
                     help='folder containing kosmatau3d models')
 parser.add_argument('-g', '--grid', type=str, default='convergence', 
-                    choices=['convergence', 'f_cm,cm', 'f_icm,icm', 'cm,icm', 'r_cmz,f_fuv',
-                             'f_hi,f_fuv', 'f_cl,f_icl,f_d,f_fuv'], 
+                    choices=['convergence', 'f_cm-cm', 'f_icm-icm', 'cm-icm', 'f_cm-f_icm', 
+                             'r_cmz-f_fuv', 'f_hi-f_fuv', 'f_cl-f_icl-f_d-f_fuv'], 
                     help='parameters varied in grid')
 parser.add_argument('-r', '--resolution', type=int, default=400, 
                     help='voxel size in the model')
@@ -37,34 +37,34 @@ if args.grid == 'convergence':
     params = ((400, 200, 100), )
     param_keys = ('resolution', )
     param_folders = list(folder.format(*_) for _ in zip(*params))
-elif args.grid == 'f_cm,cm':
-    folder = 'r{}_fcm{}_cm{}/'
+elif args.grid == 'f_cm-cm':
+    folder = f'r{args.resolution}' + '_fcm{}_cm{}/'
     fmass1 = [0.25, 0.5, 1.0, 2.0, 4.0]
     mass_cl = [[0, 2], [0, 3], [-1, 2], [-1, 3]]
-    param_keys = ('fmass1', 'clump_mass_range', 'clump_mass_number')
+    param_keys = ('h2_mass_factor', 'clump_mass_range', 'clump_mass_number')
     fmass1_mesh, i_cl_mesh = list(_.flatten() for _ in np.meshgrid(fmass1, np.arange(len(mass_cl))))
     mass_bin_mesh = []
-    for _ in range(i_cl_mesh):
+    for _ in range(i_cl_mesh.size):
         mass_bin_mesh.append([mass_cl[i_cl_mesh[_]], [-2]])
     mass_num_mesh = list(list(int(np.max(mbin)-np.min(mbin))+1 for mbin in _) for _ in mass_bin_mesh)
     params = (fmass1_mesh, mass_bin_mesh, mass_num_mesh)
-    mass_cl_strs = list('_'.join([str(_) for _ in mass]) for mass in params[1])
+    mass_cl_strs = list('_'.join([str(_) for _ in mass[0]]) for mass in params[1])
     param_folders = list(folder.format(*_) for _ in zip(*(params[0], mass_cl_strs)))
-elif args.grid == 'f_icm,icm':
-    folder = 'r{}_ficm{}_icm{}/'
+elif args.grid == 'f_icm-icm':
+    folder = f'r{args.resolution}' + '_ficm{}_icm{}/'
     fmass2 = [0.25, 0.5, 1.0, 2.0, 4.0]
     mass_icl = [[-2], [-3, -2], [-3, -1], [-2, -1]]
-    param_keys = ('fmass1', 'clump_mass_range', 'clump_mass_number')
+    param_keys = ('hi_mass_factor', 'clump_mass_range', 'clump_mass_number')
     fmass2_mesh, i_icl_mesh = list(_.flatten() for _ in np.meshgrid(fmass2, np.arange(len(mass_icl))))
     mass_bin_mesh = []
     for _ in range(i_icl_mesh.size):
         mass_bin_mesh.append([[0, 2], mass_icl[i_icl_mesh[_]]])
     mass_num_mesh = list(list(int(np.max(mbin)-np.min(mbin))+1 for mbin in _) for _ in mass_bin_mesh)
     params = (fmass2_mesh, mass_bin_mesh, mass_num_mesh)
-    mass_icl_strs = list('_'.join([str(_) for _ in mass]) for mass in params[1])
+    mass_icl_strs = list('_'.join([str(_) for _ in mass[1]]) for mass in params[1])
     param_folders = list(folder.format(*_) for _ in zip(*(params[0], mass_icl_strs)))
-elif args.grid == 'cm,icm':
-    folder = 'r{}_cm{}_icm{}/'
+elif args.grid == 'cm-icm':
+    folder = f'r{args.resolution}' + '_cm{}_icm{}/'
     mass_cl = [[0, 2], [0, 3], [-1, 2], [-1, 3]]
     mass_icl = [[-2], [-3, -2], [-3, -1], [-2, -1]]
     param_keys = ('clump_mass_range', 'clump_mass_number')
@@ -78,22 +78,29 @@ elif args.grid == 'cm,icm':
     mass_cl_strs = list('_'.join([str(_) for _ in mass[0]]) for mass in params[0])
     mass_icl_strs = list('_'.join([str(_) for _ in mass[1]]) for mass in params[0])
     param_folders = list(folder.format(*_) for _ in zip(*(mass_cl_strs, mass_icl_strs)))
-elif args.grid == 'r_cmz,f_fuv':
+elif args.grid == 'f_cm-f_icm':
+    folder = f'r{args.resolution}' + '_f_cm{}_f_icm{:}/'
+    fmass1 = [0.25, 0.5, 1.0, 2.0, 4.0]
+    fmass2 = [0.25, 0.5, 1.0, 2.0, 4.0]
+    param_keys = ('h2_mass_factor', 'hi_mass_factor')
+    params = list(_.flatten() for _ in np.meshgrid(fmass1, fmass2))
+    param_folders = list(folder.format(*_) for _ in zip(*params))
+elif args.grid == 'r_cmz-f_fuv':
     folder = f'r{args.resolution}' + '_rcmz{}_f_fuv{:.1f}/'
     r_cmz = np.arange(0, 1001, 50, dtype=int)
     f_fuv = 10**np.linspace(0, 2, num=17)
     param_keys = ('r_cmz', 'fuv_factor')
     params = list(_.flatten() for _ in np.meshgrid(r_cmz, f_fuv))
     param_folders = list(folder.format(*_) for _ in zip(*params))
-elif args.grid == 'f_hi,f_fuv':
+elif args.grid == 'f_hi-f_fuv':
     folder = f'r{args.resolution}' + '_fhi{}_fuv{:.1f}/'
     f_hi = [0.7, 0.6, 0.5, 0.4, 0.3]
     f_fuv = 10**np.linspace(0, 2, num=17)
     param_keys = ('interclump_hi_ratio', 'fuv_factor')
     params = list(_.flatten() for _ in np.meshgrid(f_hi, f_fuv))
     param_folders = list(folder.format(*_) for _ in zip(*params))
-elif args.grid == 'f_cl,f_icl, f_d, f_fuv':
-    folder = 'r{}_cm{}-{}_d{}_uv{}/'
+elif args.grid == 'f_cl-f_icl-f_d-f_fuv':
+    folder = f'r{args.resolution}' + '_cm{}-{}_d{}_uv{}/'
     f_cl = [0.5, 1.0, 2.0, 4.0]
     f_icl = [1.0, 2.0]
     f_d = [0.5, 1.0, 2.0, 4.0]
@@ -313,7 +320,7 @@ for i, param in enumerate(zip(*params)):
     kosma = models.Model(**parameters)
 
     # Print details
-    print('\n    -> Model {}'.format(models.constants.history))
+    print('\n\n   ==> Model {}'.format(models.constants.history))
     print('       ' + '-'*len('Model {}'.format(models.constants.history)))
     if args.verbose:
         print()
@@ -331,9 +338,10 @@ for i, param in enumerate(zip(*params)):
     print("clump density factor: ".rjust(25) + f"{parameters['density_factor']}")
     print("FUV factor: ".rjust(25) + f"{parameters['fuv_factor']}")
     print()
-    print('parameters changed:')
+    print('    -- parameters changed')
     for _, p in enumerate(param_keys):
-        print(f'  {p} -> {param[_]}')
+        print(f'  {p} ->'.rjust(25) + f' {param[_]}')
+    print()
 
     # Run model if selected
     if run_model:
