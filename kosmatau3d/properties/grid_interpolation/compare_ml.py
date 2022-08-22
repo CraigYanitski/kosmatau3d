@@ -62,7 +62,7 @@ class CompareInterpolation():
                 idx = np.ones(self.tmb_data[0].shape[0], dtype=bool)
             else:
                 idx = np.all([self.tmb_data[0][:, p]==params[p] 
-                              for p in range(len(params))], axis=1)
+                              for p in range(len(params))], axis=0)
             
             # Interpolate intensity
             self.tmb_orig.append(self.tmb_data[1][idx, i_species])
