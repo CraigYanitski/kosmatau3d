@@ -88,14 +88,14 @@ elif args.grid == 'f_cm-f_icm':
 elif args.grid == 'r_cmz-f_fuv':
     folder = f'r{args.resolution}' + '_rcmz{}_f_fuv{:.1f}/'
     r_cmz = np.arange(0, 1001, 50, dtype=int)
-    f_fuv = 10**np.linspace(0, 2, num=17)
+    f_fuv = 10**np.linspace(0, 1.5, num=13)
     param_keys = ('r_cmz', 'fuv_factor')
     params = list(_.flatten() for _ in np.meshgrid(r_cmz, f_fuv))
     param_folders = list(folder.format(*_) for _ in zip(*params))
 elif args.grid == 'f_hi-f_fuv':
     folder = f'r{args.resolution}' + '_fhi{}_fuv{:.1f}/'
     f_hi = [0.7, 0.6, 0.5, 0.4, 0.3]
-    f_fuv = 10**np.linspace(0, 2, num=17)
+    f_fuv = 10**np.linspace(0, 1.5, num=13)
     param_keys = ('interclump_hi_ratio', 'fuv_factor')
     params = list(_.flatten() for _ in np.meshgrid(f_hi, f_fuv))
     param_folders = list(folder.format(*_) for _ in zip(*params))
@@ -211,110 +211,11 @@ models.constants.fuv_ism = 1
 fuv = 1.8
 
 for i, param in enumerate(zip(*params)):
+    
+    # Set the required parameters
     for _, p in enumerate(param_keys):
         parameters[p] = param[_]
     parameters['folder'] = param_folders[i] 
-# for resolution in [400]:
-#     for mass_cl in [[0, 2], [0, 3], [-1, 2], [-1, 3]]:
-#         for mass_icl in [[-2], [-3, -2], [-3, -1], [-2, -1]]:
-#                     mass_cl_str = '_'.join([str(_) for _ in mass_cl])
-#                     mass_icl_str = '_'.join([str(_) for _ in mass_icl])
-#                     
-#                     parameters['folder'] = f'r{int(resolution)}_cm{mass_cl_str}_icm{mass_icl_str}/'
-                    
-
-    #f'r{int(resolution)}_ficm{f_mass1}_icm{mass_cl_str}/'
-    #for f_mass1 in [0.25, 0.5, 1.0, 2.0, 4.0]:
-    #    for mass_cl in [[0, 2], [0, 3], [-1, 2], [-1, 3]]:
-    #                mass_cl_str = '_'.join([str(_) for _ in mass_cl])
-    #f'r{int(resolution)}_ficm{f_mass2}_icm{mass_icl_str}/'
-    #for f_mass2 in [0.25, 0.5, 1.0, 2.0, 4.0]:
-    #    for mass_icl in [[-2], [-3, -2], [-3, -1], [-2, -1]]:
-    #                mass_icl_str = '_'.join([str(_) for _ in mass_icl])
-    #
-    #for mass_cl in [[0, 2], [0, 3], [-1, 2], [-1, 3]]:
-    #    for mass_icl in [[-2], [-3, -2], [-3, -1], [-2, -1]]:
-    #                mass_cl_str = '_'.join([str(_) for _ in mass_cl])
-    #                mass_icl_str = '_'.join([str(_) for _ in mass_icl])
-    #
-    #for f_uv in 10**np.linspace(0, 2, num=17):
-    #    for r_cmz in np.arange(0, 1001, 50, dtype=int):
-    #
-    #for f_hi in [0.7, 0.6, 0.5, 0.4, 0.3]:
-    #    for f_uv in 10**np.linspace(0, 2, num=17):
-    #
-    #for f_mass1 in [1.0, 2.0]:
-    #    for f_mass2 in [0.5, 1.0, 2.0, 4.0]:
-    #        for f_density in [0.5, 1.0, 2.0, 4.0]:
-    #            for f_uv in [10, 100]:
-    #
-    #for mass_cl in [[0, 2], [0, 3], [-1, 2], [-1, 3]]:
-    #    for mass_icl in [[-2], [-3, -2], [-3, -1], [-2, -1]]:
-    #
-    #for f_hi in [1.0, 0.8, 0.6, 0.4]:
-    #    for f_uv in 10**np.linspace(1, 3, num=5):
-    #        for fuv in [1.0, 1.4, 1.8, 2.2]:
-    # 
-    #for f_hi in [1.0, 0.8, 0.6, 0.4]:
-    #    for f_uv in 10**np.linspace(-1, 3, num=5):
-    #        for fuv in [1.0, 1.4, 1.8, 2.2]:
-    #
-    #for fuv in [1.4, 1.6, 1.8, 2.0]:
-    #    for f_hi in [1.0, 0.8, 0.6]:
-    #
-    #for f_mass1 in [0.25, 0.5, 1.0, 2.0, 4.0]:
-    #    for f_mass2 in [0.25, 0.5, 1.0, 2.0, 4.0]:
-    #
-    #for f_uv in 10**np.linspace(1.5, 2.5, num=5):
-    #    for r_cmz in np.arange(0, 3001, 500, dtype=int):
-    #
-    #for mass_cl in [[0, 2], [0, 3], [-1, 2], [-1, 3]]:
-    #    for mass_icl in [[-2], [-3, -2], [-3, -1], [-2, -1]]:
-    #        for f_uv in [10, 50, 100]:
-    #            for f_density in [0.5, 1.0, 2.0, 4.0]:
-    #                for f_uv in [10, 100]:
-
-    # if (mass_icl == [-2]) and not (f_mass2 == 4.0):
-    #     continue
-    # if f_hi == 1.0 and f_uv < 1000:
-    #     continue
-    # if fuv < 1.8:
-    #     continue
-
-    # # forces the clump and interclump ensemble masses to be
-    # # equivalent to the H2 mass
-    # parameters['like_clumps'] = False
-    # # uses the average fuv energy density
-    # parameters['average_fuv'] = False
-    # # set the FUV range to integrate
-    # parameters['l_range'] = (912, 2066)
-
-    # parameters['resolution'] = resolution
-    # parameters['clump_mass_range'] = [mass_cl, mass_icl]
-    # clump_mass_number = []
-    # if len(mass_cl) > 1:
-    #     clump_mass_number.append(int(np.max(mass_cl)-np.min(mass_cl))+1)
-    # else:
-    #     clump_mass_number.append(len(mass_cl))
-    # if len(mass_icl) > 1:
-    #     clump_mass_number.append(int(np.max(mass_icl)-np.min(mass_icl))+1)
-    # else:
-    #     clump_mass_number.append(len(mass_icl))
-    # print(clump_mass_number)
-    # parameters['clump_mass_number'] = clump_mass_number
-    # parameters['clump_log_fuv'] = None
-    # parameters['interclump_log_fuv'] = None
-
-    # parameters['hi_mass_factor'] = f_mass1
-    # parameters['h2_mass_factor'] = f_mass2
-    # parameters['ensemble_mass_factor'] = f_m_ens
-    # parameters['density_factor'] = f_density
-    # parameters['fuv_factor'] = f_uv
-    # parameters['interclump_hi_ratio'] = f_hi
-    # parameters['r_cmz'] = r_cmz
-
-    # parameters['suggested_calc'] = True
-    # parameters['new_grid'] = False
 
     # Initialise model instance
     kosma = models.Model(**parameters)
