@@ -45,13 +45,13 @@ class CompareInterpolation():
     def interpolate(self, transition, full_grid=False, all_species=False):
         
         if all_species:
-            i_species = np.arange(self.species.size)
+            i_species = np.arange(len(self.species))
         else:
             i_species = self.species.index(transition)
 
         self.tmb_orig = []
         self.tmb_interp_lin = []
-        self.tmb_interp_mb = []
+        self.tmb_interp_ml = []
         self.tau_orig = []
         self.tau_interp_lin = []
         self.tau_interp_ml = []
