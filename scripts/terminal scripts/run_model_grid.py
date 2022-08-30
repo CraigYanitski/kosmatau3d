@@ -94,7 +94,7 @@ elif args.grid == 'r_cmz-f_fuv':
     param_folders = list(folder.format(*_) for _ in zip(*params))
 elif args.grid == 'f_hi-f_fuv':
     folder = f'r{args.resolution}' + '_fhi{}_fuv{:.1f}/'
-    f_hi = [0.7, 0.6, 0.5, 0.4, 0.3]
+    f_hi = [1.0, 0.9, 0.8, 0.7, 0.6, 0.5, 0.4, 0.3]
     f_fuv = 10**np.linspace(0, 1.5, num=13)
     param_keys = ('interclump_hi_ratio', 'fuv_factor')
     params = list(_.flatten() for _ in np.meshgrid(f_hi, f_fuv))
