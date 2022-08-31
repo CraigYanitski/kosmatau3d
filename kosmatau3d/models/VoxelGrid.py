@@ -126,7 +126,7 @@ class VoxelGrid(object):
             # self.__velocity = (velocity.mean()) * np.sin(self.__phi)
             
             # this is leftover from Silke's version
-            ensembleDispersion = np.sqrt(velocity.std()**2+(constants.ensemble_dispersion)**2)
+            ensembleDispersion = np.linalg.norm((velocity.std(), constants.clump_dispersion))
             velocity = velocity.mean()
         
         else:
