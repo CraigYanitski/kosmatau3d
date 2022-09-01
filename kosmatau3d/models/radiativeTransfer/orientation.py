@@ -113,10 +113,21 @@ def open_voxel_emission(directory, verbose=False):
 
 def calculateObservation(directory='', dim='xy', terminal=True, vel_pool=False, plotV=False, 
                          slRange=[(-np.pi,np.pi), (-np.pi/2,np.pi/2)], nsl=[50,25],
-                         multiprocessing=0, debug=False, verbose=False):
+                         pencil_beam=True, d_lon=None, d_lat=None, multiprocessing=0, 
+                         debug=False, verbose=False):
 
     if debug:
         sl = [5, 5]
+
+    rt.pencil_beam = pencil_beam
+    if d_lon:
+        rt.d_lon = d_lon
+    else:
+        rt.d_lon = abs(slRange[0][0]-slRange[0][1])/(nsl[0]-1)
+    if d_lat:
+        rt.d_lat = d_lat
+    else:
+        rt.d_lat = abs(slRange[1][0]-slRange[1][1])/(nsl[1]-1)
     
     # constants.velocityRange = np.linspace(-300, 300, 500)
     
@@ -958,11 +969,16 @@ def set_los(x=0, y=0, z=0, lon=0, lat=0, i_vox=[], i_vel=None, i_spe=None, i_dus
                                                      np.sin(np.abs(lonGrid+np.pi/4))], axis=0)
         height = scaling*constants.voxel_size*np.max([np.sin(np.abs(latGrid-np.pi/4)),
                                                       np.sin(np.abs(latGrid+np.pi/4))], axis=0)
-        # angular size of voxels
-        d_lon = 0.5*np.arctan(width/radGrid)
-        d_lon[(lat > 1) | (lat < -1)] = 3.142  # check if voxel in los but not in selection criteria 
-        d_lat = 0.5*np.arctan(height/radGrid)
-        d_lat[(lat > 1) | (lat < -1)] = 1.571
+        # angular size of voxels (theoretically correct)
+        if rt.pencil_beam:
+            d_lon = 0.5*np.arctan(width/radGrid)
+            d_lon[(lat > 1) | (lat < -1)] = 3.142  # check if voxel in los but not in selection criteria 
+            d_lat = 0.5*np.arctan(height/radGrid)
+            d_lat[(lat > 1) | (lat < -1)] = 1.571
+        # beam width (observationally correct)
+        else:
+            d_lon = rt.d_lon
+            d_lat = rt.d_lat
         i_los = np.where((abs(lonGrid-x1LoS) <= d_lon) & (abs(latGrid-x2LoS) <= d_lat) & rt.i_vox)[0]
         # i_los = np.where((abs(lonGrid-x1LoS) <= d_lon) & (abs(latGrid-x2LoS) <= d_lat))[0]
     

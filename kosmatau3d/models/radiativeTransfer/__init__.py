@@ -12,6 +12,10 @@ from kosmatau3d.models import constants
 
 logger = getLogger(__name__)
 
+pencil_beam = True
+d_lon = 1
+d_lat = 1
+
 positions = []
 
 intensity_species = []
