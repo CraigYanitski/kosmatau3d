@@ -29,7 +29,8 @@ def initialise_grid(dilled=False):
     return
 
 
-def initialise_model(dilled=False, like_clumps=False, average_fuv=False, l_range=(912, 2066)):
+def initialise_model(dilled=False, like_clumps=False, scale_gc=sclae_gc, 
+                     average_fuv=False, l_range=(912, 2066)):
     interpolations.galaxy_rotation_interpolation = calculate_galaxy_rotation(dilled=dilled)
     interpolations.velocity_dispersion_interpolation = 1  # calculate_velocity_dispersion(dilled=dilled)
     interpolations.number_density_interpolation = calculate_number_density(dilled=dilled)
@@ -40,6 +41,7 @@ def initialise_model(dilled=False, like_clumps=False, average_fuv=False, l_range
                                                              like_clumps=like_clumps)
     interpolations.fuv_interpolation = calculate_fuv(l_range=l_range, 
                                                      average_fuv=average_fuv, 
+                                                     scale_gc=scale_gc, 
                                                      dilled=dilled)
     # interpolations.e_tilde_real = calculate_e_tilde_real()
     # interpolations.e_tilde_imaginary = calculate_e_tilde_imaginary()
@@ -377,7 +379,8 @@ def calculate_hi_mass(like_clumps=False, verbose=False, dilled=True):
     return
 
 
-def calculate_fuv(l_range=(912, 2066), average_fuv=False, verbose=False, dilled=False):
+def calculate_fuv(l_range=(912, 2066), average_fuv=False, scale_gc=scale_gc, 
+                  verbose=False, dilled=False):
     if constants.directory != '':
         if dilled:
             with open(constants.INPUTPATH+constants.directory + 
@@ -389,13 +392,20 @@ def calculate_fuv(l_range=(912, 2066), average_fuv=False, verbose=False, dilled=
         lam = np.array([912, 1350, 1500, 1650, 2000, 2200, 2500, 2800, 3650])
         wav = np.linspace(l_range[0], l_range[1], num=1000)
         f = interpolate.interp1d(lam, fuv[2], axis=1)
+        i_gc = fuv[0][:, 0] < 4500
         if constants.interpolation == 'linear':
             if average_fuv:
-                return interpolate.LinearNDInterpolator(fuv[0], fuv[1])
+                fuv_temp = copy(fuv[1])
+                fuv_temp[i_gc] = fuv_temp[i_gc]*scale_gc
+                return interpolate.LinearNDInterpolator(fuv[0], fuv_temp)
             else:
-                return interpolate.LinearNDInterpolator(fuv[0], np.trapz(f(wav), wav))
+                fuv_temp = np.trapz(f(wav), wav)
+                fuv_temp[i_gc] = fuv_temp[i_gc]*scale_gc
+                return interpolate.LinearNDInterpolator(fuv[0], fuv_temp)
         elif constants.interpolation == 'cubic' or constants.interpolation == 'radial':
-            return interpolate.Rbf(fuv[0][:, 0], fuv[0][:, 1], np.trapz(f(wav), wav))
+            fuv_temp = np.trapz(f(wav), wav)
+            fuv_temp[i_gc] = fuv_temp[i_gc]*scale_gc
+            return interpolate.Rbf(fuv[0][:, 0], fuv[0][:, 1], fuv_temp)
         else:
             sys.exit('<<ERROR>>: There is no such method as ' + 
                      '{} to interpolate '.format(constants.interpolation) +

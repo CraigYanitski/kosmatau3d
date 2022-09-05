@@ -649,6 +649,7 @@ class VoxelGrid(object):
         header['COMMENT'] = constants.hi_scale_height_file.ljust(cw)
         header['COMMENT'] = constants.h_number_density_file.ljust(cw)
         header['COMMENT'] = constants.fuv_file.ljust(cw)
+        header['COMMENT'] = '  scale galactic center: {}'.format(constants.fuv_scale_gc).ljust(cw)
         header['COMMENT'] = '  average spectrum: {}'.format(constants.average_fuv).ljust(cw)
         header['COMMENT'] = '  integration range: {}'.format(constants.l_range).ljust(cw)
         header['COMMENT'] = constants.velocity_file.ljust(cw)

@@ -36,6 +36,7 @@ h2_mass_file = ''
 hi_mass_file = ''
 density_file = ''
 fuv_file = ''
+fuv_scale_gc = 1.0
 l_range = (912, 2066)  # for integration
 velocity_file = ''
 

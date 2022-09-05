@@ -36,7 +36,7 @@ class Model(object):
                  hi_scale_height_file='hi_scale-height.dat', 
                  h_number_density_file='h_number-density.dat', 
                  fuv_file='galactic_FUV_complete.dat', 
-                 l_range=(912, 2066), average_fuv=False, like_clumps=False,
+                 l_range=(912, 2066), average_fuv=False, scale_gc=1.0, like_clumps=False,
                  velocity_file='rot_milki2018_14.dat',
                  x=0, y=0, z=0, model_type='', resolution=1000,
                  molecules='all', dust='molecular', velocity_range=(), velocity_number=0,
@@ -107,11 +107,12 @@ class Model(object):
         constants.change_dust_wavelengths(constants.dust)
         if not interpolations.initialised or new_grid:
             interpolations.initialise_grid(dilled=dilled)
+            constants.fuv_scale_gc = scale_gc
             constants.average_fuv = average_fuv
             constants.l_range = l_range
             constants.like_clumps = like_clumps
             interpolations.initialise_model(l_range=l_range, average_fuv=average_fuv, 
-                                            like_clumps=like_clumps)
+                                            scale_gc=scale_gc, like_clumps=like_clumps)
 
         # Initialise logger
         self.__logger = getLogger()
