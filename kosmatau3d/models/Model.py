@@ -112,7 +112,7 @@ class Model(object):
             constants.l_range = l_range
             constants.like_clumps = like_clumps
             interpolations.initialise_model(l_range=l_range, average_fuv=average_fuv, 
-                                            scale_gc=scale_gc, like_clumps=like_clumps)
+                                            like_clumps=like_clumps)
 
         # Initialise logger
         self.__logger = getLogger()

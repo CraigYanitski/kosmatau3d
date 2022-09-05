@@ -29,7 +29,7 @@ def initialise_grid(dilled=False):
     return
 
 
-def initialise_model(dilled=False, like_clumps=False, scale_gc=sclae_gc, 
+def initialise_model(dilled=False, like_clumps=False, 
                      average_fuv=False, l_range=(912, 2066)):
     interpolations.galaxy_rotation_interpolation = calculate_galaxy_rotation(dilled=dilled)
     interpolations.velocity_dispersion_interpolation = 1  # calculate_velocity_dispersion(dilled=dilled)
@@ -41,7 +41,6 @@ def initialise_model(dilled=False, like_clumps=False, scale_gc=sclae_gc,
                                                              like_clumps=like_clumps)
     interpolations.fuv_interpolation = calculate_fuv(l_range=l_range, 
                                                      average_fuv=average_fuv, 
-                                                     scale_gc=scale_gc, 
                                                      dilled=dilled)
     # interpolations.e_tilde_real = calculate_e_tilde_real()
     # interpolations.e_tilde_imaginary = calculate_e_tilde_imaginary()
@@ -379,7 +378,7 @@ def calculate_hi_mass(like_clumps=False, verbose=False, dilled=True):
     return
 
 
-def calculate_fuv(l_range=(912, 2066), average_fuv=False, scale_gc=scale_gc, 
+def calculate_fuv(l_range=(912, 2066), average_fuv=False, 
                   verbose=False, dilled=False):
     if constants.directory != '':
         if dilled:
@@ -396,15 +395,15 @@ def calculate_fuv(l_range=(912, 2066), average_fuv=False, scale_gc=scale_gc,
         if constants.interpolation == 'linear':
             if average_fuv:
                 fuv_temp = copy(fuv[1])
-                fuv_temp[i_gc] = fuv_temp[i_gc]*scale_gc
+                # fuv_temp[i_gc] = fuv_temp[i_gc]
                 return interpolate.LinearNDInterpolator(fuv[0], fuv_temp)
             else:
                 fuv_temp = np.trapz(f(wav), wav)
-                fuv_temp[i_gc] = fuv_temp[i_gc]*scale_gc
+                # fuv_temp[i_gc] = fuv_temp[i_gc]
                 return interpolate.LinearNDInterpolator(fuv[0], fuv_temp)
         elif constants.interpolation == 'cubic' or constants.interpolation == 'radial':
             fuv_temp = np.trapz(f(wav), wav)
-            fuv_temp[i_gc] = fuv_temp[i_gc]*scale_gc
+            # fuv_temp[i_gc] = fuv_temp[i_gc]
             return interpolate.Rbf(fuv[0][:, 0], fuv[0][:, 1], fuv_temp)
         else:
             sys.exit('<<ERROR>>: There is no such method as ' + 
