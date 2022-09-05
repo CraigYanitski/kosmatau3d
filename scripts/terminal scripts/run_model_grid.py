@@ -8,14 +8,14 @@ from pprint import pprint
 
 
 # ARGUMENTS
-# Parse arguments
+#, fontsize=16 Parse arguments
 parser = argparse.ArgumentParser()
 
 parser.add_argument('-f', '--folder', type=str, default='/mnt/hpc_backup/yanitski/projects/pdr/KT3_history', 
                     help='folder containing kosmatau3d models')
 parser.add_argument('-g', '--grid', type=str, default='convergence', 
                     choices=['convergence', 'f_cm-cm', 'f_icm-icm', 'cm-icm', 'f_cm-f_icm', 
-                             'r_cmz-f_fuv', 'f_hi-f_fuv', 'f_cl-f_icl-f_d-f_fuv'], 
+                             'r_cmz-f_fuv', 'f_hi-f_fuv', 'f_cl-f_icl-f_d-f_fuv', 'f_fuv_gc'], 
                     help='parameters varied in grid')
 parser.add_argument('-r', '--resolution', type=int, default=400, 
                     help='voxel size in the model')
@@ -108,6 +108,11 @@ elif args.grid == 'f_cl-f_icl-f_d-f_fuv':
     param_keys = ('h2_mass_factor', 'hi_mass_factor', 'density_factor', 'fuv_factor')
     params = list(_.flatten() for _ in np.meshgrid(f_cl, f_icl, f_d, f_fuv))
     param_folders = list(folder.format(*_) for _ in zip(*params))
+elif args.grid == 'f_fuv_gc':
+    folder = f'r{args.resolution}' + '_f_fuv_gc{:.2f}/'
+    params = (10**np.array([0, 0.5, 1, 1.5, 2]), )
+    param_keys = ('scale_gc', )
+    param_folders = list(folder.format(*_) for _ in zip(*params))
 else:
     params = None
     param_keys = None
@@ -146,6 +151,7 @@ parameters = {
               'fuv_file': 'galactic_FUV_complete.dat',
               'average_fuv': False,
               'l_range': (912, 2066),
+              'scale_gc': 1.0,
               'new_grid': False,
               
               # Model information
@@ -246,7 +252,7 @@ for i, param in enumerate(zip(*params)):
 
     # Run model if selected
     if run_model:
-        kosma.calculateModel(kind='zero', multiprocessing=0)
+        kosma.calculateModel(kind='linear', multiprocessing=0)
 
     # Set model folder directory
     directory = parameters['history_path'] + parameters['directory'] \
