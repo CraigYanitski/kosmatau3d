@@ -105,9 +105,9 @@ class Model(object):
         constants.dust = dust
         self.__addSpecies(molecules)
         constants.change_dust_wavelengths(constants.dust)
+        constants.fuv_scale_gc = scale_gc
         if not interpolations.initialised or new_grid:
             interpolations.initialise_grid(dilled=dilled)
-            constants.fuv_scale_gc = scale_gc
             constants.average_fuv = average_fuv
             constants.l_range = l_range
             constants.like_clumps = like_clumps
