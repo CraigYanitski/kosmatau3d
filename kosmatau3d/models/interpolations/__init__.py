@@ -254,8 +254,8 @@ def interpolate_taufuv(density, mass):
 
 def interpolate_fuv(radius, height):
     fuv_temp = fuv_interpolation(radius, abs(height))
-    if np.mean(radius) < 4500:
-        fuv_temp *= constants.fuv_scale_gc
+    # if np.mean(radius) < 4500:
+    #     fuv_temp *= constants.fuv_scale_gc
     return fuv_temp
 
 

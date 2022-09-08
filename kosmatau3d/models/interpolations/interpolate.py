@@ -390,20 +390,22 @@ def calculate_fuv(l_range=(912, 2066), average_fuv=False,
         fuv = observations.fuv_profile
         lam = np.array([912, 1350, 1500, 1650, 2000, 2200, 2500, 2800, 3650])
         wav = np.linspace(l_range[0], l_range[1], num=1000)
+        i_gc = fuv[0][:, 0] < constants.fuv_r_gc
+        fuv[1][i_gc] = fuv[1][i_gc] * constants.fuv_scale_gc
+        fuv[2][i_gc, :] = fuv[2][i_gc, :] * constants.fuv_scale_gc
         f = interpolate.interp1d(lam, fuv[2], axis=1)
-        i_gc = fuv[0][:, 0] < 4500
         if constants.interpolation == 'linear':
             if average_fuv:
                 fuv_temp = copy(fuv[1])
-                # fuv_temp[i_gc] = fuv_temp[i_gc]
+                # fuv_temp[i_gc] = fuv_temp[i_gc] * constants.fuv_scale_gc
                 return interpolate.LinearNDInterpolator(fuv[0], fuv_temp)
             else:
                 fuv_temp = np.trapz(f(wav), wav)
-                # fuv_temp[i_gc] = fuv_temp[i_gc]
+                # fuv_temp[i_gc] = fuv_temp[i_gc] * constants.fuv_scale_gc
                 return interpolate.LinearNDInterpolator(fuv[0], fuv_temp)
         elif constants.interpolation == 'cubic' or constants.interpolation == 'radial':
             fuv_temp = np.trapz(f(wav), wav)
-            # fuv_temp[i_gc] = fuv_temp[i_gc]
+            # fuv_temp[i_gc] = fuv_temp[i_gc] * constants.fuv_scale_gc
             return interpolate.Rbf(fuv[0][:, 0], fuv[0][:, 1], fuv_temp)
         else:
             sys.exit('<<ERROR>>: There is no such method as ' + 
