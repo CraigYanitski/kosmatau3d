@@ -15,7 +15,7 @@ parser.add_argument('-f', '--folder', type=str, default='/mnt/hpc_backup/yanitsk
                     help='folder containing kosmatau3d models')
 parser.add_argument('-g', '--grid', type=str, default='convergence', 
                     choices=['convergence', 'f_cm-cm', 'f_icm-icm', 'cm-icm', 'f_cm-f_icm', 
-                             'r_cmz-f_fuv', 'f_hi-f_fuv', 'f_cl-f_icl-f_d-f_fuv', 'f_fuv_gc'], 
+                             'r_cmz-f_fuv', 'f_hi-f_fuv', 'f_cl-f_icl-f_d-f_fuv', 'f_fuv_gc', 'disp_gc'], 
                     help='parameters varied in grid')
 parser.add_argument('-r', '--resolution', type=int, default=400, 
                     help='voxel size in the model')
@@ -112,6 +112,13 @@ elif args.grid == 'f_fuv_gc':
     folder = f'r{args.resolution}' + '_f_fuv_gc{:.2f}/'
     params = (10**np.array([0, 0.5, 1, 1.5, 2]), )
     param_keys = ('scale_gc', )
+    param_folders = list(folder.format(*_) for _ in zip(*params))
+elif args.grid == 'disp_gc':
+    folder = f'r{args.resolution}' + '_r_gc{:.2f}_disp_gc{:.2f}/'
+    r_gc = (200, 600)
+    disp_gc = (200, 300)
+    param_keys = ('disp_core', 'r_core', )
+    params = list(_.flatten() for _ in np.meshgrid(r_gc, disp_gc))
     param_folders = list(folder.format(*_) for _ in zip(*params))
 else:
     params = None
@@ -262,7 +269,7 @@ for i, param in enumerate(zip(*params)):
     if run_rt:
         models.radiativeTransfer.calculateObservation(directory=directory, dim='spherical',
                                                       multiprocessing=args.mp, 
-                                                      vel_pool=False, 
+                                                      vel_pool=False, pencil_beam=True, 
                                                       slRange=[(-np.pi, np.pi), 
                                                                (-2*np.pi/180, 2*np.pi/180)],
                                                       nsl=[721, 9], terminal=True, debug=False)
