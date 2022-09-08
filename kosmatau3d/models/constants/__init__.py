@@ -34,9 +34,16 @@ tau_fuv_grid_file = 'RhoMassAfuv.dat'
 # Model input file information
 h2_mass_file = ''
 hi_mass_file = ''
-density_file = ''
+h2_surface_density_file = ''
+hi_surface_density_file = ''
+h2_scale_height_file = ''
+hi_scale_height_file = ''
+h_number_density_file = ''
 fuv_file = ''
 fuv_scale_gc = 1.0
+fuv_r_gc = 4400
+disp_gc = None
+disp_r_gc = 4400
 l_range = (912, 2066)  # for integration
 velocity_file = ''
 
