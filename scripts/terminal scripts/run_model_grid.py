@@ -15,7 +15,8 @@ parser.add_argument('-f', '--folder', type=str, default='/mnt/hpc_backup/yanitsk
                     help='folder containing kosmatau3d models')
 parser.add_argument('-g', '--grid', type=str, default='convergence', 
                     choices=['convergence', 'f_cm-cm', 'f_icm-icm', 'cm-icm', 'f_cm-f_icm', 
-                             'r_cmz-f_fuv', 'f_hi-f_fuv', 'f_cl-f_icl-f_d-f_fuv', 'f_fuv_gc', 'disp_gc'], 
+                             'r_cmz-f_fuv', 'f_hi-f_fuv', 'f_cl-f_icl-f_d-f_fuv', 
+                             'f_fuv_gc', 'disp_gc', 'fuv_gc-disp_gc'], 
                     help='parameters varied in grid')
 parser.add_argument('-r', '--resolution', type=int, default=400, 
                     help='voxel size in the model')
@@ -34,8 +35,10 @@ args = parser.parse_args()
 
 if args.grid == 'convergence':
     folder = 'r{}_convergence/'
-    params = ((400, 200, 100), )
-    param_keys = ('resolution', )
+    res = (400, 200, 100)
+    grid_flag = (True, )
+    param_keys = ('resolution', 'new_grid')
+    params = list(_.flatten() for _ in np.meshgrid(res, grid_flag))
     param_folders = list(folder.format(*_) for _ in zip(*params))
 elif args.grid == 'f_cm-cm':
     folder = f'r{args.resolution}' + '_fcm{}_cm{}/'
@@ -119,6 +122,15 @@ elif args.grid == 'disp_gc':
     disp_gc = (200, 300)
     param_keys = ('disp_core', 'r_core', )
     params = list(_.flatten() for _ in np.meshgrid(r_gc, disp_gc))
+    param_folders = list(folder.format(*_) for _ in zip(*params))
+elif args.grid == 'fuv_gc-disp_gc':
+    folder = f'r{args.resolution}' + '_f_fuv_gc{:.2f}_r_gc{}_disp_gc{}/'
+    fuv_gc = (10**np.array([0, 0.5, 1, 1.5, 2]), )
+    r_gc = (200, 600)
+    disp_gc = (200, 300)
+    grid_flag = (True, )
+    param_keys = ('scale_gc', 'r_core', 'disp_core', 'new_grid')
+    params = list(_.flatten() for _ in np.meshgrid(fuv_gc, r_gc, disp_gc, grid_flag))
     param_folders = list(folder.format(*_) for _ in zip(*params))
 else:
     params = None
@@ -269,7 +281,7 @@ for i, param in enumerate(zip(*params)):
     if run_rt:
         models.radiativeTransfer.calculateObservation(directory=directory, dim='spherical',
                                                       multiprocessing=args.mp, 
-                                                      vel_pool=False, pencil_beam=True, 
+                                                      vel_pool=False, pencil_beam=False, 
                                                       slRange=[(-np.pi, np.pi), 
                                                                (-2*np.pi/180, 2*np.pi/180)],
                                                       nsl=[721, 9], terminal=True, debug=False)
