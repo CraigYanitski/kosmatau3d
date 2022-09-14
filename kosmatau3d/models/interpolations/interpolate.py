@@ -63,10 +63,10 @@ def calculate_grid_interpolation(verbose=False, dilled=False):
     '''
     np.seterr(divide='ignore', invalid='ignore')
     if interpolations.initialised:
-        del interpolations.intensityInterpolation
-        del interpolations.tauInterpolation
-        del interpolations.dustIntensityInterpolation
-        del interpolations.dustTauInterpolation
+        del interpolations.species_intensity_interpolation
+        del interpolations.species_tau_interpolation
+        del interpolations.dust_intensity_interpolation
+        del interpolations.dust_tau_interpolation
     interpolations.species_intensity_interpolation = []
     interpolations.species_tau_interpolation = []
     interpolations.dust_intensity_interpolation = []
