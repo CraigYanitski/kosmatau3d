@@ -129,7 +129,7 @@ elif args.grid == 'fuv_gc-disp_gc':
     r_gc = (200, 600)
     disp_gc = (200, 300)
     grid_flag = (True, )
-    param_keys = ('scale_gc', 'r_core', 'disp_core', 'new_grid')
+    param_keys = ('scale_gc', 'r_gc', 'disp_core', 'new_grid')
     params = list(_.flatten() for _ in np.meshgrid(fuv_gc, r_gc, disp_gc, grid_flag))
     param_folders = list(folder.format(*_) for _ in zip(*params))
 else:
@@ -281,7 +281,7 @@ for i, param in enumerate(zip(*params)):
     if run_rt:
         models.radiativeTransfer.calculateObservation(directory=directory, dim='spherical',
                                                       multiprocessing=args.mp, 
-                                                      vel_pool=False, pencil_beam=False, 
+                                                      vel_pool=False, pencil_beam=True, 
                                                       slRange=[(-np.pi, np.pi), 
                                                                (-2*np.pi/180, 2*np.pi/180)],
                                                       nsl=[721, 9], terminal=True, debug=False)
