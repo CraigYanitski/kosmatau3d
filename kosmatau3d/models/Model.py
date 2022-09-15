@@ -108,7 +108,7 @@ class Model(object):
         constants.fuv_scale_gc = scale_gc
         constants.fuv_r_gc = r_gc
         constants.disp_gc = disp_core
-        constants.disp_r_gc = r_core
+        constants.disp_r_gc = r_gc
         if not interpolations.initialised or new_grid:
             interpolations.initialise_grid(dilled=dilled)
             constants.average_fuv = average_fuv
