@@ -235,6 +235,8 @@ r_cmz = 0
 models.constants.fuv_ism = 1
 fuv = 1.8
 
+i_max = len(params[0])
+
 for i, param in enumerate(zip(*params)):
     
     # Set the required parameters
@@ -246,8 +248,9 @@ for i, param in enumerate(zip(*params)):
     kosma = models.Model(**parameters)
 
     # Print details
-    print('\n\n   ==> Model {}'.format(models.constants.history))
-    print('       ' + '-'*len('Model {}'.format(models.constants.history)))
+    print('\n\n   ==> Model {} of {}'.format(i, i_max))
+    print('       ' + models.constants.history)
+    print('       ' + '-'*len(models.constants.history))
     if args.verbose:
         print()
         pprint(parameters)
