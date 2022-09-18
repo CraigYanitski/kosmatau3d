@@ -11,7 +11,7 @@ from pprint import pprint
 #, fontsize=16 Parse arguments
 parser = argparse.ArgumentParser()
 
-parser.add_argument('-f', '--folder', type=str, default='/mnt/hpc_backup/yanitski/projects/pdr/KT3_history', 
+parser.add_argument('-f', '--folder', type=str, default='/mnt/yanitski_backup/yanitski/projects/pdr/KT3_history', 
                     help='folder containing kosmatau3d models')
 parser.add_argument('-g', '--grid', type=str, default='convergence', 
                     choices=['convergence', 'f_cm-cm', 'f_icm-icm', 'cm-icm', 'f_cm-f_icm', 
