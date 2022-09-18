@@ -124,13 +124,14 @@ elif args.grid == 'disp_gc':
     params = list(_.flatten() for _ in np.meshgrid(r_gc, disp_gc))
     param_folders = list(folder.format(*_) for _ in zip(*params))
 elif args.grid == 'fuv_gc-disp_gc':
-    folder = f'r{args.resolution}' + '_f_fuv_gc{:.2f}_r_gc{}_disp_gc{}/'
+    folder = f'r{args.resolution}' + '_f_fuv_gc{:.2f}_r_fuv_gc{}_disp_gc{}_r_disp_gc{}/'
+    r_gc = (0, 400, 800, 1200, 1600, 2000)
     fuv_gc = (10**np.array([0, 0.5, 1, 1.5, 2]), )
-    r_gc = (200, 600)
+    r_core = (200, 600)
     disp_gc = (200, 300)
     grid_flag = (True, )
-    param_keys = ('scale_gc', 'r_gc', 'disp_core', 'new_grid')
-    params = list(_.flatten() for _ in np.meshgrid(fuv_gc, r_gc, disp_gc, grid_flag))
+    param_keys = ('scale_gc', 'r_gc', 'disp_core', 'r_core', 'new_grid')
+    params = list(_.flatten() for _ in np.meshgrid(fuv_gc, r_gc, disp_gc, r_core, grid_flag))
     param_folders = list(folder.format(*_) for _ in zip(*params))
 else:
     params = None
