@@ -40,7 +40,7 @@ In order to properly view the current documentation, from the root directory run
 cd doc
 make html
 cd build/html
-$ browse index.html
+browse index.html
 ```
 
 You should now see the homepage of the documentation in its current form.
