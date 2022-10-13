@@ -1,5 +1,6 @@
 import numpy as np
 import os
+import pandas as pd
 
 from astropy.io import fits
 from copy import copy, deepcopy
@@ -73,15 +74,19 @@ class Observation(object):
         self.obs_iid = []
         self.obs_wavelength = []
         self.obs_frequency = []
+        self.obs_spectra = None
+        self.obs_spectra_resampled = None
+        self.obs_spectra_reduced = None
 
         return
 
-    def load_survey(self, directory='', survey=None):
+    def load_survey(self, directory='', survey=None, lat=0):
         '''
         '''
 
         if survey is None:
             print('ERROR: Please specify an observational survey')
+            return
 
         self.survey = survey
 
@@ -94,6 +99,7 @@ class Observation(object):
 
         if os.path.exists(self.base_dir + self.directory + self.survey + self.regridded_dir):
             full_path = self.base_dir + self.directory + self.survey + self.regridded_dir
+            spectra_path = self.base_dir + self.directory + self.survey + '/spectra/'
         else:
             print('ERROR: Either the survey has not been regridded or the directory differs from '
                   + f'{self.regridded_dir}.')
@@ -153,6 +159,12 @@ class Observation(object):
                 self.obs_frequency.append([None])
                 self.obs_wavelength.append([None])
                 self.obs_iid.append(self.obs_header[-1]['TRANSL'].split(', '))
+
+            if os.path.exists(spectra_path):
+                self.obs_spectra = pd.read_csv(spectra_path + self.survey + '_combined.csv')
+                self.obs_spectra_resampled = pd.read_csv(spectra_path + self.survey 
+                                                         + '_resampled.csv')
+                self.obs_spectra_reduced = self.obs_spectra.loc[self.obs_spectra.glat == lat]
 
         return
 
