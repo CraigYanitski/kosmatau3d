@@ -111,6 +111,7 @@ class Observation(object):
         self.reset_attributes()
 
         for f in self.files:
+            # Open IDL files if necesdsary
             if '.idl' in f:
                 self.obs.append(readsav(full_path + f))
                 self.obs_header.append([None])
@@ -122,6 +123,7 @@ class Observation(object):
                 self.obs_lon.append(deepcopy(self.obs[-1]['long']))
                 self.obs_lat.append(np.array([0]))
                 self.obs_vel.append([None])
+            # By default open data stored in a FITS file
             else:
                 self.obs.append(fits.open(full_path + f))
                 self.obs_error.append(fits.open(full_path + f.replace('.fits', '_error.fits')))
@@ -163,11 +165,12 @@ class Observation(object):
             if os.path.exists(spectra_path):
                 self.obs_spectra = pd.read_csv(spectra_path + self.survey + '_combined.csv')
                 self.obs_spectra_resampled = pd.read_csv(spectra_path + self.survey 
-                                                         + '_resampled.csv')
+                                                         + '_combined.csv')
                 self.obs_spectra_reduced = self.obs_spectra.loc[self.obs_spectra.glat == lat]
 
         return
 
+    # Open spectra as a dataframe if included
     def get_obs_extent(self, filename=None, idx=None, kind='extent', verbose=False):
 
         if filename is None and idx is None:
