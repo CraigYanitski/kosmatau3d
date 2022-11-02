@@ -34,9 +34,11 @@ number_density_interpolation = None
 h2_scale_height = None
 h2_mass_full = None
 h2_mass_interpolation = None
+h2_column_density_interpolation = None
 hi_scale_height = None
 hi_mass_full = None
 hi_mass_interpolation = None
+hi_column_density_interpolation = None
 taufuv_interpolation = None
 fuv_interpolation = None
 e_tilde_real = None
@@ -53,10 +55,13 @@ def reset():
     number_density_interpolation = None
     h2_mass_interpolation = None
     hi_mass_interpolation = None
+    h2_column_density_interpolation = None
+    hi_column_density_interpolation = None
     taufuv_interpolation = None
     fuv_interpolation = None
     e_tilde_real = None
     e_tilde_imaginary = None
+    initialised = False
     return
 
 
@@ -194,6 +199,17 @@ def interpolate_dust_tau(points, verbose=False):
     if verbose:
       print('Calculated the optical depth for {} species.'.format(len(speciesNumber)))
     return tau
+
+
+def interpolate_hi_column_density(points):
+    if constants.interpolation == 'linear':
+        return 10**hi_column_density(points)
+    elif constants.interpolation == 'radial' or constants.interpolation == 'cubic':
+        return 10**hi_column_density(points[0], points[1], points[2])
+    else:
+        sys.exit('<<ERROR>>: There is no such method as ' + 
+                 '{} to interpolate the '.format(constants.interpolation) +
+                 'KOSMA-tau grid.\n\nExitting...\n\n')
 
 
 def interpolate_galaxy_rotation(radius):

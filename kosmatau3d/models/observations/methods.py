@@ -84,6 +84,13 @@ def rho_mass_taufuv(file='RhoMassAFUV.dat'):
     return
 
 
+def column_density(file='column-densities.dat'):
+    # Open file containing the column densities
+    N = pd.read_csv(file, sep=' ')
+    observations.column_density = (N.loc[:, ['n', 'M', 'chi']], N.loc[:, ['N(H)', 'N(H2)']])
+    return
+
+
 def species_data(file='frequencies.dat'):
     # Open file containing the transition frequencies of various elements
     frequencies = np.genfromtxt(constants.GRIDPATH+file, names=['number', 'species', 'transition', 'frequency'],

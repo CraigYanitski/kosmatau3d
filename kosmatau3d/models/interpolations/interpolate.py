@@ -25,6 +25,8 @@ warnings.simplefilter('ignore', category=NumbaPendingDeprecationWarning)
 def initialise_grid(dilled=False):
     calculate_grid_interpolation(dilled=dilled)
     interpolations.taufuv_interpolation = calculate_taufuv(dilled=dilled)
+    interpolations.hi_column_density = calculate_hi_column_density(dilled=dilled)
+    interpolations.h2_column_density = calculate_h2_column_density(dilled=dilled)
     interpolations.initialised = True
     return
 
@@ -193,6 +195,44 @@ def calculate_taufuv(verbose=False, dilled=False):
         sys.exit('<<ERROR>>: There is no such method as ' + 
                  '{} to interpolate '.format(constants.interpolation) +
                  'the extinction in the KOSMA-tau grid.\n\nExitting...\n\n')
+
+
+def calculate_hi_column_density(verbose=False, dilled=False):
+    if dilled:
+        with open(constants.GRIDPATH + 'dilled/hi_column_density_interpolation', 'rb') as file:
+            return dill.load(file)
+    if verbose:
+        print('Creating N(H) grid interpolation')
+    nmchi, N = observations.hi_column_density
+    nmchi /= 10.
+    log_N = np.log10(N)
+    if constants.interpolation == 'linear':
+        return interpolate.LinearNDInterpolator(nmchi.to_numpy(), log_N['N(H)'])
+    elif constants.interpolation == 'cubic' or constants.interpolation == 'radial':
+        return interpolate.Rbf(nmchi, log_N['N(H)'])
+    else:
+        sys.exit('<<ERROR>>: There is no such method as ' + 
+                 '{} to interpolate '.format(constants.interpolation) +
+                 'the H column density in the KOSMA-tau grid.\n\nExitting...\n\n')
+
+
+def calculate_h2_column_density(verbose=False, dilled=False):
+    if dilled:
+        with open(constants.GRIDPATH + 'dilled/h2_column_density_interpolation', 'rb') as file:
+            return dill.load(file)
+    if verbose:
+        print('Creating N(H2) grid interpolation')
+    nmchi, N = observations.hi_column_density
+    nmchi /= 10.
+    log_N = np.log10(N)
+    if constants.interpolation == 'linear':
+        return interpolate.LinearNDInterpolator(nmchi.to_numpy(), log_N['N(H2)'])
+    elif constants.interpolation == 'cubic' or constants.interpolation == 'radial':
+        return interpolate.Rbf(nmchi, log_N['N(H2)'])
+    else:
+        sys.exit('<<ERROR>>: There is no such method as ' + 
+                 '{} to interpolate '.format(constants.interpolation) +
+                 'the H2 column density in the KOSMA-tau grid.\n\nExitting...\n\n')
 
 
 # Model interpolation

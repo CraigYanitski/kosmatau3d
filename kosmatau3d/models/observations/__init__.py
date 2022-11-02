@@ -17,6 +17,7 @@ initialised = False
 tb_centerline = None
 tau_centerline = None
 rho_mass_taufuv = None
+column_density = None
 species_data = None
 e_tilde_real = None
 e_tilde_imaginary = None
