@@ -203,13 +203,13 @@ def interpolate_dust_tau(points, verbose=False):
 
 def interpolate_hi_column_density(points):
     if constants.interpolation == 'linear':
-        return 10**hi_column_density(points)
+        return 10**hi_column_density_interpolation(points)
     elif constants.interpolation == 'radial' or constants.interpolation == 'cubic':
-        return 10**hi_column_density(points[0], points[1], points[2])
+        return 10**hi_column_density_interpolation(points[0], points[1], points[2])
     else:
         sys.exit('<<ERROR>>: There is no such method as ' + 
                  '{} to interpolate the '.format(constants.interpolation) +
-                 'KOSMA-tau grid.\n\nExitting...\n\n')
+                 'column density from the KOSMA-tau grid.\n\nExitting...\n\n')
 
 
 def interpolate_galaxy_rotation(radius):

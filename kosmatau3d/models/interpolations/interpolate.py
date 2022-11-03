@@ -25,8 +25,8 @@ warnings.simplefilter('ignore', category=NumbaPendingDeprecationWarning)
 def initialise_grid(dilled=False):
     calculate_grid_interpolation(dilled=dilled)
     interpolations.taufuv_interpolation = calculate_taufuv(dilled=dilled)
-    interpolations.hi_column_density = calculate_hi_column_density(dilled=dilled)
-    interpolations.h2_column_density = calculate_h2_column_density(dilled=dilled)
+    interpolations.hi_column_density_interpolation = calculate_hi_column_density(dilled=dilled)
+    interpolations.h2_column_density_interpolation = calculate_h2_column_density(dilled=dilled)
     interpolations.initialised = True
     return
 
@@ -180,7 +180,7 @@ def calculate_grid_interpolation(verbose=False, dilled=False):
 
 def calculate_taufuv(verbose=False, dilled=False):
     if dilled:
-        with open(constants.GRIDPATH + 'dilled/fuv_extinction_interpolation', 'rb') as file:
+        with open(constants.GRIDPATH + 'dilled/taufuv_interpolation', 'rb') as file:
             return dill.load(file)
     if verbose:
         print('Creating A_UV grid interpolation')

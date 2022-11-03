@@ -40,8 +40,12 @@ def dill_grid():
         dill.dump(interpolations.dustIntensityInterpolation, file)
     with open(constants.GRIDPATH + 'dilled/dust_tau_interpolation', 'wb') as file:
         dill.dump(interpolations.dustTauInterpolation, file)
-    with open(constants.GRIDPATH + 'dilled/fuv_extinction_interpolation', 'wb') as file:
-        dill.dump(interpolations.FUVextinctionInterpolation, file)
+    with open(constants.GRIDPATH + 'dilled/taufuv_interpolation', 'wb') as file:
+        dill.dump(interpolations.taufuv_interpolation, file)
+    with open(constants.GRIDPATH + 'dilled/hi_column_density_interpolation', 'wb') as file:
+        dill.dump(interpolations.hi_column_density_interpolation, file)
+    with open(constants.GRIDPATH + 'dilled/h2_column_density_interpolation', 'wb') as file:
+        dill.dump(interpolations.h2_column_density_interpolation, file)
     constants.directory = model_directory
     return
 
