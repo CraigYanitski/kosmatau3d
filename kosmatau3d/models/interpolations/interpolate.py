@@ -207,9 +207,9 @@ def calculate_hi_column_density(verbose=False, dilled=False):
     nmchi /= 10.
     log_N = np.log10(N)
     if constants.interpolation == 'linear':
-        return interpolate.LinearNDInterpolator(nmchi.to_numpy(), log_N['N(H)'])
+        return interpolate.LinearNDInterpolator(nmchi.to_numpy(), log_N['H'])
     elif constants.interpolation == 'cubic' or constants.interpolation == 'radial':
-        return interpolate.Rbf(nmchi, log_N['N(H)'])
+        return interpolate.Rbf(nmchi, log_N['H'])
     else:
         sys.exit('<<ERROR>>: There is no such method as ' + 
                  '{} to interpolate '.format(constants.interpolation) +
@@ -226,9 +226,9 @@ def calculate_h2_column_density(verbose=False, dilled=False):
     nmchi /= 10.
     log_N = np.log10(N)
     if constants.interpolation == 'linear':
-        return interpolate.LinearNDInterpolator(nmchi.to_numpy(), log_N['N(H2)'])
+        return interpolate.LinearNDInterpolator(nmchi.to_numpy(), log_N['H2'])
     elif constants.interpolation == 'cubic' or constants.interpolation == 'radial':
-        return interpolate.Rbf(nmchi, log_N['N(H2)'])
+        return interpolate.Rbf(nmchi, log_N['H2'])
     else:
         sys.exit('<<ERROR>>: There is no such method as ' + 
                  '{} to interpolate '.format(constants.interpolation) +

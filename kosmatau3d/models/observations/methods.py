@@ -84,10 +84,10 @@ def rho_mass_taufuv(file='RhoMassAFUV.dat'):
     return
 
 
-def column_density(file='column-densities.dat'):
+def column_density(file='meanCols.dat'):
     # Open file containing the column densities
     N = pd.read_csv(file, sep=' ')
-    observations.column_density = (N.loc[:, ['n', 'M', 'chi']], N.loc[:, ['N(H)', 'N(H2)']])
+    observations.column_density = (N.loc[:, ['n', 'M', 'chi']], N.loc[:, ['H', 'H2']])
     return
 
 
