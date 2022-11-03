@@ -203,7 +203,7 @@ def calculate_hi_column_density(verbose=False, dilled=False):
             return dill.load(file)
     if verbose:
         print('Creating N(H) grid interpolation')
-    nmchi, N = observations.hi_column_density
+    nmchi, N = observations.column_density
     nmchi /= 10.
     log_N = np.log10(N)
     if constants.interpolation == 'linear':
@@ -222,7 +222,7 @@ def calculate_h2_column_density(verbose=False, dilled=False):
             return dill.load(file)
     if verbose:
         print('Creating N(H2) grid interpolation')
-    nmchi, N = observations.hi_column_density
+    nmchi, N = observations.column_density
     nmchi /= 10.
     log_N = np.log10(N)
     if constants.interpolation == 'linear':

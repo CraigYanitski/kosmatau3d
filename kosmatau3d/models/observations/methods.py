@@ -16,11 +16,13 @@ warnings.simplefilter('ignore', category=NumbaPendingDeprecationWarning)
 
 def initialise_grid(tau_grid_file='clump_tau_LineCenter.dat', 
                     tb_grid_file='clump_Tmb_LineCenter', 
-                    tau_fuv_grid_file='RhoMassAFUV.dat'):
+                    tau_fuv_grid_file='RhoMassAFUV.dat',
+                    column_density_file='meanCols.dat'):
     # Grid
     tau_centerline(tau_grid_file)
     tb_centerline(tb_grid_file)
     rho_mass_taufuv(tau_fuv_grid_file)
+    column_density(column_density_file)
     species_data()
 
     observations.grid_initialised = True
@@ -86,8 +88,8 @@ def rho_mass_taufuv(file='RhoMassAFUV.dat'):
 
 def column_density(file='meanCols.dat'):
     # Open file containing the column densities
-    N = pd.read_csv(file, sep=' ')
-    observations.column_density = (N.loc[:, ['n', 'M', 'chi']], N.loc[:, ['H', 'H2']])
+    N = pd.read_csv(constants.GRIDPATH + file, sep='\s+')
+    observations.column_density = (N.loc[:, ['n', 'M', 'chi']], N.loc[:, 'ELECTR':])
     return
 
 

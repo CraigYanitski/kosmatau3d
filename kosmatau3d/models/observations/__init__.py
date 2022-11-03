@@ -11,7 +11,9 @@ in the folder 'grid'.
 '''
 
 
-initialised = False
+# Flags
+grid_initialised = False
+model_initialised = False
 
 # Grid
 tb_centerline = None
