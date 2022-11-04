@@ -121,13 +121,13 @@ def calculate_grid_interpolation(verbose=False, dilled=False):
   
     if constants.log_encoded:
         # Fully 'encode' the emission grid for interpolation
-        logI *= 10
-        logTau *= 10
+        logI = 10*logI
+        logTau = 10*logTau
     
     else:
         # Begin 'decoding' the grid for interpolation
-        crnmuvI /= 10.
-        crnmuvTau /= 10.
+        crnmuvI = crnmuvI/10.
+        crnmuvTau = crmnuvTau/10.
   
     if constants.interpolation == 'linear':
         if constants.dust:
@@ -185,7 +185,7 @@ def calculate_taufuv(verbose=False, dilled=False):
     if verbose:
         print('Creating A_UV grid interpolation')
     rhomass, taufuv = observations.rho_mass_taufuv
-    rhomass /= 10.
+    rhomass = rhomass/10.
     log_taufuv = np.log10(taufuv)
     if constants.interpolation == 'linear':
         return interpolate.LinearNDInterpolator(rhomass, log_taufuv)
@@ -204,7 +204,7 @@ def calculate_hi_column_density(verbose=False, dilled=False):
     if verbose:
         print('Creating N(H) grid interpolation')
     nmchi, N = observations.column_density
-    nmchi /= 10.
+    nmchi = nmchi/10.
     log_N = np.log10(N)
     if constants.interpolation == 'linear':
         return interpolate.LinearNDInterpolator(nmchi.to_numpy(), log_N['H'])
@@ -223,7 +223,7 @@ def calculate_h2_column_density(verbose=False, dilled=False):
     if verbose:
         print('Creating N(H2) grid interpolation')
     nmchi, N = observations.column_density
-    nmchi /= 10.
+    nmchi = nmchi/10.
     log_N = np.log10(N)
     if constants.interpolation == 'linear':
         return interpolate.LinearNDInterpolator(nmchi.to_numpy(), log_N['H2'])
