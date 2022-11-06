@@ -101,8 +101,8 @@ developments made.
 - Radiative transfer
   - [x] Ensure correct calculation of sythetic datacube
     - [x] implement multiprocessing
-    - [ ] optimise
-  - [ ] Implement opacity map in radiative transfer calculation
+    - [x] optimise
+  - [x] Implement opacity map in radiative transfer calculation
   - [ ] Implement FUV absorption calculation in full 3D model
   - [ ] Modify the `radiativeTransfer` module to work for arbitrary geometry
 - Miscellaneous
@@ -113,7 +113,6 @@ developments made.
   - [ ] Develop the code testing suite
   - [ ] Fully document the code using `sphinx`
   - [ ] Implement CI/CD
-  - [ ] Develop the code testing suite
   
 ### future development
 
