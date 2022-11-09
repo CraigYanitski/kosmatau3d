@@ -46,6 +46,8 @@ def dill_grid():
         dill.dump(interpolations.hi_column_density_interpolation, file)
     with open(constants.GRIDPATH + 'dilled/h2_column_density_interpolation', 'wb') as file:
         dill.dump(interpolations.h2_column_density_interpolation, file)
+    with open(constants.GRIDPATH + 'dilled/tg_interpolation', 'wb') as file:
+        dill.dump(interpolations.tg_interpolation, file)
     constants.directory = model_directory
     return
 
