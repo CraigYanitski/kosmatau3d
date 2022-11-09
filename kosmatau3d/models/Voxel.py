@@ -161,6 +161,8 @@ class Voxel(object):
                        tau_grid_file='clump_tau_LineCenter.dat', 
                        tb_grid_file='clump_Tmb_LineCenter.dat', 
                        tau_fuv_grid_file='RhoMassAFUV.dat',
+                       column_density_file='meanCols.dat',
+                       temperature_file='temperatures_filled.dat',
                        clump_mass_number=[3,1], clump_mass_range=[[0,2],[-2]], clump_n_max=[1, 100], 
                        velocity_range=[-10,10], velocity_number=51, 
                        velocity=0., velocity_resolution=1, 
@@ -296,7 +298,9 @@ class Voxel(object):
                 constants.change_dust_wavelengths(dust)
                 observations.methods.initialise_grid(tau_grid_file=tau_grid_file,
                                                      tb_grid_file=tb_grid_file,
-                                                     tau_fuv_grid_file=tau_fuv_grid_file)
+                                                     tau_fuv_grid_file=tau_fuv_grid_file,
+                                                     column_density_file=column_density_file,
+                                                     temperature_file=temperature_file)
                 species.add_molecules(molecules)
                 interpolations.initialise_grid(dilled=dilled)
 
