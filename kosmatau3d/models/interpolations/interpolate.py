@@ -27,6 +27,7 @@ def initialise_grid(dilled=False):
     interpolations.taufuv_interpolation = calculate_taufuv(dilled=dilled)
     interpolations.hi_column_density_interpolation = calculate_hi_column_density(dilled=dilled)
     interpolations.h2_column_density_interpolation = calculate_h2_column_density(dilled=dilled)
+    interpolations.tg_interpolation = calculate_tg(dilled=dilled)
     interpolations.initialised = True
     return
 
@@ -233,6 +234,25 @@ def calculate_h2_column_density(verbose=False, dilled=False):
         sys.exit('<<ERROR>>: There is no such method as ' + 
                  '{} to interpolate '.format(constants.interpolation) +
                  'the H2 column density in the KOSMA-tau grid.\n\nExitting...\n\n')
+
+
+def calculate_tg(verbose=False, dilled=False):
+    if dilled:
+        with open(constants.GRIDPATH + 'dilled/tg_interpolation', 'rb') as file:
+            return dill.load(file)
+    if verbose:
+        print('Creating T_g grid interpolation')
+    nmchi, T = observations.temperature
+    nmchi = nmchi/10.
+    log_T = np.log10(T)
+    if constants.interpolation == 'linear':
+        return interpolate.LinearNDInterpolator(nmchi.to_numpy(), log_T.Tg)
+    elif constants.interpolation == 'cubic' or constants.interpolation == 'radial':
+        return interpolate.Rbf(nmchi, log_T.Tg)
+    else:
+        sys.exit('<<ERROR>>: There is no such method as ' + 
+                 '{} to interpolate '.format(constants.interpolation) +
+                 'the gas temperature in the KOSMA-tau grid.\n\nExitting...\n\n')
 
 
 # Model interpolation

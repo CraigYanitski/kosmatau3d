@@ -40,6 +40,7 @@ hi_mass_full = None
 hi_mass_interpolation = None
 hi_column_density_interpolation = None
 taufuv_interpolation = None
+tg_interpolation = None
 fuv_interpolation = None
 e_tilde_real = None
 e_tilde_imaginary = None
