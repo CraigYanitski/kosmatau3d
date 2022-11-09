@@ -105,7 +105,15 @@ def masspoint_emission(interpolation_point, ens, masspoint, velocity=0, verbose=
     masspoints.clump_species_optical_depth[ens][masspoint, :] = deepcopy(opticaldepth_xi[0])
     masspoints.clump_dust_intensity[ens][masspoint, :] = deepcopy(intensity_xi[1])
     masspoints.clump_dust_optical_depth[ens][masspoint, :] = deepcopy(opticaldepth_xi[1])
-  
+
+    masspoints.clump_t_gas[ens][masspoint, 0] = interpolations.interpolate_tg(interpolation_point)
+    masspoints.clump_t_dust[ens][masspoint, 0] = interpolations.interpolate_td(interpolation_point)
+
+    masspoints.clump_hi_col_dens[ens][masspoint, 0] = interpolations.interpolate_hi_column_density(interpolation_point)
+
+    masspoints.clump_hi_tb[ens][masspoint, 0] = 
+    masspoints.clump_hi_tau[ens][masspoint, 0] = 
+
     return  # (intensity,opticalDepth)
 
 
