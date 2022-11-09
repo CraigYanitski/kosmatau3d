@@ -246,9 +246,9 @@ def calculate_tg(verbose=False, dilled=False):
     nmchi = nmchi/10.
     log_T = np.log10(T)
     if constants.interpolation == 'linear':
-        return interpolate.LinearNDInterpolator(nmchi.to_numpy(), log_T.Tg)
+        return interpolate.LinearNDInterpolator(nmchi.values, log_T.Tg.values)
     elif constants.interpolation == 'cubic' or constants.interpolation == 'radial':
-        return interpolate.Rbf(nmchi, log_T.Tg)
+        return interpolate.Rbf(nmchi.values, log_T.Tg.values)
     else:
         sys.exit('<<ERROR>>: There is no such method as ' + 
                  '{} to interpolate '.format(constants.interpolation) +
