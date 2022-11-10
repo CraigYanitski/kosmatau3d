@@ -12,4 +12,7 @@ clump_species_optical_depth = [[] for _ in range(len(constants.clump_mass_number
 clump_dust_intensity = [[] for _ in range(len(constants.clump_mass_number))]
 clump_dust_optical_depth = [[] for _ in range(len(constants.clump_mass_number))]
 
+clump_hi_tb = [[] for _ in range(len(constants.clump_mass_number))]
+clump_hi_tau = [[] for _ in range(len(constants.clump_mass_number))]
+
 # jit_module(nopython=False)
