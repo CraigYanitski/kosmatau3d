@@ -41,6 +41,7 @@ hi_mass_interpolation = None
 hi_column_density_interpolation = None
 taufuv_interpolation = None
 tg_interpolation = None
+td_interpolation = None
 fuv_interpolation = None
 e_tilde_real = None
 e_tilde_imaginary = None
@@ -59,6 +60,8 @@ def reset():
     h2_column_density_interpolation = None
     hi_column_density_interpolation = None
     taufuv_interpolation = None
+    tg_interpolation = None
+    td_interpolation = None
     fuv_interpolation = None
     e_tilde_real = None
     e_tilde_imaginary = None
@@ -218,6 +221,17 @@ def interpolate_tg(points):
         return 10**tg_interpolation(points)
     elif constants.interpolation == 'radial' or constants.interpolation == 'cubic':
         return 10**tg_interpolation(points[0], points[1], points[2])
+    else:
+        sys.exit('<<ERROR>>: There is no such method as ' + 
+                 '{} to interpolate the '.format(constants.interpolation) +
+                 'temperature from the KOSMA-tau grid.\n\nExitting...\n\n')
+
+
+def interpolate_td(points):
+    if constants.interpolation == 'linear':
+        return 10**td_interpolation(points)
+    elif constants.interpolation == 'radial' or constants.interpolation == 'cubic':
+        return 10**td_interpolation(points[0], points[1], points[2])
     else:
         sys.exit('<<ERROR>>: There is no such method as ' + 
                  '{} to interpolate the '.format(constants.interpolation) +
