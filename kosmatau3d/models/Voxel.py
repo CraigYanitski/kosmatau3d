@@ -424,6 +424,12 @@ class Voxel(object):
                                                    constants.wavelengths[constants.n_dust].size), 
                                                   dtype=np.float64)
                                          for _ in range(constants.ensembles)]
+            self.__intensity_hi = [np.zeros((len(ensemble.clumpIndeces[_]),
+                                             1), dtype=np.float64)
+                                     for _ in range(constants.ensembles)]
+            self.__optical_depth_hi = [np.zeros((len(ensemble.clumpIndeces[_]),
+                                                 1), dtype=np.float64)
+                                         for _ in range(constants.ensembles)]
         else:
             self.__intensity_species = [np.zeros((constants.velocity_range.size,
                                                   len(species.molecules)), dtype=np.float64)
@@ -444,6 +450,8 @@ class Voxel(object):
         self.__absorption_species = deepcopy(self.__optical_depth_species)
         self.__emissivity_dust = deepcopy(self.__intensity_dust)
         self.__absorption_dust = deepcopy(self.__optical_depth_dust)
+        self.__emissivity_hi = deepcopy()
+        self.__absorption_hi = deepcopy()
     
         # This gives an error if there are too many clumps in a line-of-sight; tau_FUV is too large for this equation...
         Afuv = combinations.get_fuv_extinction()
