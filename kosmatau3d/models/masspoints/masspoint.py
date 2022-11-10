@@ -108,17 +108,17 @@ def masspoint_emission(interpolation_point, ens, masspoint, velocity=0, verbose=
 
     t_g = interpolations.interpolate_tg(interpolation_point[1:])
     t_d = interpolations.interpolate_td(interpolation_point[1:])
-    masspoints.clump_t_gas[ens][masspoint] = copy(t_g)
-    masspoints.clump_t_dust[ens][masspoint] = copy(t_d)
+    masspoints.clump_t_gas[ens][0, masspoint] = copy(t_g)
+    masspoints.clump_t_dust[ens][0, masspoint] = copy(t_d)
 
     n_hi = interpolations.interpolate_hi_column_density(interpolation_point[1:])
-    masspoints.clump_hi_col_dens[ens][masspoint] = copy(n_hi)
+    masspoints.clump_hi_col_dens[ens][0, masspoint] = copy(n_hi)
 
-    rcl = masspoints.clump_radius[ens][masspoint]
+    rcl = masspoints.clump_radius[ens][0, masspoint]
     kappa = 7.5419439e-18 / t_g * n_hi/1e20 / rcl
     tb = t_g*rcl * (1-np.exp(-4.1146667e18*kappa*rcl))
-    masspoints.clump_hi_tb[ens][masspoint] = copy(tb)
-    masspoints.clump_hi_tau[ens][masspoint] = kappa * 4/3*rcl*constants.pc*100
+    masspoints.clump_hi_tb[ens][masspoint, 0] = copy(tb)
+    masspoints.clump_hi_tau[ens][masspoint, 0] = kappa * 4/3*rcl*constants.pc*100
 
     return  # (intensity,opticalDepth)
 
@@ -264,15 +264,15 @@ def reinitialise():
     masspoints.log_crir = [0 for _ in range(constants.ensembles)]
     masspoints.log_fuv = [0 for _ in range(constants.ensembles)]
   
-    masspoints.clump_log_density = [np.zeros(constants.clump_mass_number[_]) 
+    masspoints.clump_log_density = [np.zeros((1, constants.clump_mass_number[_])) 
                                     for _ in range(constants.ensembles)]
-    masspoints.clump_radius = [np.zeros(constants.clump_mass_number[_]) 
+    masspoints.clump_radius = [np.zeros((1, constants.clump_mass_number[_])) 
                                for _ in range(constants.ensembles)]
-    masspoints.clump_t_gas = [np.zeros(constants.clump_mass_number[_]) 
+    masspoints.clump_t_gas = [np.zeros((1, constants.clump_mass_number[_])) 
                               for _ in range(constants.ensembles)]
-    masspoints.clump_t_dust = [np.zeros(constants.clump_mass_number[_]) 
+    masspoints.clump_t_dust = [np.zeros((1, constants.clump_mass_number[_])) 
                                for _ in range(constants.ensembles)]
-    masspoints.clump_hi_col_dens = [np.zeros(constants.clump_mass_number[_]) 
+    masspoints.clump_hi_col_dens = [np.zeros((1, constants.clump_mass_number[_])) 
                                     for _ in range(constants.ensembles)]
   
     # Emission
@@ -295,9 +295,9 @@ def reinitialise():
     masspoints.clump_dust_optical_depth = [np.zeros((constants.clump_mass_number[_],
                                                      constants.wavelengths[constants.n_dust].size))
                                            for _ in range(len(constants.clump_mass_number))]
-    masspoints.clump_hi_tb = [np.zeros(constants.clump_mass_number[_]) 
+    masspoints.clump_hi_tb = [np.zeros((constants.clump_mass_number[_], 1)) 
                               for _ in range(constants.ensembles)]
-    masspoints.clump_hi_tau = [np.zeros(constants.clump_mass_number[_]) 
+    masspoints.clump_hi_tau = [np.zeros((constants.clump_mass_number[_], 1)) 
                                for _ in range(constants.ensembles)]
   
     return
