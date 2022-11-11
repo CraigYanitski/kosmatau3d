@@ -66,7 +66,7 @@ def calculate_emission(test_calc=False, test_opacity=False, test_fv=False, f_v=N
                                   ).T
                              ).T# / (4/3*masspoints.clump_radius[ens].T)
                             #/constants.voxel_size/f_ds*(4/3*masspoints.clump_radius[ens].T)
-                hi_tb_list.append((c * (masspoints.clump_hi_tb[ens]*(masspoints.clump_hi_tau[ens])
+                hi_tb_list[ens].append((c * (masspoints.clump_hi_tb[ens]*(masspoints.clump_hi_tau[ens])
                                         / (1-np.exp(-masspoints.clump_hi_tau[ens]))).T).T)
                 i_nan = np.isnan(intensity) | np.isinf(intensity)
                 intensity[i_nan] = ((c * (masspoints.clump_species_intensity[ens]
