@@ -450,8 +450,8 @@ class Voxel(object):
         self.__absorption_species = deepcopy(self.__optical_depth_species)
         self.__emissivity_dust = deepcopy(self.__intensity_dust)
         self.__absorption_dust = deepcopy(self.__optical_depth_dust)
-        self.__emissivity_hi = deepcopy()
-        self.__absorption_hi = deepcopy()
+        self.__emissivity_hi = deepcopy(self.__intensity_hi)
+        self.__absorption_hi = deepcopy(self.__optical_depth_hi)
     
         # This gives an error if there are too many clumps in a line-of-sight; tau_FUV is too large for this equation...
         Afuv = combinations.get_fuv_extinction()
@@ -529,6 +529,9 @@ class Voxel(object):
         clumpOpticalDepth = [[] for _ in range(len(constants.clump_mass_number))]
         clumpIntensityDust = [[] for _ in range(len(constants.clump_mass_number))]
         clumpOpticalDepthDust = [[] for _ in range(len(constants.clump_mass_number))]
+        
+        clumpIntensityHI = [[] for _ in range(len(constants.clump_mass_number))]
+        clumpOpticalDepthHI = [[] for _ in range(len(constants.clump_mass_number))]
     
         # interclumpIntensity = []
         # interclumpOpticalDepth = []
@@ -569,13 +572,22 @@ class Voxel(object):
                 # transition calculation
                 optical_depth_comb = copy(combinations.clump_species_optical_depth[ens])
                 intensity_comb = copy(combinations.clump_species_intensity[ens])
+                optical_depth_hi_comb = copy(combinations.clump_hi_tau[ens])
+                intensity_hi_comb = copy(combinations.clump_hi_tb[ens])
                 i_nan = optical_depth_comb < 1e-16
+                i_nan_hi = optical_depth_hi_comb < 1e-16
                 optical_depth_exp = np.exp(-optical_depth_comb)
                 optical_depth_exp[i_nan] = 1
+                optical_depth_hi_exp = np.exp(-optical_depth_hi_comb)
+                optical_depth_hi_exp[i_nan_hi] = 1
                 intensity_comb[~i_nan] = (intensity_comb[~i_nan]
                                           / optical_depth_comb[~i_nan]#*constants.voxel_size
                                           * (1-np.exp(-optical_depth_comb[~i_nan])))
                 intensity_comb[i_nan] = intensity_comb[i_nan] / constants.voxel_size
+                intensity_hi_comb[~i_nan_hi] = (intensity_hi_comb[~i_nan_hi]
+                                          / optical_depth_hi_comb[~i_nan_hi]#*constants.voxel_size
+                                          * (1-np.exp(-optical_depth_hi_comb[~i_nan_hi])))
+                intensity_hi_comb[i_nan_hi] = intensity_hi_comb[i_nan_hi] / constants.voxel_size
                 for i, probability in enumerate(ensemble.clumpProbability[ens]):
                     p_i = (probability.prod(1)
                            / probability.prod(1).sum(0)
@@ -584,12 +596,18 @@ class Voxel(object):
                     #                            intensity_comb.T))
                     clumpIntensity[ens].append((p_i * intensity_comb.T).sum(1))
                     optical_depth_prob = (p_i * optical_depth_exp.T).sum(1)
+                    clumpIntensityHI[ens].append((p_i * intensity_hi_comb.T).sum(1))
+                    optical_depth_hi_prob = (p_i * optical_depth_hi_exp.T).sum(1)
                     i_zero = (optical_depth_comb%1 == 0).all(0)
+                    i_zero_hi = (optical_depth_hi_comb%1 == 0).all(0)
                     clumpOpticalDepth[ens].append(-np.log(optical_depth_prob))
                     clumpOpticalDepth[ens][-1][i_zero] = 0
+                    clumpOpticalDepthHI[ens].append(-np.log(optical_depth_hi_prob))
+                    clumpOpticalDepthHI[ens][-1][i_zero_hi] = 0
                     #clumpOpticalDepth[ens].append(-np.log((probability.prod(1)#/probability.prod(1).sum(0)
                     #                                       * np.exp(-optical_depth_comb.T)).sum(1)))
 
+                # Transitions
                 self.__intensity_species[ens] += np.asarray(clumpIntensity[ens])
                 self.__optical_depth_species[ens] += np.asarray(clumpOpticalDepth[ens])
                 self.__absorption_species[ens] = self.__optical_depth_species[ens] / constants.voxel_size/f_ds[ens]
@@ -598,6 +616,7 @@ class Voxel(object):
                                                   / (1-np.exp(-self.__optical_depth_species[ens][~i_undef])))
                 self.__emissivity_species[ens][i_undef] = self.__intensity_species[ens][i_undef]
 
+                # Dust
                 self.__intensity_dust[ens] += np.asarray(clumpIntensityDust[ens])
                 self.__optical_depth_dust[ens] += np.asarray(clumpOpticalDepthDust[ens])
                 self.__absorption_dust[ens] = self.__optical_depth_dust[ens] / constants.voxel_size/f_ds[ens]
@@ -605,6 +624,15 @@ class Voxel(object):
                 self.__emissivity_dust[ens][~i_undef] = (self.__intensity_dust[ens][~i_undef] * self.__absorption_dust[ens][~i_undef]
                                                / (1-np.exp(-self.__optical_depth_dust[ens][~i_undef])))
                 self.__emissivity_dust[ens][i_undef] = self.__intensity_dust[ens][i_undef]
+
+                # HI
+                self.__intensity_hi[ens] += np.asarray(clumpIntensityHI[ens])
+                self.__optical_depth_hi[ens] += np.asarray(clumpOpticalDepthHI[ens])
+                self.__absorption_hi[ens] = self.__optical_depth_hi[ens] / constants.voxel_size/f_ds[ens]
+                i_undef = self.__optical_depth_hi[ens] < 1e-16
+                self.__emissivity_hi[ens][~i_undef] = (self.__intensity_hi[ens][~i_undef] * self.__absorption_hi[ens][~i_undef]
+                                                  / (1-np.exp(-self.__optical_depth_hi[ens][~i_undef])))
+                self.__emissivity_hi[ens][i_undef] = self.__intensity_hi[ens][i_undef]
 
             # The old computation that will soon be removed
             else:
@@ -782,7 +810,7 @@ class Voxel(object):
         g2 = self.gaussian(x, a2, sigma)
         return np.hstack((g1, g2))
 
-    def get_species_emissivity(self, kind='linear', include_dust=False, fit=True, total=True):
+    def get_species_emissivity(self, kind='linear', include_dust=False, fit=True, total=True, hi=False):
         if self.suggested_calc:
             epsilon_species = []
             if include_dust:
@@ -797,8 +825,12 @@ class Voxel(object):
                     clump_vel = self.__clump_velocities[ens][self.__clump_velocity_indeces[ens]]+self.__velocity
                     if kind == 'gaussian':
                         eps = []
-                        diff_eps = self.__emissivity_species[ens].var(0)
-                        diff_kap = self.__absorption_species[ens].var(0)
+                        if hi:
+                            diff_eps = self.__emissivity_hi[ens].var(0)
+                            diff_kap = self.__absorption_hi[ens].var(0)
+                        else:
+                            diff_eps = self.__emissivity_species[ens].var(0)
+                            diff_kap = self.__absorption_species[ens].var(0)
                         for i in range(self.__emissivity_species[ens].shape[1]):
                             if diff_eps[i] or diff_kap[i]:
                                 a_eps, a_kap, sigma = curve_fit(self.two_gaussians, clump_vel,
@@ -816,8 +848,12 @@ class Voxel(object):
                         #                   kind=kind, fill_value=0, bounds_error=False)
                         #     eps.append(fn(constants.velocityRange))
                         # epsilon_species.append(np.asarray(eps).T)
-                        fn = interp1d(clump_vel, self.__emissivity_species[ens],
-                                      kind=kind, fill_value=0, bounds_error=False, axis=0)
+                        if hi:
+                            fn = interp1d(clump_vel, self.__emissivity_hi[ens],
+                                          kind=kind, fill_value=0, bounds_error=False, axis=0)
+                        else:
+                            fn = interp1d(clump_vel, self.__emissivity_species[ens],
+                                          kind=kind, fill_value=0, bounds_error=False, axis=0)
                         epsilon_species.append(fn(constants.velocity_range))
                     if include_dust:
                         if np.where(constants.n_dust)[0].size > 10:
@@ -829,7 +865,10 @@ class Voxel(object):
                             for i in range(len(species.molecules)):
                                 epsilon_species[ens][:, i] += epsilon_dust[ens].mean()
                 else:
-                    epsilon_species.append(copy(self.__emissivity_species[ens]))
+                    if hi:
+                        epsilon_species.append(copy(self.__emissivity_hi[ens]))
+                    else:
+                        epsilon_species.append(copy(self.__emissivity_species[ens]))
         else:
             epsilon_species = deepcopy(self.__emissivity_species)
             if not include_dust:
@@ -849,7 +888,8 @@ class Voxel(object):
         else:
             return np.asarray(epsilon_species)
   
-    def get_species_absorption(self, kind='linear', include_dust=False, fit=True, total=True):
+    def get_species_absorption(self, kind='linear', include_dust=False, fit=True, total=True, 
+                               hi=False):
         if self.suggested_calc:
             kappa_species = []
             if include_dust:
@@ -864,14 +904,24 @@ class Voxel(object):
                     clump_vel = self.__clump_velocities[ens][self.__clump_velocity_indeces[ens]]+self.__velocity
                     if kind == 'gaussian':
                         kap = []
-                        diff_eps = self.__emissivity_species[ens].var(0)
-                        diff_kap = self.__absorption_species[ens].var(0)
+                        if hi:
+                            diff_eps = self.__emissivity_hi[ens].var(0)
+                            diff_kap = self.__absorption_hi[ens].var(0)
+                        else:
+                            diff_eps = self.__emissivity_species[ens].var(0)
+                            diff_kap = self.__absorption_species[ens].var(0)
                         for i in range(self.__absorption_species[ens].shape[1]):
                             if diff_eps[i] or diff_kap[i]:
-                                a_eps, a_kap, sigma = curve_fit(self.two_gaussians, clump_vel,
-                                                                np.hstack((self.__emissivity_species[ens][:, i],
-                                                                           self.__absorption_species[ens][:, i])),
-                                                                p0=(1, 1, self.__ensembleDispersion[ens]))[0]
+                                if hi:
+                                    a_eps, a_kap, sigma = curve_fit(self.two_gaussians, clump_vel,
+                                                                    np.hstack((self.__emissivity_hi[ens][:, i],
+                                                                               self.__absorption_hi[ens][:, i])),
+                                                                    p0=(1, 1, self.__ensembleDispersion[ens]))[0]
+                                else:
+                                    a_eps, a_kap, sigma = curve_fit(self.two_gaussians, clump_vel,
+                                                                    np.hstack((self.__emissivity_species[ens][:, i],
+                                                                               self.__absorption_species[ens][:, i])),
+                                                                    p0=(1, 1, self.__ensembleDispersion[ens]))[0]
                                 kap.append(self.gaussian(constants.velocity_range, a_kap, sigma))
                             else:
                                 kap.append(np.zeros_like(constants.velocity_range))
@@ -883,8 +933,12 @@ class Voxel(object):
                         #                   kind=kind, fill_value=0, bounds_error=False)
                         #     kap.append(fn(constants.velocityRange))
                         # kappa_species.append(np.asarray(kap).T)
-                        fn = interp1d(clump_vel, self.__absorption_species[ens],
-                                      kind=kind, fill_value=0, bounds_error=False, axis=0)
+                        if hi:
+                            fn = interp1d(clump_vel, self.__absorption_hi[ens],
+                                          kind=kind, fill_value=0, bounds_error=False, axis=0)
+                        else:
+                            fn = interp1d(clump_vel, self.__absorption_species[ens],
+                                          kind=kind, fill_value=0, bounds_error=False, axis=0)
                         kappa_species.append(fn(constants.velocity_range))
                     if include_dust:
                         if np.where(constants.n_dust)[0].size > 10:
@@ -896,7 +950,10 @@ class Voxel(object):
                             for i in range(len(species.molecules)):
                                 kappa_species[ens][:, i] += kappa_dust[ens].mean()
                 else:
-                    kappa_species.append(copy(self.__absorption_species[ens]))
+                    if hi:
+                        kappa_species.append(copy(self.__absorption_hi[ens]))
+                    else:
+                        kappa_species.append(copy(self.__absorption_species[ens]))
         else:
             kappa_species = deepcopy(self.__absorption_species)
             if not include_dust:
@@ -916,7 +973,8 @@ class Voxel(object):
         else:
             return np.asarray(kappa_species)
 
-    def get_species_optical_depth(self, kind='linear', include_dust=False, fit=True, total=True):
+    def get_species_optical_depth(self, kind='linear', include_dust=False, fit=True, total=True, 
+                                  hi=False):
         if self.suggested_calc:
             tau_species = []
             if include_dust:
@@ -929,14 +987,24 @@ class Voxel(object):
                     clump_vel = self.__clump_velocities[ens][self.__clump_velocity_indeces[ens]]+self.__velocity
                     if kind == 'gaussian':
                         tau = []
-                        diff_eps = self.__emissivity_species[ens].var(0)
-                        diff_kap = self.__absorption_species[ens].var(0)
+                        if hi:
+                            diff_eps = self.__emissivity_hi[ens].var(0)
+                            diff_kap = self.__absorption_hi[ens].var(0)
+                        else:
+                            diff_eps = self.__emissivity_species[ens].var(0)
+                            diff_kap = self.__absorption_species[ens].var(0)
                         for i in range(self.__opticalDepthSpecies[ens].shape[1]):
                             if diff_eps[i] or diff_kap[i]:
-                                a_eps, a_kap, sigma = curve_fit(self.two_gaussians, clump_vel,
-                                                                np.hstack((self.__emissivity_species[ens][:, i],
-                                                                           self.__absorption_species[ens][:, i])),
-                                                                p0=(1, 1, self.__ensembleDispersion[ens]))[0]
+                                if hi:
+                                    a_eps, a_kap, sigma = curve_fit(self.two_gaussians, clump_vel,
+                                                                    np.hstack((self.__emissivity_species[ens][:, i],
+                                                                               self.__absorption_species[ens][:, i])),
+                                                                    p0=(1, 1, self.__ensembleDispersion[ens]))[0]
+                                else:
+                                    a_eps, a_kap, sigma = curve_fit(self.two_gaussians, clump_vel,
+                                                                    np.hstack((self.__emissivity_species[ens][:, i],
+                                                                               self.__absorption_species[ens][:, i])),
+                                                                    p0=(1, 1, self.__ensembleDispersion[ens]))[0]
                                 tau.append(self.gaussian(constants.velocity_range, a_kap, sigma)*constants.voxel_size)
                             else:
                                 tau.append(np.zeros_like(constants.velocity_range))
@@ -948,8 +1016,12 @@ class Voxel(object):
                         #                   kind=kind, fill_value=0, bounds_error=False)
                         #     tau.append(fn(constants.velocityRange))
                         # tau_species.append(np.asarray(tau).T)
-                        fn = interp1d(clump_vel, self.__optical_depth_species[ens],
-                                      kind=kind, fill_value=0, bounds_error=False, axis=0)
+                        if hi:
+                            fn = interp1d(clump_vel, self.__optical_depth_hi[ens],
+                                          kind=kind, fill_value=0, bounds_error=False, axis=0)
+                        else:
+                            fn = interp1d(clump_vel, self.__optical_depth_species[ens],
+                                          kind=kind, fill_value=0, bounds_error=False, axis=0)
                         tau_species.append(fn(constants.velocity_range))
                     if include_dust:
                         if np.where(constants.n_dust)[0].size > 10:
@@ -961,15 +1033,19 @@ class Voxel(object):
                             for i in range(len(species.molecules)):
                                 tau_species[ens][:, i] += tau_dust[ens].mean()
                 else:
-                    tau_species.append(copy(self.__optical_depth_species[ens]))
-        else:
-            return
+                    if hi:
+                        tau_species.append(copy(self.__optical_depth_hi[ens]))
+                    else:
+                        tau_species.append(copy(self.__optical_depth_species[ens]))
+        #else:
+        #    return
         if total:
             return np.asarray(tau_species).sum(0)
         else:
             return np.asarray(tau_species)
   
-    def get_species_intensity(self, integrated=False, kind='linear', include_dust=False, fit=True, total=True):
+    def get_species_intensity(self, integrated=False, kind='linear', include_dust=False, fit=True, 
+                              total=True, hi=False):
         if self.suggested_calc:
             if total and not integrated and not fit:
                 print('Cannot return total intensity without first fitting. Returning fitted intensity instead.')
@@ -977,19 +1053,19 @@ class Voxel(object):
             intensity_final = []
             if False:#total:
                 epsilon_species = [self.get_species_emissivity(kind=kind, include_dust=include_dust,
-                                                               fit=fit, total=total)]
+                                                               fit=fit, total=total, hi=hi)]
                 kappa_species = [self.get_species_absorption(kind=kind, include_dust=include_dust,
-                                                             fit=fit, total=total)]
+                                                             fit=fit, total=total, hi=hi)]
                 tau_species = [self.get_species_optical_depth(kind=kind, include_dust=include_dust,
-                                                              fit=fit, total=total)]
+                                                              fit=fit, total=total, hi=hi)]
                 ensembles = 1
             else:
                 epsilon_species = self.get_species_emissivity(kind=kind, include_dust=True,
-                                                              fit=fit, total=False)
+                                                              fit=fit, total=False, hi=hi)
                 kappa_species = self.get_species_absorption(kind=kind, include_dust=True,
-                                                            fit=fit, total=False)
+                                                            fit=fit, total=False, hi=hi)
                 tau_species = self.get_species_optical_depth(kind=kind, include_dust=True,
-                                                             fit=fit, total=False)
+                                                             fit=fit, total=False, hi=hi)
                 intensity_dust = self.get_dust_intensity(fit=fit, total=False)
                 ensembles = constants.ensembles
             for ens in range(ensembles):
