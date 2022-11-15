@@ -216,6 +216,17 @@ def interpolate_hi_column_density(points):
                  'column density from the KOSMA-tau grid.\n\nExitting...\n\n')
 
 
+def interpolate_h2_column_density(points):
+    if constants.interpolation == 'linear':
+        return 10**h2_column_density_interpolation(points)
+    elif constants.interpolation == 'radial' or constants.interpolation == 'cubic':
+        return 10**h2_column_density_interpolation(points[0], points[1], points[2])
+    else:
+        sys.exit('<<ERROR>>: There is no such method as ' + 
+                 '{} to interpolate the '.format(constants.interpolation) +
+                 'column density from the KOSMA-tau grid.\n\nExitting...\n\n')
+
+
 def interpolate_tg(points):
     if constants.interpolation == 'linear':
         return 10**tg_interpolation(points)
