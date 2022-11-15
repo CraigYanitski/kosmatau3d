@@ -39,6 +39,9 @@ class Voxel(object):
         self.__ensemble_mass = 0
         self.__velocity = 0  # velocity of mass at voxel point
         self.__ensemble_dispersion = 0  # dispersion of velocity at voxel point
+
+        self.__hi_mass = 0
+        self.__h2_mass = 0
         
         self.__clump_velocity_indeces = []
         self.__model_mass = []
@@ -371,6 +374,8 @@ class Voxel(object):
                 for ens in range(len(constants.clump_mass_number))],
                 total_combination=[ensemble.CLmaxCombinations[ens][0] 
                 for ens in range(len(constants.clump_mass_number))])
+
+        # self.__hi_mass = 
         
         #print('probabilities calculated:', (time()-t0)/60)
         #print('ensemble velocities:', ensemble.clumpVelocities)
@@ -859,11 +864,17 @@ class Voxel(object):
                         if np.where(constants.n_dust)[0].size > 10:
                             epsilon_dust_interp = interp1d(constants.wavelengths[constants.n_dust],
                                                            epsilon_dust[ens].max(0), fill_value='extrapolate')
-                            for i, transition in enumerate(species.molecule_wavelengths):
-                                epsilon_species[ens][:, i] += epsilon_dust_interp(transition)
+                            if hi:
+                                epsilon_species[ens][:, 0] += epsilon_dust_interp(0.21106)
+                            else:
+                                for i, transition in enumerate(species.molecule_wavelengths):
+                                    epsilon_species[ens][:, i] += epsilon_dust_interp(transition)
                         else:
-                            for i in range(len(species.molecules)):
-                                epsilon_species[ens][:, i] += epsilon_dust[ens].mean()
+                            if hi:
+                                epsilon_species[ens][:, 0] += epsilon_dust[ens].mean()
+                            else:
+                                for i in range(len(species.molecules)):
+                                    epsilon_species[ens][:, i] += epsilon_dust[ens].mean()
                 else:
                     if hi:
                         epsilon_species.append(copy(self.__emissivity_hi[ens]))
@@ -944,11 +955,17 @@ class Voxel(object):
                         if np.where(constants.n_dust)[0].size > 10:
                             kappa_dust_interp = interp1d(constants.wavelengths[constants.n_dust],
                                                          kappa_dust[ens].max(0), fill_value='extrapolate')
-                            for i, transition in enumerate(species.molecule_wavelengths):
-                                kappa_species[ens][:, i] += kappa_dust_interp(transition)
+                            if hi:
+                                kappa_species[ens][:, 0] += kappa_dust_interp(0.21106)
+                            else:
+                                for i, transition in enumerate(species.molecule_wavelengths):
+                                    kappa_species[ens][:, i] += kappa_dust_interp(transition)
                         else:
-                            for i in range(len(species.molecules)):
-                                kappa_species[ens][:, i] += kappa_dust[ens].mean()
+                            if hi:
+                                kappa_species[ens][:, 0] += kappa_dust[ens].mean()
+                            else:
+                                for i in range(len(species.molecules)):
+                                    kappa_species[ens][:, i] += kappa_dust[ens].mean()
                 else:
                     if hi:
                         kappa_species.append(copy(self.__absorption_hi[ens]))
@@ -1027,11 +1044,17 @@ class Voxel(object):
                         if np.where(constants.n_dust)[0].size > 10:
                             tau_dust_interp = interp1d(constants.wavelengths[constants.n_dust],
                                                            tau_dust[ens].max(0), fill_value='extrapolate')
-                            for i, transition in enumerate(species.molecule_wavelengths):
-                                tau_species[ens][:, i] += tau_dust_interp(transition)
+                            if hi:
+                                tau_species[ens][:, 0] += tau_dust_interp(0.21106)
+                            else:
+                                for i, transition in enumerate(species.molecule_wavelengths):
+                                    tau_species[ens][:, i] += tau_dust_interp(transition)
                         else:
-                            for i in range(len(species.molecules)):
-                                tau_species[ens][:, i] += tau_dust[ens].mean()
+                            if hi:
+                                tau_species[ens][:, 0] += tau_dust[ens].mean()
+                            else:
+                                for i in range(len(species.molecules)):
+                                    tau_species[ens][:, i] += tau_dust[ens].mean()
                 else:
                     if hi:
                         tau_species.append(copy(self.__optical_depth_hi[ens]))
@@ -1099,11 +1122,17 @@ class Voxel(object):
                         if np.where(constants.n_dust)[0].size > 10:
                             intensity_dust_interp = interp1d(constants.wavelengths[constants.n_dust],
                                                              intensity_dust[ens].max(0), fill_value='extrapolate')
-                            for i, transition in enumerate(species.molecule_wavelengths):
-                                intensity_final[-1][i] += intensity_dust_interp(transition)
+                            if hi:
+                                intensity_final[-1][0] += intensity_dust_interp(0.21106)
+                            else:
+                                for i, transition in enumerate(species.molecule_wavelengths):
+                                    intensity_final[-1][i] += intensity_dust_interp(transition)
                         else:
-                            for i in range(len(species.molecules)):
-                                intensity_final[-1][i] += intensity_dust[ens].mean()
+                            if hi:
+                                intensity_final[-1][0] += intensity_dust[ens].mean()
+                            else:
+                                for i in range(len(species.molecules)):
+                                    intensity_final[-1][i] += intensity_dust[ens].mean()
                 else:
                     if include_dust:
                         intensity_final.append(copy(intensity))
@@ -1113,11 +1142,17 @@ class Voxel(object):
                         if np.where(constants.n_dust)[0].size > 10:
                             intensity_dust_interp = interp1d(constants.wavelengths[constants.n_dust],
                                                              intensity_dust[ens].max(0), fill_value='extrapolate')
-                            for i, transition in enumerate(species.molecule_wavelengths):
-                                intensity_final[-1][:, i] -= intensity_dust_interp(transition)
+                            if hi:
+                                intensity_final[-1][:, 0] -= intensity_dust_interp(0.21106)
+                            else:
+                                for i, transition in enumerate(species.molecule_wavelengths):
+                                    intensity_final[-1][:, i] -= intensity_dust_interp(transition)
                         else:
-                            for i in range(len(species.molecules)):
-                                intensity_final[-1][:, i] -= intensity_dust[ens].mean()
+                            if hi:
+                                intensity_final[-1][:, 0] -= intensity_dust[ens].mean()
+                            else:
+                                for i in range(len(species.molecules)):
+                                    intensity_final[-1][:, i] -= intensity_dust[ens].mean()
         else:
             if total:
                 epsilon = [self.get_species_emissivity(include_dust=True, total=total)]
