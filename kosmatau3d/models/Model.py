@@ -464,9 +464,9 @@ class SyntheticModel(object):
         if os.path.exists(self.base_dir + directory + self.files['intensity'] + '.fits'):
             self.files['directory'] = directory
         else:
-            print(f'Directory {self.base_dir + directory} is not valid!! Check to see '
-                  +'if `base_dir` was set when initialising or if the specified directory was correct.')
-            return
+            raise FileNotFoundError(f'Directory {self.base_dir + directory} is not valid!! Check '
+                                    +'to see if `base_dir` was set when initialising or if the '
+                                    +'specified directory was correct.')
 
         # # Update model file information
         # kwarg_keys = kwargs.keys()
@@ -553,8 +553,9 @@ class SyntheticModel(object):
                                        + self.files['velocity'] + '.fits')
         self.velocity = self.velocity_file[0].data
         self.los_count = np.loadtxt(self.base_dir + directory + self.files['los_count'] + '.csv')
-        with open(self.base_dir + directory + self.files['log'] + '.txt') as f:
-            self.log = f.readlines()
+        if os.path.exists(self.base_dir + directory + self.files['log'] + '.txt'):
+            with open(self.base_dir + directory + self.files['log'] + '.txt') as f:
+                self.log = f.readlines()
         
         # Extract headers and create additional axes
         self.info = self.species_absorption_file[0].header['COMMENT']
