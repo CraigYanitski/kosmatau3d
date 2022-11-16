@@ -12,6 +12,7 @@ log_crir = 0
 log_fuv = [0 for _ in range(len(constants.clump_mass_number))]
 
 clump_log_density = [np.zeros(constants.clump_mass_number[_]) for _ in range(len(constants.clump_mass_number))]
+clump_log_density_orig = [np.zeros(constants.clump_mass_number[_]) for _ in range(len(constants.clump_mass_number))]
 clump_radius = [np.zeros(constants.clump_mass_number[_]) for _ in range(len(constants.clump_mass_number))]
 clump_t_gas = [np.zeros(constants.clump_mass_number[_]) for _ in range(len(constants.clump_mass_number))]
 clump_t_dust = [np.zeros(constants.clump_mass_number[_]) for _ in range(len(constants.clump_mass_number))]

@@ -35,6 +35,7 @@ def set_masspoint_data(density=[], fuv=[0], crir=2e-16):
                                                       (1+3./constants.gamma-constants.alpha))).sum() /
                                                      (10.**(constants.clump_log_mass[ens]*(2-constants.alpha))).sum() *
                                                      density[ens]/1.91)
+        masspoints.clump_log_density_orig[ens] = deepcopy(masspoints.clump_log_density[ens])
         masspoints.clump_radius[ens] = ((3./(4.*np.pi)*(10.**constants.clump_log_mass[ens]*constants.mass_solar) /
                                         (10.**masspoints.clump_log_density[ens]*constants.mass_h*1.91))**(1./3.) /
                                         constants.pc/100.)
@@ -116,7 +117,8 @@ def masspoint_emission(interpolation_point, ens, masspoint, velocity=0, verbose=
     masspoints.clump_hi_col_dens[ens][0, masspoint] = copy(n_hi)
     masspoints.clump_h2_col_dens[ens][0, masspoint] = copy(n_h2)
 
-    rcl = masspoints.clump_radius[ens][0, masspoint]
+    rcl = masspoints.clump_radius[ens][0, masspoint] \
+            * 10**((masspoints.clump_log_density_orig[ens][0, masspoint]-masspoints.clump_log_density[ens][0, masspoint])/3.)
     kappa = 7.5419439e-18 / t_g * n_hi/1e20 / rcl
     tb = t_g*rcl * (1-np.exp(-4.1146667e18*kappa*rcl))
     masspoints.clump_hi_tb[ens][masspoint, 0] = copy(tb)
@@ -270,6 +272,8 @@ def reinitialise():
   
     masspoints.clump_log_density = [np.zeros((1, constants.clump_mass_number[_])) 
                                     for _ in range(constants.ensembles)]
+    masspoints.clump_log_density_orig = [np.zeros((1, constants.clump_mass_number[_])) 
+                                         for _ in range(constants.ensembles)]
     masspoints.clump_radius = [np.zeros((1, constants.clump_mass_number[_])) 
                                for _ in range(constants.ensembles)]
     masspoints.clump_t_gas = [np.zeros((1, constants.clump_mass_number[_])) 
