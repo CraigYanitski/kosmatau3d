@@ -22,7 +22,7 @@ parser.add_argument('-r', '--resolution', type=int, default=400,
                     help='voxel size in the model')
 parser.add_argument('-m', '--mp', type=int, default=8, 
                     help='number of threads to open during RT \n  set to 0 for debugging')
-parser.add_argument('-e', '--exec', type=str, default='all', choices=['all', 'model', 'RT'], 
+parser.add_argument('-e', '--exec', type=str, default='all', choices=['all', 'model', 'RT', 'HI'], 
                     help='which portion of the code to evaluate')
 parser.add_argument('-d', '--debug', type=bool, default=False, 
                     help='use debugging mode')
@@ -142,15 +142,24 @@ else:
 if args.exec == 'model':
     run_model = True
     run_rt = False
+    hi = False
 elif args.exec == 'RT':
     run_model = False
     run_rt = True
+    hi = False
+elif args.exec == 'HI':
+    print('HI calculation')
+    run_model = False
+    run_rt = True
+    hi = True
 elif args.exec == 'all':
     run_model = True
     run_rt = True
+    hi = False
 else:
     run_model = False
     run_rt = False
+    hi = False
 
 debug = args.debug
 
@@ -285,7 +294,7 @@ for i, param in enumerate(zip(*params)):
     if run_rt:
         models.radiativeTransfer.calculateObservation(directory=directory, dim='spherical',
                                                       multiprocessing=args.mp, 
-                                                      vel_pool=False, pencil_beam=True, 
+                                                      hi=hi, vel_pool=False, pencil_beam=True, 
                                                       slRange=[(-np.pi, np.pi), 
                                                                (-2*np.pi/180, 2*np.pi/180)],
                                                       nsl=[721, 9], terminal=True, debug=False)

@@ -85,7 +85,7 @@ def open_voxel_filling_factors(directory):
     return
 
 
-def open_voxel_emission(directory, verbose=False):
+def open_voxel_emission(directory, hi=False, verbose=False):
     '''
     Open the file containing the emissivity and absorption of all voxels.
     This will save the contents in a sub-module variable.
@@ -99,10 +99,15 @@ def open_voxel_emission(directory, verbose=False):
 
     dust file shape -> (n_voxels, n_wavelengths)
     '''
-    rt.temp_species_emissivity = fits.open(directory+'species_emissivity.fits', mode='denywrite')
-    rt.temp_species_absorption = fits.open(directory+'species_absorption.fits', mode='denywrite')
-    rt.temp_dust_emissivity = fits.open(directory+'dust_emissivity.fits', mode='denywrite')
-    rt.temp_dust_absorption = fits.open(directory+'dust_absorption.fits', mode='denywrite')
+    if hi:
+        species = 'hi'
+    else:
+        species = 'species'
+    dust = 'dust'
+    rt.temp_species_emissivity = fits.open(directory+f'{species}_emissivity.fits', mode='denywrite')
+    rt.temp_species_absorption = fits.open(directory+f'{species}_absorption.fits', mode='denywrite')
+    rt.temp_dust_emissivity = fits.open(directory+f'{dust}_emissivity.fits', mode='denywrite')
+    rt.temp_dust_absorption = fits.open(directory+f'{dust}_absorption.fits', mode='denywrite')
 
     if verbose:
         print(rt.temp_species_emissivity[0].data.mean(0).mean(0))
@@ -111,7 +116,7 @@ def open_voxel_emission(directory, verbose=False):
     return
 
 
-def calculateObservation(directory='', dim='xy', terminal=True, vel_pool=False, plotV=False, 
+def calculateObservation(directory='', dim='xy', terminal=True, hi=False, vel_pool=False, plotV=False, 
                          slRange=[(-np.pi,np.pi), (-np.pi/2,np.pi/2)], nsl=[50,25],
                          pencil_beam=True, d_lon=None, d_lat=None, multiprocessing=0, 
                          debug=False, verbose=False):
@@ -136,7 +141,7 @@ def calculateObservation(directory='', dim='xy', terminal=True, vel_pool=False, 
     rt.open_voxel_filling_factors(directory)
     rt.open_voxel_positions(directory)
     rt.open_voxel_velocities(directory)
-    rt.open_voxel_emission(directory, verbose=verbose)
+    rt.open_voxel_emission(directory, hi=hi, verbose=verbose)
   
     nDust = rt.temp_dust_emissivity[0].shape[1]
     if nDust > 10:
@@ -363,16 +368,21 @@ def calculateObservation(directory='', dim='xy', terminal=True, vel_pool=False, 
             #     IntensityHDUDust.header['CRPIX3'] = (IntensityHDUDust.header['NAXIS3'])
             # IntensityHDUDust.header['DIREC'] = 'Radial'
             # IntensityHDUDust.header['DUST'] = rt.tempDustEmissivity[0].header['DUST']
+
+            if hi:
+                file_id = '_hi_'
+            else:
+                file_id = '_'
       
             hdul_intensity.append(c.deepcopy(position_hdu))
             hdul_intensity.append(intensity_hdu_species)
             hdul_intensity.append(intensity_hdu_dust)
-            hdul_intensity.writeto(directory+'/synthetic_intensity.fits', overwrite=True)
+            hdul_intensity.writeto(directory+f'/synthetic{file_id}intensity.fits', overwrite=True)
       
             hdul_optical_depth.append(c.deepcopy(position_hdu))
             hdul_optical_depth.append(optical_depth_hdu_species)
             hdul_optical_depth.append(optical_depth_hdu_dust)
-            hdul_optical_depth.writeto(directory+'/synthetic_optical_depth.fits', overwrite=True)
+            hdul_optical_depth.writeto(directory+f'/synthetic{file_id}optical_depth.fits', overwrite=True)
       
             print('Intensity map written successfully :-)')
     
