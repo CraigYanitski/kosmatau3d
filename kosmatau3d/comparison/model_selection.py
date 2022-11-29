@@ -119,6 +119,21 @@ thrumms_rms_window = {
     'dr4.s348.13co.fits' : (),
     'dr4.s354.13co.fits' : ()
 }
+sgps_rms_window = {
+    'g010.hi.fits' : 1.8,
+    'g015.hi.fits' : 1.4,
+    'g258.hi.fits' : 1.4,
+    'g268.hi.fits' : 1.4,
+    'g278.hi.fits' : 1.3,
+    'g288.hi.fits' : 1.6,
+    'g298.hi.fits' : 1.4,
+    'g308.hi.fits' : 1.5,
+    'g318.hi.fits' : 1.6,
+    'g328.hi.fits' : 1.7,
+    'g338.hi.fits' : 1.9,
+    'g348.hi.fits' : 1.9,
+    'g353.hi.fits' : 2.6,
+}
 cobe_idl_linfrq = np.array([115.3, 230.5, 345.8, 424.8, 461.0, 492.2, 556.9, 576.3, 691.5, 808.1,
                             1113, 1460, 2226, 1901, 2060, 2311, 2459, 2589, 921.8])
 cobe_idl_transitions = np.array(['CO 1', 'CO 2', 'CO 3', 'CO 4', 'C 3', 'CO 5',
@@ -299,6 +314,7 @@ def regrid_observations(path='/media/hpc_backup/yanitski/projects/pdr/observatio
     CO2 = False
     iCO1 = False
     iCO2 = False
+    hi = False
     dust = False
     cobe = False
 
@@ -356,6 +372,12 @@ def regrid_observations(path='/media/hpc_backup/yanitski/projects/pdr/observatio
             ico1_gridder_err = cygrid.WcsGrid(twod_header)
             ico1_gridder_err.set_kernel(*target_kernel)
             iCO1 = True
+        elif survey == 'THOR':
+            hi_gridder = cygrid.WcsGrid(target_header)
+            hi_gridder.set_kernel(*target_kernel)
+            hi_gridder_err = cygrid.WcsGrid(twod_header)
+            hi_gridder_err.set_kernel(*target_kernel)
+            hi = True
         elif survey == 'SEDIGISM':
             ico2_gridder = cygrid.WcsGrid(target_header)
             ico2_gridder.set_kernel(*target_kernel)
@@ -554,6 +576,63 @@ def regrid_observations(path='/media/hpc_backup/yanitski/projects/pdr/observatio
                 elif '13' in transition:
                     ico1_gridder.grid(lon_mesh.flatten(), lat_mesh.flatten(), obs_data)
                     ico1_gridder_err.grid(lon_mesh.flatten(), lat_mesh.flatten(), obs_error)
+
+                if vel.min() < min_vel:
+                    min_vel = vel.min()
+                if vel.max() > max_vel:
+                    max_vel = vel.max()
+            elif survey == 'THOR':
+
+                print(file)
+
+                # Specify transition
+                transitions = ['HI']
+                transition_indeces = [0]
+
+                # Open file
+                obs = fits.open(path + survey + '/' + file)
+
+                # Get axes
+                lon = np.linspace(obs[0].header['CRVAL1'] - obs[0].header['CDELT1'] * (obs[0].header['CRPIX1'] - 1),
+                                  obs[0].header['CRVAL1'] + obs[0].header['CDELT1'] * (
+                                              obs[0].header['NAXIS1'] - obs[0].header['CRPIX1']),
+                                  num=obs[0].header['NAXIS1'])
+                lat = np.linspace(obs[0].header['CRVAL2'] - obs[0].header['CDELT2'] * (obs[0].header['CRPIX2'] - 1),
+                                  obs[0].header['CRVAL2'] + obs[0].header['CDELT2'] * (
+                                              obs[0].header['NAXIS2'] - obs[0].header['CRPIX2']),
+                                  num=obs[0].header['NAXIS2'])
+                vel = np.linspace(obs[0].header['CRVAL3'] - obs[0].header['CDELT3'] * (obs[0].header['CRPIX3'] - 1),
+                                  obs[0].header['CRVAL3'] + obs[0].header['CDELT3'] * (
+                                              obs[0].header['NAXIS3'] - obs[0].header['CRPIX3']),
+                                  num=obs[0].header['NAXIS3']) / 1e3
+
+                # Copy header
+                temp_header['NAXIS'] = 3
+                temp_header['CTYPE1'] = target_header['CTYPE1']
+                temp_header['CTYPE2'] = target_header['CTYPE2']
+                temp_header['NAXIS3'] = target_header['NAXIS3']
+                temp_header['CTYPE3'] = target_header['CTYPE3']
+                temp_header['CRVAL3'] = target_header['CRVAL3']
+                temp_header['CDELT3'] = target_header['CDELT3']
+                temp_header['CRPIX3'] = target_header['CRPIX3']
+
+
+                obs_data = np.swapaxes(obs[0].data[0], 0, 2)
+                obs_data = np.swapaxes(obs_data, 0, 1)
+                obs_data = spectres(target_vel, vel, np.nan_to_num(obs_data, nan=0), fill=0, verbose=False)
+                obs_data = obs_data.reshape(-1, obs_data.shape[-1])
+                # obs_error = determine_rms(obs, mission=survey, file=file)[0].data.reshape(-1, 1)
+                # i_nan = np.isnan(obs_error)
+                # print(np.nanmean(obs_error), np.mean(obs_error[~i_nan]))
+                # np.save('/home/yanitski/obs_error.npy', obs_error)
+                # exit()
+                del obs
+
+                # Grid
+                lon_mesh, lat_mesh = np.meshgrid(lon, lat)
+                hi_gridder.grid(lon_mesh.flatten(), lat_mesh.flatten(), obs_data)
+                hi_gridder_err.grid(lon_mesh.flatten(), lat_mesh.flatten(),
+                                      np.full_like(lon_mesh.flatten(), 1.6))
 
                 if vel.min() < min_vel:
                     min_vel = vel.min()
@@ -833,6 +912,15 @@ def regrid_observations(path='/media/hpc_backup/yanitski/projects/pdr/observatio
                              '13co2_test_regridded.fits', overwrite=True, output_verify='ignore')
             grid_hdu_err.writeto(path + survey + '/regridded/temp/' +
                                  '13co2_test_regridded_error.fits', overwrite=True, output_verify='ignore')
+        if HI:
+            temp_header['TRANSL'] = 'HI'
+            temp_header['TRANSI'] = '0'
+            grid_hdu = fits.PrimaryHDU(data=hi_gridder.get_datacube(), header=fits.Header(temp_header))
+            grid_hdu_err = fits.PrimaryHDU(data=hi_gridder_err.get_datacube(), header=fits.Header(twod_header))
+            grid_hdu.writeto(path + survey + '/regridded/temp/' +
+                             'hi_test_regridded.fits', overwrite=True, output_verify='ignore')
+            grid_hdu_err.writeto(path + survey + '/regridded/temp/' +
+                                 'hi_test_regridded_error.fits', overwrite=True, output_verify='ignore')
         # if dust:
         #     temp_header['TRANSL'] = 'Dust'
         #     temp_header['TRANSI'] = '0'
