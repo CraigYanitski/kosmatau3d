@@ -2,8 +2,10 @@
 
 import argparse
 import numpy as np
+import os
 
 from kosmatau3d import models
+# from pandas.compat.pyarrow import pa
 from pprint import pprint
 
 
@@ -24,6 +26,8 @@ parser.add_argument('-m', '--mp', type=int, default=8,
                     help='number of threads to open during RT \n  set to 0 for debugging')
 parser.add_argument('-e', '--exec', type=str, default='all', choices=['all', 'model', 'RT', 'HI'], 
                     help='which portion of the code to evaluate')
+parser.add_argument('-o', '--overwrite', type=str, default='false', choices=['true', 'false'], 
+                    help='overwrite the pre-computed model')
 parser.add_argument('-d', '--debug', type=bool, default=False, 
                     help='use debugging mode')
 parser.add_argument('-t', '--timed', type=bool, default=False, 
@@ -125,10 +129,11 @@ elif args.grid == 'disp_gc':
     param_folders = list(folder.format(*_) for _ in zip(*params))
 elif args.grid == 'fuv_gc-disp_gc':
     folder = f'r{args.resolution}' + '_f_fuv_gc{:.2f}_r_fuv_gc{}_disp_gc{}_r_disp_gc{}/'
-    r_gc = (0, 400, 800, 1200, 1600, 2000)
-    fuv_gc = (10**np.array([0, 0.5, 1, 1.5, 2]), )
-    r_core = (200, 600)
-    disp_gc = (200, 300)
+    r_gc = (200, 600, 1000, 1400)
+    # fuv_gc = (10**np.array([0, 0.5, 1, 1.5, 2]), )
+    fuv_gc = (10**np.array([0.5, 1, 1.5, 2, 2.5, 3]), )
+    r_core = (200,)
+    disp_gc = (200,)
     grid_flag = (True, )
     param_keys = ('scale_gc', 'r_gc', 'disp_core', 'r_core', 'new_grid')
     params = list(_.flatten() for _ in np.meshgrid(fuv_gc, r_gc, disp_gc, r_core, grid_flag))
@@ -160,6 +165,11 @@ else:
     run_model = False
     run_rt = False
     hi = False
+
+if args.overwrite == 'true':
+    overwrite = True
+else:
+    overwrite = False
 
 debug = args.debug
 
@@ -254,11 +264,19 @@ for i, param in enumerate(zip(*params)):
         parameters[p] = param[_]
     parameters['folder'] = param_folders[i] 
 
+    # Set model folder directory
+    directory = parameters['history_path'] + parameters['directory'] \
+                + '/' + parameters['folder']
+
+    # Check if data exists and will be overwritten
+    if not overwrite and os.path.exists(directory):
+        continue
+
     # Initialise model instance
     kosma = models.Model(**parameters)
 
     # Print details
-    print('\n\n   ==> Model {} of {}'.format(i, i_max))
+    print('\n\n   ==> Model {} of {}'.format(i+1, i_max))
     print('       ' + models.constants.history)
     print('       ' + '-'*len(models.constants.history))
     if args.verbose:
@@ -286,12 +304,21 @@ for i, param in enumerate(zip(*params)):
     if run_model:
         kosma.calculateModel(kind='linear', multiprocessing=0)
 
-    # Set model folder directory
-    directory = parameters['history_path'] + parameters['directory'] \
-                + '/' + parameters['folder']
-
     # Run radiative transfer if selected
-    if run_rt:
+    if run_model and run_rt:
+        models.radiativeTransfer.calculateObservation(directory=directory, dim='spherical',
+                                                      multiprocessing=args.mp, 
+                                                      hi=False, vel_pool=False, pencil_beam=True, 
+                                                      slRange=[(-np.pi, np.pi), 
+                                                               (-2*np.pi/180, 2*np.pi/180)],
+                                                      nsl=[721, 9], terminal=True, debug=False)
+        models.radiativeTransfer.calculateObservation(directory=directory, dim='spherical',
+                                                      multiprocessing=args.mp, 
+                                                      hi=True, vel_pool=False, pencil_beam=True, 
+                                                      slRange=[(-np.pi, np.pi), 
+                                                               (-2*np.pi/180, 2*np.pi/180)],
+                                                      nsl=[721, 9], terminal=True, debug=False)
+    elif run_rt:
         models.radiativeTransfer.calculateObservation(directory=directory, dim='spherical',
                                                       multiprocessing=args.mp, 
                                                       hi=hi, vel_pool=False, pencil_beam=True, 
