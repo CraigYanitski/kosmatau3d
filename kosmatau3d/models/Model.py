@@ -374,6 +374,8 @@ class SyntheticModel(object):
                       'dust_absorption': 'dust_absorption', 
                       'dust_emissivity': 'dust_emissivity', 
                       'species_absorption': 'species_absorption', 
+                      'hi_emissivity': 'hi_emissivity', 
+                      'hi_absorption': 'hi_absorption', 
                       'species_emissivity': 'species_emissivity', 
                       'clump_number': 'clump_number',
                       'clump_radius': 'clump_radius',
@@ -416,6 +418,10 @@ class SyntheticModel(object):
                 self.files['species_absorption'] = kwargs['species_absorption']
             if 'species_emissivity' in kwarg_keys:
                 self.files['species_emissivity'] = kwargs['species_emissivity']
+            if 'hi_absorption' in kwarg_keys:
+                self.files['hi_absorption'] = kwargs['hi_absorption']
+            if 'hi_emissivity' in kwarg_keys:
+                self.files['hi_emissivity'] = kwargs['hi_emissivity']
             if 'clump_number' in kwarg_keys:
                 self.files['clump_number'] = kwargs['clump_number']
             if 'clump_radius' in kwarg_keys:
@@ -523,6 +529,22 @@ class SyntheticModel(object):
         self.species_emissivity_file = fits.open(self.base_dir + directory 
                                                  + self.files['species_emissivity'] + '.fits')
         self.species_emissivity = self.species_emissivity_file[0].data
+        if os.path.exists(self.base_dir + directory + self.files['hi_emissivity'] + '.fits'):
+            # print('Loading HI absorption')
+            self.hi_emissivity_file = fits.open(self.base_dir + directory 
+                                                + self.files['hi_emissivity'] + '.fits')
+            self.hi_emissivity = self.hi_emissivity_file[0].data
+        else:
+            self.hi_emissivity = np.nan
+            print('HI emissivity not found')
+        if os.path.exists(self.base_dir + directory + self.files['hi_absorption'] + '.fits'):
+            # print('Loading HI emissivity')
+            self.hi_absorption_file = fits.open(self.base_dir + directory 
+                                                + self.files['hi_absorption'] + '.fits')
+            self.hi_absorption = self.hi_absorption_file[0].data
+        else:
+            self.hi_absorption = np.nan
+            print('HI absorption not found')
         if os.path.exists(self.base_dir + directory + self.files['clump_number'] + '.fits'):
             self.clump_number_file = fits.open(self.base_dir + directory 
                                                + self.files['clump_number'] + '.fits')

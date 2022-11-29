@@ -259,6 +259,16 @@ class VoxelGrid(object):
         shdu_voxel_absorption_species = self.shdu_header(name='Clump species absorption', units='1/pc', 
                                                          molecules=True, filename='species_absorption',
                                                          velocity=True, dim=dim)
+        # HI
+        dim = [1, constants.velocity_range.size, self.__voxel_number]
+        if verbose:
+            print('species emission dimension:', dim)
+        shdu_voxel_emissivity_hi = self.shdu_header(name='Clump HI emissivity', units='K/pc', 
+                                                         hi=True, filename='hi_emissivity',
+                                                         velocity=True, dim=dim)
+        shdu_voxel_absorption_hi = self.shdu_header(name='Clump HI absorption', units='1/pc', 
+                                                         hi=True, filename='hi_absorption',
+                                                         velocity=True, dim=dim)
         # dust
         nDust = constants.wavelengths[constants.n_dust].size
         dim = [nDust, self.__voxel_number]
@@ -360,6 +370,8 @@ class VoxelGrid(object):
                 # Save emissivity and absorption
                 shdu_voxel_emissivity_species.write(voxel.get_species_emissivity(kind=kind, include_dust=True))
                 shdu_voxel_absorption_species.write(voxel.get_species_absorption(kind=kind, include_dust=True))
+                shdu_voxel_emissivity_hi.write(voxel.get_species_emissivity(hi=True, kind=kind, include_dust=True))
+                shdu_voxel_absorption_hi.write(voxel.get_species_absorption(hi=True, kind=kind, include_dust=True))
                 shdu_voxel_emissivity_dust.write(voxel.get_dust_emissivity(minimal=True))
                 shdu_voxel_absorption_dust.write(voxel.get_dust_absorption(minimal=True))
                 
@@ -575,7 +587,7 @@ class VoxelGrid(object):
         print(self.__properties)
         return
   
-    def shdu_header(self, name='', units='', molecules=False, dust=False, velocity=False, 
+    def shdu_header(self, name='', units='', molecules=False, hi=False, dust=False, velocity=False, 
                     dim=None, kw=25, cw=50, filename=None):
   
         if filename == None or dim == None:
@@ -589,6 +601,8 @@ class VoxelGrid(object):
         header['EXTEND'] = True
         if molecules:
             header['SPECIES'] = ', '.join(species.molecules)
+        if hi:
+            header['SPECIES'] = 'HI'
         if dust:
             header['DUST'] = ', '.join(constants.dust_names[constants.n_dust])
     
