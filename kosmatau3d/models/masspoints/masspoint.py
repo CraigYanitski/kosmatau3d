@@ -120,7 +120,7 @@ def masspoint_emission(interpolation_point, ens, masspoint, velocity=0, verbose=
     rcl = masspoints.clump_radius[ens][0, masspoint] \
             * 10**((masspoints.clump_log_density_orig[ens][0, masspoint]-masspoints.clump_log_density[ens][0, masspoint])/3.)
     kappa = 7.5419439e-18 / t_g * n_hi/1e20 / rcl
-    tb = t_g*rcl * (1-np.exp(-4.1146667e18*kappa*rcl))
+    tb = t_g * (1-np.exp(-4.1146667e18*kappa*rcl))
     masspoints.clump_hi_tb[ens][masspoint, 0] = copy(tb)
     masspoints.clump_hi_tau[ens][masspoint, 0] = kappa * 4/3*rcl*constants.pc*100
     masspoints.clump_hi_mass[ens][0, masspoint] = n_hi * np.pi*(rcl*constants.pc*100)**2 * constants.mass_h
