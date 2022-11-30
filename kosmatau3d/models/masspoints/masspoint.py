@@ -123,8 +123,10 @@ def masspoint_emission(interpolation_point, ens, masspoint, velocity=0, verbose=
     tb = t_g * (1-np.exp(-4.1146667e18*kappa*rcl))
     masspoints.clump_hi_tb[ens][masspoint, 0] = copy(tb)
     masspoints.clump_hi_tau[ens][masspoint, 0] = kappa * 4/3*rcl*constants.pc*100
-    masspoints.clump_hi_mass[ens][0, masspoint] = n_hi * np.pi*(rcl*constants.pc*100)**2 * constants.mass_h
-    masspoints.clump_h2_mass[ens][0, masspoint] = n_h2 * np.pi*(rcl*constants.pc*100)**2 * 2*constants.mass_h
+    masspoints.clump_hi_mass[ens][0, masspoint] = n_hi * np.pi*(rcl*constants.pc*100)**2 \
+            * constants.mass_h/constants.mass_solar
+    masspoints.clump_h2_mass[ens][0, masspoint] = n_h2 * np.pi*(rcl*constants.pc*100)**2 \
+            * 2*constants.mass_h/constants.mass_solar
 
     return  # (intensity,opticalDepth)
 
