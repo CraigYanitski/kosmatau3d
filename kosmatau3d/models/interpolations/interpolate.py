@@ -353,6 +353,7 @@ def calculate_h2_mass(verbose=False, dilled=False):
         if verbose:
             print('Creating clump mass interpolation')
         r_s, sigma_h2 = observations.h2_surface_mass_profile
+        sigma_h2[r_s < constants.r_gc] = sigma_h2[r_s < constants.r_gc] * constants.mh2_scale_gc
         f_sigma = interpolate.interp1d(r_s.values, sigma_h2.values, kind='linear', 
                                        bounds_error=False, 
                                        fill_value=(sigma_h2.values[0], sigma_h2.values[-1]))
@@ -416,6 +417,7 @@ def calculate_hi_mass(like_clumps=False, verbose=False, dilled=True):
         else:
             r_s, sigma_hi = observations.hi_surface_mass_profile
             #r_h, h_hi = observations.hi_scale_height_profile
+        sigma_hi[r_s < constants.r_gc] = sigma_hi[r_s < constants.r_gc] * constants.mhi_scale_gc
         f_sigma = interpolate.interp1d(r_s.values, sigma_hi.values, kind='linear', 
                                        bounds_error=False, 
                                        fill_value=(sigma_hi.values[0], sigma_hi.values[-1]))
@@ -470,7 +472,7 @@ def calculate_fuv(l_range=(912, 2066), average_fuv=False,
         fuv = observations.fuv_profile
         lam = np.array([912, 1350, 1500, 1650, 2000, 2200, 2500, 2800, 3650])
         wav = np.linspace(l_range[0], l_range[1], num=1000)
-        i_gc = fuv[0][:, 0] < constants.fuv_r_gc
+        i_gc = fuv[0][:, 0] < constants.r_gc
         fuv[1][i_gc] = fuv[1][i_gc] * constants.fuv_scale_gc
         fuv[2][i_gc, :] = fuv[2][i_gc, :] * constants.fuv_scale_gc
         f = interpolate.interp1d(lam, fuv[2], axis=1)
