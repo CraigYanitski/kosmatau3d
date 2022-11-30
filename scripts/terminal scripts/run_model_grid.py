@@ -18,7 +18,7 @@ parser.add_argument('-f', '--folder', type=str, default='/mnt/yanitski_backup/ya
 parser.add_argument('-g', '--grid', type=str, default='convergence', 
                     choices=['convergence', 'f_cm-cm', 'f_icm-icm', 'cm-icm', 'f_cm-f_icm', 
                              'r_cmz-f_fuv', 'f_hi-f_fuv', 'f_cl-f_icl-f_d-f_fuv', 
-                             'f_fuv_gc', 'disp_gc', 'fuv_gc-disp_gc'], 
+                             'f_fuv_gc', 'disp_gc', 'fuv_gc-disp_gc', 'fuv_gc-mass_gc'], 
                     help='parameters varied in grid')
 parser.add_argument('-r', '--resolution', type=int, default=400, 
                     help='voxel size in the model')
@@ -138,6 +138,17 @@ elif args.grid == 'fuv_gc-disp_gc':
     param_keys = ('scale_gc', 'r_gc', 'disp_core', 'r_core', 'new_grid')
     params = list(_.flatten() for _ in np.meshgrid(fuv_gc, r_gc, disp_gc, r_core, grid_flag))
     param_folders = list(folder.format(*_) for _ in zip(*params))
+elif args.grid == 'fuv_gc-mass_gc':
+    folder = f'r{args.resolution}' + '_r_gc{}_f_fuv_gc{:.2f}_f_mhi_gc{}_f_mh2_gc{}/'
+    r_gc = (200, 600, 1000, 1400)
+    # fuv_gc = (10**np.array([0, 0.5, 1, 1.5, 2]), )
+    fuv_gc = (10**np.array([0, 0.5, 1, 1.5, 2, 2.5, 3]), )
+    mhi_gc = (10**np.array([0, 0.5, 1, 1.5]), )
+    mh2_gc = (10**np.array([0, 0.5, 1, 1.5]), )
+    grid_flag = (True, )
+    param_keys = ('r_gc', 'scale_gc', 'mhi_gc', 'mh2_gc', 'new_grid')
+    params = list(_.flatten() for _ in np.meshgrid(r_gc, fuv_gc, mhi_gc, mh2_gc, grid_flag))
+    param_folders = list(folder.format(*_) for _ in zip(*params))
 else:
     params = None
     param_keys = None
@@ -191,6 +202,8 @@ parameters = {
               'average_fuv': False,
               'l_range': (912, 2066),
               'scale_gc': 1.0,
+              'mhi_gc': 1.0,
+              'mh2_gc': 1.0,
               'new_grid': False,
               
               # Model information
