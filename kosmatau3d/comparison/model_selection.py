@@ -617,7 +617,10 @@ def regrid_observations(path='/media/hpc_backup/yanitski/projects/pdr/observatio
                 temp_header['CRPIX3'] = target_header['CRPIX3']
 
 
-                obs_data = np.swapaxes(obs[0].data[0], 0, 2)
+                if 'THOR' in file:
+                    obs_data = np.swapaxes(obs[0].data, 0, 2)
+                else:
+                    obs_data = np.swapaxes(obs[0].data[0], 0, 2)
                 obs_data = np.swapaxes(obs_data, 0, 1)
                 obs_data = spectres(target_vel, vel, np.nan_to_num(obs_data, nan=0), fill=0, verbose=False)
                 obs_data = obs_data.reshape(-1, obs_data.shape[-1])
@@ -912,7 +915,7 @@ def regrid_observations(path='/media/hpc_backup/yanitski/projects/pdr/observatio
                              '13co2_test_regridded.fits', overwrite=True, output_verify='ignore')
             grid_hdu_err.writeto(path + survey + '/regridded/temp/' +
                                  '13co2_test_regridded_error.fits', overwrite=True, output_verify='ignore')
-        if HI:
+        if hi:
             temp_header['TRANSL'] = 'HI'
             temp_header['TRANSI'] = '0'
             grid_hdu = fits.PrimaryHDU(data=hi_gridder.get_datacube(), header=fits.Header(temp_header))
