@@ -131,20 +131,20 @@ elif args.grid == 'fuv_gc-disp_gc':
     folder = f'r{args.resolution}' + '_f_fuv_gc{:.2f}_r_fuv_gc{}_disp_gc{}_r_disp_gc{}/'
     r_gc = (200, 600, 1000, 1400)
     # fuv_gc = (10**np.array([0, 0.5, 1, 1.5, 2]), )
-    fuv_gc = (10**np.array([0.5, 1, 1.5, 2, 2.5, 3]), )
+    fuv_gc = (*10**np.array([0.5, 1, 1.5, 2, 2.5, 3]), )
     r_core = (200,)
-    disp_gc = (200,)
+    disp_gc = (150, 175, 200,)
     grid_flag = (True, )
     param_keys = ('scale_gc', 'r_gc', 'disp_core', 'r_core', 'new_grid')
     params = list(_.flatten() for _ in np.meshgrid(fuv_gc, r_gc, disp_gc, r_core, grid_flag))
     param_folders = list(folder.format(*_) for _ in zip(*params))
 elif args.grid == 'fuv_gc-mass_gc':
-    folder = f'r{args.resolution}' + '_r_gc{}_f_fuv_gc{:.2f}_f_mhi_gc{}_f_mh2_gc{}/'
+    folder = f'r{args.resolution}' + '_r_gc{}_f_fuv_gc{:.2f}_f_mhi_gc{:.2f}_f_mh2_gc{:.2f}/'
     r_gc = (200, 600, 1000, 1400)
     # fuv_gc = (10**np.array([0, 0.5, 1, 1.5, 2]), )
-    fuv_gc = (10**np.array([0, 0.5, 1, 1.5, 2, 2.5, 3]), )
-    mhi_gc = (10**np.array([0, 0.5, 1, 1.5]), )
-    mh2_gc = (10**np.array([0, 0.5, 1, 1.5]), )
+    fuv_gc = (*10**np.array([0, 0.5, 1, 1.5, 2, 2.5, 3]), )
+    mhi_gc = (*10**np.array([0, 0.5, 1, 1.5]), )
+    mh2_gc = (*10**np.array([0, 0.5, 1, 1.5]), )
     grid_flag = (True, )
     param_keys = ('r_gc', 'scale_gc', 'mhi_gc', 'mh2_gc', 'new_grid')
     params = list(_.flatten() for _ in np.meshgrid(r_gc, fuv_gc, mhi_gc, mh2_gc, grid_flag))
@@ -282,8 +282,8 @@ for i, param in enumerate(zip(*params)):
                 + '/' + parameters['folder']
 
     # Check if data exists and will be overwritten
-    if not overwrite and os.path.exists(directory):
-        continue
+    if not os.path.exists(directory):
+        os.makedirs(directory)
 
     # Initialise model instance
     kosma = models.Model(**parameters)
@@ -314,28 +314,28 @@ for i, param in enumerate(zip(*params)):
     print()
 
     # Run model if selected
-    if run_model:
+    if run_model and ((not 'species_emissivity.fits' in os.listdir(directory)) or overwrite):
         kosma.calculateModel(kind='linear', multiprocessing=0)
+    else:
+        print('Will not overwrite model.')
 
     # Run radiative transfer if selected
-    if run_model and run_rt:
+    if run_rt and (not ('synthetic_intensity.fits' in os.listdir(directory)) or overwrite):
         models.radiativeTransfer.calculateObservation(directory=directory, dim='spherical',
                                                       multiprocessing=args.mp, 
                                                       hi=False, vel_pool=False, pencil_beam=True, 
                                                       slRange=[(-np.pi, np.pi), 
                                                                (-2*np.pi/180, 2*np.pi/180)],
                                                       nsl=[721, 9], terminal=True, debug=False)
+    else:
+        print('Will not overwrite transition datacubes.')
+    if (run_rt or hi) and (not ('synthetic_hi_intensity.fits' in os.listdir(directory)) or overwrite):
         models.radiativeTransfer.calculateObservation(directory=directory, dim='spherical',
                                                       multiprocessing=args.mp, 
                                                       hi=True, vel_pool=False, pencil_beam=True, 
                                                       slRange=[(-np.pi, np.pi), 
                                                                (-2*np.pi/180, 2*np.pi/180)],
                                                       nsl=[721, 9], terminal=True, debug=False)
-    elif run_rt:
-        models.radiativeTransfer.calculateObservation(directory=directory, dim='spherical',
-                                                      multiprocessing=args.mp, 
-                                                      hi=hi, vel_pool=False, pencil_beam=True, 
-                                                      slRange=[(-np.pi, np.pi), 
-                                                               (-2*np.pi/180, 2*np.pi/180)],
-                                                      nsl=[721, 9], terminal=True, debug=False)
+    else:
+        print('Will not overwrite HI datacube.')
 
