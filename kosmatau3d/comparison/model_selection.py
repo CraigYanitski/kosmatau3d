@@ -583,6 +583,8 @@ def regrid_observations(path='/media/hpc_backup/yanitski/projects/pdr/observatio
                     max_vel = vel.max()
             elif survey == 'THOR':
 
+                if not ('.fits' in file):
+                    continue
                 print(file)
 
                 # Specify transition
