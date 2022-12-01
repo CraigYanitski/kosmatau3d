@@ -383,6 +383,9 @@ class Voxel(object):
         if timed:
             t2 = time()
             self.__logger.info('Modules initialised:'.format(t2-t1))
+
+        self.__hi_mass = [0.]*constants.ensembles
+        self.__h2_mass = [0.]*constants.ensembles
     
         for ens in range(len(constants.clump_mass_number)):
             if self.suggested_calc:
@@ -485,6 +488,12 @@ class Voxel(object):
             return self.__model_mass / np.sqrt(2*np.pi) / constants.clump_dispersion
         else:
             return self.__model_mass
+
+    def get_hi_mass(self):
+        return self.__hi_mass
+
+    def get_h2_mass(self):
+        return self.__h2_mass
   
     def get_volume_filling_factor(self):
         return self.__volume_factor
@@ -547,6 +556,9 @@ class Voxel(object):
     
         # Clump
         for ens in range(constants.ensembles):
+            
+            self.__hi_mass[ens] = (masspoints.clump_hi_mass[ens]*ensemble.clumpNj[ens]).sum()
+            self.__h2_mass[ens] = (masspoints.clump_h2_mass[ens]*ensemble.clumpNj[ens]).sum()
     
             vel = constants.velocity_range   # v_obs
             clumpVel = ensemble.clumpVelocities[ens]   # v_sys
