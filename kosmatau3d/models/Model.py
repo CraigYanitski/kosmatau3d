@@ -373,6 +373,8 @@ class SyntheticModel(object):
         self.base_dir = base_dir
         self.files = {'intensity': 'synthetic_intensity', 
                       'optical_depth': 'synthetic_optical_depth', 
+                      'hi_intensity': 'synthetic_hi_intensity', 
+                      'hi_optical_depth': 'synthetic_hi_optical_depth', 
                       'dust_absorption': 'dust_absorption', 
                       'dust_emissivity': 'dust_emissivity', 
                       'species_absorption': 'species_absorption', 
@@ -412,6 +414,10 @@ class SyntheticModel(object):
                 self.files['intensity'] = kwargs['intensity']
             if 'optical_depth' in kwarg_keys:
                 self.files['optical_depth'] = kwargs['optical_depth']
+            if 'hi_intensity' in kwarg_keys:
+                self.files['hi_intensity'] = kwargs['hi_intensity']
+            if 'hi_optical_depth' in kwarg_keys:
+                self.files['hi_optical_depth'] = kwargs['hi_optical_depth']
             if 'dust_absorption' in kwarg_keys:
                 self.files['dust_absorption'] = kwargs['dust_absorption']
             if 'dust_emissivity' in kwarg_keys:
@@ -519,6 +525,18 @@ class SyntheticModel(object):
                                             + self.files['optical_depth'] + '.fits')
         self.optical_depth_species = self.optical_depth_file[1].data
         self.optical_depth_dust = self.optical_depth_file[2].data
+        if os.path.exists(self.base_dir + directory + self.files['hi_intensity'] + '.fits'):
+            self.hi_intensity_file = fits.open(self.base_dir + directory 
+                                               + self.files['hi_intensity'] + '.fits')
+            self.hi_map_positions = self.hi_intensity_file[0].data
+            self.hi_intensity_species = self.hi_intensity_file[1].data
+            self.hi_intensity_dust = self.hi_intensity_file[2].data
+            self.hi_optical_depth_file = fits.open(self.base_dir + directory 
+                                                   + self.files['hi_optical_depth'] + '.fits')
+            self.hi_optical_depth_species = self.hi_optical_depth_file[1].data
+            self.hi_optical_depth_dust = self.hi_optical_depth_file[2].data
+        else:
+            print('HI intensity map not found')
         self.dust_absorption_file = fits.open(self.base_dir + directory 
                                               + self.files['dust_absorption'] + '.fits')
         self.dust_absorption = self.dust_absorption_file[0].data
@@ -716,6 +734,30 @@ class SyntheticModel(object):
             return deepcopy(optical_depth)
         else:
             return deepcopy(optical_depth[0])
+
+    def get_hi_intensity(self, include_dust=False, integrated=False):
+
+        if include_dust:
+            intensity_temp = self.intensity_species[:, :, :, 0]
+        else:
+            # if len(self.dust) > 10:
+            #     wav_dust = self.get_dust_wavelengths()
+            #     f = interp1d(self.intensity_dust, wav_dust, axis=2, kind='slinear', 
+            #                  fill_value='extrapolate')
+            #     intensity_dust = f(wav_species[i])
+            # else:
+            #     intensity_dust = self.intensity_dust.mean(2)
+            intensity_dust = self.hi_intensity_species[:, :, :, 0].min(0)
+            intensity_temp = self.hi_intensity_species[:, :, :, 0] - intensity_dust
+        if integrated:
+            intensity = np.trapz(intensity_temp, self.map_vel, axis=0)
+        else:
+            intensity = intensity_temp
+
+        if len(intensity) > 1:
+            return deepcopy(intensity)
+        else:
+            return deepcopy(intensity[0])
 
     def get_dust_intensity(self, wavelength=None, idx=None):
 
