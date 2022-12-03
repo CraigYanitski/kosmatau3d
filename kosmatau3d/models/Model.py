@@ -758,6 +758,50 @@ class SyntheticModel(object):
 
         return np.array(intensity)
 
+    def get_model_hi_emissivity(self, include_dust=False):
+
+        if include_dust:
+            emissivity = self.hi_emissivity[:, :, :, 0]
+        else:
+            # if len(self.dust) > 10:
+            #     wav_dust = self.get_dust_wavelengths()
+            #     f = interp1d(self.dust_emissivity, wav_dust, axis=2, kind='slinear', 
+            #                  fill_value='extrapolate')
+            #     emissivity_dust = f(wav_species[i])
+            # else:
+            #     emissivity_dust = self.emissivity_dust.mean(2)
+            emissivity_dust = self.hi_emissivity[:, :, :, 0].min(0)
+            emissivity = self.hi_emissivity[:, :, :, 0] - emissivity_dust
+
+        return emissivity
+
+    def get_model_hi_absorption(self, include_dust=False):
+
+        if include_dust:
+            absorption = self.hi_absorption[:, :, :, 0]
+        else:
+            # if len(self.dust) > 10:
+            #     wav_dust = self.get_dust_wavelengths()
+            #     f = interp1d(self.dust_absorption, wav_dust, axis=2, kind='slinear', 
+            #                  fill_value='extrapolate')
+            #     absorption_dust = f(wav_species[i])
+            # else:
+            #     absorption_dust = self.absorption_dust.mean(2)
+            absorption_dust = self.hi_absorption[:, :, :, 0].min(0)
+            absorption = self.hi_absorption[:, :, :, 0] - absorption_dust
+
+        return absorption
+
+    def get_model_hi_intensity(self, include_dust=False, integrated=False):
+
+        eps = self.get_model_hi_emissivity(include_dust=include_dust)
+        kap = self.get_model_hi_absorption(include_dust=include_dust)
+        intensity = eps/kap * (1 - np.exp(-kap*self.ds))
+        i_nan = np.where(kap == 0)
+        intensity[i_nan] = eps[i_nan]
+
+        return intensity
+
     def get_species_intensity(self, transition=None, idx=None, include_dust=False, integrated=False):
 
         if transition is None and idx is None:
