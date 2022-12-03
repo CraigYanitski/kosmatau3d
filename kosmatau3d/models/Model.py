@@ -729,32 +729,12 @@ class SyntheticModel(object):
 
     def get_model_species_intensity(self, transition=None, idx=None, include_dust=False, integrated=False):
 
-        if transition is None and idx is None:
-            transition = self.species
-            idx = range(len(self.species))
-        elif isinstance(transition, (tuple, list, np.ndarray)):
-            idx = (self.species.index(t) for t in transition)
-        elif isinstance(idx, (tuple, list, np.ndarray)):
-            transition = (self.species[i] for i in idx)
-        elif isinstance(transition, str) and transition in self.species:
-            transition = (transition, )
-            idx = (self.species.index(transition[0]), )
-        elif isinstance(idx, int):
-            transition = (self.species[idx], )
-            idx = (idx, )
-        else:
-            print('Please enter a valid value for transition or idx')
-            return
-
-        intensity = []
-
-        for i in idx:
-            eps = self.get_model_species_emissivity(idx=i, include_dust=include_dust)
-            kap = self.get_model_species_absorption(idx=i, include_dust=include_dust)
-            intensity_temp = eps/kap * (1 - np.exp(-kap*self.ds))
-            i_nan = np.where(kap == 0)
-            intensity_temp[i_nan] = eps[i_nan]
-            intensity.append(deepcopy(intensity_temp))
+        eps = self.get_model_species_emissivity(idx=idx, include_dust=include_dust)
+        kap = self.get_model_species_absorption(idx=idx, include_dust=include_dust)
+        intensity_temp = eps/kap * (1 - np.exp(-kap*self.ds))
+        i_nan = np.where(kap == 0)
+        intensity_temp[i_nan] = eps[i_nan]
+        intensity.append(deepcopy(intensity_temp))
 
         return np.array(intensity)
 
@@ -801,6 +781,75 @@ class SyntheticModel(object):
         intensity[i_nan] = eps[i_nan]
 
         return intensity
+
+    def get_model_dust_emissivity(self, wavelength=None, idx=None):
+
+        if wavelength is None and idx is None:
+            wavelength = self.dust
+            idx = range(len(self.dust))
+        elif isinstance(wavelength, (tuple, list, np.ndarray)):
+            idx = (self.dust.index(t) for t in wavelength)
+        elif isinstance(idx, (tuple, list, np.ndarray)):
+            wavelength = (self.dust[i] for i in idx)
+        elif isinstance(wavelength, str) and wavelength in self.dust:
+            wavelength = (wavelength, )
+            idx = (self.dust.index(wavelength[0]), )
+        elif isinstance(idx, int):
+            wavelength = (self.dust[idx], )
+            idx = (idx, )
+        else:
+            print('Please enter a valid value for wavelength or idx')
+            return
+
+        emissivity = []
+
+        for i in idx:
+            emissivity.append(self.dust_emissivity[:, :, i])
+        
+        if len(emissivity) > 1:
+            return np.array(emissivity)
+        else:
+            return np.array(emissivity[0])
+
+    def get_model_dust_absorption(self, wavelength=None, idx=None):
+
+        if wavelength is None and idx is None:
+            wavelength = self.dust
+            idx = range(len(self.dust))
+        elif isinstance(wavelength, (tuple, list, np.ndarray)):
+            idx = (self.dust.index(t) for t in wavelength)
+        elif isinstance(idx, (tuple, list, np.ndarray)):
+            wavelength = (self.dust[i] for i in idx)
+        elif isinstance(wavelength, str) and wavelength in self.dust:
+            wavelength = (wavelength, )
+            idx = (self.dust.index(wavelength[0]), )
+        elif isinstance(idx, int):
+            wavelength = (self.dust[idx], )
+            idx = (idx, )
+        else:
+            print('Please enter a valid value for wavelength or idx')
+            return
+
+        absorption = []
+
+        for i in idx:
+            absorption.append(self.dust_absorption[:, :, i])
+        
+        if len(absorption) > 1:
+            return np.array(absorption)
+        else:
+            return np.array(absorption[0])
+
+    def get_model_dust_intensity(self, wavelength=None, idx=None):
+
+        eps = self.get_model_dust_emissivity(wavelength=wavelength, idx=idx)
+        kap = self.get_model_dust_absorption(wavelength=wavelength, idx=idx)
+        intensity_temp = eps/kap * (1 - np.exp(-kap*self.ds))
+        i_nan = np.where(kap == 0)
+        intensity_temp[i_nan] = eps[i_nan]
+        intensity = deepcopy(intensity_temp)
+
+        return np.array(intensity)
 
     def get_species_intensity(self, transition=None, idx=None, include_dust=False, integrated=False):
 
@@ -889,7 +938,7 @@ class SyntheticModel(object):
     def get_hi_intensity(self, include_dust=False, integrated=False):
 
         if include_dust:
-            intensity_temp = self.intensity_hi_species[:, :, :, 0]
+            intensity_temp = self.hi_intensity_species[:, :, :, 0]
         else:
             # if len(self.dust) > 10:
             #     wav_dust = self.get_dust_wavelengths()
@@ -1032,6 +1081,12 @@ class SyntheticModel(object):
         ax.set_ylim(lims)
         ax.set_zlim(lims)
         ax.view_init(elev=90, azim=270)
+
+        return ax
+
+    def radial_plot(self):
+
+        fig, ax = plt.subplots(figsize=(10, 10))
 
         return ax
 
