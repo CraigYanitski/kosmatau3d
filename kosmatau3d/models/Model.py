@@ -371,6 +371,8 @@ class SyntheticModel(object):
         '''
 
         self.base_dir = base_dir
+        self.hi_model = False
+        self.hi_map = False
         self.files = {'intensity': 'synthetic_intensity', 
                       'optical_depth': 'synthetic_optical_depth', 
                       'hi_intensity': 'synthetic_hi_intensity', 
@@ -526,6 +528,7 @@ class SyntheticModel(object):
         self.optical_depth_species = self.optical_depth_file[1].data
         self.optical_depth_dust = self.optical_depth_file[2].data
         if os.path.exists(self.base_dir + directory + self.files['hi_intensity'] + '.fits'):
+            self.hi_map = True
             self.hi_intensity_file = fits.open(self.base_dir + directory 
                                                + self.files['hi_intensity'] + '.fits')
             self.hi_map_positions = self.hi_intensity_file[0].data
@@ -550,21 +553,18 @@ class SyntheticModel(object):
                                                  + self.files['species_emissivity'] + '.fits')
         self.species_emissivity = self.species_emissivity_file[0].data
         if os.path.exists(self.base_dir + directory + self.files['hi_emissivity'] + '.fits'):
-            # print('Loading HI absorption')
+            # print('Loading HI emissivity')
+            self.hi_model = True
             self.hi_emissivity_file = fits.open(self.base_dir + directory 
                                                 + self.files['hi_emissivity'] + '.fits')
             self.hi_emissivity = self.hi_emissivity_file[0].data
-        else:
-            self.hi_emissivity = np.nan
-            print('HI emissivity not found')
-        if os.path.exists(self.base_dir + directory + self.files['hi_absorption'] + '.fits'):
-            # print('Loading HI emissivity')
             self.hi_absorption_file = fits.open(self.base_dir + directory 
                                                 + self.files['hi_absorption'] + '.fits')
             self.hi_absorption = self.hi_absorption_file[0].data
         else:
+            self.hi_emissivity = np.nan
             self.hi_absorption = np.nan
-            print('HI absorption not found')
+            print('HI emissivity not found')
         if os.path.exists(self.base_dir + directory + self.files['clump_number'] + '.fits'):
             self.clump_number_file = fits.open(self.base_dir + directory 
                                                + self.files['clump_number'] + '.fits')
@@ -607,8 +607,8 @@ class SyntheticModel(object):
         self.dust_header = self.intensity_file[2].header
         self.dust_header['BUNIT'] = self.intensity_file[2].header['BUNIT'] + '/' \
                                     + self.optical_depth_file[2].header['BUNIT']
-        self.species = self.species_header['SPECIES'].split(', ')
-        self.dust = self.dust_header['DUST'].split(', ')
+        self.species = np.array(self.species_header['SPECIES'].split(', '))
+        self.dust = np.array(self.dust_header['DUST'].split(', '))
         self.dust_header['BUNIT'] = self.intensity_file[2].header['BUNIT'] + '/' \
                                     + self.optical_depth_file[2].header['BUNIT']
         self.map_lon = np.linspace(self.species_header['CRVAL2'] 
@@ -647,6 +647,117 @@ class SyntheticModel(object):
     def get_volume_filling_factor(self):
         return (4/3*np.pi*self.clump_number*self.clump_radius**3).sum(1)/self.ds**3
 
+    def get_model_species_emissivity(self, transition=None, idx=None, include_dust=False):
+
+        if transition is None and idx is None:
+            transition = self.species
+            idx = range(len(self.species))
+        elif isinstance(transition, (tuple, list, np.ndarray)):
+            idx = (self.species.index(t) for t in transition)
+        elif isinstance(idx, (tuple, list, np.ndarray)):
+            transition = (self.species[i] for i in idx)
+        elif isinstance(transition, str) and transition in self.species:
+            transition = (transition, )
+            idx = (self.species.index(transition[0]), )
+        elif isinstance(idx, int):
+            transition = (self.species[idx], )
+            idx = (idx, )
+        else:
+            print('Please enter a valid value for transition or idx')
+            return
+
+        emissivity = []
+
+        for i in idx:
+            if include_dust:
+                emissivity.append(self.species_emissivity[:, :, :, i])
+            else:
+                # if len(self.dust) > 10:
+                #     wav_dust = self.get_emissivity_wavelengths()
+                #     f = interp1d(self.emissivity_dust, wav_dust, axis=2, kind='slinear', 
+                #                  fill_value='extrapolate')
+                #     emissivity_dust = f(wav_species[i])
+                # else:
+                #     emissivity_dust = self.emissivity_dust.mean(2)
+                emissivity_dust = self.species_emissivity[:, :, :, i].min(0)
+                emissivity.append(self.species_emissivity[:, :, :, i] - emissivity_dust)
+
+        if len(emissivity) > 1:
+            return np.array(emissivity)
+        else:
+            return np.array(emissivity[0])
+
+    def get_model_species_absorption(self, transition=None, idx=None, include_dust=False):
+
+        if transition is None and idx is None:
+            transition = self.species
+            idx = range(len(self.species))
+        elif isinstance(transition, (tuple, list, np.ndarray)):
+            idx = (self.species.index(t) for t in transition)
+        elif isinstance(idx, (tuple, list, np.ndarray)):
+            transition = (self.species[i] for i in idx)
+        elif isinstance(transition, str) and transition in self.species:
+            transition = (transition, )
+            idx = (self.species.index(transition[0]), )
+        elif isinstance(idx, int):
+            transition = (self.species[idx], )
+            idx = (idx, )
+        else:
+            print('Please enter a valid value for transition or idx')
+            return
+
+        absorption = []
+
+        for i in idx:
+            if include_dust:
+                absorption.append(self.species_absorption[:, :, :, i])
+            else:
+                # if len(self.dust) > 10:
+                #     wav_dust = self.get_absorption_wavelengths()
+                #     f = interp1d(self.absorption_dust, wav_dust, axis=2, kind='slinear', 
+                #                  fill_value='extrapolate')
+                #     absorption_dust = f(wav_species[i])
+                # else:
+                #     absorption_dust = self.absorption_dust.mean(2)
+                absorption_dust = self.species_absorption[:, :, :, i].min(0)
+                absorption.append(self.species_absorption[:, :, :, i] - absorption_dust)
+
+        if len(absorption) > 1:
+            return np.array(absorption)
+        else:
+            return np.array(absorption[0])
+
+    def get_model_species_intensity(self, transition=None, idx=None, include_dust=False, integrated=False):
+
+        if transition is None and idx is None:
+            transition = self.species
+            idx = range(len(self.species))
+        elif isinstance(transition, (tuple, list, np.ndarray)):
+            idx = (self.species.index(t) for t in transition)
+        elif isinstance(idx, (tuple, list, np.ndarray)):
+            transition = (self.species[i] for i in idx)
+        elif isinstance(transition, str) and transition in self.species:
+            transition = (transition, )
+            idx = (self.species.index(transition[0]), )
+        elif isinstance(idx, int):
+            transition = (self.species[idx], )
+            idx = (idx, )
+        else:
+            print('Please enter a valid value for transition or idx')
+            return
+
+        intensity = []
+
+        for i in idx:
+            eps = self.get_model_species_emissivity(idx=i, include_dust=include_dust)
+            kap = self.get_model_species_absorption(idx=i, include_dust=include_dust)
+            intensity_temp = eps/kap * (1 - np.exp(-kap*self.ds))
+            i_nan = np.where(kap == 0)
+            intensity_temp[i_nan] = eps[i_nan]
+            intensity.append(deepcopy(intensity_temp))
+
+        return np.array(intensity)
+
     def get_species_intensity(self, transition=None, idx=None, include_dust=False, integrated=False):
 
         if transition is None and idx is None:
@@ -684,12 +795,12 @@ class SyntheticModel(object):
             if integrated:
                 intensity.append(np.trapz(intensity_temp, self.map_vel, axis=0))
             else:
-                intensity.append(intensity_temp)
+                intensity.append(copy(intensity_temp))
 
         if len(intensity) > 1:
-            return deepcopy(intensity)
+            return np.array(intensity)
         else:
-            return deepcopy(intensity[0])
+            return np.array(intensity[0])
 
     def get_species_optical_depth(self, transition=None, idx=None, include_dust=False, integrated=False):
 
@@ -714,7 +825,7 @@ class SyntheticModel(object):
 
         for i in idx:
             if include_dust:
-                optical_depth_temp = self.optical_depth_species[:, :, :, i]
+                optical_depth.append(self.optical_depth_species[:, :, :, i])
             else:
                 # if len(self.dust) > 10:
                 #     wav_dust = self.get_dust_wavelengths()
@@ -724,21 +835,17 @@ class SyntheticModel(object):
                 # else:
                 #     optical_depth_dust = self.optical_depth_dust.mean(2)
                 optical_depth_dust = self.optical_depth_species[:, :, :, i].min(0)
-                optical_depth_temp = self.optical_depth_species[:, :, :, i] - optical_depth_dust
-            if integrated:
-                optical_depth.append(np.trapz(optical_depth_temp, self.map_vel, axis=0))
-            else:
-                optical_depth.append(optical_depth_temp)
+                optical_depth.append(self.optical_depth_species[:, :, :, i] - optical_depth_dust)
 
         if len(optical_depth) > 1:
-            return deepcopy(optical_depth)
+            return np.array(optical_depth)
         else:
-            return deepcopy(optical_depth[0])
+            return np.array(optical_depth[0])
 
     def get_hi_intensity(self, include_dust=False, integrated=False):
 
         if include_dust:
-            intensity_temp = self.intensity_species[:, :, :, 0]
+            intensity_temp = self.intensity_hi_species[:, :, :, 0]
         else:
             # if len(self.dust) > 10:
             #     wav_dust = self.get_dust_wavelengths()
@@ -752,12 +859,26 @@ class SyntheticModel(object):
         if integrated:
             intensity = np.trapz(intensity_temp, self.map_vel, axis=0)
         else:
-            intensity = intensity_temp
+            intensity = deepcopy(intensity_temp)
 
-        if len(intensity) > 1:
-            return deepcopy(intensity)
+        return intensity
+
+    def get_hi_optical_depth(self, include_dust=False):
+
+        if include_dust:
+            optical_depth = self.hi_optical_depth_species[:, :, :, 0]
         else:
-            return deepcopy(intensity[0])
+            # if len(self.dust) > 10:
+            #     wav_dust = self.get_dust_wavelengths()
+            #     f = interp1d(self.intensity_dust, wav_dust, axis=2, kind='slinear', 
+            #                  fill_value='extrapolate')
+            #     intensity_dust = f(wav_species[i])
+            # else:
+            #     intensity_dust = self.intensity_dust.mean(2)
+            optical_depth_dust = self.hi_optical_depth_species[:, :, :, 0].min(0)
+            optical_depth = self.hi_optical_depth_species[:, :, :, 0] - optical_depth_dust
+
+        return optical_depth
 
     def get_dust_intensity(self, wavelength=None, idx=None):
 
@@ -784,9 +905,9 @@ class SyntheticModel(object):
             intensity.append(self.intensity_dust[:, :, i])
         
         if len(intensity) > 1:
-            return deepcopy(intensity)
+            return np.array(intensity)
         else:
-            return deepcopy(intensity[0])
+            return np.array(intensity[0])
 
     def get_dust_optical_depth(self, wavelength=None, idx=None):
 
@@ -813,8 +934,60 @@ class SyntheticModel(object):
             optical_depth.append(self.optical_depth_dust[:, :, i])
         
         if len(optical_depth) > 1:
-            return deepcopy(optical_depth)
+            return np.array(optical_depth)
         else:
-            return deepcopy(optical_depth[0])
+            return np.array(optical_depth[0])
 
+    def plot_model_quantity(self, quantity=None, transition=None, transition2=None, ens=None, **kwargs):
+        '''
+        Return a 3DAxes with the specitied quantity shown in the colour scale.
+        '''
+
+        if not quantity:
+            print('Please specify a property to plot')
+
+        if quantity == 'intensity' and isinstance(transition, (list, np.ndarray)):
+            transition2 = transition[1]
+            transition = transition[0]
+        if quantity == 'emissivity' and transition in self.species:
+            value = self.species_emissivity[:, :, self.species==transition]
+            clabel = r'$\epsilon$ (K pc$^{-1}$)'
+        elif quantity == 'absorption' and transition in self.species:
+            value = self.species_absorption[:, :, self.species==transition]
+            clabel = r'$\kappa$ (pc$^{-1}$)'
+        elif quantity == 'emissivity' and transition in self.dust:
+            value = self.species_emissivity[:, :, self.dust==transition]
+            clabel = r'$\epsilon$ (K pc$^{-1}$)'
+        elif quantity == 'absorption' and transition in self.dust:
+            value = self.species_absorption[:, :, self.dust==transition]
+            clabel = r'$\kappa$ (pc$^{-1}$)'
+        elif quantity == 'emissivity' and transition == 'HI' and self.hi_model:
+            value = self.hi_emissivity[:, :, 0]
+            clabel = r'$\epsilon$ (K pc$^{-1}$)'
+        elif quantity == 'absorption' and transition == 'HI' and self.hi_model:
+            value = self.hi_absorption[:, :, 0]
+            clabel = r'$\kappa$ (pc$^{-1}$)'
+        else:
+            print('Quantity not available.')
+            return
+
+        X, Y, Z = self.position.T
+
+        fig = plt.figure(figsize=(10, 8))
+        ax = fig.add_subplot(111, projection'3d')
+
+        cm = ax.scatter(X, Y, Z, c=value, cmap='magma', marker='s', alpha=0.8, ls='')
+        cb = fig.colorbar(cm)
+
+        ax.set_xlabel('X (kpc)', fontsize=32)
+        ax.set_ylabel('Y (kpc)', fontsize=32)
+        ax.set_zlabel('Z (kpc)', fontsize=32)
+        cb.ax.set_ylabel(clabel, fontsize=32)
+        ax.tick_params(labelsize=16)
+        ax.set_xlim(lims)
+        ax.set_ylim(lims)
+        ax.set_zlim(lims)
+        ax.view_init(elev=90, azim=270)
+
+        return ax
 
