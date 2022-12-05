@@ -10,6 +10,7 @@ from astropy.io import fits
 from copy import copy, deepcopy
 from logging import getLogger, basicConfig, FileHandler, Formatter
 from scipy.interpolate import interp1d
+from scipy.stats import binned_statistic
 
 from kosmatau3d.models import constants
 from kosmatau3d.models import interpolations
@@ -1084,9 +1085,85 @@ class SyntheticModel(object):
 
         return ax
 
-    def radial_plot(self):
+    def radial_plot(self, quantity='intensity', transition=['HI'], transition2=None, lat=0, include_dust=False, integrated=False, stat='mean'):
+
+        species = self.species
+        positions = self.position
+        rgal = np.sqrt(positions[:, 0]**2+positions[:, 1]**2+positions[:, 2]**2)
 
         fig, ax = plt.subplots(figsize=(10, 10))
+
+        i_lat = np.where(self.map_lat == lat)[0][0]
+        bins = np.arange(0, 18000, self.ds)
+        bins_mid = bins[:-1] + self.ds/2
+
+        if quantity in ['intensity', 'emissivity', 'absorption']:
+            for i, t in enumerate(transition):
+                if t == 'HI':
+                    eps = self.get_model_hi_emissivity(include_dust=include_dust)
+                    kap = self.get_model_hi_absorption(include_dust=include_dust)
+                else:
+                    eps = self.get_model_species_emissivity(transition=t, include_dust=include_dust)
+                    kap = self.get_model_species_absorption(transition=t, include_dust=include_dust)
+                
+                intensity = eps/kap * (1-np.exp(-kap*self.ds))
+                
+                if quantity == 'emissivity':
+                    value = eps
+                    ylabel = r'$\epsilon$ (K pc$^{-1}$ kpc$^{-1}$)'
+                elif quantity == 'absorption':
+                    value = kap
+                    ylabel = r'$\kappa$ (pc$^{-1}$ kpc$^{-1}$)'
+                elif integrated:
+                    value = np.trapz(intensity, self.map_vel, axis=1)
+                    ylabel = r'$W$ (K km s$^{-1}$ kpc$^{-1}$)'
+                else:
+                    value = intensity
+                    ylabel = r'$I$ (K kpc$^{-1}$)'
+
+                value_stat,_,_ = binned_statistic(rgal, value, statistic=stat, bins=bins)
+                ax.plot(bins_mid, value_stat/self.ds*1e3, label=t)
+
+            ax.legend(fontsize=16)
+            ax.tick_params(labelsize=16)
+            ax.set_xlabel(r'$R_\mathrm{gal}$ (kpc)', fontsize=24)
+            ax.set_ylabel(ylabel,fontsize=24)
+            return ax
+
+        elif quantity == 'hi mass':
+            value = self.ensemble_mass[:, 1]
+            ylabel = r'M_\mathrm{HI} (M$_\odot$ kpc$^{-1}$)'
+
+        elif quantity == 'h2 mass':
+            value = self.ensemble_mass[:, 0]
+            ylabel = r'M_\mathrm{H_2} (M$_\odot$ kpc$^{-1}$)'
+
+        elif quantity == 'hi density':
+            value = self.density[:, 1]
+            ylabel = r'n_\mathrm{s, HI} (cm$^{-3}$ kpc$^{-1}$)'
+
+        elif quantity == 'h2 density':
+            value = self.density[:, 0]
+            ylabel = r'n_\mathrm{s, H_2} (cm$^{-3}$ kpc$^{-1}$)'
+
+        elif quantity == 'clumpy FUV':
+            value = self.fuv[:, 0]
+            ylabel = r'u_\mathrm{FUV} ($\chi_\mathrm{D}$ kpc$^{-1}$)'
+
+        elif quantity == 'interclump FUV':
+            value = self.fuv[:, 1]
+            ylabel = r'u_\mathrm{FUV} ($\chi_\mathrm{D}$ kpc$^{-1}$)'
+
+        else:
+            print(f'quantity {quantity} not available...')
+            exit()
+
+        value_stat,_,_ = binned_statistic(rgal, value, statistic=stat, bins=bins)
+        ax.plot(bins_mid, value_stat/self.ds*1e3, label=quantity)
+        ax.legend(fontsize=16)
+        ax.tick_params(labelsize=16)
+        ax.set_xlabel(r'$R_\mathrm{gal}$ (kpc)', fontsize=24)
+        ax.set_ylabel(ylabel,fontsize=24)
 
         return ax
 
