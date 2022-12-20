@@ -1068,7 +1068,7 @@ class SyntheticModel(object):
         X, Y, Z = self.position.T
 
         fig = plt.figure(figsize=(10, 8))
-        ax = fig.add_subplot(111, projection'3d')
+        ax = fig.add_subplot(111, projection='3d')
 
         cm = ax.scatter(X, Y, Z, c=value, cmap='magma', marker='s', alpha=0.8, ls='')
         cb = fig.colorbar(cm)
