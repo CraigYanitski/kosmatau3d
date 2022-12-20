@@ -621,6 +621,7 @@ def regrid_observations(path='/media/hpc_backup/yanitski/projects/pdr/observatio
 
                 if 'THOR' in file:
                     obs_data = np.swapaxes(obs[0].data, 0, 2)
+                    obs_data = (obs_data * 1.0492224297700237*0.21106/obs[0].header['BMAJ']/obs[0].header['BMAJ']) # Jy/A_b -> Tb
                 else:
                     obs_data = np.swapaxes(obs[0].data[0], 0, 2)
                 obs_data = np.swapaxes(obs_data, 0, 1)
