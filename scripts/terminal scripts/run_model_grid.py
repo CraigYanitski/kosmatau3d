@@ -197,6 +197,7 @@ parameters = {
               'h2_scale_height_file': 'h2_scale-height_bacchini.dat', 
               'hi_scale_height_file': 'hi_scale-height_bacchini.dat', 
               'like_clumps': False, 
+              'all_full': True, 
               'h_number_density_file': 'h_number-density_cubick.dat',
               'fuv_file': 'galactic_FUV_complete.dat',
               'average_fuv': False,
