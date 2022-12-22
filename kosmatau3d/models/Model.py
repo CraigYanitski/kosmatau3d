@@ -37,7 +37,8 @@ class Model(object):
                  hi_scale_height_file='hi_scale-height.dat', 
                  h_number_density_file='h_number-density.dat', 
                  fuv_file='galactic_FUV_complete.dat', 
-                 l_range=(912, 2066), average_fuv=False, scale_gc=1.0, mhi_gc=1.0, mh2_gc=1.0, r_gc=4400, like_clumps=False,
+                 l_range=(912, 2066), average_fuv=False, scale_gc=1.0, mhi_gc=1.0, mh2_gc=1.0, r_gc=4400, 
+                 like_clumps=False, all_full=False, 
                  velocity_file='rot_milki2018_14.dat', disp_core=None, r_core=4400,
                  x=0, y=0, z=0, model_type='', resolution=1000,
                  molecules='all', dust='molecular', velocity_range=(), velocity_number=0,
@@ -117,8 +118,9 @@ class Model(object):
             constants.average_fuv = average_fuv
             constants.l_range = l_range
             constants.like_clumps = like_clumps
+            constants.all_full = all_full
             interpolations.initialise_model(l_range=l_range, average_fuv=average_fuv, 
-                                            like_clumps=like_clumps)
+                                            all_full=all_full, like_clumps=like_clumps)
 
         # Initialise logger
         self.__logger = getLogger()

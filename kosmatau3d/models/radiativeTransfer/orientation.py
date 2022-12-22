@@ -80,8 +80,9 @@ def open_voxel_filling_factors(directory):
     shape -> (n_voxels, 1)
     '''
 
-    rt.voxel_filling_factors = fits.open(directory+'voxel-filling_factor.fits', 
+    voxel_filling_factors = fits.open(directory+'voxel-filling_factor.fits', 
                                          mode='denywrite')[0].data.mean(1)
+    rt.voxel_filling_factors = np.ones_like(voxel_filling_factors)
     return
 
 

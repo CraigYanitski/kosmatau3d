@@ -287,6 +287,10 @@ class VoxelGrid(object):
         shdu_f_vox = self.shdu_header(name='f_vox', units='N/A', filename='voxel-filling_factor', dim=dim)
         shdu_ensemble_mass = self.shdu_header(name='Ensemble mass', units='Msol', filename='voxel_ensemble_mass',
                                               dim=dim)
+        shdu_hi_mass = self.shdu_header(name='HI mass', units='Msol', filename='voxel_hi_mass',
+                                              dim=dim)
+        shdu_h2_mass = self.shdu_header(name='H2 mass', units='Msol', filename='voxel_h2_mass',
+                                              dim=dim)
         shdu_ensemble_density = self.shdu_header(name='Density', units='cm^-3', filename='voxel_density', dim=dim)
         dim = [3, self.__voxel_number]
         shdu_voxel_position = self.shdu_header(name='Position', units='pc', filename='voxel_position', dim=dim)
@@ -363,6 +367,8 @@ class VoxelGrid(object):
                 shdu_voxel_dispersion.write(np.array([dispersion[0]]))
                 shdu_f_vox.write(np.asarray(voxel.get_voxel_filling_factor()))
                 shdu_ensemble_mass.write(np.asarray(voxel.get_ensemble_mass()))
+                shdu_hi_mass.write(np.asarray(voxel.get_hi_mass()))
+                shdu_h2_mass.write(np.asarray(voxel.get_h2_mass()))
                 shdu_ensemble_density.write(np.asarray(voxel.get_density()))
                 shdu_fuv.write(np.array([voxel.get_fuv()]))
                 shdu_taufuv.write(np.asarray([voxel.get_taufuv()]))
@@ -660,6 +666,7 @@ class VoxelGrid(object):
         header['COMMENT'] = 'Input files'.ljust(cw)
         header['COMMENT'] = ''.ljust(cw)
         header['COMMENT'] = 'galactic center: {} pc'.format(constants.r_gc).ljust(cw)
+        header['COMMENT'] = 'full voxels: {}'.format(constants.all_full).ljust(cw)
         header['COMMENT'] = constants.h2_surface_density_file.ljust(cw)
         header['COMMENT'] = '  scale galactic center: {}'.format(constants.mh2_scale_gc).ljust(cw)
         header['COMMENT'] = constants.hi_surface_density_file.ljust(cw)

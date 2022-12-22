@@ -46,8 +46,11 @@ mhi_scale_gc = 1.0
 mh2_scale_gc = 1.0
 disp_gc = None
 disp_r_gc = 4400
+average_fuv = False
 l_range = (912, 2066)  # for integration
 velocity_file = ''
+like_clumps = False
+all_full = False
 
 # Interpolation style (it accepts 'linear' or 'cubic'/'radial')
 interpolation = 'linear'

@@ -33,15 +33,15 @@ def initialise_grid(dilled=False):
     return
 
 
-def initialise_model(dilled=False, like_clumps=False, 
+def initialise_model(dilled=False, like_clumps=False, all_full=False, 
                      average_fuv=False, l_range=(912, 2066)):
     interpolations.galaxy_rotation_interpolation = calculate_galaxy_rotation(dilled=dilled)
     interpolations.velocity_dispersion_interpolation = 1  # calculate_velocity_dispersion(dilled=dilled)
     interpolations.number_density_interpolation = calculate_number_density(dilled=dilled)
     interpolations.h2_scale_height = calculate_h2_height()
-    interpolations.h2_mass_interpolation = calculate_h2_mass(dilled=dilled)
+    interpolations.h2_mass_interpolation = calculate_h2_mass(all_full=all_full, dilled=dilled)
     interpolations.hi_scale_height = calculate_hi_height(like_clumps=like_clumps)
-    interpolations.hi_mass_interpolation = calculate_hi_mass(dilled=dilled,
+    interpolations.hi_mass_interpolation = calculate_hi_mass(all_full=all_full, dilled=dilled,
                                                              like_clumps=like_clumps)
     interpolations.fuv_interpolation = calculate_fuv(l_range=l_range, 
                                                      average_fuv=average_fuv, 
@@ -344,7 +344,7 @@ def calculate_h2_height():
                                       fill_value='extrapolate')
 
 
-def calculate_h2_mass(verbose=False, dilled=False):
+def calculate_h2_mass(verbose=False, all_full=False, dilled=False):
     if constants.directory != '':
         if dilled:
             with open(constants.INPUTPATH+constants.directory + 
@@ -374,8 +374,12 @@ def calculate_h2_mass(verbose=False, dilled=False):
             i_partial = (lim_l>=-half_height) & (lim_u>half_height)
             i_all = (lim_l<-half_height) & (lim_u>half_height)
             m_mass[_][i_full] = rho_0[i_full] * constants.voxel_size**3
-            m_mass[_][i_partial] = rho_0[i_partial] * constants.voxel_size**2 * (half_height[i_partial]-lim_l)
-            m_mass[_][i_all] = rho_0[i_all] * constants.voxel_size**2 * 2*half_height[i_all]
+            if all_full:
+                m_mass[_][i_partial] = rho_0[i_partial] * constants.voxel_size**3 #2 * (half_height[i_partial]-lim_l)
+                m_mass[_][i_all] = rho_0[i_all] * constants.voxel_size**3 #2 * 2*half_height[i_all]
+            else:
+                m_mass[_][i_partial] = rho_0[i_partial] * constants.voxel_size**2 * (half_height[i_partial]-lim_l)
+                m_mass[_][i_all] = rho_0[i_all] * constants.voxel_size**2 * 2*half_height[i_all]
         interpolations.h2_mass_full = pd.DataFrame(data={'r':r_mass, 
                                                          'z':z_mass, 
                                                          'M':np.hstack(m_mass)})
@@ -403,7 +407,7 @@ def calculate_hi_height(like_clumps=False):
                                   fill_value='extrapolate')
 
 
-def calculate_hi_mass(like_clumps=False, verbose=False, dilled=True):
+def calculate_hi_mass(like_clumps=False, all_full=False, verbose=False, dilled=True):
     if constants.directory != '':
         if dilled:
             with open(constants.INPUTPATH+constants.directory + 
@@ -440,8 +444,12 @@ def calculate_hi_mass(like_clumps=False, verbose=False, dilled=True):
             i_partial = (lim_l>=-half_height) & (lim_u>half_height)
             i_all = (lim_l<-half_height) & (lim_u>half_height)
             m_mass[_][i_full] = rho_0[i_full] * constants.voxel_size**3
-            m_mass[_][i_partial] = rho_0[i_partial] * constants.voxel_size**2 * (half_height[i_partial]-lim_l)
-            m_mass[_][i_all] = rho_0[i_all] * constants.voxel_size**2 * 2*half_height[i_all]
+            if all_full:
+                m_mass[_][i_partial] = rho_0[i_partial] * constants.voxel_size**3 #2 * (half_height[i_partial]-lim_l)
+                m_mass[_][i_all] = rho_0[i_all] * constants.voxel_size**3 #2 * 2*half_height[i_all]
+            else:
+                m_mass[_][i_partial] = rho_0[i_partial] * constants.voxel_size**2 * (half_height[i_partial]-lim_l)
+                m_mass[_][i_all] = rho_0[i_all] * constants.voxel_size**2 * 2*half_height[i_all]
         interpolations.hi_mass_full = pd.DataFrame(data={'r':r_mass, 
                                                          'z':z_mass, 
                                                          'M':np.hstack(m_mass)})
