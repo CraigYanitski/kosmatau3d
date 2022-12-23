@@ -622,6 +622,8 @@ def regrid_observations(path='/media/hpc_backup/yanitski/projects/pdr/observatio
                 if 'THOR' in file:
                     obs_data = np.swapaxes(obs[0].data, 0, 2)
                     obs_data = (obs_data * 1.0492224297700237*0.21106**2/obs[0].header['BMAJ']/obs[0].header['BMAJ']) #Jy/beam->Tb
+                elif '.pks.' in file:
+                    obs_data = np.swapaxes(obs[0].data, 0, 2)
                 elif 'CGPS' in file:
                     vel = vel[::-1]
                     obs_data = np.swapaxes(obs[0].data[0, ::-1, :, :], 0, 2)
