@@ -673,7 +673,7 @@ class SyntheticModel(object):
 
         for i in idx:
             if include_dust:
-                emissivity.append(self.species_emissivity[:, :, :, i])
+                emissivity.append(self.species_emissivity[:, :, i])
             else:
                 # if len(self.dust) > 10:
                 #     wav_dust = self.get_emissivity_wavelengths()
@@ -682,8 +682,8 @@ class SyntheticModel(object):
                 #     emissivity_dust = f(wav_species[i])
                 # else:
                 #     emissivity_dust = self.emissivity_dust.mean(2)
-                emissivity_dust = self.species_emissivity[:, :, :, i].min(0)
-                emissivity.append(self.species_emissivity[:, :, :, i] - emissivity_dust)
+                emissivity_dust = self.species_emissivity[:, :, i].min(0)
+                emissivity.append(self.species_emissivity[:, :, i] - emissivity_dust)
 
         if len(emissivity) > 1:
             return np.array(emissivity)
@@ -713,7 +713,7 @@ class SyntheticModel(object):
 
         for i in idx:
             if include_dust:
-                absorption.append(self.species_absorption[:, :, :, i])
+                absorption.append(self.species_absorption[:, :, i])
             else:
                 # if len(self.dust) > 10:
                 #     wav_dust = self.get_absorption_wavelengths()
@@ -722,8 +722,8 @@ class SyntheticModel(object):
                 #     absorption_dust = f(wav_species[i])
                 # else:
                 #     absorption_dust = self.absorption_dust.mean(2)
-                absorption_dust = self.species_absorption[:, :, :, i].min(0)
-                absorption.append(self.species_absorption[:, :, :, i] - absorption_dust)
+                absorption_dust = self.species_absorption[:, :, i].min(0)
+                absorption.append(self.species_absorption[:, :, i] - absorption_dust)
 
         if len(absorption) > 1:
             return np.array(absorption)
@@ -744,7 +744,7 @@ class SyntheticModel(object):
     def get_model_hi_emissivity(self, include_dust=False):
 
         if include_dust:
-            emissivity = self.hi_emissivity[:, :, :, 0]
+            emissivity = self.hi_emissivity[:, :, 0]
         else:
             # if len(self.dust) > 10:
             #     wav_dust = self.get_dust_wavelengths()
@@ -753,15 +753,15 @@ class SyntheticModel(object):
             #     emissivity_dust = f(wav_species[i])
             # else:
             #     emissivity_dust = self.emissivity_dust.mean(2)
-            emissivity_dust = self.hi_emissivity[:, :, :, 0].min(0)
-            emissivity = self.hi_emissivity[:, :, :, 0] - emissivity_dust
+            emissivity_dust = self.hi_emissivity[:, :, 0].min(0)
+            emissivity = self.hi_emissivity[:, :, 0] - emissivity_dust
 
         return emissivity
 
     def get_model_hi_absorption(self, include_dust=False):
 
         if include_dust:
-            absorption = self.hi_absorption[:, :, :, 0]
+            absorption = self.hi_absorption[:, :, 0]
         else:
             # if len(self.dust) > 10:
             #     wav_dust = self.get_dust_wavelengths()
@@ -770,8 +770,8 @@ class SyntheticModel(object):
             #     absorption_dust = f(wav_species[i])
             # else:
             #     absorption_dust = self.absorption_dust.mean(2)
-            absorption_dust = self.hi_absorption[:, :, :, 0].min(0)
-            absorption = self.hi_absorption[:, :, :, 0] - absorption_dust
+            absorption_dust = self.hi_absorption[:, :, 0].min(1)
+            absorption = self.hi_absorption[:, :, 0] - absorption_dust
 
         return absorption
 
