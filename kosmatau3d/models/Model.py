@@ -390,7 +390,9 @@ class SyntheticModel(object):
                       'clump_radius': 'clump_radius',
                       'density': 'voxel_density', 
                       'ensemble_dispersion': 'voxel_ensemble_dispersion', 
-                      'ensemble_mass': 'voxel_ensemble_mass', 
+                      'ensemble_mass': 'voxel_ensemble_mass',
+                      'hi_mass': 'voxel_hi_mass',
+                      'h2_mass': 'voxel_h2_mass',
                       'fuv_absorption': 'voxel_FUVabsorption', 
                       'fuv': 'voxel_fuv', 
                       'position': 'voxel_position', 
@@ -400,9 +402,9 @@ class SyntheticModel(object):
         
         return
 
-    def test_kwargs(model, **kwargs):
+    def change_files(model, **kwargs):
         
-        def change_files(self, **kwargs):
+        def wrapper(self, **kwargs):
             
             # # Ensure model path exists
             # if os.path.exists(self.base_dir + kwargs['directory']):
@@ -445,6 +447,10 @@ class SyntheticModel(object):
                 self.files['ensemble_dispersion'] = kwargs['ensemble_dispersion']
             if 'ensemble_mass' in kwarg_keys:
                 self.files['ensemble_mass'] = kwargs['ensemble_mass']
+            if 'hi_mass' in kwarg_keys:
+                self.files['hi_mass'] = kwargs['hi_mass']
+            if 'h2_mass' in kwarg_keys:
+                self.files['h2_mass'] = kwargs['h2_mass']
             if 'fuv_absorption' in kwarg_keys:
                 self.files['fuv_absorption'] = kwargs['fuv_absorption']
             if 'fuv' in kwarg_keys:
@@ -460,9 +466,9 @@ class SyntheticModel(object):
 
             return model(self, **kwargs)
 
-        return change_files
+        return wrapper
 
-    @test_kwargs
+    @change_files
     def load_model(self, directory='', map_units='deg', **kwargs):
         '''
         Load all of the data for one model. Any additional information such as 
@@ -482,6 +488,7 @@ class SyntheticModel(object):
         # Ensure model path exists
         if os.path.exists(self.base_dir + directory + self.files['intensity'] + '.fits'):
             self.files['directory'] = directory
+            model_files = os.listdir(self.base + directory)
         else:
             raise FileNotFoundError(f'Directory {self.base_dir + directory} is not valid!! Check '
                                     +'to see if `base_dir` was set when initialising or if the '
@@ -585,6 +592,12 @@ class SyntheticModel(object):
         self.ensemble_mass_file = fits.open(self.base_dir + directory 
                                             + self.files['ensemble_mass'] + '.fits')
         self.ensemble_mass = self.ensemble_mass_file[0].data
+        if (self.files['hi_mass'] + '.fits') in model_files:
+            self.hi_mass_file = fits.open(self.base_dir + directory + self.files['hi_mass'] + '.fits')
+            self.hi_mass = self.hi_mass_file[0].data
+        if (self.files['h2_mass'] + '.fits') in model_files:
+            self.h2_mass_file = fits.open(self.base_dir + directory + self.files['h2_mass'] + '.fits')
+            self.h2_mass = self.h2_mass_file[0].data
         self.fuv_absorption_file = fits.open(self.base_dir + directory 
                                              + self.files['fuv_absorption'] + '.fits')
         self.fuv_absorption = self.fuv_absorption_file[0].data
@@ -656,12 +669,12 @@ class SyntheticModel(object):
             transition = self.species
             idx = range(len(self.species))
         elif isinstance(transition, (tuple, list, np.ndarray)):
-            idx = (self.species.index(t) for t in transition)
+            idx = (list(self.species).index(t) for t in transition)
         elif isinstance(idx, (tuple, list, np.ndarray)):
             transition = (self.species[i] for i in idx)
         elif isinstance(transition, str) and transition in self.species:
             transition = (transition, )
-            idx = (self.species.index(transition[0]), )
+            idx = (list(self.species).index(transition[0]), )
         elif isinstance(idx, int):
             transition = (self.species[idx], )
             idx = (idx, )
@@ -682,7 +695,7 @@ class SyntheticModel(object):
                 #     emissivity_dust = f(wav_species[i])
                 # else:
                 #     emissivity_dust = self.emissivity_dust.mean(2)
-                emissivity_dust = self.species_emissivity[:, :, i].min(0)
+                emissivity_dust = self.species_emissivity[:, :, i].min(1).reshape(-1, 1)
                 emissivity.append(self.species_emissivity[:, :, i] - emissivity_dust)
 
         if len(emissivity) > 1:
@@ -696,12 +709,12 @@ class SyntheticModel(object):
             transition = self.species
             idx = range(len(self.species))
         elif isinstance(transition, (tuple, list, np.ndarray)):
-            idx = (self.species.index(t) for t in transition)
+            idx = (list(self.species).index(t) for t in transition)
         elif isinstance(idx, (tuple, list, np.ndarray)):
             transition = (self.species[i] for i in idx)
         elif isinstance(transition, str) and transition in self.species:
             transition = (transition, )
-            idx = (self.species.index(transition[0]), )
+            idx = (list(self.species).index(transition[0]), )
         elif isinstance(idx, int):
             transition = (self.species[idx], )
             idx = (idx, )
@@ -722,7 +735,7 @@ class SyntheticModel(object):
                 #     absorption_dust = f(wav_species[i])
                 # else:
                 #     absorption_dust = self.absorption_dust.mean(2)
-                absorption_dust = self.species_absorption[:, :, i].min(0)
+                absorption_dust = self.species_absorption[:, :, i].min(1).reshape(-1, 1)
                 absorption.append(self.species_absorption[:, :, i] - absorption_dust)
 
         if len(absorption) > 1:
@@ -732,12 +745,12 @@ class SyntheticModel(object):
 
     def get_model_species_intensity(self, transition=None, idx=None, include_dust=False, integrated=False):
 
-        eps = self.get_model_species_emissivity(idx=idx, include_dust=include_dust)
-        kap = self.get_model_species_absorption(idx=idx, include_dust=include_dust)
-        intensity_temp = eps/kap * (1 - np.exp(-kap*self.ds))
-        i_nan = np.where(kap == 0)
-        intensity_temp[i_nan] = eps[i_nan]
-        intensity.append(deepcopy(intensity_temp))
+        eps = self.get_model_species_emissivity(transition=transition, idx=idx, include_dust=include_dust)
+        kap = self.get_model_species_absorption(transition=transition, idx=idx, include_dust=include_dust)
+        intensity = np.zeros_like(eps)
+        i_nan = kap == 0
+        intensity[~i_nan] = eps[~i_nan]/kap[~i_nan] * (1 - np.exp(-kap[~i_nan]*self.ds))
+        intensity[i_nan] = eps[i_nan]
 
         return np.array(intensity)
 
@@ -753,7 +766,7 @@ class SyntheticModel(object):
             #     emissivity_dust = f(wav_species[i])
             # else:
             #     emissivity_dust = self.emissivity_dust.mean(2)
-            emissivity_dust = self.hi_emissivity[:, :, 0].min(0)
+            emissivity_dust = self.hi_emissivity[:, :, 0].min(1).reshape(-1, 1)
             emissivity = self.hi_emissivity[:, :, 0] - emissivity_dust
 
         return emissivity
@@ -770,7 +783,7 @@ class SyntheticModel(object):
             #     absorption_dust = f(wav_species[i])
             # else:
             #     absorption_dust = self.absorption_dust.mean(2)
-            absorption_dust = self.hi_absorption[:, :, 0].min(1)
+            absorption_dust = self.hi_absorption[:, :, 0].min(1).reshape(-1, 1)
             absorption = self.hi_absorption[:, :, 0] - absorption_dust
 
         return absorption
@@ -779,8 +792,9 @@ class SyntheticModel(object):
 
         eps = self.get_model_hi_emissivity(include_dust=include_dust)
         kap = self.get_model_hi_absorption(include_dust=include_dust)
-        intensity = eps/kap * (1 - np.exp(-kap*self.ds))
-        i_nan = np.where(kap == 0)
+        intensity = np.zeros_like(eps)
+        i_nan = kap == 0
+        intensity[~i_nan] = eps[~i_nan]/kap[~i_nan] * (1 - np.exp(-kap[~i_nan]*self.ds))
         intensity[i_nan] = eps[i_nan]
 
         return intensity
@@ -847,10 +861,10 @@ class SyntheticModel(object):
 
         eps = self.get_model_dust_emissivity(wavelength=wavelength, idx=idx)
         kap = self.get_model_dust_absorption(wavelength=wavelength, idx=idx)
-        intensity_temp = eps/kap * (1 - np.exp(-kap*self.ds))
-        i_nan = np.where(kap == 0)
-        intensity_temp[i_nan] = eps[i_nan]
-        intensity = deepcopy(intensity_temp)
+        intensity = np.zeros_like(eps)
+        i_nan = kap == 0
+        intensity[~i_nan] = eps[~i_nan]/kap[~i_nan] * (1 - np.exp(-kap[~i_nan]*self.ds))
+        intensity[i_nan] = eps[i_nan]
 
         return np.array(intensity)
 
@@ -1104,23 +1118,25 @@ class SyntheticModel(object):
                 if t == 'HI':
                     eps = self.get_model_hi_emissivity(include_dust=include_dust)
                     kap = self.get_model_hi_absorption(include_dust=include_dust)
+                    intensity = self.get_model_hi_intensity(include_dust=include_dust)
                 else:
                     eps = self.get_model_species_emissivity(transition=t, include_dust=include_dust)
                     kap = self.get_model_species_absorption(transition=t, include_dust=include_dust)
+                    intensity = self.get_model_species_intensity(transition=t, include_dust=include_dust)
                 
-                intensity = eps/kap * (1-np.exp(-kap*self.ds))
+                # intensity = eps/kap * (1-np.exp(-kap*self.ds))
                 
                 if quantity == 'emissivity':
-                    value = eps
+                    value = eps.max()
                     ylabel = r'$\epsilon$ (K pc$^{-1}$ kpc$^{-1}$)'
                 elif quantity == 'absorption':
-                    value = kap
+                    value = kap.max()
                     ylabel = r'$\kappa$ (pc$^{-1}$ kpc$^{-1}$)'
                 elif integrated:
                     value = np.trapz(intensity, self.map_vel, axis=1)
                     ylabel = r'$W$ (K km s$^{-1}$ kpc$^{-1}$)'
                 else:
-                    value = intensity
+                    value = intensity.max()
                     ylabel = r'$I$ (K kpc$^{-1}$)'
 
                 value_stat,_,_ = binned_statistic(rgal, value, statistic=stat, bins=bins)
@@ -1132,29 +1148,25 @@ class SyntheticModel(object):
             ax.set_ylabel(ylabel,fontsize=24)
             return ax
 
+        elif quantity == 'ensemble mass':
+            value = self.ensemble_mass[:, idx]
+            ylabel = r'$M_\mathrm{ens, '+f'{idx}'+'}$ (M$_\odot$ kpc$^{-1}$)'
+
         elif quantity == 'hi mass':
-            value = self.ensemble_mass[:, 1]
-            ylabel = r'M_\mathrm{HI} (M$_\odot$ kpc$^{-1}$)'
+            value = self.hi_mass[:, idx]
+            ylabel = r'M_\mathrm{HI, '+f'{idx}'+'} (M$_\odot$ kpc$^{-1}$)'
 
         elif quantity == 'h2 mass':
-            value = self.ensemble_mass[:, 0]
-            ylabel = r'M_\mathrm{H_2} (M$_\odot$ kpc$^{-1}$)'
+            value = self.h2_mass[:, idx]
+            ylabel = r'M_\mathrm{H_2, '+f'{idx}'+'} (M$_\odot$ kpc$^{-1}$)'
 
-        elif quantity == 'hi density':
-            value = self.density[:, 1]
-            ylabel = r'n_\mathrm{s, HI} (cm$^{-3}$ kpc$^{-1}$)'
+        elif quantity == 'ensemble density':
+            value = self.density[:, idx]
+            ylabel = r'n_\mathrm{ens, '+f'{idx}'+'} (cm$^{-3}$ kpc$^{-1}$)'
 
-        elif quantity == 'h2 density':
-            value = self.density[:, 0]
-            ylabel = r'n_\mathrm{s, H_2} (cm$^{-3}$ kpc$^{-1}$)'
-
-        elif quantity == 'clumpy FUV':
-            value = self.fuv[:, 0]
-            ylabel = r'u_\mathrm{FUV} ($\chi_\mathrm{D}$ kpc$^{-1}$)'
-
-        elif quantity == 'interclump FUV':
-            value = self.fuv[:, 1]
-            ylabel = r'u_\mathrm{FUV} ($\chi_\mathrm{D}$ kpc$^{-1}$)'
+        elif quantity == 'ensemble FUV':
+            value = self.fuv[:, idx]
+            ylabel = r'u_\mathrm{FUV, '+f'{idx}'+'} ($\chi_\mathrm{D}$ kpc$^{-1}$)'
 
         else:
             print(f'quantity {quantity} not available...')
