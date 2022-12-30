@@ -380,6 +380,7 @@ class SyntheticModel(object):
                       'optical_depth': 'synthetic_optical_depth', 
                       'hi_intensity': 'synthetic_hi_intensity', 
                       'hi_optical_depth': 'synthetic_hi_optical_depth', 
+                      'f_vox': 'voxel-filling_factor', 
                       'dust_absorption': 'dust_absorption', 
                       'dust_emissivity': 'dust_emissivity', 
                       'species_absorption': 'species_absorption', 
@@ -425,6 +426,8 @@ class SyntheticModel(object):
                 self.files['hi_intensity'] = kwargs['hi_intensity']
             if 'hi_optical_depth' in kwarg_keys:
                 self.files['hi_optical_depth'] = kwargs['hi_optical_depth']
+            if 'f_vox' in kwarg_keys:
+                self.files['f_vox'] = kwargs['f_vox']
             if 'dust_absorption' in kwarg_keys:
                 self.files['dust_absorption'] = kwargs['dust_absorption']
             if 'dust_emissivity' in kwarg_keys:
@@ -488,7 +491,7 @@ class SyntheticModel(object):
         # Ensure model path exists
         if os.path.exists(self.base_dir + directory + self.files['intensity'] + '.fits'):
             self.files['directory'] = directory
-            model_files = os.listdir(self.base + directory)
+            model_files = os.listdir(self.base_dir + directory)
         else:
             raise FileNotFoundError(f'Directory {self.base_dir + directory} is not valid!! Check '
                                     +'to see if `base_dir` was set when initialising or if the '
@@ -537,6 +540,9 @@ class SyntheticModel(object):
                                             + self.files['optical_depth'] + '.fits')
         self.optical_depth_species = self.optical_depth_file[1].data
         self.optical_depth_dust = self.optical_depth_file[2].data
+        if (self.files['f_vox'] + '.fits') in model_files:
+            self.f_vox_file = fits.open(self.base_dir + directory + self.files['f_vox'] + '.fits')
+            self.f_vox = self.f_vox_file[0].data
         if os.path.exists(self.base_dir + directory + self.files['hi_intensity'] + '.fits'):
             self.hi_map = True
             self.hi_intensity_file = fits.open(self.base_dir + directory 
@@ -1101,7 +1107,8 @@ class SyntheticModel(object):
 
         return ax
 
-    def radial_plot(self, quantity='intensity', transition=['HI'], transition2=None, lat=0, include_dust=False, integrated=False, stat='mean'):
+    def radial_plot(self, quantity='intensity', transition=['HI'], transition2=None, idx=0, lat=0, 
+                    include_dust=False, integrated=False, scale=False, stat='mean'):
 
         species = self.species
         positions = self.position
@@ -1112,17 +1119,22 @@ class SyntheticModel(object):
         i_lat = np.where(self.map_lat == lat)[0][0]
         bins = np.arange(0, 18000, self.ds)
         bins_mid = bins[:-1] + self.ds/2
+        
+        if scale:
+            f_vox = self.f_vox
+        else:
+            f_vox = 1
 
         if quantity in ['intensity', 'emissivity', 'absorption']:
             for i, t in enumerate(transition):
                 if t == 'HI':
-                    eps = self.get_model_hi_emissivity(include_dust=include_dust)
-                    kap = self.get_model_hi_absorption(include_dust=include_dust)
-                    intensity = self.get_model_hi_intensity(include_dust=include_dust)
+                    eps = self.get_model_hi_emissivity(include_dust=include_dust) / f_vox
+                    kap = self.get_model_hi_absorption(include_dust=include_dust) / f_vox
+                    intensity = self.get_model_hi_intensity(include_dust=include_dust) / f_vox
                 else:
-                    eps = self.get_model_species_emissivity(transition=t, include_dust=include_dust)
-                    kap = self.get_model_species_absorption(transition=t, include_dust=include_dust)
-                    intensity = self.get_model_species_intensity(transition=t, include_dust=include_dust)
+                    eps = self.get_model_species_emissivity(transition=t, include_dust=include_dust) / f_vox
+                    kap = self.get_model_species_absorption(transition=t, include_dust=include_dust) / f_vox
+                    intensity = self.get_model_species_intensity(transition=t, include_dust=include_dust) / f_vox
                 
                 # intensity = eps/kap * (1-np.exp(-kap*self.ds))
                 
@@ -1148,16 +1160,37 @@ class SyntheticModel(object):
             ax.set_ylabel(ylabel,fontsize=24)
             return ax
 
+        elif quantity == 'mass':
+            ylabel = r'$M_\mathrm{ens, '+f'{idx}'+'}$ (M$_\odot$ kpc$^{-1}$)'
+            for idx in range(self.ensemble_mass.shape[1]):
+                value = f_vox * self.ensemble_mass[:, idx]
+                value_stat,_,_ = binned_statistic(rgal, value, statistic=stat, bins=bins)
+                label = f'ens {idx} mass'
+                ax.semilogy(bins_mid, value_stat, ls='--', lw=2, label=label)
+                value = f_vox * self.hi_mass[:, idx]
+                value_stat,_,_ = binned_statistic(rgal, value, statistic=stat, bins=bins)
+                label = f'ens H {idx} mass'
+                ax.semilogy(bins_mid, value_stat, lw=1, label=label)
+                value = f_vox * self.h2_mass[:, idx]
+                value_stat,_,_ = binned_statistic(rgal, value, statistic=stat, bins=bins)
+                label = f'ens H2 {idx} mass'
+                ax.semilogy(bins_mid, value_stat, lw=1, label=label)
+            ax.legend(fontsize=16)
+            ax.tick_params(labelsize=16)
+            ax.set_xlabel(r'$R_\mathrm{gal}$ (kpc)', fontsize=24)
+            ax.set_ylabel(ylabel, fontsize=24)
+            return ax
+
         elif quantity == 'ensemble mass':
-            value = self.ensemble_mass[:, idx]
+            value = f_vox * self.ensemble_mass[:, idx]
             ylabel = r'$M_\mathrm{ens, '+f'{idx}'+'}$ (M$_\odot$ kpc$^{-1}$)'
 
         elif quantity == 'hi mass':
-            value = self.hi_mass[:, idx]
+            value = f_vox * self.hi_mass[:, idx]
             ylabel = r'M_\mathrm{HI, '+f'{idx}'+'} (M$_\odot$ kpc$^{-1}$)'
 
         elif quantity == 'h2 mass':
-            value = self.h2_mass[:, idx]
+            value = f_vox * self.h2_mass[:, idx]
             ylabel = r'M_\mathrm{H_2, '+f'{idx}'+'} (M$_\odot$ kpc$^{-1}$)'
 
         elif quantity == 'ensemble density':
