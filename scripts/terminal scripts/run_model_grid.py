@@ -18,6 +18,7 @@ parser.add_argument('-f', '--folder', type=str, default='/mnt/yanitski_backup/ya
 parser.add_argument('-g', '--grid', type=str, default='convergence', 
                     choices=['convergence', 'f_cm-cm', 'f_icm-icm', 'cm-icm', 'f_cm-f_icm', 
                              'r_cmz-f_fuv', 'f_hi-f_fuv', 'f_cl-f_icl-f_d-f_fuv', 
+                             'fuv_cl', 'fuv_icl', 'const_fuv', 
                              'f_fuv_gc', 'disp_gc', 'fuv_gc-disp_gc', 'fuv_gc-mass_gc'], 
                     help='parameters varied in grid')
 parser.add_argument('-r', '--resolution', type=int, default=400, 
@@ -39,7 +40,7 @@ args = parser.parse_args()
 
 if args.grid == 'convergence':
     folder = 'r{}_convergence/'
-    res = (400, 200, 100)
+    res = (400, ) #(400, 200, 100)
     grid_flag = (True, )
     param_keys = ('resolution', 'new_grid')
     params = list(_.flatten() for _ in np.meshgrid(res, grid_flag))
@@ -148,6 +149,24 @@ elif args.grid == 'fuv_gc-mass_gc':
     grid_flag = (True, )
     param_keys = ('r_gc', 'scale_gc', 'mhi_gc', 'mh2_gc', 'new_grid')
     params = list(_.flatten() for _ in np.meshgrid(r_gc, fuv_gc, mhi_gc, mh2_gc, grid_flag))
+    param_folders = list(folder.format(*_) for _ in zip(*params))
+elif args.grid == 'fuv_cl':
+    folder = f'r{args.resolution}' + '_log_fuv_cl{:.2f}/'
+    log_fuv = np.arange(1.1, 2.6, 0.1)
+    param_keys = ('clump_log_fuv', )
+    params = list(_.flatten() for _ in np.meshgrid(log_fuv))
+    param_folders = list(folder.format(*_) for _ in zip(*params))
+elif args.grid == 'fuv_icl':
+    folder = f'r{args.resolution}' + '_log_fuv_icl{:.2f}/'
+    log_fuv = np.arange(1.1, 2.6, 0.1)
+    param_keys = ('interclump_log_fuv', )
+    params = list(_.flatten() for _ in np.meshgrid(log_fuv))
+    param_folders = list(folder.format(*_) for _ in zip(*params))
+elif args.grid == 'const_fuv':
+    folder = f'r{args.resolution}' + '_log_fuv_cl{:.2f}_log_fuv_icl{:.2f}/'
+    log_fuv = np.arange(1.1, 2.6, 0.1)
+    param_keys = ('clump_log_fuv', 'interclump_log_fuv', )
+    params = list(_.flatten() for _ in np.meshgrid(log_fuv, log_fuv))
     param_folders = list(folder.format(*_) for _ in zip(*params))
 else:
     params = None
