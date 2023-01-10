@@ -15,7 +15,7 @@ warnings.simplefilter('ignore', category=NumbaPendingDeprecationWarning)
 
 
 def initialise_grid(tau_grid_file='clump_tau_LineCenter.dat', 
-                    tb_grid_file='clump_Tmb_LineCenter', 
+                    tb_grid_file='clump_Tmb_LineCenter.dat', 
                     tau_fuv_grid_file='RhoMassAFUV.dat',
                     column_density_file='meanCols.dat',
                     temperature_file='temperatures_filled.dat'):

@@ -1338,20 +1338,20 @@ class Voxel(object):
 
         return
   
-    def plot_molecule(self, molecule='', quantity='intensity', kind='linear', include_dust=False, total=False,
-                      moleculeName='', title='', logscale=False):
+    def plot_transition(self, transition='', quantity='intensity', kind='linear', include_dust=False, total=False,
+                      label='', title='', logscale=False):
         # Plot the molecule emission with respect to the voxel velocity structure
     
         import matplotlib.pyplot as plt
     
-        if molecule in species.molecules and isinstance(molecule, str):
-            molecule = [molecule]
+        if transition in species.molecules and isinstance(transition, str):
+            transition = [transition]
     
-        elif isinstance(molecule, list):
+        elif isinstance(transition, list):
             pass
     
         else:
-            molecule = species.molecules
+            transition = species.molecules
     
         if quantity == 'emissivity':
             value = self.get_species_emissivity(kind=kind, include_dust=include_dust, total=total)
@@ -1382,13 +1382,13 @@ class Voxel(object):
             vel = constants.velocity_range  # [self.__clumpVelocityIndeces[ens]]
             labels = []
       
-            for n, mol in enumerate(molecule):
+            for n, trans in enumerate(transition):
       
                 if mol not in species.molecules:
-                    self.__logger.warning('Species {} not in model.'.format(mol))
+                    self.__logger.warning('Species {} not in model.'.format(trans))
                     continue
         
-                i = np.where(mol == np.asarray(species.molecules))[0][0]
+                i = np.where(trans == np.asarray(species.molecules))[0][0]
                 
                 if logscale:
                     ax.semilogy(vel, value[ens][:, i], marker='o', ms=2, ls='-', lw=1)
@@ -1396,22 +1396,22 @@ class Voxel(object):
                     ax.plot(vel, value[ens][:, i], marker='o', ms=2, ls='-', lw=1)
                 
                 if isinstance(moleculeName, list):
-                    labels.append(moleculeName[n])
+                    labels.append(label[n])
                 elif moleculeName:
-                    labels.append(moleculeName)
+                    labels.append(label)
                 else:
-                    labels.append(mol)
+                    labels.append(trans)
       
-            ax.legend(labels=labels, fontsize=14, bbox_to_anchor=(1.05, 1))
-            ax.set_xlabel(r'$V_r \ (\frac{km}{s})$', fontsize=20)
-            ax.set_ylabel(ylabel, fontsize=20)
-            plt.setp(ax.get_xticklabels(), fontsize=14)
-            plt.setp(ax.get_yticklabels(), fontsize=14)
+            ax.legend(labels=labels, fontsize=16, bbox_to_anchor=(1, 1), loc='upper left')
+            ax.set_xlabel(r'$V_r \ (\frac{km}{s})$', fontsize=24)
+            ax.set_ylabel(ylabel, fontsize=24)
+            plt.setp(ax.get_xticklabels(), fontsize=16)
+            plt.setp(ax.get_yticklabels(), fontsize=16)
       
             if title:
                 ax.set_title(title, fontsize=20)
             else:
-                ax.set_title('Clump set {} {}'.format(ens+1, quantity), fontsize=20)
+                ax.set_title('Clump set {} {}'.format(ens+1, quantity), fontsize=24)
         
         fig.tight_layout()
     
@@ -1427,7 +1427,7 @@ class Voxel(object):
         import matplotlib.pyplot as plt
         from matplotlib.lines import Line2D
 
-        mpl.rcParams['text.usetex'] = True
+        # mpl.rcParams['text.usetex'] = True
     
         moleculeColour = {
                            'C+': 'xkcd:orange',
@@ -1511,22 +1511,23 @@ class Voxel(object):
             lines = [Line2D([0], [0], color=moleculeColour[molecule], lw=1) for molecule in molecules]
             leg = ax.legend(labels=molecules, handles=lines, fontsize=16, bbox_to_anchor=(1.05, 1))
             
-            ax.set_xlabel(r'$\lambda \ (\mu m)$', fontsize=20)
-            ax.set_ylabel(ylabel, fontsize=20)
+            ax.set_xlabel(r'$\lambda \ (\mu m)$', fontsize=24)
+            ax.set_ylabel(ylabel, fontsize=24)
             ax.set_ylim([valueDust[ens][vel, :].min()*10e-3, valueDust[ens][vel, :].max()*10e3])
-            plt.setp(ax.get_xticklabels(), fontsize=14)
-            plt.setp(ax.get_yticklabels(), fontsize=14)
+            ax.tick_params(labelsize=16)
+            # plt.setp(ax.get_xticklabels(), fontsize=14)
+            # plt.setp(ax.get_yticklabels(), fontsize=14)
       
             if title:
-                ax.set_title(title, fontsize=20)
+                ax.set_title(title, fontsize=24)
             else:
-                ax.set_title('Clump Set {} {} spectrum'.format(ens+1, quantity), fontsize=20)
+                ax.set_title('Clump Set {} {} spectrum'.format(ens+1, quantity), fontsize=24)
         
         # fig.tight_layout()
     
-        plt.show()
+        # plt.show()
     
-        return
+        return axes
       
     def printVoxel(self):
         # Coming soon...
