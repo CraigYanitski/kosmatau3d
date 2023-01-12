@@ -24,11 +24,17 @@ warnings.simplefilter('ignore', category=NumbaPendingDeprecationWarning)
 
 def initialise_grid(dilled=False):
     calculate_grid_interpolation(dilled=dilled)
+    calculate_interclump_grid_interpolation(dilled=dilled)
     interpolations.taufuv_interpolation = calculate_taufuv(dilled=dilled)
+    interpolations.interclump_taufuv_interpolation = calculate_interclump_taufuv(dilled=dilled)
     interpolations.hi_column_density_interpolation = calculate_hi_column_density(dilled=dilled)
+    interpolations.interclump_hi_column_density_interpolation = calculate_hi_column_density(dilled=dilled)
     interpolations.h2_column_density_interpolation = calculate_h2_column_density(dilled=dilled)
+    interpolations.interclump_h2_column_density_interpolation = calculate_h2_column_density(dilled=dilled)
     interpolations.tg_interpolation = calculate_tg(dilled=dilled)
+    interpolations.interclump_tg_interpolation = calculate_tg(dilled=dilled)
     interpolations.td_interpolation = calculate_td(dilled=dilled)
+    interpolations.interclump_td_interpolation = calculate_td(dilled=dilled)
     interpolations.initialised = True
     return
 
@@ -180,6 +186,132 @@ def calculate_grid_interpolation(verbose=False, dilled=False):
                  'KOSMA-tau grid.\n\nExitting...\n\n')
 
 
+def calculate_interclump_grid_interpolation(verbose=False, dilled=False):
+    '''
+    This interpolates the needed species from the KOSMA-tau emission grids. It automatically interpolates
+    the dust continuum as well, even if there are no molecules specified. This is kept as a separate interpolation
+    function than the molecular emissions since it is a continuum. The same grid files are used, however, so it is
+    necessary to note the order of the emissions in the grids.
+  
+    There are 504 emission values for a given gridpoint, consisting of 171 molecular transitions and the emission
+    at 333 wavelengths for the dust continuum. the indeces used for the dust is therefore [170:503], to refer to
+    for the corresponding emission indeces.
+    '''
+    np.seterr(divide='ignore', invalid='ignore')
+    if interpolations.initialised:
+        del interpolations.interclump_species_intensity_interpolation
+        del interpolations.interclump_species_tau_interpolation
+        del interpolations.interclump_dust_intensity_interpolation
+        del interpolations.interclump_dust_tau_interpolation
+    interpolations.interclump_species_intensity_interpolation = []
+    interpolations.interclump_species_tau_interpolation = []
+    interpolations.interclump_dust_intensity_interpolation = []
+    interpolations.interclump_dust_tau_interpolation = []
+    if dilled:
+        with open(constants.GRIDPATH + 'dilled/interclump_intensity_interpolation', 'rb') as file:
+            interclump_species_intensity_interpolation = dill.load(file)
+        with open(constants.GRIDPATH + 'dilled/interclump_tau_interpolation', 'rb') as file:
+            interclump_species_tau_interpolation = dill.load(file)
+        with open(constants.GRIDPATH + 'dilled/interclump_dust_intensity_interpolation', 'rb') as file:
+            interclump_dust_intensity_interpolation = dill.load(file)
+        with open(constants.GRIDPATH + 'dilled/interclump_dust_tau_interpolation', 'rb') as file:
+            interclump_dust_tau_interpolation = dill.load(file)
+        # interpolations.intensityInterpolation = []
+        # interpolations.tauInterpolation = []
+        if len(species.molecule_indeces) == len(interclump_species_intensity_interpolation):
+            interpolations.interclump_species_intensity_interpolation = interclump_species_intensity_interpolation
+            interpolations.interclump_species_tau_interpolation = interclump_species_tau_interpolation
+        else:
+            for index in species.molecule_indeces:
+                interpolations.interclump_species_intensity_interpolation.append(
+                        interclump_species_intensity_interpolation[index[0][0]])
+                interpolations.interclump_species_tau_interpolation.append(interclump_species_tau_interpolation[index[0][0]])
+        if constants.dust:
+            if np.where(constants.n_dust)[0].size == len(interclump_dust_intensity_interpolation):
+                interpolations.interclump_dust_intensity_interpolation = interclump_dust_intensity_interpolation
+                interpolations.interclump_dust_tau_interpolation = interclump_dust_tau_interpolation
+            else:
+                interpolations.interclump_dust_intensity_interpolation = []
+                interpolations.interclump_dust_tau_interpolation = []
+                for i in np.where(constants.n_dust)[0]:
+                    interpolations.interclump_dust_intensity_interpolation.append(
+                            copy(interclump_dust_intensity_interpolation[i]))
+                    interpolations.interclump_dust_tau_interpolation.append(copy(interclump_dust_tau_interpolation[i]))
+        return #speciesIntensityInterpolation, speciesTauInterpolation
+
+    # indeces = species.molecules.getFileIndeces()
+    crnmuvI, I = observations.interclump_tb_centerline
+    crnmuvTau, Tau = observations.interclump_tau_centerline
+    # interpolations.intensityInterpolation = []
+    # interpolations.tauInterpolation = []
+    
+    # Correct for the negative emission values (from Silke's code)
+    I[I <= 0] = 1e-100
+    Tau[Tau <= 0] = 1e-100
+    
+    # Begin 'encoding' the intensity of the grid for interpolation
+    logI = np.log10(I)
+    logTau = np.log10(Tau)
+  
+    if constants.log_encoded:
+        # Fully 'encode' the emission grid for interpolation
+        logI = 10*logI
+        logTau = 10*logTau
+    
+    else:
+        # Begin 'decoding' the grid for interpolation
+        crnmuvI = crnmuvI/10.
+        crnmuvTau = crmnuvTau/10.
+  
+    if constants.interpolation == 'linear':
+        if constants.dust:
+            interpolations.interclump_dust_intensity_interpolation = []
+            interpolations.interclump_dust_tau_interpolation = []
+            for i in np.where(constants.n_dust)[0]:
+                interpolations.interclump_dust_intensity_interpolation.append(
+                        interpolate.LinearNDInterpolator(crnmuvI,
+                                                         logI[:, constants.molecule_number+i]))
+                interpolations.interclump_dust_tau_interpolation.append(
+                        interpolate.LinearNDInterpolator(crnmuvTau, 
+                                                         logTau[:, constants.molecule_number+i]))
+        for index in species.molecule_indeces:
+            if verbose:
+                print('Creating interclump intensity grid interpolation')
+            rInterpI = interpolate.LinearNDInterpolator(crnmuvI, logI[:, index])
+            if verbose:
+                print('Creating interclump tau grid interpolation')
+            rInterpTau = interpolate.LinearNDInterpolator(crnmuvTau, logTau[:, index])
+            interpolations.interclump_species_intensity_interpolation.append(rInterpI)
+            interpolations.interclump_species_tau_interpolation.append(rInterpTau)
+        return #intensityInterpolation, tauInterpolation
+  
+    elif constants.interpolation == 'radial' or constants.interpolation == 'cubic':
+        if constants.dust:
+            interpolations.interclump_dust_intensity_interpolation = interpolate.Rbf(
+                    crnmuvI[:, 0], crnmuvI[:, 1], crnmuvI[:, 2], crnmuvI[:, 3], 
+                    logI[:, constants.moleculeNumber:][:, constants.n_dust])
+            interpolations.interclump_dust_tau_interpolation = interpolate.Rbf(
+                    crnmuvTau[:, 0], crnmuvTau[:, 1], crnmuvTau[:, 2], crnmuvTau[:, 3], 
+                    logTau[:, constants.moleculeNumber:][:, constants.n_dust])
+        for index in species.molecule_indeces:
+            if verbose:
+                print('Creating interclump intensity grid interpolation')
+            rInterpI = interpolate.Rbf(
+                    crnmuvI[:, 0], crnmuvI[:, 1], crnmuvI[:, 2], crnmuvI[:, 3], logI[:, index])
+            if verbose:
+                print('Creating interclump tau grid interpolation')
+            rInterpTau = interpolate.Rbf(
+                    crnmuvTau[:, 0], crnmuvTau[:, 1], crnmuvTau[:, 2], crnmuvTau[:, 3], logTau[:, index])
+            interpolations.interclump_species_intensity_interpolation.append(rInterpI)
+            interpolations.interclump_species_tau_interpolation.append(rInterpTau)
+        return #intensityInterpolation, tauInterpolation
+      
+    else:
+        sys.exit('<<ERROR>>: There is no such method as ' + 
+                 '{} to interpolate the '.format(constants.interpolation) +
+                 'KOSMA-tau grid.\n\nExitting...\n\n')
+
+
 def calculate_taufuv(verbose=False, dilled=False):
     if dilled:
         with open(constants.GRIDPATH + 'dilled/taufuv_interpolation', 'rb') as file:
@@ -187,6 +319,25 @@ def calculate_taufuv(verbose=False, dilled=False):
     if verbose:
         print('Creating A_UV grid interpolation')
     rhomass, taufuv = observations.rho_mass_taufuv
+    rhomass = rhomass/10.
+    log_taufuv = np.log10(taufuv)
+    if constants.interpolation == 'linear':
+        return interpolate.LinearNDInterpolator(rhomass, log_taufuv)
+    elif constants.interpolation == 'cubic' or constants.interpolation == 'radial':
+        return interpolate.Rbf(rhomass, log_taufuv)
+    else:
+        sys.exit('<<ERROR>>: There is no such method as ' + 
+                 '{} to interpolate '.format(constants.interpolation) +
+                 'the extinction in the KOSMA-tau grid.\n\nExitting...\n\n')
+
+
+def calculate_interclump_taufuv(verbose=False, dilled=False):
+    if dilled:
+        with open(constants.GRIDPATH + 'dilled/interclump_taufuv_interpolation', 'rb') as file:
+            return dill.load(file)
+    if verbose:
+        print('Creating A_UV grid interpolation')
+    rhomass, taufuv = observations.interclump_rho_mass_taufuv
     rhomass = rhomass/10.
     log_taufuv = np.log10(taufuv)
     if constants.interpolation == 'linear':
@@ -218,6 +369,25 @@ def calculate_hi_column_density(verbose=False, dilled=False):
                  'the H column density in the KOSMA-tau grid.\n\nExitting...\n\n')
 
 
+def calculate_interclump_hi_column_density(verbose=False, dilled=False):
+    if dilled:
+        with open(constants.GRIDPATH + 'dilled/interclump_hi_column_density_interpolation', 'rb') as file:
+            return dill.load(file)
+    if verbose:
+        print('Creating interclump N(H) grid interpolation')
+    nmchi, N = observations.interclump_column_density
+    nmchi = nmchi/10.
+    log_N = np.log10(N)
+    if constants.interpolation == 'linear':
+        return interpolate.LinearNDInterpolator(nmchi.to_numpy(), log_N['H'])
+    elif constants.interpolation == 'cubic' or constants.interpolation == 'radial':
+        return interpolate.Rbf(nmchi, log_N['H'])
+    else:
+        sys.exit('<<ERROR>>: There is no such method as ' + 
+                 '{} to interpolate '.format(constants.interpolation) +
+                 'the H column density in the KOSMA-tau grid.\n\nExitting...\n\n')
+
+
 def calculate_h2_column_density(verbose=False, dilled=False):
     if dilled:
         with open(constants.GRIDPATH + 'dilled/h2_column_density_interpolation', 'rb') as file:
@@ -225,6 +395,25 @@ def calculate_h2_column_density(verbose=False, dilled=False):
     if verbose:
         print('Creating N(H2) grid interpolation')
     nmchi, N = observations.column_density
+    nmchi = nmchi/10.
+    log_N = np.log10(N)
+    if constants.interpolation == 'linear':
+        return interpolate.LinearNDInterpolator(nmchi.to_numpy(), log_N['H2'])
+    elif constants.interpolation == 'cubic' or constants.interpolation == 'radial':
+        return interpolate.Rbf(nmchi, log_N['H2'])
+    else:
+        sys.exit('<<ERROR>>: There is no such method as ' + 
+                 '{} to interpolate '.format(constants.interpolation) +
+                 'the H2 column density in the KOSMA-tau grid.\n\nExitting...\n\n')
+
+
+def calculate_interclump_h2_column_density(verbose=False, dilled=False):
+    if dilled:
+        with open(constants.GRIDPATH + 'dilled/interclump_h2_column_density_interpolation', 'rb') as file:
+            return dill.load(file)
+    if verbose:
+        print('Creating interclump_N(H2) grid interpolation')
+    nmchi, N = observations.interclump_column_density
     nmchi = nmchi/10.
     log_N = np.log10(N)
     if constants.interpolation == 'linear':
@@ -256,6 +445,25 @@ def calculate_tg(verbose=False, dilled=False):
                  'the gas temperature in the KOSMA-tau grid.\n\nExitting...\n\n')
 
 
+def calculate_interclump_tg(verbose=False, dilled=False):
+    if dilled:
+        with open(constants.GRIDPATH + 'dilled/interclump_tg_interpolation', 'rb') as file:
+            return dill.load(file)
+    if verbose:
+        print('Creating interclump T_g grid interpolation')
+    nmchi, T = observations.interclump_temperature
+    nmchi = nmchi/10.
+    log_T = np.log10(T)
+    if constants.interpolation == 'linear':
+        return interpolate.LinearNDInterpolator(nmchi.values, log_T.Tg.values)
+    elif constants.interpolation == 'cubic' or constants.interpolation == 'radial':
+        return interpolate.Rbf(nmchi.values, log_T.Tg.values)
+    else:
+        sys.exit('<<ERROR>>: There is no such method as ' + 
+                 '{} to interpolate '.format(constants.interpolation) +
+                 'the gas temperature in the KOSMA-tau grid.\n\nExitting...\n\n')
+
+
 def calculate_td(verbose=False, dilled=False):
     if dilled:
         with open(constants.GRIDPATH + 'dilled/td_interpolation', 'rb') as file:
@@ -263,6 +471,25 @@ def calculate_td(verbose=False, dilled=False):
     if verbose:
         print('Creating T_d grid interpolation')
     nmchi, T = observations.temperature
+    nmchi = nmchi/10.
+    log_T = np.log10(T)
+    if constants.interpolation == 'linear':
+        return interpolate.LinearNDInterpolator(nmchi.values, log_T.Td.values)
+    elif constants.interpolation == 'cubic' or constants.interpolation == 'radial':
+        return interpolate.Rbf(nmchi.values, log_T.Td.values)
+    else:
+        sys.exit('<<ERROR>>: There is no such method as ' + 
+                 '{} to interpolate '.format(constants.interpolation) +
+                 'the dust temperature in the KOSMA-tau grid.\n\nExitting...\n\n')
+
+
+def calculate_interclump_td(verbose=False, dilled=False):
+    if dilled:
+        with open(constants.GRIDPATH + 'dilled/interclump_td_interpolation', 'rb') as file:
+            return dill.load(file)
+    if verbose:
+        print('Creating interclump T_d grid interpolation')
+    nmchi, T = observations.interclump_temperature
     nmchi = nmchi/10.
     log_T = np.log10(T)
     if constants.interpolation == 'linear':

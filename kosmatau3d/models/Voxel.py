@@ -166,7 +166,13 @@ class Voxel(object):
                        tau_fuv_grid_file='RhoMassAFUV.dat',
                        column_density_file='meanCols.dat',
                        temperature_file='temperatures_filled.dat',
+                       interclump_tau_grid_file='clump_tau_LineCenter.dat', 
+                       interclump_tb_grid_file='clump_Tmb_LineCenter.dat', 
+                       interclump_tau_fuv_grid_file='RhoMassAFUV.dat',
+                       interclump_column_density_file='meanCols.dat',
+                       interclump_temperature_file='temperatures_filled.dat',
                        clump_mass_number=[3,1], clump_mass_range=[[0,2],[-2]], clump_n_max=[1, 100], 
+                       interclump_idx=[False, True],
                        velocity_range=[-10,10], velocity_number=51, 
                        velocity=0., velocity_resolution=1, 
                        ensemble_mass=100, ensemble_dispersion=1, 
@@ -295,15 +301,23 @@ class Voxel(object):
                 constants.add_clumps(mass_range=clump_mass_range, num=clump_mass_number, 
                                      n_max=clump_n_max, reset=True)
 
+            if constants.interclump_idx != interclump_idx:
+                constants.set_interclump_ensemble(interclump_idx)
+
             if new_grid or change_interpolation or \
                     not interpolations.initialised or not observations.grid_initialised or \
                     dust != constants.dust:
                 constants.change_dust_wavelengths(dust)
                 observations.methods.initialise_grid(tau_grid_file=tau_grid_file,
+                                                     interclump_tau_grid_file=interclump_tau_grid_file,
                                                      tb_grid_file=tb_grid_file,
+                                                     interclump_tb_grid_file=interclump_tb_grid_file,
                                                      tau_fuv_grid_file=tau_fuv_grid_file,
+                                                     interclump_tau_fuv_grid_file=interclump_tau_fuv_grid_file,
                                                      column_density_file=column_density_file,
-                                                     temperature_file=temperature_file)
+                                                     interclump_column_density_file=interclump_column_density_file,
+                                                     temperature_file=temperature_file,
+                                                     interclump_temperature_file=interclump_temperature_file)
                 species.add_molecules(molecules)
                 interpolations.initialise_grid(dilled=dilled)
 
@@ -1384,7 +1398,7 @@ class Voxel(object):
       
             for n, trans in enumerate(transition):
       
-                if mol not in species.molecules:
+                if trans not in species.molecules:
                     self.__logger.warning('Species {} not in model.'.format(trans))
                     continue
         
@@ -1509,7 +1523,7 @@ class Voxel(object):
                           ls='-', lw=1, c=colour[-1])
       
             lines = [Line2D([0], [0], color=moleculeColour[molecule], lw=1) for molecule in molecules]
-            leg = ax.legend(labels=molecules, handles=lines, fontsize=16, bbox_to_anchor=(1.05, 1))
+            leg = ax.legend(labels=molecules, handles=lines, fontsize=16, bbox_to_anchor=(1, 1), loc='upper left')
             
             ax.set_xlabel(r'$\lambda \ (\mu m)$', fontsize=24)
             ax.set_ylabel(ylabel, fontsize=24)

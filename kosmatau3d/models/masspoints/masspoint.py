@@ -76,8 +76,12 @@ def masspoint_emission(interpolation_point, ens, masspoint, velocity=0, verbose=
   
     if len(species.molecules):
         # Intensity currently in converted to Jansky, to coinside with the dust continuum
-        intensity = interpolations.interpolate_species_intensity(interpolation_point)
-        tau = interpolations.interpolate_species_tau(interpolation_point)
+        if constants.interclump_idx[ens]:
+            intensity = interpolations.interpolate_interclump_species_intensity(interpolation_point[1:])
+            tau = interpolations.interpolate_interclump_species_tau(interpolation_point[1:])
+        else:
+            intensity = interpolations.interpolate_species_intensity(interpolation_point)
+            tau = interpolations.interpolate_species_tau(interpolation_point)
     
         intensity_xi.append(deepcopy(intensity))
         opticaldepth_xi.append(deepcopy(tau))
@@ -91,8 +95,12 @@ def masspoint_emission(interpolation_point, ens, masspoint, velocity=0, verbose=
     
     if constants.dust != '' and constants.dust != None and constants.dust != 'none':
         # Must convert Janskys in dust intensity file using I/2/constants.kB*(constants.wavelengths)**2*10**-26) -- now calculated in interpolation function
-        intensity = (interpolations.interpolate_dust_intensity(interpolation_point))
-        tau = interpolations.interpolate_dust_tau(interpolation_point)
+        if constants.interclump_idx[ens]:
+            intensity = (interpolations.interpolate_interclump_dust_intensity(interpolation_point[1:]))
+            tau = interpolations.interpolate_interclump_dust_tau(interpolation_point[1:])
+        else:
+            intensity = (interpolations.interpolate_dust_intensity(interpolation_point))
+            tau = interpolations.interpolate_dust_tau(interpolation_point)
     
         # Append clump-corrected dust emission
         intensity_xi.append(intensity/np.pi/(np.arcsin(radius/10.)**2))
@@ -107,13 +115,21 @@ def masspoint_emission(interpolation_point, ens, masspoint, velocity=0, verbose=
     masspoints.clump_dust_intensity[ens][masspoint, :] = deepcopy(intensity_xi[1])
     masspoints.clump_dust_optical_depth[ens][masspoint, :] = deepcopy(opticaldepth_xi[1])
 
-    t_g = interpolations.interpolate_tg(interpolation_point[1:])
-    t_d = interpolations.interpolate_td(interpolation_point[1:])
+    if constants.interclump_idx[ens]:
+        t_g = interpolations.interpolate_interclump_tg(interpolation_point[1:])
+        t_d = interpolations.interpolate_interclump_td(interpolation_point[1:])
+    else:
+        t_g = interpolations.interpolate_tg(interpolation_point[1:])
+        t_d = interpolations.interpolate_td(interpolation_point[1:])
     masspoints.clump_t_gas[ens][0, masspoint] = copy(t_g)
     masspoints.clump_t_dust[ens][0, masspoint] = copy(t_d)
 
-    n_hi = interpolations.interpolate_hi_column_density(interpolation_point[1:])
-    n_h2 = interpolations.interpolate_h2_column_density(interpolation_point[1:])
+    if constants.interclump_idx[ens]:
+        n_hi = interpolations.interpolate_interclump_hi_column_density(interpolation_point[1:])
+        n_h2 = interpolations.interpolate_interclump_h2_column_density(interpolation_point[1:])
+    else:
+        n_hi = interpolations.interpolate_hi_column_density(interpolation_point[1:])
+        n_h2 = interpolations.interpolate_h2_column_density(interpolation_point[1:])
     masspoints.clump_hi_col_dens[ens][0, masspoint] = copy(n_hi)
     masspoints.clump_h2_col_dens[ens][0, masspoint] = copy(n_h2)
 

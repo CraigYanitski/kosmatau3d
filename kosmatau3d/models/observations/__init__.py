@@ -17,10 +17,15 @@ model_initialised = False
 
 # Grid
 tb_centerline = None
+interclump_tb_centerline = None
 tau_centerline = None
+interclump_tau_centerline = None
 rho_mass_taufuv = None
+interclump_rho_mass_taufuv = None
 column_density = None
+interclump_column_density = None
 temperature = None
+interclump_temperature = None
 species_data = None
 e_tilde_real = None
 e_tilde_imaginary = None

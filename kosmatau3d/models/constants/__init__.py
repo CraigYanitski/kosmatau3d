@@ -135,6 +135,7 @@ clump_fillingfactor = None
 clump_density = [None, 1911]  # use None to take the voxel density
 clump_log_fuv = None
 
+interclump_idx = (False, True)
 interclump_hifactor = 1
 interclump_fillingfactor = None
 interclump_density = 1911  # as defined in the old version of this code

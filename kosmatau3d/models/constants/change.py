@@ -87,6 +87,18 @@ def add_clumps(mass_range=[], num=0, n_max=1, reset=False):
     return
 
 
+def set_interclump_ensemble(idx):
+    if isinstance(idx, int):
+        i_cl = [False for _ in range(constants.ensembles)]
+        i_cl[idx] = True
+    elif isinstance(idx, (list, np.ndarray)):
+        i_cl = list(idx)
+    else:
+        raise TypeError('interclump_idx must be type int or type list.')
+    constants.interclump_idx = i_cl
+    return
+
+
 def reset_clumps():
     # This will restore the clump list to its default.
     constants.clump_mass_number = [3, 1]

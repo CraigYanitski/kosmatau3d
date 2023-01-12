@@ -15,16 +15,26 @@ warnings.simplefilter('ignore', category=NumbaPendingDeprecationWarning)
 
 
 def initialise_grid(tau_grid_file='clump_tau_LineCenter.dat', 
+                    interclump_tau_grid_file='interclump_tau_LineCenter.dat', 
                     tb_grid_file='clump_Tmb_LineCenter.dat', 
+                    interclump_tb_grid_file='interclump_Tmb_LineCenter.dat', 
                     tau_fuv_grid_file='RhoMassAFUV.dat',
+                    interclump_tau_fuv_grid_file='interclump_RhoMassAFUV.dat',
                     column_density_file='meanCols.dat',
-                    temperature_file='temperatures_filled.dat'):
+                    interclump_column_density_file='interclump_meanCols.dat',
+                    temperature_file='temperatures_filled.dat',
+                    interclump_temperature_file='interclump_temperatures_filled.dat'):
     # Grid
     tau_centerline(tau_grid_file)
+    interclump_tau_centerline(interclump_tau_grid_file)
     tb_centerline(tb_grid_file)
+    interclump_tb_centerline(interclump_tb_grid_file)
     rho_mass_taufuv(tau_fuv_grid_file)
+    interclump_rho_mass_taufuv(interclump_tau_fuv_grid_file)
     column_density(column_density_file)
+    interclump_column_density(interclump_column_density_file)
     temperature(temperature_file)
+    interclump_temperature(interclump_temperature_file)
     species_data()
 
     observations.grid_initialised = True
@@ -68,9 +78,27 @@ def tb_centerline(file='clump_Tmb_LineCenter.dat'):
     for molecule in molecules.split(', '):
         for transition in np.arange(1, int(molecule.split(' ')[1])+1):
             species.append('{} {}'.format(molecule.split(' ')[0], transition))
-    constants.setupMolecules(np.array(species))
+    constants.setup_species(np.array(species))
     tb = np.genfromtxt(constants.GRIDPATH+file)
     observations.tb_centerline = (tb[:, :4], tb[:, 4:])
+    return
+
+
+def interclump_tb_centerline(file='clump_Tmb_LineCenter.dat'):
+    # Open file for KOSMA-tau simulations of line intensities
+    # FORMAT: n, M, UV, intensity[molecules then dust]
+    header = []
+    with open(constants.GRIDPATH+file) as tb:
+        header.append(tb.readline())
+        header.append(tb.readline())
+    molecules = header[1].split(': ')[1]
+    species = []
+    for molecule in molecules.split(', '):
+        for transition in np.arange(1, int(molecule.split(' ')[1])+1):
+            species.append('{} {}'.format(molecule.split(' ')[0], transition))
+    constants.setup_interclump_species(np.array(species))
+    tb = np.genfromtxt(constants.GRIDPATH+file)
+    observations.interclump_tb_centerline = (tb[:, :4], tb[:, 4:])
     return
 
 
@@ -82,9 +110,23 @@ def tau_centerline(file='clump_tau_LineCenter.dat'):
     return
 
 
+def interclump_tau_centerline(file='clump_tau_LineCenter.dat'):
+    # Open file for KOSMA-tau simulations of optical depths
+    # FORMAT: n, M, UV, tau[molecules then dust]
+    tau = np.genfromtxt(constants.GRIDPATH+file)
+    observations.interclump_tau_centerline = (tau[:, :4], tau[:, 4:])
+    return
+
+
 def rho_mass_taufuv(file='RhoMassAFUV.dat'):
     pma = np.genfromtxt(constants.GRIDPATH+file)
     observations.rho_mass_taufuv = (pma[:, :2], pma[:, 2])
+    return
+
+
+def interclump_rho_mass_taufuv(file='RhoMassAFUV.dat'):
+    pma = np.genfromtxt(constants.GRIDPATH+file)
+    observations.interclump_rho_mass_taufuv = (pma[:, :2], pma[:, 2])
     return
 
 
@@ -95,10 +137,24 @@ def column_density(file='meanCols.dat'):
     return
 
 
+def interclump_column_density(file='meanCols.dat'):
+    # Open file containing the column densities
+    N = pd.read_csv(constants.GRIDPATH + file, sep='\s+')
+    observations.interclump_column_density = (N.loc[:, ['n', 'M', 'chi']], N.loc[:, 'ELECTR':])
+    return
+
+
 def temperature(file='tremperatures.dat'):
     # Open file containing the column densities
     N = pd.read_csv(constants.GRIDPATH + file, sep='\s+')
     observations.temperature = (N.loc[:, ['n', 'M', 'chi']], N.loc[:, ('Tg', 'Td')])
+    return
+
+
+def interclump_temperature(file='tremperatures.dat'):
+    # Open file containing the column densities
+    N = pd.read_csv(constants.GRIDPATH + file, sep='\s+')
+    observations.interclump_temperature = (N.loc[:, ['n', 'M', 'chi']], N.loc[:, ('Tg', 'Td')])
     return
 
 
