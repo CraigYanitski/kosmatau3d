@@ -1108,7 +1108,8 @@ class SyntheticModel(object):
         return ax
 
     def radial_plot(self, quantity='intensity', transition=['HI'], transition2=None, idx=0, lat=0, 
-                    include_dust=False, integrated=False, scale=False, stat='mean'):
+                    include_dust=False, integrated=False, scale=False, 
+                    bins=36, bin_lim=(0, 18000), stat='mean'):
 
         species = self.species
         positions = self.position
@@ -1117,7 +1118,7 @@ class SyntheticModel(object):
         fig, ax = plt.subplots(figsize=(10, 10))
 
         i_lat = np.where(self.map_lat == lat)[0][0]
-        bins = np.arange(0, 18000, self.ds)
+        bins = np.linspace(*bin_lim, num=bins)
         bins_mid = bins[:-1] + self.ds/2
         
         if scale:
@@ -1161,20 +1162,24 @@ class SyntheticModel(object):
             return ax
 
         elif quantity == 'mass':
-            ylabel = r'$M_\mathrm{ens, '+f'{idx}'+'}$ (M$_\odot$ kpc$^{-1}$)'
-            for idx in range(self.ensemble_mass.shape[1]):
-                value = f_vox * self.ensemble_mass[:, idx]
-                value_stat,_,_ = binned_statistic(rgal, value, statistic=stat, bins=bins)
-                label = f'ens {idx} mass'
-                ax.semilogy(bins_mid, value_stat, ls='--', lw=2, label=label)
-                value = f_vox * self.hi_mass[:, idx]
-                value_stat,_,_ = binned_statistic(rgal, value, statistic=stat, bins=bins)
-                label = f'ens H {idx} mass'
-                ax.semilogy(bins_mid, value_stat, lw=1, label=label)
-                value = f_vox * self.h2_mass[:, idx]
-                value_stat,_,_ = binned_statistic(rgal, value, statistic=stat, bins=bins)
-                label = f'ens H2 {idx} mass'
-                ax.semilogy(bins_mid, value_stat, lw=1, label=label)
+            ylabel = r'$M_\mathrm{ens}$ (M$_\odot$ kpc$^{-1}$)'
+            #for idx in range(self.ensemble_mass.shape[1]):
+            value = f_vox * self.ensemble_mass[:, 0]
+            value_stat,_,_ = binned_statistic(rgal, value, statistic=stat, bins=bins)
+            label = f'ens 0 mass'
+            ax.semilogy(bins_mid, value_stat, ls='--', lw=3, label=label)
+            value = f_vox * self.ensemble_mass[:, 1]
+            value_stat,_,_ = binned_statistic(rgal, value, statistic=stat, bins=bins)
+            label = f'ens 1 mass'
+            ax.semilogy(bins_mid, value_stat, ls='--', lw=3, label=label)
+            value = f_vox * self.hi_mass.sum(1)
+            value_stat,_,_ = binned_statistic(rgal, value, statistic=stat, bins=bins)
+            label = f'H mass'
+            ax.semilogy(bins_mid, value_stat, lw=1, label=label)
+            value = f_vox * self.h2_mass.sum(1)
+            value_stat,_,_ = binned_statistic(rgal, value, statistic=stat, bins=bins)
+            label = f'H2 mass'
+            ax.semilogy(bins_mid, value_stat, lw=1, label=label)
             ax.legend(fontsize=16)
             ax.tick_params(labelsize=16)
             ax.set_xlabel(r'$R_\mathrm{gal}$ (kpc)', fontsize=24)
