@@ -105,8 +105,10 @@ map_size = (360, 180)  # size in degrees of the desired map
 map_center = (0, 0)  # center of the desired map in degrees
 
 # Model species
-molecules = []
-molecule_number = 0
+transitions = []
+transition_number = 0
+interclump_transitions = []
+interclump_transition_number = 0
 dust = 'all'
 
 # Model characteristics

@@ -92,11 +92,11 @@ def calculate_grid_interpolation(verbose=False, dilled=False):
             dust_tau_interpolation = dill.load(file)
         # interpolations.intensityInterpolation = []
         # interpolations.tauInterpolation = []
-        if len(species.molecule_indeces) == len(species_intensity_interpolation):
+        if len(species.transition_indeces) == len(species_intensity_interpolation):
             interpolations.species_intensity_interpolation = species_intensity_interpolation
             interpolations.species_tau_interpolation = species_tau_interpolation
         else:
-            for index in species.molecule_indeces:
+            for index in species.transition_indeces:
                 interpolations.species_intensity_interpolation.append(
                         species_intensity_interpolation[index[0][0]])
                 interpolations.species_tau_interpolation.append(species_tau_interpolation[index[0][0]])
@@ -144,11 +144,11 @@ def calculate_grid_interpolation(verbose=False, dilled=False):
             for i in np.where(constants.n_dust)[0]:
                 interpolations.dust_intensity_interpolation.append(
                         interpolate.LinearNDInterpolator(crnmuvI,
-                                                         logI[:, constants.molecule_number+i]))
+                                                         logI[:, constants.transition_number+i]))
                 interpolations.dust_tau_interpolation.append(
                         interpolate.LinearNDInterpolator(crnmuvTau, 
-                                                         logTau[:, constants.molecule_number+i]))
-        for index in species.molecule_indeces:
+                                                         logTau[:, constants.transition_number+i]))
+        for index in species.transition_indeces:
             if verbose:
                 print('Creating intensity grid interpolation')
             rInterpI = interpolate.LinearNDInterpolator(crnmuvI, logI[:, index])
@@ -163,11 +163,11 @@ def calculate_grid_interpolation(verbose=False, dilled=False):
         if constants.dust:
             interpolations.dust_intensity_interpolation = interpolate.Rbf(
                     crnmuvI[:, 0], crnmuvI[:, 1], crnmuvI[:, 2], crnmuvI[:, 3], 
-                    logI[:, constants.moleculeNumber:][:, constants.n_dust])
+                    logI[:, constants.transition_number:][:, constants.n_dust])
             interpolations.dust_tau_interpolation = interpolate.Rbf(
                     crnmuvTau[:, 0], crnmuvTau[:, 1], crnmuvTau[:, 2], crnmuvTau[:, 3], 
-                    logTau[:, constants.moleculeNumber:][:, constants.n_dust])
-        for index in species.molecule_indeces:
+                    logTau[:, constants.transition_number:][:, constants.n_dust])
+        for index in species.transition_indeces:
             if verbose:
                 print('Creating intensity grid interpolation')
             rInterpI = interpolate.Rbf(
@@ -218,11 +218,11 @@ def calculate_interclump_grid_interpolation(verbose=False, dilled=False):
             interclump_dust_tau_interpolation = dill.load(file)
         # interpolations.intensityInterpolation = []
         # interpolations.tauInterpolation = []
-        if len(species.molecule_indeces) == len(interclump_species_intensity_interpolation):
+        if len(species.interclump_transition_indeces) == len(interclump_species_intensity_interpolation):
             interpolations.interclump_species_intensity_interpolation = interclump_species_intensity_interpolation
             interpolations.interclump_species_tau_interpolation = interclump_species_tau_interpolation
         else:
-            for index in species.molecule_indeces:
+            for index in species.interclump_transition_indeces:
                 interpolations.interclump_species_intensity_interpolation.append(
                         interclump_species_intensity_interpolation[index[0][0]])
                 interpolations.interclump_species_tau_interpolation.append(interclump_species_tau_interpolation[index[0][0]])
@@ -270,11 +270,11 @@ def calculate_interclump_grid_interpolation(verbose=False, dilled=False):
             for i in np.where(constants.n_dust)[0]:
                 interpolations.interclump_dust_intensity_interpolation.append(
                         interpolate.LinearNDInterpolator(crnmuvI,
-                                                         logI[:, constants.molecule_number+i]))
+                                                         logI[:, constants.interclump_transition_number+i]))
                 interpolations.interclump_dust_tau_interpolation.append(
                         interpolate.LinearNDInterpolator(crnmuvTau, 
-                                                         logTau[:, constants.molecule_number+i]))
-        for index in species.molecule_indeces:
+                                                         logTau[:, constants.interclump_transition_number+i]))
+        for index in species.interclump_transition_indeces:
             if verbose:
                 print('Creating interclump intensity grid interpolation')
             rInterpI = interpolate.LinearNDInterpolator(crnmuvI, logI[:, index])
@@ -289,11 +289,11 @@ def calculate_interclump_grid_interpolation(verbose=False, dilled=False):
         if constants.dust:
             interpolations.interclump_dust_intensity_interpolation = interpolate.Rbf(
                     crnmuvI[:, 0], crnmuvI[:, 1], crnmuvI[:, 2], crnmuvI[:, 3], 
-                    logI[:, constants.moleculeNumber:][:, constants.n_dust])
+                    logI[:, constants.interclump_transition_number:][:, constants.n_dust])
             interpolations.interclump_dust_tau_interpolation = interpolate.Rbf(
                     crnmuvTau[:, 0], crnmuvTau[:, 1], crnmuvTau[:, 2], crnmuvTau[:, 3], 
-                    logTau[:, constants.moleculeNumber:][:, constants.n_dust])
-        for index in species.molecule_indeces:
+                    logTau[:, constants.interclump_transition_number:][:, constants.n_dust])
+        for index in species.interclump_transition_indeces:
             if verbose:
                 print('Creating interclump intensity grid interpolation')
             rInterpI = interpolate.Rbf(

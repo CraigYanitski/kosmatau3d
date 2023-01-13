@@ -86,10 +86,10 @@ def interpolate_species_intensity(points, verbose=False):
     if constants.log_encoded:
         points = np.asarray(points)*10
     verbose = verbose or verbose
-    if len(species.molecules):
-        intensity = np.zeros(len(species.molecules))
+    if len(species.transitions):
+        intensity = np.zeros(len(species.transitions))
         intensity_xi = 0
-        for i, index in enumerate(species.molecule_indeces):
+        for i, index in enumerate(species.transition_indeces):
             if constants.log_encoded:
                 if constants.interpolation == 'linear':
                     intensity[i] = (10**(species_intensity_interpolation[i](points)/10))
@@ -105,7 +105,7 @@ def interpolate_species_intensity(points, verbose=False):
             #   intensity[i] = 10**-100
             # intensity[i] *= 2*constants.kB/4/np.pi/species.moleculeWavelengths[i]**2/10**-26
         if verbose:
-            print('Calculated the intensity for {} species.'.format(len(species.molecules)))
+            print('Calculated the intensity for {} species.'.format(len(species.transitions)))
         return intensity
     else: return
     # else:
@@ -122,10 +122,10 @@ def interpolate_interclump_species_intensity(points, verbose=False):
     if constants.log_encoded:
         points = np.asarray(points)*10
     verbose = verbose or verbose
-    if len(species.molecules):
-        intensity = np.zeros(len(species.molecules))
+    if len(species.transitions):
+        intensity = np.zeros(len(species.transitions))
         intensity_xi = 0
-        for i, index in enumerate(species.molecule_indeces):
+        for i, index in enumerate(species.transition_indeces):
             if constants.log_encoded:
                 if constants.interpolation == 'linear':
                     intensity[i] = (10**(interclump_species_intensity_interpolation[i](points)/10))
@@ -141,7 +141,7 @@ def interpolate_interclump_species_intensity(points, verbose=False):
             #   intensity[i] = 10**-100
             # intensity[i] *= 2*constants.kB/4/np.pi/species.moleculeWavelengths[i]**2/10**-26
         if verbose:
-            print('Calculated the intensity for {} species.'.format(len(species.molecules)))
+            print('Calculated the intensity for {} species.'.format(len(species.transitions)))
         return intensity
     else: return
     # else:
@@ -156,9 +156,9 @@ def interpolate_species_tau(points, verbose=False):
         points = np.asarray(points)*10
     verbose = verbose or verbose
     # points = np.log10(points)
-    if len(species.molecules):
-        tau = np.zeros(len(species.molecules))
-        for i, index in enumerate(species.molecule_indeces):
+    if len(species.transitions):
+        tau = np.zeros(len(species.transitions))
+        for i, index in enumerate(species.transition_indeces):
             if constants.log_encoded:
                 if constants.interpolation == 'linear':
                     tau[i] = (10**(species_tau_interpolation[i](points)/10))
@@ -176,7 +176,7 @@ def interpolate_species_tau(points, verbose=False):
                 # tau[i] = 10**-100
                 input('\n<<ERROR>> Negative opacity {} found.\n'.format(temp))
         if verbose:
-            print('Calculated the optical depth for {} species.'.format(len(species.molecules)))
+            print('Calculated the optical depth for {} species.'.format(len(species.transitions)))
         return np.array(tau)
     else:
       return
@@ -192,9 +192,9 @@ def interpolate_interclump_species_tau(points, verbose=False):
         points = np.asarray(points)*10
     verbose = verbose or verbose
     # points = np.log10(points)
-    if len(species.molecules):
-        tau = np.zeros(len(species.molecules))
-        for i, index in enumerate(species.molecule_indeces):
+    if len(species.transitions):
+        tau = np.zeros(len(species.transitions))
+        for i, index in enumerate(species.transition_indeces):
             if constants.log_encoded:
                 if constants.interpolation == 'linear':
                     tau[i] = (10**(interclump_species_tau_interpolation[i](points)/10))
@@ -212,7 +212,7 @@ def interpolate_interclump_species_tau(points, verbose=False):
                 # tau[i] = 10**-100
                 input('\n<<ERROR>> Negative opacity {} found.\n'.format(temp))
         if verbose:
-            print('Calculated the optical depth for {} species.'.format(len(species.molecules)))
+            print('Calculated the optical depth for {} species.'.format(len(species.transitions)))
         return np.array(tau)
     else:
       return

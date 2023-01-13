@@ -172,14 +172,20 @@ def change_dust_wavelengths(limit='all'):
     return
 
 
-def setupMolecules(species):
-    constants.molecules = species
-    constants.molecule_number = len(species)
+def setup_species(species):
+    constants.transitions = species
+    constants.transition_number = len(species)
+    return
+
+
+def setup_interclump_species(species):
+    constants.interclump_transitions = species
+    constants.interclump_transition_number = len(species)
     return
 
 
 def resort_wavelengths():
-    all_wavelengths = np.append(constants.wavelengths[constants.n_dust], species.molecule_wavelengths)
+    all_wavelengths = np.append(constants.wavelengths[constants.n_dust], species.transition_wavelengths)
     constants.sorted_indeces = all_wavelengths.argsort()
     constants.sorted_wavelengths = all_wavelengths[constants.sorted_indeces]
     return

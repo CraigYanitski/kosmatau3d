@@ -24,14 +24,14 @@ clump_h2_mass = [np.zeros(constants.clump_mass_number[_]) for _ in range(len(con
 # KOSMA-tau outputs
 
 clump_intensity = [np.zeros((constants.clump_mass_number[_],
-                             len(species.molecules)+constants.wavelengths[constants.n_dust].size))
+                             len(species.transitions)+constants.wavelengths[constants.n_dust].size))
                    for _ in range(len(constants.clump_mass_number))]
 clump_optical_depth = [np.zeros((constants.clump_mass_number[_],
-                                 len(species.molecules)+constants.wavelengths[constants.n_dust].size))
+                                 len(species.transitions)+constants.wavelengths[constants.n_dust].size))
                        for _ in range(len(constants.clump_mass_number))]
-clump_species_intensity = [np.zeros((constants.clump_mass_number[_], len(species.molecules)))
+clump_species_intensity = [np.zeros((constants.clump_mass_number[_], len(species.transitions)))
                            for _ in range(len(constants.clump_mass_number))]
-clump_species_optical_depth = [np.zeros((constants.clump_mass_number[_], len(species.molecules)))
+clump_species_optical_depth = [np.zeros((constants.clump_mass_number[_], len(species.transitions)))
                                for _ in range(len(constants.clump_mass_number))]
 clump_dust_intensity = [np.zeros((constants.clump_mass_number[_],
                                   constants.wavelengths[constants.n_dust].size))

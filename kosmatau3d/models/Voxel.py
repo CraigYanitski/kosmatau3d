@@ -22,7 +22,7 @@ class Voxel(object):
     '''
     This is a class to handle each voxel in KOSMA-tau^3. It contains ensembles
     of spherical PDR simulations (to mimic the fractal structure of PDRs), a FUV
-    field element, and element absorption, separated for dust and molecules. It
+    field element, and element absorption, separated for dust and transitions. It
     should have one clump ensemble and one interclump ensemble. This is to account
     for the diffuse surroundings of a clump.
     '''
@@ -160,7 +160,7 @@ class Voxel(object):
     def get_fuv(self):
         return self.__fuv
   
-    def set_properties(self, voxel_size=1, molecules='all', dust='PAH', alpha=1.84, gamma=2.31, 
+    def set_properties(self, voxel_size=1, transitions='all', dust='PAH', alpha=1.84, gamma=2.31, 
                        tau_grid_file='clump_tau_LineCenter.dat', 
                        tb_grid_file='clump_Tmb_LineCenter.dat', 
                        tau_fuv_grid_file='RhoMassAFUV.dat',
@@ -219,7 +219,7 @@ class Voxel(object):
                     eliminating any change to the brightness temperature). Larger combinations are used
                     if the rescaled voxel is smaller than the largest clump. The default is [1, 100].
          voxel_size: The voxel size in parsecs. The default is 1 pc.
-         molecules: The molecules included in the model. This is a list of strings, where each
+         transitions: The transitions included in the model. This is a list of strings, where each
                     string has the element name (as in the grid) followed by the transition
                     number (Which is taken from KOSMA-tau). It is set to the first transition
                     of C+, C, and CO by default.
@@ -318,7 +318,7 @@ class Voxel(object):
                                                      interclump_column_density_file=interclump_column_density_file,
                                                      temperature_file=temperature_file,
                                                      interclump_temperature_file=interclump_temperature_file)
-                species.add_molecules(molecules)
+                species.add_transitions(transitions)
                 interpolations.initialise_grid(dilled=dilled)
 
         #print('interpolation initialised:', (time()-t0)/60)
@@ -433,10 +433,10 @@ class Voxel(object):
 
         if suggested_calc:
             self.__intensity_species = [np.zeros((len(ensemble.clumpIndeces[_]),
-                                                  len(species.molecules)), dtype=np.float64)
+                                                  len(species.transitions)), dtype=np.float64)
                                         for _ in range(constants.ensembles)]
             self.__optical_depth_species = [np.zeros((len(ensemble.clumpIndeces[_]),
-                                                      len(species.molecules)), dtype=np.float64)
+                                                      len(species.transitions)), dtype=np.float64)
                                             for _ in range(constants.ensembles)]
             self.__intensity_dust = [np.zeros((len(ensemble.clumpIndeces[_]),
                                                constants.wavelengths[constants.n_dust].size), 
@@ -454,10 +454,10 @@ class Voxel(object):
                                          for _ in range(constants.ensembles)]
         else:
             self.__intensity_species = [np.zeros((constants.velocity_range.size,
-                                                  len(species.molecules)), dtype=np.float64)
+                                                  len(species.transitions)), dtype=np.float64)
                                         for _ in range(constants.ensembles)]
             self.__optical_depth_species = [np.zeros((constants.velocity_range.size,
-                                                      len(species.molecules)), dtype=np.float64)
+                                                      len(species.transitions)), dtype=np.float64)
                                             for _ in range(constants.ensembles)]
             self.__intensity_dust = [np.zeros((constants.velocity_range.size,
                                                constants.wavelengths[constants.n_dust].size), 
@@ -774,7 +774,7 @@ class Voxel(object):
                         opticalDepthDustInterp = interp1d(constants.wavelengths[constants.n_dust],
                                                           self.__optical_depth_dust[ens].max(0), fill_value='extrapolate')
 
-                    for i, transition in enumerate(species.molecule_wavelengths):
+                    for i, transition in enumerate(species.transition_wavelengths):
                         if iDust > 10:
                             self.__intensity_species[ens][:, i] += intensityDustInterp(transition)
                             self.__optical_depth_species[ens][:, i] += opticalDepthDustInterp(transition)
@@ -893,13 +893,13 @@ class Voxel(object):
                             if hi:
                                 epsilon_species[ens][:, 0] += epsilon_dust_interp(0.21106)
                             else:
-                                for i, transition in enumerate(species.molecule_wavelengths):
+                                for i, transition in enumerate(species.transition_wavelengths):
                                     epsilon_species[ens][:, i] += epsilon_dust_interp(transition)
                         else:
                             if hi:
                                 epsilon_species[ens][:, 0] += epsilon_dust[ens].mean()
                             else:
-                                for i in range(len(species.molecules)):
+                                for i in range(len(species.transitions)):
                                     epsilon_species[ens][:, i] += epsilon_dust[ens].mean()
                 else:
                     if hi:
@@ -914,11 +914,11 @@ class Voxel(object):
                     if np.where(constants.n_dust)[0].size > 1:
                         epsilon_dust_interp = interp1d(constants.wavelengths[constants.n_dust],
                                                        epsilon_dust[ens].max(0), fill_value='extrapolate')
-                        for i, transition in enumerate(species.molecule_wavelengths):
+                        for i, transition in enumerate(species.transition_wavelengths):
                             if epsilon_dust[ens].shape[1] > 1:
                                 epsilon_species[ens][:, i] -= epsilon_dust_interp(transition)
                     else:
-                        for i in range(len(species.molecules)):
+                        for i in range(len(species.transitions)):
                             epsilon_species[ens][:, i] -= epsilon_dust[ens].max(0)
         if total:
             return np.asarray(epsilon_species).sum(0)
@@ -984,13 +984,13 @@ class Voxel(object):
                             if hi:
                                 kappa_species[ens][:, 0] += kappa_dust_interp(0.21106)
                             else:
-                                for i, transition in enumerate(species.molecule_wavelengths):
+                                for i, transition in enumerate(species.transition_wavelengths):
                                     kappa_species[ens][:, i] += kappa_dust_interp(transition)
                         else:
                             if hi:
                                 kappa_species[ens][:, 0] += kappa_dust[ens].mean()
                             else:
-                                for i in range(len(species.molecules)):
+                                for i in range(len(species.transitions)):
                                     kappa_species[ens][:, i] += kappa_dust[ens].mean()
                 else:
                     if hi:
@@ -1005,11 +1005,11 @@ class Voxel(object):
                     if np.where(constants.n_dust)[0].size > 1:
                         kappa_dust_interp = interp1d(constants.wavelengths[constants.n_dust],
                                                      kappa_dust[ens].max(0), fill_value='extrapolate')
-                        for i, transition in enumerate(species.molecule_wavelengths):
+                        for i, transition in enumerate(species.transition_wavelengths):
                             if kappa_dust[ens].shape[1] > 1:
                                 kappa_species[ens][:, i] -= kappa_dust_interp(transition)
                     else:
-                        for i in range(len(species.molecules)):
+                        for i in range(len(species.transitions)):
                             kappa_species[ens][i] -= kappa_dust[ens].max(0)
         if total:
             return np.asarray(kappa_species).sum(0)
@@ -1073,13 +1073,13 @@ class Voxel(object):
                             if hi:
                                 tau_species[ens][:, 0] += tau_dust_interp(0.21106)
                             else:
-                                for i, transition in enumerate(species.molecule_wavelengths):
+                                for i, transition in enumerate(species.transition_wavelengths):
                                     tau_species[ens][:, i] += tau_dust_interp(transition)
                         else:
                             if hi:
                                 tau_species[ens][:, 0] += tau_dust[ens].mean()
                             else:
-                                for i in range(len(species.molecules)):
+                                for i in range(len(species.transitions)):
                                     tau_species[ens][:, i] += tau_dust[ens].mean()
                 else:
                     if hi:
@@ -1138,10 +1138,10 @@ class Voxel(object):
                     if np.where(constants.n_dust)[0].size > 10:
                         intensity_dust_interp = interp1d(constants.wavelengths[constants.n_dust],
                                                          intensity_dust[ens].max(0), fill_value='extrapolate')
-                        for i, transition in enumerate(species.molecule_wavelengths):
+                        for i, transition in enumerate(species.transition_wavelengths):
                             intensity[:, i] -= intensity_dust_interp(transition)
                     else:
-                        for i in range(len(species.molecules)):
+                        for i in range(len(species.transitions)):
                             intensity[:, i] -= intensity_dust[ens].mean()
                     intensity_final.append(np.trapz(intensity, vel, axis=0))
                     if include_dust:
@@ -1151,13 +1151,13 @@ class Voxel(object):
                             if hi:
                                 intensity_final[-1][0] += intensity_dust_interp(0.21106)
                             else:
-                                for i, transition in enumerate(species.molecule_wavelengths):
+                                for i, transition in enumerate(species.transition_wavelengths):
                                     intensity_final[-1][i] += intensity_dust_interp(transition)
                         else:
                             if hi:
                                 intensity_final[-1][0] += intensity_dust[ens].mean()
                             else:
-                                for i in range(len(species.molecules)):
+                                for i in range(len(species.transitions)):
                                     intensity_final[-1][i] += intensity_dust[ens].mean()
                 else:
                     if include_dust:
@@ -1171,13 +1171,13 @@ class Voxel(object):
                             if hi:
                                 intensity_final[-1][:, 0] -= intensity_dust_interp(0.21106)
                             else:
-                                for i, transition in enumerate(species.molecule_wavelengths):
+                                for i, transition in enumerate(species.transition_wavelengths):
                                     intensity_final[-1][:, i] -= intensity_dust_interp(transition)
                         else:
                             if hi:
                                 intensity_final[-1][:, 0] -= intensity_dust[ens].mean()
                             else:
-                                for i in range(len(species.molecules)):
+                                for i in range(len(species.transitions)):
                                     intensity_final[-1][:, i] -= intensity_dust[ens].mean()
         else:
             if total:
@@ -1203,7 +1203,7 @@ class Voxel(object):
                     if np.where(constants.n_dust)[0].size > 1:
                         intensity_dust_interp = interp1d(constants.wavelengths[constants.n_dust],
                                                        intensity_dust[ens].max(0), fill_value='extrapolate')
-                        for i, transition in enumerate(species.molecule_wavelengths):
+                        for i, transition in enumerate(species.transition_wavelengths):
                             if intensity_dust[ens].shape[1] > 1:
                                 intensity[ens][:, i] -= intensity_dust_interp(transition)
                     else:
@@ -1217,7 +1217,7 @@ class Voxel(object):
                         if np.where(constants.n_dust)[0].size > 1:
                             intensity_dust_interp = interp1d(constants.wavelengths[constants.n_dust],
                                                            intensity_dust[ens].max(0), fill_value='extrapolate')
-                            for i, transition in enumerate(species.molecule_wavelengths):
+                            for i, transition in enumerate(species.transition_wavelengths):
                                 intensity_final[ens][i] += intensity_dust_interp(transition)
                         else:
                             intensity_final[ens] += intensity_dust[ens].max(0)
@@ -1353,19 +1353,19 @@ class Voxel(object):
         return
   
     def plot_transition(self, transition='', quantity='intensity', kind='linear', include_dust=False, total=False,
-                      label='', title='', logscale=False):
-        # Plot the molecule emission with respect to the voxel velocity structure
+                        label='', title='', logscale=False):
+        # Plot the transition emission with respect to the voxel velocity structure
     
         import matplotlib.pyplot as plt
     
-        if transition in species.molecules and isinstance(transition, str):
+        if transition in species.transitions and isinstance(transition, str):
             transition = [transition]
     
         elif isinstance(transition, list):
             pass
     
         else:
-            transition = species.molecules
+            transition = species.transitions
     
         if quantity == 'emissivity':
             value = self.get_species_emissivity(kind=kind, include_dust=include_dust, total=total)
@@ -1398,20 +1398,20 @@ class Voxel(object):
       
             for n, trans in enumerate(transition):
       
-                if trans not in species.molecules:
+                if trans not in species.transitions:
                     self.__logger.warning('Species {} not in model.'.format(trans))
                     continue
         
-                i = np.where(trans == np.asarray(species.molecules))[0][0]
+                i = np.where(trans == np.asarray(species.transitions))[0][0]
                 
                 if logscale:
                     ax.semilogy(vel, value[ens][:, i], marker='o', ms=2, ls='-', lw=1)
                 else:
                     ax.plot(vel, value[ens][:, i], marker='o', ms=2, ls='-', lw=1)
                 
-                if isinstance(moleculeName, list):
+                if isinstance(label, list):
                     labels.append(label[n])
-                elif moleculeName:
+                elif label:
                     labels.append(label)
                 else:
                     labels.append(trans)
@@ -1443,7 +1443,7 @@ class Voxel(object):
 
         # mpl.rcParams['text.usetex'] = True
     
-        moleculeColour = {
+        species_colour = {
                            'C+': 'xkcd:orange',
                            'C': 'xkcd:red',
                            'O': 'xkcd:violet',
@@ -1508,22 +1508,22 @@ class Voxel(object):
                 dust_spectrum = np.full(2, valueDust[ens][vel, 0])
                 ax.loglog(1e6*constants.wavelengths[[0, 20]], dust_spectrum, ls='--', lw=0.5, c='xkcd:black')
             
-            molecules = []
+            transition_species = []
             colour = []
       
-            for i, molecule in enumerate(species.molecules):
+            for i, transition in enumerate(species.transitions):
                 if valueDust[ens].shape[1] > 1:
-                    valTemp = dustInterp(species.molecule_wavelengths[i])
+                    valTemp = dustInterp(species.transition_wavelengths[i])
                 else:
                     valTemp = valueDust[ens][vel, 0]
-                if not molecule.split()[0] in molecules:
-                    colour.append(moleculeColour[molecule.split()[0]])
-                    molecules.append(molecule.split()[0])
-                ax.loglog([1e6*species.molecule_wavelengths[i]]*2, [valTemp, valueSpecies[ens][vel, i]],
+                if not transition.split()[0] in transition_species:
+                    colour.append(species_colour[transition.split()[0]])
+                    transition_species.append(transition.split()[0])
+                ax.loglog([1e6*species.transition_wavelengths[i]]*2, [valTemp, valueSpecies[ens][vel, i]],
                           ls='-', lw=1, c=colour[-1])
       
-            lines = [Line2D([0], [0], color=moleculeColour[molecule], lw=1) for molecule in molecules]
-            leg = ax.legend(labels=molecules, handles=lines, fontsize=16, bbox_to_anchor=(1, 1), loc='upper left')
+            lines = [Line2D([0], [0], color=species_colour[transition], lw=1) for transition in transition_species]
+            leg = ax.legend(labels=transition_species, handles=lines, fontsize=16, bbox_to_anchor=(1, 1), loc='upper left')
             
             ax.set_xlabel(r'$\lambda \ (\mu m)$', fontsize=24)
             ax.set_ylabel(ylabel, fontsize=24)

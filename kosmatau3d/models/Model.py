@@ -29,8 +29,15 @@ class Model(object):
   
     def __init__(self, history_path='', directory='', folder='', 
                  tau_grid_file='clump_tau_LineCenter.dat', 
+                 interclump_tau_grid_file='clump_tau_LineCenter.dat', 
                  tb_grid_file='clump_Tmb_LineCenter.dat', 
+                 interclump_tb_grid_file='clump_Tmb_LineCenter.dat', 
                  tau_fuv_grid_file='RhoMassAFUV.dat',
+                 interclump_tau_fuv_grid_file='RhoMassAFUV.dat',
+                 column_density_file='meanCols.dat',
+                 interclump_column_density_file='meanCols.dat',
+                 temperature_file='temperatures_filled.dat',
+                 interclump_temperature_file='temperatures_filled.dat',
                  h2_surface_density_file='h2_surface-density.dat', 
                  hi_surface_density_file='hi_surface-density.dat', 
                  h2_scale_height_file='h2_scale-height.dat', 
@@ -41,9 +48,9 @@ class Model(object):
                  like_clumps=False, all_full=False, 
                  velocity_file='rot_milki2018_14.dat', disp_core=None, r_core=4400,
                  x=0, y=0, z=0, model_type='', resolution=1000,
-                 molecules='all', dust='molecular', velocity_range=(), velocity_number=0,
+                 transitions='all', dust='molecular', velocity_range=(), velocity_number=0,
                  clump_mass_range=((0, 2), (-2)), clump_mass_number=(3, 1), clump_n_max=(1, 100), 
-                 ensemble_mass_factor=(1, 1), interclump_hi_ratio=1,
+                 ensemble_mass_factor=(1, 1), interclump_idx=(False, True), interclump_hi_ratio=1,
                  interclump_fillingfactor=None, interclump_log_fuv=None, clump_log_fuv=None,
                  hi_mass_factor=1, h2_mass_factor=1, fuv_factor=1, density_factor=1, global_uv=10, 
                  r_cmz=0, zeta_cmz=1e-14, zeta_sol=2e-16, new_grid=True, suggested_calc=True,
@@ -82,14 +89,22 @@ class Model(object):
         constants.change_velocity_range(velocity_range)
         constants.change_velocity_number(velocity_number)
         constants.add_clumps(mass_range=clump_mass_range, num=clump_mass_number, n_max=clump_n_max, reset=True)
+        constants.set_interclump_ensemble(interclump_idx)
         
         # Read grid & input data, specify transitions, and interpolate
         constants.tb_grid_file = tb_grid_file
         constants.tau_grid_file = tau_grid_file
         constants.tau_fuv_grid_file = tau_fuv_grid_file
         observations.methods.initialise_grid(tau_grid_file=tau_grid_file, 
+                                             interclump_tau_grid_file=interclump_tau_grid_file, 
                                              tb_grid_file=tb_grid_file, 
-                                             tau_fuv_grid_file=tau_fuv_grid_file)
+                                             interclump_tb_grid_file=interclump_tb_grid_file, 
+                                             tau_fuv_grid_file=tau_fuv_grid_file, 
+                                             interclump_tau_fuv_grid_file=interclump_tau_fuv_grid_file,
+                                             column_density_file=column_density_file,
+                                             interclump_column_density_file=interclump_column_density_file,
+                                             temperature_file=temperature_file,
+                                             interclump_temperature_file=interclump_temperature_file)
         constants.h2_surface_density_file = h2_surface_density_file
         constants.hi_surface_density_file = hi_surface_density_file
         constants.h2_scale_height_file = h2_scale_height_file
@@ -105,7 +120,7 @@ class Model(object):
                                               fuv_file=fuv_file,
                                               velocity_file=velocity_file)
         constants.dust = dust
-        self.__addSpecies(molecules)
+        self.__add_transitions(transitions)
         constants.change_dust_wavelengths(constants.dust)
         constants.fuv_scale_gc = scale_gc
         constants.mhi_scale_gc = mhi_gc
@@ -139,8 +154,8 @@ class Model(object):
         self.__mapPositions = []
         return
   
-    def __addSpecies(self, species_transition):
-        species.add_molecules(species_transition)
+    def __add_transitions(self, species_transition):
+        species.add_transitions(species_transition)
         return
   
     def __str__(self):
