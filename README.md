@@ -31,7 +31,7 @@ simulate the clumpy ensemble.
 For a detailed explanation of the properties that can be defined/accessed with
 a voxel instance, see the `jupyter` notebook in `./notebooks/voxel.ipynb`.
 
-## Documentation
+## Documentation (in prep.)
 
 At the moment there is no CI/CD to automatically compile the documentation files.
 In order to properly view the current documentation, from the root directory run,
@@ -57,7 +57,7 @@ calculates the wavelength-dependant intensity, optical depth, absorption, and
 emissivity (assuming no background intensity) for a clumpy PDR ensemble.
 The explanation of this model is thoroughly-explained in `./notebooks/voxel.ipynb`.
 
-The objects that will modelled with this are:
+The objects that will modelled with this method are:
 
 - IC 1396
   - (Okada et al. in prep) first application of directly comparing single
@@ -74,17 +74,18 @@ Bruckmann as that will be its first application.
 This galactic model can also be used in a more generalised application for
 distant galaxies.
 
-The objects that will modelled with this are:
+The objects that will modelled with this method are:
 
 - Milky Way
   - (Yanitski et al. in prep) an approximate description compared to
-  COBE-FIRAS, Planck, CfA, Mopra, ThrUMMS, and SEDIGISM data
+  COBE-DIRBE, Planck, COBE-FIRAS, GOT C+, CfA, Mopra, ThrUMMS, and SEDIGISM data
 
 ## Code Corrections
 
-The major changes to the `kosmatau3d` model are described in the document
-`./docs/treatise.pdf`, and the major changes to the Milky Way model will also
-appear in the upcoming Yanitski et al. (2022) paper.
+The major changes to the functionality of the `kosmatau3d` model over the KOSMA-tau-3D 
+model of Silke et al. (2017) are described in the document `./docs/treatise.pdf`, 
+and the major changes to the Milky Way model will also
+appear in the upcoming Yanitski et al. (2023) paper.
 There will be other documents to state the other various corrections and
 developments made.
 
@@ -121,3 +122,4 @@ developments made.
 - [ ] Implement `numba` more fully to optimise the computation time
   - [ ] use this to parallelise the code
 - [ ] Create a GUI to make it easier to setup/alter the model
+- [ ] Implement recursion in radiative transfer calculation
