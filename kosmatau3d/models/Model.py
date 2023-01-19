@@ -895,12 +895,12 @@ class SyntheticModel(object):
             transition = self.species
             idx = range(len(self.species))
         elif isinstance(transition, (tuple, list, np.ndarray)):
-            idx = (self.species.index(t) for t in transition)
+            idx = (list(self.species).index(t) for t in transition)
         elif isinstance(idx, (tuple, list, np.ndarray)):
             transition = (self.species[i] for i in idx)
         elif isinstance(transition, str) and transition in self.species:
             transition = (transition, )
-            idx = (self.species.index(transition[0]), )
+            idx = (list(self.species).index(transition[0]), )
         elif isinstance(idx, int):
             transition = (self.species[idx], )
             idx = (idx, )
@@ -939,12 +939,12 @@ class SyntheticModel(object):
             transition = self.species
             idx = range(len(self.species))
         elif isinstance(transition, (tuple, list, np.ndarray)):
-            idx = (self.species.index(t) for t in transition)
+            idx = (list(self.species).index(t) for t in transition)
         elif isinstance(idx, (tuple, list, np.ndarray)):
             transition = (self.species[i] for i in idx)
         elif isinstance(transition, str) and transition in self.species:
             transition = (transition, )
-            idx = (self.species.index(transition[0]), )
+            idx = (list(self.species).index(transition[0]), )
         elif isinstance(idx, int):
             transition = (self.species[idx], )
             idx = (idx, )
