@@ -173,13 +173,13 @@ class Voxel(object):
                        interclump_taufuv_grid_file='interclumpTauFUV.dat',
                        interclump_column_density_file='interclumpMeanCols.dat',
                        interclump_temperature_file='interclumpTemperatures_filled.dat',
-                       clump_mass_number=[3,1], clump_mass_range=[[0,2],[-2]], clump_n_max=[1, 100], 
+                       clump_mass_number=(3,1), clump_mass_range=([0,2],[-3]), clump_n_max=(1, 100), 
                        interclump_idx=[False, True],
-                       velocity_range=[-10,10], velocity_number=51, 
+                       velocity_range=(-10,10), velocity_number=201, 
                        velocity=0., velocity_resolution=1, 
-                       ensemble_mass=100, ensemble_dispersion=1, 
-                       volume_factor=None, voxel_factor=1, ensemble_density=[15000, 1911],
-                       fuv=[20000, 1], crir=2e-16,
+                       ensemble_mass=(100,40), ensemble_dispersion=1, 
+                       volume_factor=None, voxel_factor=1, ensemble_density=(1e5, 1911),
+                       fuv=200, crir=2e-16,
                        suggested_calc=True, from_grid=False,
                        new_grid=False, change_interpolation=False, dilled=False,
                        timed=False, verbose=False, debug=False):
@@ -337,12 +337,12 @@ class Voxel(object):
 
         self.__velocity = velocity
 
-        if isinstance(ensemble_mass, list) or isinstance(ensemble_mass, np.ndarray):
+        if isinstance(ensemble_mass, (list, tuple, np.ndarray)):
             self.__ensemble_mass = ensemble_mass
         else:
             self.__ensemble_mass = [ensemble_mass] * len(constants.clump_mass_number)
 
-        if isinstance(ensemble_dispersion, list) or isinstance(ensemble_dispersion, np.ndarray):
+        if isinstance(ensemble_dispersion, (list, tuple, np.ndarray)):
             self.__ensemble_dispersion = ensemble_dispersion
         else:
             self.__ensemble_dispersion = [ensemble_dispersion] * len(constants.clump_mass_number)
@@ -352,18 +352,18 @@ class Voxel(object):
         else:
             self.__voxel_filling_factor = voxel_factor
 
-        if isinstance(volume_factor, float) or isinstance(volume_factor, int):
+        if isinstance(volume_factor, (float, int)):
             volume_factor = [volume_factor] * len(constants.clump_mass_number)
         if volume_factor:
             ensemble_density = [ensemble_mass[ens]*constants.mass_solar/constants.mass_h
                                 /volume_factor[ens]/constants.voxel_size**3/constants.pc**3/100**3
                                 for ens in range(len(constants.clump_mass_number))]
-        if isinstance(ensemble_density, list) or isinstance(ensemble_density, np.ndarray):
+        if isinstance(ensemble_density, (list, tuple, np.ndarray)):
             self.__ensemble_density = ensemble_density
         else:
             self.__ensemble_density = [ensemble_density] * len(constants.clump_mass_number)
 
-        if isinstance(fuv, list) or isinstance(fuv, np.ndarray):
+        if isinstance(fuv, (list, tuple, np.ndarray)):
             self.__fuv = fuv
         else:
             self.__fuv = [fuv] * len(clump_mass_number)
