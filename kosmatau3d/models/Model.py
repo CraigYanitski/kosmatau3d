@@ -933,7 +933,7 @@ class SyntheticModel(object):
         else:
             return np.array(intensity[0])
 
-    def get_species_optical_depth(self, transition=None, idx=None, include_dust=False, integrated=False):
+    def get_species_optical_depth(self, transition=None, idx=None, include_dust=False):
 
         if transition is None and idx is None:
             transition = self.species
@@ -1078,9 +1078,11 @@ class SyntheticModel(object):
             print('Please specify a property to plot')
 
         if quantity == 'intensity' and isinstance(transition, (list, np.ndarray)):
-            transition2 = transition[1]
-            transition = transition[0]
-        if quantity == 'emissivity' and transition in self.species:
+            # transition2 = transition[1]
+            transition = transition
+            value = self.get_model_species_intensity(transition=transition, include_dust=False, integrated=True)
+            clabel = r'$\varpi$ (K km s$^{-1}$)'
+        elif quantity == 'emissivity' and transition in self.species:
             value = self.species_emissivity[:, :, self.species==transition]
             clabel = r'$\epsilon$ (K pc$^{-1}$)'
         elif quantity == 'absorption' and transition in self.species:
@@ -1098,11 +1100,15 @@ class SyntheticModel(object):
         elif quantity == 'absorption' and transition == 'HI' and self.hi_model:
             value = self.hi_absorption[:, :, 0]
             clabel = r'$\kappa$ (pc$^{-1}$)'
+        elif quantity == 'FUV' or quantity == 'fuv':
+            value = self.fuv
+            clabel = r'$\chi$ $\chi_\mathrm{D}$'
         else:
             print('Quantity not available.')
             return
 
         X, Y, Z = self.position.T
+        lims = (X.min(), X.max())
 
         fig = plt.figure(figsize=(10, 8))
         ax = fig.add_subplot(111, projection='3d')
