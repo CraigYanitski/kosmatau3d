@@ -161,16 +161,18 @@ class Voxel(object):
         return self.__fuv
   
     def set_properties(self, voxel_size=1, transitions='all', dust='PAH', alpha=1.84, gamma=2.31, 
-                       tau_grid_file='clump_tau_LineCenter.dat', 
-                       tb_grid_file='clump_Tmb_LineCenter.dat', 
-                       tau_fuv_grid_file='RhoMassAFUV.dat',
-                       column_density_file='meanCols.dat',
-                       temperature_file='temperatures_filled.dat',
-                       interclump_tau_grid_file='clump_tau_LineCenter.dat', 
-                       interclump_tb_grid_file='clump_Tmb_LineCenter.dat', 
-                       interclump_tau_fuv_grid_file='RhoMassAFUV.dat',
-                       interclump_column_density_file='meanCols.dat',
-                       interclump_temperature_file='temperatures_filled.dat',
+                       clump_tau_grid_file='clump_tau_LineCenter.dat', 
+                       clump_tb_grid_file='clump_Tmb_LineCenter.dat', 
+                       clump_taufuv_grid_file='RhoMassAFUV.dat',
+                       clump_column_density_file='clumpMeanCols.dat',
+                       clump_temperature_file='clumpTemperatures_filled.dat',
+                       interclump_tau_grid_file='interclumpTauLineCenter.dat', 
+                       interclump_dust_tau_grid_file='interclumpDustTau.dat', 
+                       interclump_tb_grid_file='interclumpTmbLineCenter.dat', 
+                       interclump_dust_tb_grid_file='interclumpDustSED.dat', 
+                       interclump_taufuv_grid_file='interclumpTauFUV.dat',
+                       interclump_column_density_file='interclumpMeanCols.dat',
+                       interclump_temperature_file='interclumpTemperatures_filled.dat',
                        clump_mass_number=[3,1], clump_mass_range=[[0,2],[-2]], clump_n_max=[1, 100], 
                        interclump_idx=[False, True],
                        velocity_range=[-10,10], velocity_number=51, 
@@ -308,15 +310,17 @@ class Voxel(object):
                     not interpolations.initialised or not observations.grid_initialised or \
                     dust != constants.dust:
                 constants.change_dust_wavelengths(dust)
-                observations.methods.initialise_grid(tau_grid_file=tau_grid_file,
+                observations.methods.initialise_grid(clump_tau_grid_file=clump_tau_grid_file,
                                                      interclump_tau_grid_file=interclump_tau_grid_file,
-                                                     tb_grid_file=tb_grid_file,
+                                                     interclump_dust_tau_grid_file=interclump_dust_tau_grid_file,
+                                                     clump_tb_grid_file=clump_tb_grid_file,
                                                      interclump_tb_grid_file=interclump_tb_grid_file,
-                                                     tau_fuv_grid_file=tau_fuv_grid_file,
-                                                     interclump_tau_fuv_grid_file=interclump_tau_fuv_grid_file,
-                                                     column_density_file=column_density_file,
+                                                     interclump_dust_tb_grid_file=interclump_dust_tb_grid_file,
+                                                     clump_taufuv_grid_file=clump_taufuv_grid_file,
+                                                     interclump_taufuv_grid_file=interclump_taufuv_grid_file,
+                                                     clump_column_density_file=clump_column_density_file,
                                                      interclump_column_density_file=interclump_column_density_file,
-                                                     temperature_file=temperature_file,
+                                                     clump_temperature_file=clump_temperature_file,
                                                      interclump_temperature_file=interclump_temperature_file)
                 species.add_transitions(transitions)
                 interpolations.initialise_grid(dilled=dilled)

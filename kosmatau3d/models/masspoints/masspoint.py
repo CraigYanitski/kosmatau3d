@@ -52,11 +52,15 @@ def set_masspoint_data(density=[], fuv=[0], crir=2e-16):
 
 
 def get_taufuv(debug=False):
-    clumpAfuv = [[] for _ in range(len(constants.clump_mass_number))]
+    taufuv = [[] for _ in range(len(constants.clump_mass_number))]
     for ens in range(len(constants.clump_mass_number)):
-        clumpAfuv[ens] = interpolations.interpolate_taufuv(masspoints.clump_log_density[ens],
-                                                           constants.clump_log_mass[ens])[0]
-    return clumpAfuv
+        if constants.interclump_idx[ens]:
+            taufuv[ens] = interpolations.interpolate_interclump_taufuv(masspoints.clump_log_density[ens],
+                                                                       constants.clump_log_mass[ens])[0]
+        else:
+            taufuv[ens] = interpolations.interpolate_clump_taufuv(masspoints.clump_log_density[ens],
+                                                                  constants.clump_log_mass[ens])[0]
+    return taufuv
 
 
 def masspoint_emission(interpolation_point, ens, masspoint, velocity=0, verbose=False, debug=False, test=False):
@@ -80,8 +84,8 @@ def masspoint_emission(interpolation_point, ens, masspoint, velocity=0, verbose=
             intensity = interpolations.interpolate_interclump_species_intensity(interpolation_point[1:])
             tau = interpolations.interpolate_interclump_species_tau(interpolation_point[1:])
         else:
-            intensity = interpolations.interpolate_species_intensity(interpolation_point)
-            tau = interpolations.interpolate_species_tau(interpolation_point)
+            intensity = interpolations.interpolate_clump_species_intensity(interpolation_point)
+            tau = interpolations.interpolate_clump_species_tau(interpolation_point)
     
         intensity_xi.append(deepcopy(intensity))
         opticaldepth_xi.append(deepcopy(tau))
@@ -99,8 +103,8 @@ def masspoint_emission(interpolation_point, ens, masspoint, velocity=0, verbose=
             intensity = (interpolations.interpolate_interclump_dust_intensity(interpolation_point[1:]))
             tau = interpolations.interpolate_interclump_dust_tau(interpolation_point[1:])
         else:
-            intensity = (interpolations.interpolate_dust_intensity(interpolation_point))
-            tau = interpolations.interpolate_dust_tau(interpolation_point)
+            intensity = (interpolations.interpolate_clump_dust_intensity(interpolation_point))
+            tau = interpolations.interpolate_clump_dust_tau(interpolation_point)
     
         # Append clump-corrected dust emission
         intensity_xi.append(intensity/np.pi/(np.arcsin(radius/10.)**2))
@@ -119,8 +123,8 @@ def masspoint_emission(interpolation_point, ens, masspoint, velocity=0, verbose=
         t_g = interpolations.interpolate_interclump_tg(interpolation_point[1:])
         t_d = interpolations.interpolate_interclump_td(interpolation_point[1:])
     else:
-        t_g = interpolations.interpolate_tg(interpolation_point[1:])
-        t_d = interpolations.interpolate_td(interpolation_point[1:])
+        t_g = interpolations.interpolate_clump_tg(interpolation_point[1:])
+        t_d = interpolations.interpolate_clump_td(interpolation_point[1:])
     masspoints.clump_t_gas[ens][0, masspoint] = copy(t_g)
     masspoints.clump_t_dust[ens][0, masspoint] = copy(t_d)
 
@@ -128,8 +132,8 @@ def masspoint_emission(interpolation_point, ens, masspoint, velocity=0, verbose=
         n_hi = interpolations.interpolate_interclump_hi_column_density(interpolation_point[1:])
         n_h2 = interpolations.interpolate_interclump_h2_column_density(interpolation_point[1:])
     else:
-        n_hi = interpolations.interpolate_hi_column_density(interpolation_point[1:])
-        n_h2 = interpolations.interpolate_h2_column_density(interpolation_point[1:])
+        n_hi = interpolations.interpolate_clump_hi_column_density(interpolation_point[1:])
+        n_h2 = interpolations.interpolate_clump_h2_column_density(interpolation_point[1:])
     masspoints.clump_hi_col_dens[ens][0, masspoint] = copy(n_hi)
     masspoints.clump_h2_col_dens[ens][0, masspoint] = copy(n_h2)
 
