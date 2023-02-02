@@ -110,7 +110,7 @@ def interclump_dust_tb(file='interclumpDustTmb.dat'):
     # Open file for KOSMA-tau simulations of line intensities
     # FORMAT: n, M, UV, intensity[dust]
     tb = pd.read_csv(constants.GRIDPATH+file, sep='\s+')
-    observations.interclump_dust_tb_centerline = (tb.loc[:, ['n', 'M', 'chi']], tb.loc[:, '3.1mm':])
+    observations.interclump_dust_tb_centerline = (tb.loc[:, ['n', 'M', 'chi']].to_numpy(), tb.loc[:, '3.1mm':].to_numpy())
     return
 
 
@@ -139,14 +139,14 @@ def interclump_dust_tau(file='interclumpDustTau.dat'):
 
 
 def clump_taufuv(file='RhoMassAFUV.dat'):
-    pma = np.genfromtxt(constants.GRIDPATH+file)
-    observations.clump_taufuv = (pma[:, :2], pma[:, 2])
+    taufuv = pd.read_csv(constants.GRIDPATH+file, sep='\s+')
+    observations.clump_taufuv = (taufuv.loc[:, ['n', 'M']].to_numpy(), taufuv.loc[:, 'tauFUV'].to_numpy())
     return
 
 
 def interclump_taufuv(file='interclumpTauFUV.dat'):
     taufuv = pd.read_csv(constants.GRIDPATH+file, sep='\s+')
-    observations.interclump_taufuv = (taufuv.loc[:, ['n', 'M', 'chi']], taufuv.loc[:, 'tauFUV'])
+    observations.interclump_taufuv = (taufuv.loc[:, ['n', 'M', 'chi']].to_numpy(), taufuv.loc[:, 'tauFUV'].to_numpy())
     return
 
 

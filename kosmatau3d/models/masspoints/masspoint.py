@@ -78,7 +78,7 @@ def masspoint_emission(interpolation_point, ens, masspoint, velocity=0, verbose=
     intensity_xi = []
     opticaldepth_xi = []
   
-    if len(species.transitions):
+    if len(species.clump_transitions):
         # Intensity currently in converted to Jansky, to coinside with the dust continuum
         if constants.interclump_idx[ens]:
             intensity = interpolations.interpolate_interclump_species_intensity(interpolation_point[1:])
@@ -182,14 +182,14 @@ def calculate_emission(taufuv=0, timed=False):
 def plot_intensity(transitions='all', quantity='intensity', n_cl=[], title='', velocity=None, logscale=None,
                    test_calc=False):
 
-    if isinstance(transitions, str) and transitions in species.transitions:
+    if isinstance(transitions, str) and transitions in species.clump_transitions:
         transitions = [transitions]
   
     elif isinstance(transitions, list) or isinstance(transitions, np.ndarray):
         pass
   
     else:
-        transitions = species.transitions
+        transitions = species.clump_transitions
   
     n_dust = constants.wavelengths[constants.n_dust].size
     if not velocity:
@@ -227,11 +227,11 @@ def plot_intensity(transitions='all', quantity='intensity', n_cl=[], title='', v
       
             for transition in transitions:
       
-                if transition not in species.transitions:
+                if transition not in species.clump_transitions:
                     print('Species {} not in model.'.format(transition))
                     continue
         
-                i = n_dust + np.where(transition == np.asarray(species.transitions))[0][0]
+                i = n_dust + np.where(transition == np.asarray(species.clump_transitions))[0][0]
                 Icl = masspoints.clump_intensity[ens][clump, i]*profile
                 tcl = masspoints.clump_optical_depth[ens][clump, i]*profile
                 intensity = Icl/tcl*(1-np.exp(-tcl))
@@ -316,16 +316,18 @@ def reinitialise():
     # Emission
   
     masspoints.clump_intensity = [np.zeros((constants.clump_mass_number[_],
-                                            len(species.transitions) 
+                                            len(species.clump_transitions) 
                                                 + constants.wavelengths[constants.n_dust].size))
                                   for _ in range(constants.ensembles)]
     masspoints.clump_optical_depth = [np.zeros((constants.clump_mass_number[_],
-                                                len(species.transitions) 
+                                                len(species.clump_transitions) 
                                                     + constants.wavelengths[constants.n_dust].size))
                                       for _ in range(constants.ensembles)]
-    masspoints.clump_species_intensity = [np.zeros((constants.clump_mass_number[_], len(species.transitions)))
+    masspoints.clump_species_intensity = [np.zeros((constants.clump_mass_number[_], 
+                                                   len(species.clump_transitions)))
                                           for _ in range(len(constants.clump_mass_number))]
-    masspoints.clump_species_optical_depth = [np.zeros((constants.clump_mass_number[_], len(species.transitions)))
+    masspoints.clump_species_optical_depth = [np.zeros((constants.clump_mass_number[_], 
+                                                       len(species.clump_transitions)))
                                               for _ in range(len(constants.clump_mass_number))]
     masspoints.clump_dust_intensity = [np.zeros((constants.clump_mass_number[_],
                                                  constants.wavelengths[constants.n_dust].size))

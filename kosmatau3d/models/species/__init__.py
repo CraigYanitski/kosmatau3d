@@ -1,11 +1,16 @@
-import numpy as np
+#import numpy as np
 
 from .molecules import *
-from kosmatau3d.models import observations
+#from kosmatau3d.models import observations
 
 
-transitions = []
-transition_indeces = []
+clump_transitions = []
+clump_transition_indeces = []
+clump_interclump_transition_indeces = []
+clump_transition_frequencies = []
+clump_transition_wavelengths = []
+interclump_transitions = []
 interclump_transition_indeces = []
-transition_frequencies = []
-transition_wavelengths = []
+interclump_interclump_transition_indeces = []
+interclump_transition_frequencies = []
+interclump_transition_wavelengths = []

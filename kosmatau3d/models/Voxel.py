@@ -305,6 +305,7 @@ class Voxel(object):
 
             if constants.interclump_idx != interclump_idx:
                 constants.set_interclump_ensemble(interclump_idx)
+                change_interpolation = True
 
             if new_grid or change_interpolation or \
                     not interpolations.initialised or not observations.grid_initialised or \
@@ -323,6 +324,7 @@ class Voxel(object):
                                                      clump_temperature_file=clump_temperature_file,
                                                      interclump_temperature_file=interclump_temperature_file)
                 species.add_transitions(transitions)
+                species.add_transitions(transitions, interclump=True)
                 interpolations.initialise_grid(dilled=dilled)
 
         #print('interpolation initialised:', (time()-t0)/60)
@@ -437,10 +439,10 @@ class Voxel(object):
 
         if suggested_calc:
             self.__intensity_species = [np.zeros((len(ensemble.clumpIndeces[_]),
-                                                  len(species.transitions)), dtype=np.float64)
+                                                  len(species.clump_transitions)), dtype=np.float64)
                                         for _ in range(constants.ensembles)]
             self.__optical_depth_species = [np.zeros((len(ensemble.clumpIndeces[_]),
-                                                      len(species.transitions)), dtype=np.float64)
+                                                      len(species.clump_transitions)), dtype=np.float64)
                                             for _ in range(constants.ensembles)]
             self.__intensity_dust = [np.zeros((len(ensemble.clumpIndeces[_]),
                                                constants.wavelengths[constants.n_dust].size), 
@@ -458,10 +460,10 @@ class Voxel(object):
                                          for _ in range(constants.ensembles)]
         else:
             self.__intensity_species = [np.zeros((constants.velocity_range.size,
-                                                  len(species.transitions)), dtype=np.float64)
+                                                  len(species.clump_transitions)), dtype=np.float64)
                                         for _ in range(constants.ensembles)]
             self.__optical_depth_species = [np.zeros((constants.velocity_range.size,
-                                                      len(species.transitions)), dtype=np.float64)
+                                                      len(species.clump_transitions)), dtype=np.float64)
                                             for _ in range(constants.ensembles)]
             self.__intensity_dust = [np.zeros((constants.velocity_range.size,
                                                constants.wavelengths[constants.n_dust].size), 
@@ -778,7 +780,7 @@ class Voxel(object):
                         opticalDepthDustInterp = interp1d(constants.wavelengths[constants.n_dust],
                                                           self.__optical_depth_dust[ens].max(0), fill_value='extrapolate')
 
-                    for i, transition in enumerate(species.transition_wavelengths):
+                    for i, transition in enumerate(species.clump_transition_wavelengths):
                         if iDust > 10:
                             self.__intensity_species[ens][:, i] += intensityDustInterp(transition)
                             self.__optical_depth_species[ens][:, i] += opticalDepthDustInterp(transition)
@@ -897,13 +899,13 @@ class Voxel(object):
                             if hi:
                                 epsilon_species[ens][:, 0] += epsilon_dust_interp(0.21106)
                             else:
-                                for i, transition in enumerate(species.transition_wavelengths):
+                                for i, transition in enumerate(species.clump_transition_wavelengths):
                                     epsilon_species[ens][:, i] += epsilon_dust_interp(transition)
                         else:
                             if hi:
                                 epsilon_species[ens][:, 0] += epsilon_dust[ens].mean()
                             else:
-                                for i in range(len(species.transitions)):
+                                for i in range(len(species.clump_transitions)):
                                     epsilon_species[ens][:, i] += epsilon_dust[ens].mean()
                 else:
                     if hi:
@@ -918,11 +920,11 @@ class Voxel(object):
                     if np.where(constants.n_dust)[0].size > 1:
                         epsilon_dust_interp = interp1d(constants.wavelengths[constants.n_dust],
                                                        epsilon_dust[ens].max(0), fill_value='extrapolate')
-                        for i, transition in enumerate(species.transition_wavelengths):
+                        for i, transition in enumerate(species.clump_transition_wavelengths):
                             if epsilon_dust[ens].shape[1] > 1:
                                 epsilon_species[ens][:, i] -= epsilon_dust_interp(transition)
                     else:
-                        for i in range(len(species.transitions)):
+                        for i in range(len(species.clump_transitions)):
                             epsilon_species[ens][:, i] -= epsilon_dust[ens].max(0)
         if total:
             return np.asarray(epsilon_species).sum(0)
@@ -988,13 +990,13 @@ class Voxel(object):
                             if hi:
                                 kappa_species[ens][:, 0] += kappa_dust_interp(0.21106)
                             else:
-                                for i, transition in enumerate(species.transition_wavelengths):
+                                for i, transition in enumerate(species.clump_transition_wavelengths):
                                     kappa_species[ens][:, i] += kappa_dust_interp(transition)
                         else:
                             if hi:
                                 kappa_species[ens][:, 0] += kappa_dust[ens].mean()
                             else:
-                                for i in range(len(species.transitions)):
+                                for i in range(len(species.clump_transitions)):
                                     kappa_species[ens][:, i] += kappa_dust[ens].mean()
                 else:
                     if hi:
@@ -1009,11 +1011,11 @@ class Voxel(object):
                     if np.where(constants.n_dust)[0].size > 1:
                         kappa_dust_interp = interp1d(constants.wavelengths[constants.n_dust],
                                                      kappa_dust[ens].max(0), fill_value='extrapolate')
-                        for i, transition in enumerate(species.transition_wavelengths):
+                        for i, transition in enumerate(species.clump_transition_wavelengths):
                             if kappa_dust[ens].shape[1] > 1:
                                 kappa_species[ens][:, i] -= kappa_dust_interp(transition)
                     else:
-                        for i in range(len(species.transitions)):
+                        for i in range(len(species.clump_transitions)):
                             kappa_species[ens][i] -= kappa_dust[ens].max(0)
         if total:
             return np.asarray(kappa_species).sum(0)
@@ -1077,13 +1079,13 @@ class Voxel(object):
                             if hi:
                                 tau_species[ens][:, 0] += tau_dust_interp(0.21106)
                             else:
-                                for i, transition in enumerate(species.transition_wavelengths):
+                                for i, transition in enumerate(species.clump_transition_wavelengths):
                                     tau_species[ens][:, i] += tau_dust_interp(transition)
                         else:
                             if hi:
                                 tau_species[ens][:, 0] += tau_dust[ens].mean()
                             else:
-                                for i in range(len(species.transitions)):
+                                for i in range(len(species.clump_transitions)):
                                     tau_species[ens][:, i] += tau_dust[ens].mean()
                 else:
                     if hi:
@@ -1142,10 +1144,10 @@ class Voxel(object):
                     if np.where(constants.n_dust)[0].size > 10:
                         intensity_dust_interp = interp1d(constants.wavelengths[constants.n_dust],
                                                          intensity_dust[ens].max(0), fill_value='extrapolate')
-                        for i, transition in enumerate(species.transition_wavelengths):
+                        for i, transition in enumerate(species.clump_transition_wavelengths):
                             intensity[:, i] -= intensity_dust_interp(transition)
                     else:
-                        for i in range(len(species.transitions)):
+                        for i in range(len(species.clump_transitions)):
                             intensity[:, i] -= intensity_dust[ens].mean()
                     intensity_final.append(np.trapz(intensity, vel, axis=0))
                     if include_dust:
@@ -1155,13 +1157,13 @@ class Voxel(object):
                             if hi:
                                 intensity_final[-1][0] += intensity_dust_interp(0.21106)
                             else:
-                                for i, transition in enumerate(species.transition_wavelengths):
+                                for i, transition in enumerate(species.clump_transition_wavelengths):
                                     intensity_final[-1][i] += intensity_dust_interp(transition)
                         else:
                             if hi:
                                 intensity_final[-1][0] += intensity_dust[ens].mean()
                             else:
-                                for i in range(len(species.transitions)):
+                                for i in range(len(species.clump_transitions)):
                                     intensity_final[-1][i] += intensity_dust[ens].mean()
                 else:
                     if include_dust:
@@ -1175,13 +1177,13 @@ class Voxel(object):
                             if hi:
                                 intensity_final[-1][:, 0] -= intensity_dust_interp(0.21106)
                             else:
-                                for i, transition in enumerate(species.transition_wavelengths):
+                                for i, transition in enumerate(species.clump_transition_wavelengths):
                                     intensity_final[-1][:, i] -= intensity_dust_interp(transition)
                         else:
                             if hi:
                                 intensity_final[-1][:, 0] -= intensity_dust[ens].mean()
                             else:
-                                for i in range(len(species.transitions)):
+                                for i in range(len(species.clump_transitions)):
                                     intensity_final[-1][:, i] -= intensity_dust[ens].mean()
         else:
             if total:
@@ -1207,7 +1209,7 @@ class Voxel(object):
                     if np.where(constants.n_dust)[0].size > 1:
                         intensity_dust_interp = interp1d(constants.wavelengths[constants.n_dust],
                                                        intensity_dust[ens].max(0), fill_value='extrapolate')
-                        for i, transition in enumerate(species.transition_wavelengths):
+                        for i, transition in enumerate(species.clump_transition_wavelengths):
                             if intensity_dust[ens].shape[1] > 1:
                                 intensity[ens][:, i] -= intensity_dust_interp(transition)
                     else:
@@ -1221,7 +1223,7 @@ class Voxel(object):
                         if np.where(constants.n_dust)[0].size > 1:
                             intensity_dust_interp = interp1d(constants.wavelengths[constants.n_dust],
                                                            intensity_dust[ens].max(0), fill_value='extrapolate')
-                            for i, transition in enumerate(species.transition_wavelengths):
+                            for i, transition in enumerate(species.clump_transition_wavelengths):
                                 intensity_final[ens][i] += intensity_dust_interp(transition)
                         else:
                             intensity_final[ens] += intensity_dust[ens].max(0)
@@ -1362,14 +1364,14 @@ class Voxel(object):
     
         import matplotlib.pyplot as plt
     
-        if transition in species.transitions and isinstance(transition, str):
+        if transition in species.clump_transitions and isinstance(transition, str):
             transition = [transition]
     
         elif isinstance(transition, list):
             pass
     
         else:
-            transition = species.transitions
+            transition = species.clump_transitions
     
         if quantity == 'emissivity':
             value = self.get_species_emissivity(kind=kind, include_dust=include_dust, total=total)
@@ -1402,11 +1404,14 @@ class Voxel(object):
       
             for n, trans in enumerate(transition):
       
-                if trans not in species.transitions:
+                if trans not in species.clump_transitions:
                     self.__logger.warning('Species {} not in model.'.format(trans))
                     continue
         
-                i = np.where(trans == np.asarray(species.transitions))[0][0]
+                if constants.interclump_idx[ens]:
+                    i = np.where(trans == np.asarray(species.interclump_transitions))[0][0]
+                else:
+                    i = np.where(trans == np.asarray(species.clump_transitions))[0][0]
                 
                 if logscale:
                     ax.semilogy(vel, value[ens][:, i], marker='o', ms=2, ls='-', lw=1)
@@ -1515,15 +1520,15 @@ class Voxel(object):
             transition_species = []
             colour = []
       
-            for i, transition in enumerate(species.transitions):
+            for i, transition in enumerate(species.clump_transitions):
                 if valueDust[ens].shape[1] > 1:
-                    valTemp = dustInterp(species.transition_wavelengths[i])
+                    valTemp = dustInterp(species.clump_transition_wavelengths[i])
                 else:
                     valTemp = valueDust[ens][vel, 0]
                 if not transition.split()[0] in transition_species:
                     colour.append(species_colour[transition.split()[0]])
                     transition_species.append(transition.split()[0])
-                ax.loglog([1e6*species.transition_wavelengths[i]]*2, [valTemp, valueSpecies[ens][vel, i]],
+                ax.loglog([1e6*species.clump_transition_wavelengths[i]]*2, [valTemp, valueSpecies[ens][vel, i]],
                           ls='-', lw=1, c=colour[-1])
       
             lines = [Line2D([0], [0], color=species_colour[transition], lw=1) for transition in transition_species]

@@ -1,7 +1,7 @@
 import numpy as np
 from copy import copy
-from numba import jit_module
-import importlib as il
+#from numba import jit_module
+#import importlib as il
 
 from kosmatau3d.models import combinations
 from kosmatau3d.models import constants

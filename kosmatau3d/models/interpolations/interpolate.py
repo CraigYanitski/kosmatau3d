@@ -1,5 +1,5 @@
 import sys
-import importlib as il
+#import importlib as il
 
 import numpy as np
 import pandas as pd
@@ -8,7 +8,7 @@ import dill
 import warnings
 
 from copy import copy
-from numba import jit_module
+#from numba import jit_module
 from numba.core.errors import NumbaWarning, NumbaDeprecationWarning, NumbaPendingDeprecationWarning
 
 from kosmatau3d.models import constants
@@ -74,10 +74,10 @@ def calculate_clump_grid_interpolation(verbose=False, dilled=False):
     '''
     np.seterr(divide='ignore', invalid='ignore')
     if interpolations.initialised:
-        del interpolations.species_intensity_interpolation
-        del interpolations.species_tau_interpolation
-        del interpolations.dust_intensity_interpolation
-        del interpolations.dust_tau_interpolation
+        del interpolations.clump_species_intensity_interpolation
+        del interpolations.clump_species_tau_interpolation
+        del interpolations.clump_dust_intensity_interpolation
+        del interpolations.clump_dust_tau_interpolation
     interpolations.clump_species_intensity_interpolation = []
     interpolations.clump_species_tau_interpolation = []
     interpolations.clump_dust_intensity_interpolation = []
@@ -93,11 +93,11 @@ def calculate_clump_grid_interpolation(verbose=False, dilled=False):
             dust_tau_interpolation = dill.load(file)
         # interpolations.intensityInterpolation = []
         # interpolations.tauInterpolation = []
-        if len(species.transition_indeces) == len(species_intensity_interpolation):
+        if len(species.clump_transition_indeces) == len(species_intensity_interpolation):
             interpolations.clump_species_intensity_interpolation = species_intensity_interpolation
             interpolations.clump_species_tau_interpolation = species_tau_interpolation
         else:
-            for index in species.transition_indeces:
+            for index in species.clump_transition_indeces:
                 interpolations.clump_species_intensity_interpolation.append(
                         species_intensity_interpolation[index[0][0]])
                 interpolations.clump_species_tau_interpolation.append(species_tau_interpolation[index[0][0]])
@@ -149,7 +149,7 @@ def calculate_clump_grid_interpolation(verbose=False, dilled=False):
                 interpolations.clump_dust_tau_interpolation.append(
                         interpolate.LinearNDInterpolator(crnmuvTau, 
                                                          logTau[:, constants.transition_number+i]))
-        for index in species.transition_indeces:
+        for index in species.clump_transition_indeces:
             if verbose:
                 print('Creating intensity grid interpolation')
             rInterpI = interpolate.LinearNDInterpolator(crnmuvI, logI[:, index])
@@ -168,7 +168,7 @@ def calculate_clump_grid_interpolation(verbose=False, dilled=False):
             interpolations.clump_dust_tau_interpolation = interpolate.Rbf(
                     crnmuvTau[:, 0], crnmuvTau[:, 1], crnmuvTau[:, 2], crnmuvTau[:, 3], 
                     logTau[:, constants.transition_number:][:, constants.n_dust])
-        for index in species.transition_indeces:
+        for index in species.clump_transition_indeces:
             if verbose:
                 print('Creating intensity grid interpolation')
             rInterpI = interpolate.Rbf(

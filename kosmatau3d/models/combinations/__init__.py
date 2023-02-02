@@ -1,5 +1,5 @@
-import numpy as np
-from numba import jit_module
+#import numpy as np
+#from numba import jit_module
 
 from .combination import *
 from kosmatau3d.models import constants
