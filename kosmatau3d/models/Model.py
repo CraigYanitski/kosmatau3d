@@ -29,15 +29,15 @@ class Model(object):
   
     def __init__(self, history_path='', directory='', folder='', 
                  tau_grid_file='clump_tau_LineCenter.dat', 
-                 interclump_tau_grid_file='clump_tau_LineCenter.dat', 
+                 interclump_tau_grid_file='interclumpTauLineCenter.dat', 
                  tb_grid_file='clump_Tmb_LineCenter.dat', 
-                 interclump_tb_grid_file='clump_Tmb_LineCenter.dat', 
+                 interclump_tb_grid_file='interclumpTmbLineCenter.dat', 
                  tau_fuv_grid_file='RhoMassAFUV.dat',
-                 interclump_tau_fuv_grid_file='RhoMassAFUV.dat',
-                 column_density_file='meanCols.dat',
-                 interclump_column_density_file='meanCols.dat',
-                 temperature_file='temperatures_filled.dat',
-                 interclump_temperature_file='temperatures_filled.dat',
+                 interclump_tau_fuv_grid_file='interclumpTauFUV.dat',
+                 column_density_file='clumpMeanCols.dat',
+                 interclump_column_density_file='interclumpMeanCols.dat',
+                 temperature_file='clumpTemperatures_filled.dat',
+                 interclump_temperature_file='interclumpTemperatures_filled.dat',
                  h2_surface_density_file='h2_surface-density.dat', 
                  hi_surface_density_file='hi_surface-density.dat', 
                  h2_scale_height_file='h2_scale-height.dat', 
@@ -95,15 +95,15 @@ class Model(object):
         constants.tb_grid_file = tb_grid_file
         constants.tau_grid_file = tau_grid_file
         constants.tau_fuv_grid_file = tau_fuv_grid_file
-        observations.methods.initialise_grid(tau_grid_file=tau_grid_file, 
+        observations.methods.initialise_grid(clump_tau_grid_file=tau_grid_file, 
                                              interclump_tau_grid_file=interclump_tau_grid_file, 
-                                             tb_grid_file=tb_grid_file, 
+                                             clump_tb_grid_file=tb_grid_file, 
                                              interclump_tb_grid_file=interclump_tb_grid_file, 
-                                             tau_fuv_grid_file=tau_fuv_grid_file, 
-                                             interclump_tau_fuv_grid_file=interclump_tau_fuv_grid_file,
-                                             column_density_file=column_density_file,
+                                             clump_taufuv_grid_file=tau_fuv_grid_file, 
+                                             interclump_taufuv_grid_file=interclump_tau_fuv_grid_file,
+                                             clump_column_density_file=column_density_file,
                                              interclump_column_density_file=interclump_column_density_file,
-                                             temperature_file=temperature_file,
+                                             clump_temperature_file=temperature_file,
                                              interclump_temperature_file=interclump_temperature_file)
         constants.h2_surface_density_file = h2_surface_density_file
         constants.hi_surface_density_file = hi_surface_density_file
