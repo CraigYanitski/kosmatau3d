@@ -184,8 +184,11 @@ def setup_interclump_species(species):
     return
 
 
-def resort_wavelengths():
-    all_wavelengths = np.append(constants.wavelengths[constants.n_dust], species.transition_wavelengths)
+def resort_wavelengths(interclump=False):
+    if interclump:
+        all_wavelengths = np.append(constants.wavelengths[constants.n_dust], species.interclump_transition_wavelengths)
+    else:
+        all_wavelengths = np.append(constants.wavelengths[constants.n_dust], species.clump_transition_wavelengths)
     constants.sorted_indeces = all_wavelengths.argsort()
     constants.sorted_wavelengths = all_wavelengths[constants.sorted_indeces]
     return

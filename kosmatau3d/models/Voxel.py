@@ -1323,9 +1323,9 @@ class Voxel(object):
 
         import matplotlib.pyplot as plt
 
-        xlabel = r'$v_i \ \left( \frac{km}{s} \right)$'
+        xlabel = r'$v_i \ \left( \mathrm{\frac{km}{s}} \right)$'
         if effective or not self.suggested_calc:
-            ylabel = r'$\mathcal{N}_{eff}$'
+            ylabel = r'$\mathcal{N}_mathrm{eff}$'
             title = 'Clump ensemble {} effective number'
         else:
             ylabel = r'$\mathcal{N}$'
@@ -1375,16 +1375,16 @@ class Voxel(object):
     
         if quantity == 'emissivity':
             value = self.get_species_emissivity(kind=kind, include_dust=include_dust, total=total)
-            ylabel = r'$\epsilon_{\lambda} \ \left( \frac{K}{pc} \right)$'
+            ylabel = r'$\epsilon_{\lambda} \ \left( \mathrm{\frac{K}{pc}} \right)$'
         elif quantity == 'absorption':
             value = self.get_species_absorption(kind=kind, include_dust=include_dust, total=total)
-            ylabel = r'$\kappa_{\lambda} \ \left( \frac{1}{pc} \right)$'
+            ylabel = r'$\kappa_{\lambda} \ \left( \mathrm{\frac{1}{pc}} \right)$'
         elif quantity == 'optical depth':
             value = self.get_species_optical_depth(kind=kind, include_dust=include_dust, total=total)
             ylabel = r'$\tau_{\lambda} \ \left( \mathrm{N/A} \right)$'
         elif quantity == 'intensity':
             value = self.get_species_intensity(kind=kind, include_dust=include_dust, total=total)
-            ylabel = r'$I_{\lambda} \ \left( K \right)$'
+            ylabel = r'$I_{\lambda} \ \left( \mathrm{K} \right)$'
         else:
             self.__logger.warning('Quantity {} not available.'.format(quantity))
             return
@@ -1426,7 +1426,7 @@ class Voxel(object):
                     labels.append(trans)
       
             ax.legend(labels=labels, fontsize=16, bbox_to_anchor=(1, 1), loc='upper left')
-            ax.set_xlabel(r'$V_r \ (\frac{km}{s})$', fontsize=24)
+            ax.set_xlabel(r'$V_r \ ( \mathrm{\frac{km}{s}} )$', fontsize=24)
             ax.set_ylabel(ylabel, fontsize=24)
             plt.setp(ax.get_xticklabels(), fontsize=16)
             plt.setp(ax.get_yticklabels(), fontsize=16)
@@ -1465,28 +1465,27 @@ class Voxel(object):
                            'H3O+': 'xkcd:vomit'
                          }
     
-        constants.resort_wavelengths()
         nDust = constants.wavelengths[constants.n_dust].size
     
         if quantity == 'emissivity':
             valueDust = self.get_dust_emissivity(total=False)
             valueSpecies = self.get_species_emissivity(kind=kind, include_dust=True, total=False)
-            ylabel = r'$\epsilon_{\lambda} \ \left( \frac{K}{pc} \right)$'
+            ylabel = r'$\epsilon_{\lambda} \ \left( \mathrm{\frac{K}{pc}} \right)$'
     
         elif quantity == 'absorption':
             valueDust = self.get_dust_absorption(total=False)
             valueSpecies = self.get_species_absorption(kind=kind, include_dust=True, total=False)
-            ylabel = r'$\kappa_{\lambda} \ \left( \frac{1}{pc} \right)$'
+            ylabel = r'$\kappa_{\lambda} \ \left( \mathrm{\frac{1}{pc}} \right)$'
     
         elif quantity == 'intensity':
             valueDust = self.get_dust_intensity(total=False)
             if integrated:
                 valueSpecies = self.get_species_intensity(kind=kind, include_dust=True,
                                                         integrated=integrated, total=False)
-                ylabel = r'$\varpi_{\lambda} \ \left( K \frac{km}{s} \right)$'
+                ylabel = r'$\varpi_{\lambda} \ \left( \mathrm{K \frac{km}{s}} \right)$'
             else:
                 valueSpecies = self.get_species_intensity(kind=kind, include_dust=True, total=False)
-                ylabel = r'$I_{\lambda} \ \left( K \right)$'
+                ylabel = r'$I_{\lambda} \ \left( \mathrm{K} \right)$'
         
         else:
             self.__logger.warning('Quantity {} not available.'.format(quantity))
@@ -1501,6 +1500,11 @@ class Voxel(object):
       
             else:
                 ax = axes
+            
+            # if constants.interclump_idx[ens]:
+            #     constants.resort_wavelengths(interclump=True)
+            # else:
+            #     constants.resort_wavelengths()
 
             if integrated and quantity=='intensity':
                 vel = 0
@@ -1534,7 +1538,7 @@ class Voxel(object):
             lines = [Line2D([0], [0], color=species_colour[transition], lw=1) for transition in transition_species]
             leg = ax.legend(labels=transition_species, handles=lines, fontsize=16, bbox_to_anchor=(1, 1), loc='upper left')
             
-            ax.set_xlabel(r'$\lambda \ (\mu m)$', fontsize=24)
+            ax.set_xlabel(r'$\lambda \ (\mu \mathrm{m})$', fontsize=24)
             ax.set_ylabel(ylabel, fontsize=24)
             ax.set_ylim([valueDust[ens][vel, :].min()*10e-3, valueDust[ens][vel, :].max()*10e3])
             ax.tick_params(labelsize=16)
