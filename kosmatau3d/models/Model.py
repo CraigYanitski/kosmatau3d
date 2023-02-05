@@ -51,7 +51,7 @@ class Model(object):
                  transitions='all', dust='molecular', velocity_range=(), velocity_number=0,
                  clump_mass_range=((0, 2), (-2)), clump_mass_number=(3, 1), clump_n_max=(1, 100), 
                  ensemble_mass_factor=(1, 1), interclump_idx=(False, True), interclump_hi_ratio=1,
-                 interclump_fillingfactor=None, interclump_log_fuv=None, clump_log_fuv=None,
+                 interclump_fillingfactor=None, interclump_density=1911, interclump_log_fuv=None, clump_log_fuv=None,
                  hi_mass_factor=1, h2_mass_factor=1, fuv_factor=1, density_factor=1, global_uv=10, 
                  r_cmz=0, zeta_cmz=1e-14, zeta_sol=2e-16, new_grid=True, suggested_calc=True,
                  dilled=False, timed=False, verbose=False, debug=False):
@@ -77,6 +77,7 @@ class Model(object):
         constants.interclump_hi_ratio= interclump_hi_ratio
         constants.interclump_fillingfactor = interclump_fillingfactor
         constants.density_factor = density_factor
+        constants.interclump_density = interclump_density
         constants.fuv_factor = fuv_factor
         # constants.globalUV = globalUV
         constants.clump_log_fuv = clump_log_fuv

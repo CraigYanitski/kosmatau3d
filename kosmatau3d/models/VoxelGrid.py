@@ -162,7 +162,8 @@ class VoxelGrid(object):
         # Ensemble density
         ensembleDensity = interpolations.interpolate_number_density(rPol)
         ensembleDensity = constants.density_factor*ensembleDensity.mean()
-        ensembleDensity = [ensembleDensity, np.max([0.01*ensembleDensity, constants.interclump_density])]
+        # ensembleDensity = [ensembleDensity, np.max([0.01*ensembleDensity, constants.interclump_density])]
+        ensembleDensity = [ensembleDensity, np.max([10, constants.interclump_density])]
 
         # FUV
         fuv = constants.fuv_factor * interpolations.interpolate_fuv(rPol, Z)
