@@ -13,11 +13,30 @@ each voxel no longer owns as much memory.
 
 ## Installation
 
-In the root directory of this repository, install this package in bash with,
+### using `pip`
+
+Directly install from git using,
+
+```
+pip install git+https://github.com/CraigYanitski/kosmatau3d.git
+```
+
+### manually
+
+Download the repository.
+
+```bash
+git clone https://github.com/CraigYanitski/kosmatau3d
+cd kosmatau3d
+```
+
+Now that you are in the root directory of this repository, install this package in bash with,
 
 ```bash
 pip install .
 ```
+
+## Creating a voxel
 
 A `Voxel` instance can be initialised using,
 
@@ -30,6 +49,19 @@ There are many parameters that must be specified in order to initialise and
 simulate the clumpy ensemble.
 For a detailed explanation of the properties that can be defined/accessed with
 a voxel instance, see the `jupyter` notebook in `./notebooks/voxel.ipynb`.
+If you wish to use the pre-defined properties, you can simply run,
+
+```python
+>>> vox.set_properties()
+>>> vox.calculate_emission()
+```
+
+One can then easily plot different views of the voxel emission using
+built-in plotting methods.
+
+```python
+vox.plot_spectrum()
+```
 
 ## Documentation (in prep.)
 
@@ -98,7 +130,7 @@ developments made.
   - [x] Ensure 3D model saves relevant data
     - [ ] implement multiprocessing
   - [x] Modify single-voxel instance to calculate a column when $f_V > 1$
-    - [ ] Allow for arbitrary $f_V$ $(<1)$
+    - [ ] allow for arbitrary $f_V$ $(<1)$
 - Radiative transfer
   - [x] Ensure correct calculation of sythetic datacube
     - [x] implement multiprocessing
@@ -109,7 +141,10 @@ developments made.
 - Miscellaneous
   - [x] Include submodule to explore KOSMA-$\tau$ and `kosmatau3d` properties
   - [x] Include submodule to compare observational data with synthetic datacubes
-    - [x] Fixed observational regridding error maps
+    - [x] fix regridding of observational error maps
+  - [ ] Implement function to mimic two-layer model (*aka* **two-voxel** model)
+  - [ ] Implement function to create voxel grid (functions by Yoko Okada)
+    - [ ] have function fit observational data
   - [ ] Include submodule covering the Mathematica routines developed by Markus Röllig
   - [ ] Develop the code testing suite
   - [ ] Fully document the code using `sphinx`
