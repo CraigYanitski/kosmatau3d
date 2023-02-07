@@ -1106,7 +1106,7 @@ class SyntheticModel(object):
             value = self.hi_absorption[:, :, 0]
             clabel = r'$\kappa$ (pc$^{-1}$)'
         elif quantity == 'FUV' or quantity == 'fuv':
-            value = self.fuv
+            value = self.fuv[:, 0]
             clabel = r'$\chi$ $\chi_\mathrm{D}$'
         else:
             print('Quantity not available.')
@@ -1118,7 +1118,7 @@ class SyntheticModel(object):
         fig = plt.figure(figsize=(10, 8))
         ax = fig.add_subplot(111, projection='3d')
 
-        cm = ax.scatter(X, Y, Z, c=value, cmap='magma', marker='s', alpha=0.8, ls='')
+        cm = ax.scatter(X, Y, Z, c=value, cmap='magma', marker='s', alpha=0.8, s=27)
         cb = fig.colorbar(cm)
 
         ax.set_xlabel('X (kpc)', fontsize=32)
