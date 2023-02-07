@@ -60,7 +60,7 @@ One can then easily plot different views of the voxel emission using
 built-in plotting methods.
 
 ```python
-vox.plot_spectrum()
+>>> vox.plot_spectrum()
 ```
 
 ## Documentation (in prep.)
