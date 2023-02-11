@@ -243,36 +243,34 @@ def calculate_interclump_grid_interpolation(verbose=False, dilled=False):
 
     # indeces = species.molecules.getFileIndeces()
     crnmuvTmb, Tmb = observations.interclump_tb_centerline
-    crnmuvdustTmb, dustTmb = observations.interclump_dust_tb_centerline
     crnmuvTau, Tau = observations.interclump_tau_centerline
+    crnmuvdustTmb, dustTmb = observations.interclump_dust_tb_centerline
     crnmuvdustTau, dustTau = observations.interclump_dust_tau_centerline
-    # interpolations.intensityInterpolation = []
-    # interpolations.tauInterpolation = []
     
     # Correct for the negative emission values (from Silke's code)
     Tmb[Tmb <= 0] = 1e-100
-    dustTmb[dustTmb <= 0] = 1e-100
     Tau[Tau <= 0] = 1e-100
+    dustTmb[dustTmb <= 0] = 1e-100
     dustTau[dustTau <= 0] = 1e-100
     
     # Begin 'encoding' the intensity of the grid for interpolation
     logTmb = np.log10(Tmb)
-    logdustTmb = np.log10(dustTmb)
     logTau = np.log10(Tau)
+    logdustTmb = np.log10(dustTmb)
     logdustTau = np.log10(dustTau)
   
     if constants.log_encoded:
         # Fully 'encode' the emission grid for interpolation
         logTmb = 10*logTmb
-        logdustTmb = 10*logdustTmb
         logTau = 10*logTau
+        logdustTmb = 10*logdustTmb
         logdustTau = 10*logdustTau
     
     else:
         # Begin 'decoding' the grid for interpolation
         crnmuvTmb = crnmuvTmb/10.
-        crnmuvdustTmb = crnmuvdustTmb/10.
         crnmuvTau = crmnuvTau/10.
+        crnmuvdustTmb = crnmuvdustTmb/10.
         crnmuvdustTau = crmnuvdustTau/10.
   
     if constants.interpolation == 'linear':

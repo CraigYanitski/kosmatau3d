@@ -28,17 +28,17 @@ class Model(object):
     # PRIVATE
   
     def __init__(self, history_path='', directory='', folder='', 
-                 tau_grid_file='clump_tau_LineCenter.dat', 
+                 clump_tau_grid_file='clump_tau_LineCenter.dat', 
+                 clump_tb_grid_file='clump_Tmb_LineCenter.dat', 
+                 clump_taufuv_grid_file='RhoMassAFUV.dat',
+                 clump_column_density_file='clumpMeanCols.dat',
+                 clump_temperature_file='clumpTemperatures_filled.dat',
                  interclump_tau_grid_file='interclumpTauLineCenter.dat', 
                  interclump_dust_tau_grid_file='interclumpDustTau.dat', 
-                 tb_grid_file='clump_Tmb_LineCenter.dat', 
                  interclump_tb_grid_file='interclumpTmbLineCenter.dat', 
                  interclump_dust_tb_grid_file='interclumpDustSED.dat', 
-                 tau_fuv_grid_file='RhoMassAFUV.dat',
-                 interclump_tau_fuv_grid_file='interclumpTauFUV.dat',
-                 column_density_file='clumpMeanCols.dat',
+                 interclump_taufuv_grid_file='interclumpTauFUV.dat',
                  interclump_column_density_file='interclumpMeanCols.dat',
-                 temperature_file='clumpTemperatures_filled.dat',
                  interclump_temperature_file='interclumpTemperatures_filled.dat',
                  h2_surface_density_file='h2_surface-density.dat', 
                  hi_surface_density_file='hi_surface-density.dat', 
@@ -76,7 +76,7 @@ class Model(object):
         constants.ensemble_mass_factor = ensemble_mass_factor
         constants.hi_mass_factor = hi_mass_factor
         constants.h2_mass_factor = h2_mass_factor
-        constants.interclump_hi_ratio= interclump_hi_ratio
+        constants.interclump_hi_ratio = interclump_hi_ratio
         constants.interclump_fillingfactor = interclump_fillingfactor
         constants.density_factor = density_factor
         constants.interclump_density = interclump_density
@@ -95,20 +95,31 @@ class Model(object):
         constants.set_interclump_ensemble(interclump_idx)
         
         # Read grid & input data, specify transitions, and interpolate
-        constants.tb_grid_file = tb_grid_file
-        constants.tau_grid_file = tau_grid_file
-        constants.tau_fuv_grid_file = tau_fuv_grid_file
-        observations.methods.initialise_grid(clump_tau_grid_file=tau_grid_file, 
+        constants.clump_species_tb_grid_file = clump_tb_grid_file
+        constants.clump_species_tau_grid_file = clump_tau_grid_file
+        constants.clump_dust_tb_grid_file = clump_tb_grid_file
+        constants.clump_dust_tau_grid_file = clump_tau_grid_file
+        constants.clump_taufuv_grid_file = clump_taufuv_grid_file
+        constants.clump_column_density_file = clump_column_density_file
+        constants.clump_temperature_file = clump_temperature_file
+        constants.interclump_species_tb_grid_file = interclump_tb_grid_file
+        constants.interclump_species_tau_grid_file = interclump_tau_grid_file
+        constants.interclump_dust_tb_grid_file = interclump_tb_grid_file
+        constants.interclump_dust_tau_grid_file = interclump_tau_grid_file
+        constants.interclump_taufuv_grid_file = interclump_taufuv_grid_file
+        constants.interclump_column_density_file = interclump_column_density_file
+        constants.interclump_temperature_file = interclump_temperature_file
+        observations.methods.initialise_grid(clump_tau_grid_file=clump_tau_grid_file, 
                                              interclump_tau_grid_file=interclump_tau_grid_file, 
                                              interclump_dust_tau_grid_file=interclump_dust_tau_grid_file, 
-                                             clump_tb_grid_file=tb_grid_file, 
+                                             clump_tb_grid_file=clump_tb_grid_file, 
                                              interclump_tb_grid_file=interclump_tb_grid_file, 
                                              interclump_dust_tb_grid_file=interclump_dust_tb_grid_file, 
-                                             clump_taufuv_grid_file=tau_fuv_grid_file, 
-                                             interclump_taufuv_grid_file=interclump_tau_fuv_grid_file,
-                                             clump_column_density_file=column_density_file,
+                                             clump_taufuv_grid_file=clump_taufuv_grid_file, 
+                                             interclump_taufuv_grid_file=interclump_taufuv_grid_file,
+                                             clump_column_density_file=clump_column_density_file,
                                              interclump_column_density_file=interclump_column_density_file,
-                                             clump_temperature_file=temperature_file,
+                                             clump_temperature_file=clump_temperature_file,
                                              interclump_temperature_file=interclump_temperature_file)
         constants.h2_surface_density_file = h2_surface_density_file
         constants.hi_surface_density_file = hi_surface_density_file
@@ -161,6 +172,7 @@ class Model(object):
   
     def __add_transitions(self, species_transition):
         species.add_transitions(species_transition)
+        species.add_transitions(species_transition, interclump=True)
         return
   
     def __str__(self):
@@ -199,12 +211,12 @@ class Model(object):
         return species.species_names
   
     # def reloadModules(self):
-    #   il.reload(Shape)
-    #   il.reload(VoxelGrid)
-    #   il.reload(Orientation)
-    #   il.reload(Observations)
-    #   il.reload(Molecules)
-    #   il.reload(Dust)
+    #   il.reload(shape)
+    #   il.reload(voxelgrid)
+    #   il.reload(orientation)
+    #   il.reload(observations)
+    #   il.reload(molecules)
+    #   il.reload(dust)
     #   self.__shape.reloadModules()
     #   self.__grid.reloadModules()
     #   #self.__observations.reloadModules()
@@ -230,7 +242,7 @@ class Model(object):
             basicConfig(format=format_str, level='WARNING')
             #self.__logger.setLevel('WARNING')
             #filehandler.setLevel('WARNING')
-        #filehandler.setFormatter(Formatter(format_str))
+        #filehandler.setformatter(Formatter(format_str))
         #self.__logger.addHandler(filehandler)
 
         # Calculate emission

@@ -168,8 +168,6 @@ def calculate_emission(taufuv=0, timed=False):
                          masspoints.log_fuv[ens]]
             # print(f'interpolation: {gridpoint}')
             masspoint_emission(gridpoint, ens, i)
-            # clumpIntensity[ens].append(emission[0])
-            # clumpOpticalDepth[ens].append(emission[1])
             if timed:
                 print(time()-t0)
     
