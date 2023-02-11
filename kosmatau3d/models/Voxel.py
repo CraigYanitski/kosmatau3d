@@ -1356,7 +1356,7 @@ class Voxel(object):
             fig.tight_layout()
             plt.show()
 
-        return
+        return ax
   
     def plot_transition(self, transition='', quantity='intensity', kind='linear', include_dust=False, total=False,
                         label='', title='', logscale=False):
@@ -1388,10 +1388,13 @@ class Voxel(object):
         else:
             self.__logger.warning('Quantity {} not available.'.format(quantity))
             return
+
+        if total:
+            value = [value]
     
         fig, axes = plt.subplots(len(value), figsize=(10, 5*len(value)))
     
-        for ens in range(constants.ensembles):
+        for ens in range(len(value)):
     
             if isinstance(axes, np.ndarray):
                 ax = axes[ens]
@@ -1438,9 +1441,9 @@ class Voxel(object):
         
         fig.tight_layout()
     
-        plt.show()
+        # plt.show()
     
-        return
+        return axes
   
     def plot_spectrum(self, quantity='intensity', kind='linear', integrated=False, total=False, vel=None, title=''):
         # Plot the either the intesity or optical depth spectrum at the voxel velocity (the velocity with the largest
