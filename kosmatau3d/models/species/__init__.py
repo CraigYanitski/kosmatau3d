@@ -6,11 +6,9 @@ from .molecules import *
 
 clump_transitions = []
 clump_transition_indeces = []
-clump_interclump_transition_indeces = []
 clump_transition_frequencies = []
 clump_transition_wavelengths = []
 interclump_transitions = []
 interclump_transition_indeces = []
-interclump_interclump_transition_indeces = []
 interclump_transition_frequencies = []
 interclump_transition_wavelengths = []
