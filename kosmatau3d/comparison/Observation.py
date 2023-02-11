@@ -111,7 +111,7 @@ class Observation(object):
         self.reset_attributes()
 
         for f in self.files:
-            # Open IDL files if necesdsary
+            # Open IDL files if necessary
             if '.idl' in f:
                 self.obs.append(readsav(full_path + f))
                 self.obs_header.append([None])
