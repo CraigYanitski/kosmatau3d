@@ -102,8 +102,8 @@ elif args.grid == 'r_cmz-f_fuv':
     param_folders = list(folder.format(*_) for _ in zip(*params))
 elif args.grid == 'f_hi-f_fuv':
     folder = f'r{args.resolution}' + '_fhi{}_fuv{:.1f}/'
-    f_hi = [1.0, 0.9, 0.8, 0.7, 0.6, 0.5, 0.4, 0.3]
-    f_fuv = 10**np.linspace(0, 1.5, num=13)
+    f_hi = [1.0, 0.8, 0.6, 0.4]#[1.0, 0.9, 0.8, 0.7, 0.6, 0.5, 0.4, 0.3]
+    f_fuv = 10**np.linspace(0, 4, num=9)
     param_keys = ('interclump_hi_ratio', 'fuv_factor')
     params = list(_.flatten() for _ in np.meshgrid(f_hi, f_fuv))
     param_folders = list(folder.format(*_) for _ in zip(*params))
@@ -117,9 +117,11 @@ elif args.grid == 'f_cl-f_icl-f_d-f_fuv':
     params = list(_.flatten() for _ in np.meshgrid(f_cl, f_icl, f_d, f_fuv))
     param_folders = list(folder.format(*_) for _ in zip(*params))
 elif args.grid == 'f_fuv_gc':
-    folder = f'r{args.resolution}' + '_f_fuv_gc{:.2f}/'
-    params = (10**np.array([0, 0.5, 1, 1.5, 2]), )
-    param_keys = ('scale_gc', )
+    folder = f'r{args.resolution}' + '_f_fuv_gc{:.2f}_r_gc{}/'
+    fuv_gc = (10**np.array([0.5, 1, 1.5, 2]), )
+    r_gc = (200, 600, 1000, 1400)
+    param_keys = ('scale_gc', 'r_gc')
+    params = list(_.flatten() for _ in np.meshgrid(fuv_gc, r_gc))
     param_folders = list(folder.format(*_) for _ in zip(*params))
 elif args.grid == 'disp_gc':
     folder = f'r{args.resolution}' + '_r_gc{:.2f}_disp_gc{:.2f}/'
@@ -208,9 +210,22 @@ debug = args.debug
 # Edit these parameters according to the model you want to produce.
 parameters = {
               # Data files
-              'tau_grid_file': 'clump_tau_LineCenter.dat',
-              'tb_grid_file': 'clump_Tmb_LineCenter.dat',
-              'tau_fuv_grid_file': 'RhoMassAFUV.dat',
+              'clump_tau_grid_file': 'clump_tau_LineCenter.dat',
+              'clump_tb_grid_file': 'clump_Tmb_LineCenter.dat',
+              'clump_taufuv_grid_file': 'RhoMassAFUV.dat',
+              'clump_column_density_file': 'clumpMeanCols.dat',
+              'clump_temperature_file': 'clumpTemperatures_filled.dat',
+              'interclump_tau_grid_file': 'interclumpTauLineCenter.dat',
+              'interclump_tb_grid_file': 'interclumpTmbLineCenter.dat',
+              'interclump_dust_tau_grid_file': 'interclumpDustTau.dat',
+              'interclump_dust_tb_grid_file': 'interclumpDustSED.dat',
+              # 'interclump_tau_grid_file': 'clumpTauLineCenter_reduced.dat',
+              # 'interclump_tb_grid_file': 'clumpTmbLineCenter_reduced.dat',
+              # 'interclump_dust_tau_grid_file': 'clumpDustTau_reduced.dat',
+              # 'interclump_dust_tb_grid_file': 'clumpDustTmb_reduced.dat',
+              'interclump_taufuv_grid_file': 'interclumpTauFUV.dat',
+              'interclump_column_density_file': 'interclumpMeanCols.dat',
+              'interclump_temperature_file': 'interclumpTemperatures_filled.dat',
               'h2_surface_density_file': 'h2_surface-density_marasco-bacchini.dat', 
               'hi_surface_density_file': 'hi_surface-density_marasco-bacchini.dat', 
               'h2_scale_height_file': 'h2_scale-height_bacchini.dat', 
@@ -224,7 +239,7 @@ parameters = {
               'scale_gc': 1.0,
               'mhi_gc': 1.0,
               'mh2_gc': 1.0,
-              'new_grid': False,
+              'new_grid': True,
               
               # Model information
               'history_path': args.folder,
@@ -238,15 +253,17 @@ parameters = {
               # Model parameters
               'resolution': args.resolution,
               # 'molecules': 'all',
-              'molecules': ['C+ 1', 
-                            'C 1', 'C 2', 
-                            'CO 1', 'CO 2', 'CO 3', 'CO 4', 'CO 5', 
-                            'CO 6', 'CO 7', 'CO 8', 
-                            '13C+ 1', 
-                            '13C 1', '13C 2', 
-                            '13CO 1', '13CO 2', '13CO 3', '13CO 4', '13CO 5', 
-                            '13CO 6', '13CO 7', '13CO 8', 
-                            'HCO+ 1', 'HCO+ 2', 'HCO+ 3', 'HCO+ 4', 'HCO+ 5'],
+              'transitions': ['C+ 1', 
+                              'C 1', 'C 2', 
+                              'CO 1', 'CO 2', 'CO 3', 'CO 4', 'CO 5', 
+                              'CO 6', 'CO 7', 'CO 8', 'CO 9', 'CO 10', 
+                              '13C+ 1', 
+                              '13C 1', '13C 2', 
+                              '13CO 1', '13CO 2', '13CO 3', '13CO 4', '13CO 5', 
+                              '13CO 6', '13CO 7', '13CO 8', '13CO 9', '13CO 10', 
+                              'HCO+ 1', 'HCO+ 2', 'HCO+ 3', 'HCO+ 4', 'HCO+ 5',
+                              'H13CO+ 1', 'H13CO+ 2', 'H13CO+ 3', 'H13CO+ 4', 'H13CO+ 5',
+                              'H3O+ 1', 'H3O+ 2', 'H3O+ 3', 'H3O+ 4', 'H3O+ 5'],
               # 'dust': 'PAH',
               'dust': ['240um', '550um'],
               'clump_mass_range': [[0, 2], [-2]],
@@ -254,6 +271,8 @@ parameters = {
               'clump_n_max': [1, 100],
               'clump_log_fuv' : None,
               'interclump_log_fuv' : None,
+              'interclump_idx': (False, True), 
+              'interclump_density': 1911, 
               'velocity_range': [-350, 350],
               'velocity_number': 701,
 
