@@ -543,6 +543,28 @@ class Voxel(object):
         #if timed:
         t0 = time()
         
+        # reinitialise properties
+        self.__intensity_species = [np.zeros((len(ensemble.clumpIndeces[_]),
+                                              len(species.clump_transitions)), dtype=np.float64)
+                                    for _ in range(constants.ensembles)]
+        self.__optical_depth_species = [np.zeros((len(ensemble.clumpIndeces[_]),
+                                                  len(species.clump_transitions)), dtype=np.float64)
+                                        for _ in range(constants.ensembles)]
+        self.__intensity_dust = [np.zeros((len(ensemble.clumpIndeces[_]),
+                                           constants.wavelengths[constants.n_dust].size), 
+                                          dtype=np.float64)
+                                 for _ in range(constants.ensembles)]
+        self.__optical_depth_dust = [np.zeros((len(ensemble.clumpIndeces[_]),
+                                               constants.wavelengths[constants.n_dust].size), 
+                                              dtype=np.float64)
+                                     for _ in range(constants.ensembles)]
+        self.__intensity_hi = [np.zeros((len(ensemble.clumpIndeces[_]),
+                                         1), dtype=np.float64)
+                                 for _ in range(constants.ensembles)]
+        self.__optical_depth_hi = [np.zeros((len(ensemble.clumpIndeces[_]),
+                                             1), dtype=np.float64)
+                                     for _ in range(constants.ensembles)]
+        
         masspoints.calculate_emission(taufuv=taufuv, timed=timed)
         
         if timed:
