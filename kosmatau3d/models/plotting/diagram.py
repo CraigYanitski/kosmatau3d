@@ -15,7 +15,10 @@ def plot_box(x=0, y=0, z=0, ds=1, ax=None, set_props=True, **kwargs):
     '''
 
     if ax == None:
-        fig = plt.figure(figsize=(10, 10))
+        if 'figsize' in kwargs.keys():
+            fig = plt.figure(figsize=kwaargs['figsize'])
+        else:
+            fig = plt.figure(figsize=(10, 10))
         ax = fig.add_subplot(1, 1, 1, projection='3d', elev=20, azim=-140, box_aspect=(1, 1, 1))
     elif not isinstance(ax, Axes3D):
         logging.error(' argument `ax` must be of type `Axes3D`\n'
