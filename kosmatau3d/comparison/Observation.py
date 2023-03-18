@@ -10,6 +10,7 @@ cobe_idl_linfrq = np.array([115.3, 230.5, 345.8, 424.8, 461.0, 492.2, 556.9, 576
                             1113, 1460, 2226, 1901, 2060, 2311, 2459, 2589, 921.8])
 cobe_idl_transitions = np.array(['CO 1', 'CO 2', 'CO 3', 'CO 4', 'C 3', 'CO 5',
                                  'CO 6', 'CO 7 + C 1', 'C+ 1', 'O 1', 'CO 8'])
+cobe_idl_indeces = np.array([0, 1, 2, 4, 5, 7, 8, 9, 13, 14, 18])
 missions_2d = ['COBE-FIRAS', 'COBE-DIRBE', 'Planck']
 
 class Observation(object):
@@ -65,13 +66,16 @@ class Observation(object):
         
         self.obs = []
         self.obs_error = []
+        self.obs_error_conf = []
         self.obs_header = []
         self.obs_data = []
         self.obs_error_data = []
+        self.obs_error_conf_data = []
         self.obs_lon = []
         self.obs_lat = []
         self.obs_vel = []
         self.obs_iid = []
+        self.obs_i_iid = []
         self.obs_wavelength = []
         self.obs_frequency = []
         self.obs_spectra = None
@@ -115,21 +119,36 @@ class Observation(object):
             if '.idl' in f:
                 self.obs.append(readsav(full_path + f))
                 self.obs_header.append([None])
-                self.obs_iid.append((self.obs[-1]['line'], deepcopy(cobe_idl_transitions)))
+                self.obs_iid.append(deepcopy(cobe_idl_transitions))
+                self.obs_i_iid.append(deepcopy(cobe_idl_indeces))
                 self.obs_frequency.append(deepcopy(cobe_idl_linfrq)*1e9)
                 self.obs_wavelength.append(299792458/self.obs_frequency[-1])
                 self.obs_data.append(self.obs[-1]['amplitude']/(2.9979**3)*(self.obs_frequency[-1]**3)*2*1.38/10**-1)
+                self.obs_error.append(None)
                 self.obs_error_data.append(self.obs[-1]['sigma']/(2.9979**3)*(self.obs_frequency[-1]**3)*2*1.38/10**-1)
+                error_conf = np.zeros_like(self.obs_data[-1])
+                for _ in range(int(np.floor(self.obs_data[-1].shape[0]/2))):
+                    idx = np.array([_, -1-_])
+                    err = self.obs_data[-1][idx, :]
+                    error_conf[idx, :] = np.std(err-np.mean(err, axis=0), axis=0, ddof=1)/np.sqrt(err.shape[0])
+                self.obs_error_conf.append(None)
+                self.obs_error_conf_data.append(deepcopy(error_conf))
                 self.obs_lon.append(deepcopy(self.obs[-1]['long']))
                 self.obs_lat.append(np.array([0]))
                 self.obs_vel.append([None])
             # By default open data stored in a FITS file
-            else:
+            else:#if '.fits' in f:
                 self.obs.append(fits.open(full_path + f))
-                self.obs_error.append(fits.open(full_path + f.replace('.fits', '_error.fits')))
-                self.obs_header.append(self.obs[-1][0].header)
                 self.obs_data.append(self.obs[-1][0].data)
+                self.obs_error.append(fits.open(full_path + f.replace('.fits', '_error.fits')))
                 self.obs_error_data.append(self.obs_error[-1][0].data)
+                if os.path.exists(full_path + f.replace('.fits', '_error_conf.fits')):
+                    self.obs_error_conf.append(fits.open(full_path + f.replace('.fits', '_error_conf.fits')))
+                    self.obs_error_conf_data.append(self.obs_error_conf[-1][0].data)
+                else:
+                    self.obs_error_conf.append(None)
+                    self.obs_error_conf_data.append(0)
+                self.obs_header.append(self.obs[-1][0].header)
                 self.obs_lon.append(np.linspace(self.obs_header[-1]['CRVAL1']
                                                 - self.obs_header[-1]['CDELT1']
                                                 *(self.obs_header[-1]['CRPIX1']-1),
@@ -160,18 +179,36 @@ class Observation(object):
 
                 self.obs_frequency.append([None])
                 self.obs_wavelength.append([None])
-                self.obs_iid.append(self.obs_header[-1]['TRANSL'].split(', '))
+                self.obs_iid.append(np.array(self.obs_header[-1]['TRANSL'].split(', ')))
+                self.obs_i_iid.append(np.array(self.obs_header[-1]['TRANSI'].split(', ')).astype(int))
 
-            if os.path.exists(spectra_path):
-                self.obs_spectra = pd.read_csv(spectra_path + self.survey + '_combined.csv')
-                self.obs_spectra_resampled = pd.read_csv(spectra_path + self.survey 
-                                                         + '_combined.csv')
-                self.obs_spectra_reduced = self.obs_spectra.loc[self.obs_spectra.glat == lat]
+        if os.path.exists(spectra_path):
+            self.files.append(self.survey + '_resampled_conf.csv')
+            self.obs_spectra = pd.read_csv(spectra_path + self.survey + '_combined.csv')
+            self.obs_spectra_resampled = pd.read_csv(spectra_path + self.survey 
+                                                     + '_resampled.csv')
+            self.obs_spectra_mid = pd.read_csv(spectra_path + self.survey
+                                               + '_resampled_conf.csv')
+            self.obs_data.append(self.obs_spectra_mid.Tmb.to_numpy())
+            self.obs_lon.append(np.unique(self.obs_spectra_mid.glon))
+            self.obs_lat.append(np.zeros(1))
+            self.obs_vel.append(np.unique(self.obs_spectra_mid.Vel))
+            self.obs_error_data.append(self.obs_spectra_mid.sigma.to_numpy())
+            self.obs_error_conf_data.append(self.obs_spectra_mid.sigma_conf.to_numpy())
+            self.obs_spectra_reduced = self.obs_spectra.loc[self.obs_spectra.glat == lat]
+            self.obs_spectra_resampled_reduced = self.obs_spectra_resampled.loc[self.obs_spectra_resampled.glat == lat]
 
         return
 
     # Open spectra as a dataframe if included
     def get_obs_extent(self, filename=None, idx=None, kind='extent', verbose=False):
+        '''
+        Return the extent of the observation with usable data (nonzero and non-NaN).
+        Can return either the dimension values ('extent') or the dimension indeces 
+        ('index'), specified with `kind`.
+        
+        Returns tuple of (lon, lat, vel)
+        '''
 
         if filename is None and idx is None:
             print('ERROR: Please specify a filename or index')
@@ -190,7 +227,13 @@ class Observation(object):
             lat = copy(self.obs_lat[idx])
             lon = copy(self.obs_lon[idx])
             extent = (lon, lat, None)
-            i_extent = (np.arange(lon.size), np.array([0]))
+            i_extent = (np.arange(lon.size), np.zeros(0))
+        if self.obs_lat[idx].size == 1:
+            lon = copy(self.obs_lon[idx])
+            lat = copy(self.obs_lat[idx])
+            vel = copy(self.obs_vel[idx])
+            extent = (lon, lat, vel)
+            i_extent = (np.arange(lon.size), np.zeros(1), np.arange(vel.size))
         elif data.ndim == 2:
             i_nan = np.isnan(data)
             lon = self.obs_lon[idx][~i_nan.all(0)]
