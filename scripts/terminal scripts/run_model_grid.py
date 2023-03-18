@@ -14,27 +14,29 @@ from pprint import pprint
 parser = argparse.ArgumentParser()
 
 parser.add_argument('-f', '--folder', type=str, default='/mnt/yanitski_backup/yanitski/projects/pdr/KT3_history', 
-                    help='folder containing kosmatau3d models')
+                    help='Folder containing kosmatau3d models')
 parser.add_argument('-g', '--grid', type=str, default='convergence', 
                     choices=['convergence', 'f_cm-cm', 'f_icm-icm', 'cm-icm', 'f_cm-f_icm', 
                              'r_cmz-f_fuv', 'f_hi-f_fuv', 'f_cl-f_icl-f_d-f_fuv', 
                              'fuv_cl', 'fuv_icl', 'const_fuv', 
                              'f_fuv_gc', 'disp_gc', 'fuv_gc-disp_gc', 'fuv_gc-mass_gc'], 
-                    help='parameters varied in grid')
+                    help='Parameters varied in grid')
 parser.add_argument('-r', '--resolution', type=int, default=400, 
-                    help='voxel size in the model')
+                    help='Voxel size in the model')
 parser.add_argument('-m', '--mp', type=int, default=8, 
-                    help='number of threads to open during RT \n  set to 0 for debugging')
+                    help='Number of threads to open during RT \n  set to 0 for debugging')
 parser.add_argument('-e', '--exec', type=str, default='all', choices=['all', 'model', 'RT', 'HI'], 
-                    help='which portion of the code to evaluate')
+                    help='Which portion of the code to evaluate')
 parser.add_argument('-o', '--overwrite', type=str, default='false', choices=['true', 'false'], 
-                    help='overwrite the pre-computed model')
+                    help='Overwrite the pre-computed model')
+parser.add_argument('-i', '--index', type=int, default=0,
+                    help='Index from which to begin grid. Useful if a grid is interrupted.')
 parser.add_argument('-d', '--debug', type=bool, default=False, 
-                    help='use debugging mode')
+                    help='Use debugging mode')
 parser.add_argument('-t', '--timed', type=bool, default=False, 
-                    help='use timing mode')
+                    help='Use timing mode.')
 parser.add_argument('-v', '--verbose', type=bool, default=False, 
-                    help='use verbose mode')
+                    help='Use verbose mode.')
 
 args = parser.parse_args()
 
@@ -145,7 +147,7 @@ elif args.grid == 'fuv_gc-mass_gc':
     folder = f'r{args.resolution}' + '_r_gc{}_f_fuv_gc{:.2f}_f_mhi_gc{:.2f}_f_mh2_gc{:.2f}/'
     r_gc = (200, 600, 1000, 1400)
     # fuv_gc = (10**np.array([0, 0.5, 1, 1.5, 2]), )
-    fuv_gc = (*10**np.array([0, 0.5, 1, 1.5, 2, 2.5, 3]), )
+    fuv_gc = (*10**np.array([0, 0.5, 1, 1.5, 2]), )
     mhi_gc = (*10**np.array([0, 0.5, 1, 1.5]), )
     mh2_gc = (*10**np.array([0, 0.5, 1, 1.5]), )
     grid_flag = (True, )
@@ -202,6 +204,8 @@ if args.overwrite == 'true':
     overwrite = True
 else:
     overwrite = False
+
+index = args.index
 
 debug = args.debug
 
@@ -266,13 +270,13 @@ parameters = {
                               'H3O+ 1', 'H3O+ 2', 'H3O+ 3', 'H3O+ 4', 'H3O+ 5'],
               # 'dust': 'PAH',
               'dust': ['240um', '550um'],
-              'clump_mass_range': [[0, 2], [-2]],
+              'clump_mass_range': [[0, 2], [-3]],
               'clump_mass_number': [3, 1],
               'clump_n_max': [1, 100],
               'clump_log_fuv' : None,
               'interclump_log_fuv' : None,
               'interclump_idx': (False, True), 
-              'interclump_density': 1911, 
+              'interclump_density': 19.11, 
               'velocity_range': [-350, 350],
               'velocity_number': 701,
 
@@ -309,7 +313,7 @@ fuv = 1.8
 
 i_max = len(params[0])
 
-for i, param in enumerate(zip(*params)):
+for i, param in enumerate(list(zip(*params))[index:]):
     
     # Set the required parameters
     for _, p in enumerate(param_keys):
@@ -328,7 +332,7 @@ for i, param in enumerate(zip(*params)):
     kosma = models.Model(**parameters)
 
     # Print details
-    print('\n\n   ==> Model {} of {}'.format(i+1, i_max))
+    print('\n\n   ==> Model {} of {}'.format(i+index+1, i_max))
     print('       ' + models.constants.history)
     print('       ' + '-'*len(models.constants.history))
     if args.verbose:
