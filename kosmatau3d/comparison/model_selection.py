@@ -15,6 +15,9 @@ from pprint import pprint
 from copy import copy, deepcopy
 import os
 
+from .Observation import *
+from kosmatau3d import models
+
 
 sedigism_rms_window = {
     'G014_13CO21_Tmb_DR1.fits' : (0, 75),
@@ -1239,27 +1242,28 @@ def error_correction(data, conf=''):
             for i in range(int(np.ceil(data_copy.shape[0]/2))):
                 idx = np.ix_([i, -1-i])
                 avg = np.mean(data_copy[idx])
-                err = np.sqrt(((data_copy[idx]-avg)**2).sum())
-                correction[idx] = err / np.sqrt(2)
+                err = np.std(data_copy[idx]-avg, ddof=1)
+                correction[idx] = err / np.sqrt(err.size)
         elif data_copy.ndim == 2:
             for i in range(int(np.ceil(data_copy.shape[0]/2))):
                 for j in range(int(np.ceil(data_copy.shape[1]/2))):
-                    idx = np.ix_([i, i, -1-i, -1-i], [j, -1-j, j, -1-j])
+                    idx = np.ix_([i, -1-i], [j, -1-j])
                     if np.isnan(data_copy[idx]).all():
                         continue
                     avg = np.nanmean(data_copy[idx])
-                    err = np.sqrt(((data_copy[idx]-avg)**2).sum()/3)
-                    correction[idx] = err/np.sqrt(4)
+                    err = np.std(data_copy[idx]-avg, ddof=1)
+                    correction[idx] = err/np.sqrt(err.size)
         elif data_copy.ndim == 3:
             for i in range(int(np.ceil(data_copy.shape[0]/2))):
                 for j in range(int(np.ceil(data_copy.shape[1]/2))):
                     for k in range(int(data_copy.shape[2])):
-                        idx = np.ix_([i, i, -1-i, -1-i], [j, -1-j, j, -1-j], [k, k, -1-k, -1-k])
+                        idx = np.ix_([i, -1-i], [j, -1-j], [k, k, -1-k, -1-k])
+                        idx = (np.array([i, i, -1-i, -1-i]), np.array([j, -1-j, j, -1-j]), np.array([k, k, -1-k, -1-k]))
                         if np.isnan(data_copy[idx]).all():
                             continue
                         avg = np.nanmean(data_copy[idx])
-                        err = np.sqrt(((data_copy[idx]-avg)**2).sum()/3)
-                        correction[idx] = err/np.sqrt(4)
+                        err = np.std(data_copy[idx]-avg, ddof=1)
+                        correction[idx] = err/np.sqrt(err.size)
 
     if data.shape != data_copy.shape:
         correction = np.asarray([correction])
@@ -1280,12 +1284,14 @@ def model_selection(path='/mnt/hpc_backup/yanitski/projects/pdr/KT3_history/Milk
       :param resolution: the voxel size (in pc) of the models used in the comparison; used in model folder name.
       :param missions: as this is setup for the Milky Way, the mission selection is
              - COBE-FIRAS
+             - COBE-DIRBE
              - COGAL
              - Mopra
              - ThrUMMS
              - SEDIGISM
              - Planck
-             - Hi-GAL (in development)
+             - THOR (partial)
+             - Hi-GAL (abandoned)
       :param cmap: color map for the plots.
       :param PLOT: flag to save plots.
       :param PRINT: flag to enable verbose output.
@@ -1332,7 +1338,7 @@ def model_selection(path='/mnt/hpc_backup/yanitski/projects/pdr/KT3_history/Milk
         print('\n\n  {}'.format(survey))
         print('  ' + '-'*len(survey))
 
-        if survey == 'HiGAL':
+        if survey in ('HiGAL', 'GRS', 'THOR', 'CGPS', 'SGPS', 'VGPS'):
             continue
 
         if path[-1] != '/': path += '/'
@@ -1352,7 +1358,7 @@ def model_selection(path='/mnt/hpc_backup/yanitski/projects/pdr/KT3_history/Milk
             if not ('.fits' in file or '.idl' in file) or 'error' in file:
                 continue
 
-            # print(file)
+            print(f'\n  {file}')
 
             if '.fits' in file:
                 obs = fits.open(directory + file)
@@ -1464,8 +1470,8 @@ def model_selection(path='/mnt/hpc_backup/yanitski/projects/pdr/KT3_history/Milk
                     vmin = np.nanmin(obs_data)
                     vmax = np.nanmax(obs_data)
 
-                print('Average error in observation: {}'.format(np.nanmean(obs_error)))
-                print('Correction due to axisymmetry: {}'.format(np.nanmean(obs_error_conf)))
+                # print('Average error in observation: {}'.format(np.nanmean(obs_error)))
+                # print('Correction due to axisymmetry: {}'.format(np.nanmean(obs_error_conf)))
 
                 for param in model_params:
 
@@ -1476,7 +1482,9 @@ def model_selection(path='/mnt/hpc_backup/yanitski/projects/pdr/KT3_history/Milk
                     dir_model = model_dir.format(*param) + 'synthetic_intensity.fits'
                         # '/r{}_cm{}-{}_d{}_uv{}/channel_intensity.fits'.format(resolution, fcl,
                         #                                                               ficl, fden, fuv)
-                    if not os.path.isfile(path + dir_model): continue
+                    if not os.path.isfile(path + dir_model):
+                        print('  missing')
+                        continue
 
                     # Open the model
                     params.append(param)
@@ -1484,7 +1492,7 @@ def model_selection(path='/mnt/hpc_backup/yanitski/projects/pdr/KT3_history/Milk
                     # pprint(model[1].header)
 
                     # Locate the species transition (only one dust value is considered; constant background)
-                    if survey == 'Planck':
+                    if survey in ('Planck', 'COBE-DIRBE'):
                         i_spec = np.array([0])
                     else:
                         i_spec = np.where(np.asarray(model[1].header['SPECIES'].split(', ')) == transition)[0]
@@ -1561,7 +1569,8 @@ def model_selection(path='/mnt/hpc_backup/yanitski/projects/pdr/KT3_history/Milk
                             obs_data_final = obs_data[:, int(transition_indeces[i])].reshape(-1)#[:, int(transition_indeces[i])]
                             # print(obs_data_final.shape)
                             # print(obs_error[:, int(transition_indeces[i])].shape, obs_error_conf.shape)
-                            obs_error_final = np.sqrt(obs_error[idx_obs]**2
+                            # print(obs_error[idx_obs].shape, obs_error_conf.shape)
+                            obs_error_final = np.sqrt(obs_error[:, int(transition_indeces[i])]**2
                                                       +obs_error_conf**2).reshape(-1)#[:, int(transition_indeces[i])]
                             # print(obs_error_final.shape)
                             model_interp = model_interp.reshape(-1)
@@ -1684,7 +1693,7 @@ def model_selection(path='/mnt/hpc_backup/yanitski/projects/pdr/KT3_history/Milk
                     #       chi2.shape, np.shape(i_signal), obs_data_final.shape,
                     #       model_interp.shape, obs_error_final.shape)
                     chi2[i_signal] = (obs_data_final[i_signal] - model_interp[i_signal]) ** 2 / \
-                                     obs_error_final[i_signal] ** 2 / (obs_data_final[i_signal].size - len(param))
+                                     obs_error_final[i_signal] ** 2
                     loglikelihood[i_signal] = -chi2[i_signal] / 2 \
                                               - 0.5 * np.log(2 * np.pi * obs_error_final[i_signal]**2)
                     # elif survey == 'Planck':
@@ -1830,6 +1839,288 @@ def model_selection(path='/mnt/hpc_backup/yanitski/projects/pdr/KT3_history/Milk
             pass
         # i_bestfit2 = np.where(loglikelihood_grid == np.max(loglikelihood_grid))[0][0]
 
+
+    return
+
+
+def model_selection_new(path='/mnt/yanitski_backup/yanitski/projects/pdr/KT3_history/MilkyWay', missions=None, lat=None,
+                        model_dir='', model_param=[[]], comp_type='pv', log_comp=True, cmap='gist_ncar',
+                        spectra=True, PLOT=False, PRINT=False, debug=False):
+    
+    # Check that the missions are specified properly.
+    if missions == '' or missions == None or missions == []:
+        missions = os.listdir(path.replace('KT3_history', 'observational_data'))
+    elif isinstance(missions, str):
+        missions = [missions]
+    elif isinstance(missions, list):
+        # Use both COBE instruments if simply 'COBE' is specified
+        if 'COBE' in missions:
+            if 'COBE-FIRAS' in missions: missions.remove('COBE-FIRAS')
+            if 'COBE-DIRBE' in missions: missions.remove('COBE-DIRBE')
+            missions.append('COBE-FIRAS')
+            missions.append('COBE-DIRBE')
+    else:
+        print('Please specify a list of missions to compare the models.')
+        return
+  
+    if model_dir == '' or model_param == [[]]:
+        print('Please specify both model_dir and model_param.')
+        return
+  
+    model_params = np.meshgrid(*model_param)
+    # model_params = zip(np.transpose([model_params[n].flatten() for n in range(len(model_param))]))
+    model_params = np.transpose([model_params[n].flatten() for n in range(len(model_param))])
+
+    if log_comp:
+        comp = comp_type + '_logT'
+    else:
+        comp = comp_type
+
+    obs_data = []
+    lon = []
+    vel = []
+
+    for survey in missions:
+
+        print('\n\n  {}'.format(survey))
+        print('  ' + '-'*len(survey))
+
+        if survey in ('HiGAL', 'GRS', 'CGPS', 'SGPS', 'VGPS'):
+            continue
+
+        if path[-1] != '/': path += '/'
+        directory = path.replace('KT3_history', 'observational_data') + survey + '/regridded/temp/'
+        obs = Observation(base_dir=path.replace('KT3_history', 'observational_data'))
+        obs.load_survey(survey=survey)
+        # if mission == 'COBE-FIRAS':
+        #     directory += 'temp/'
+        files = os.listdir(directory)
+
+        if len(files) == 0:
+            print('no data is available.')
+            exit()
+
+        # Loop through the different models
+        # for i_obs in range(len(obs_data)):
+        for f, file in enumerate(obs.files):
+
+            if not ('.fits' in file or '.idl' in file) or 'error' in file:
+                continue
+
+            transitions = obs.obs_iid[f]
+            transition_indeces = obs.obs_i_iid[f]
+            obs_data = obs.obs_data[f]
+            obs_error = obs.obs_error_data[f]
+            obs_error_conf = obs.obs_error_conf_data[f]
+            lon_obs = obs.obs_lon[f]
+            lon_obs[lon_obs>180] = lon_obs[lon_obs>180] - 360
+            lat_obs = obs.obs_lat[f]
+            vel_obs = obs.obs_vel[f]
+            i_lon_obs_init, i_lat_obs_init, i_vel_obs_init = obs.get_obs_extent(idx=f, kind='index')
+
+            for i, transition in enumerate(transitions):
+
+                print('\n  fitting', transition)
+
+                chi2_grid = []
+                loglikelihood_grid = []
+                params = []
+
+                # if (survey == 'COBE-DIRBE') or (survey == 'COBE-FIRAS'):
+                #     if '.idl' in file:
+                #         # obs_error_conf = error_correction(obs_data[:, int(transition_indeces[i])],
+                #         #                                   conf='axisymmetric')
+                #         vmin = obs_data[:, int(transition_indeces[i])].min()
+                #         vmax = obs_data[:, int(transition_indeces[i])].max()
+                #     else:
+                #         # obs_error_conf = error_correction(obs_data[int(transition_indeces[i]), :, :],
+                #         #                                   conf='axisymmetric')
+                #         vmin = obs_data[int(transition_indeces[i]), :, :].min()
+                #         vmax = obs_data[int(transition_indeces[i]), :, :].max()
+                #     # print(transition)
+                #     # print(vmin, vmax)
+                # elif not (survey=='GOT_C+' and '.csv' in file):
+                #     # obs_error_conf = error_correction(obs_data, conf='axisymmetric')
+                #     vmin = np.nanmin(obs_data)
+                #     vmax = np.nanmax(obs_data)
+                # else:
+                #     obs_error_conf = 0
+
+                print('Average error in observation: {}'.format(np.nanmean(obs_error)))
+                print('Correction due to axisymmetry: {}'.format(np.nanmean(obs_error_conf)))
+                
+                model = models.SyntheticModel(base_dir=path)
+
+                for param in model_params:
+
+                    if PRINT:
+                        print('  ' + model_dir.format(*param) + '    \r', end='')
+
+                    # Check existance of model
+                    dir_model = model_dir.format(*param)#
+                    if not os.path.isfile(path + dir_model + 'synthetic_intensity.fits'): continue
+
+                    # Open the model
+                    params.append(param)
+                    model.load_model(directory=dir_model)
+
+                    # Locate the species transition (only one dust value is considered; constant background)
+                    if transition in model.dust:
+                        i_spec = np.where(model.dust == transition)[0]
+                    elif transition in model.species:
+                        i_spec = np.where(model.species == transition)[0]
+                    elif transition == 'HI':
+                        i_spec = np.zeros(1)
+                    else:
+                        print(f'  {transition} not in model.  ')
+                        break
+                    # else:
+                    #     i_spec = i_spec[0]
+
+                    if os.path.isdir(path + f"fit_results/{survey}/{file.replace('.fits', '')}/{transition}/") == False:
+                        os.makedirs(path + f"fit_results/{survey}/{file.replace('.fits', '')}/{transition}/")
+
+                    # Create arrays for the longitude and velocity axes
+                    lat_model = model.map_lat
+                    lon_model = model.map_lon
+                    vel_model = model.map_vel
+
+                    # Identify the common latitudes between the observations and the model
+                    if isinstance(lat, (int, float)):
+                        lat_min = lat
+                        lat_max = lat
+                    else:
+                        lat_min = lat_obs[i_lat_obs_init].min()
+                        lat_max = lat_obs[i_lat_obs_init].max()
+  
+                    i_lon_model = np.arange(lon_model.size)
+                    i_lat_model = np.where((lat_model >= lat_min)
+                                            & (lat_model <= lat_max))[0]
+                    i_lat_obs = np.where((lat_obs >= lat_model[i_lat_model].min())
+                                        & (lat_obs <= lat_model[i_lat_model].max()))[0]
+
+                    ix_err = np.ix_(i_lat_model, i_lon_model)
+                    if survey == 'COBE-FIRAS':
+                        bin_edge = [*((obs_lon[:-1]+obs_lon[1:])/2), 182.5]
+                        if ' + ' in transition:
+                            model_intensity = model.get_species_intensity(transition=transition.split(' + '), include_dust=False, integrated=True).sum(0)
+                        else:
+                            model_intensity = model.get_species_intensity(transition=transition, include_dust=False, integrated=True)
+                        lon_model_alt = deepcopy(lon_model)
+                        lon_model_alt[lon_model_alt<-177.5] = lon_model_alt[lon_model_alt<-177.5] + 360
+                        model_data_temp = binned_statistic(lon_model_alt, model_intensity, statistic='mean', bins=bin_edge)[0]
+                        model_data = np.array([model_data_temp[:, -1], *model_data_temp.T]).T
+                        obs_data = np.array(model_data.shape[0]*[obs_data[:, transition_indeces[i]]])
+                        ix = np.ix_(i_lat_model, np.arange(obs_lon.size))
+                        obs_error_final = np.sqrt(obs_error[:, transition_indeces[i]]**2+obs_error_conf[:, transition_indeces[i]]**2)
+                    elif survey == 'GOT_C+' and '.csv' in file:
+                        obs_lon = np.unique(lon_obs)
+                        obs_vel = np.unique(vel_obs)
+                        # obs_lon[obs_lon>180] = obs_lon[obs_lon>180]-360
+                        bin_mid = obs_lon
+                        bin_edge = np.array([-180, *((bin_mid[:-1]+bin_mid[1:])/2), 180])
+                        model_intensity = model.get_species_intensity(transition='C+ 1', include_dust=False, integrated=False)[:, 4, :]
+                        model_data = binned_statistic(model.map_lon, model_intensity, statistic='mean', bins=bin_edge)
+                        obs_data_temp = deepcopy(obs_data)
+                        obs_data = np.zeros_like(model_data)
+                        obs_error_final = np.zeros_like(model_data[:1, :])
+                        for l, lon in enumerate(obs_lon):
+                            obs_data[:, l] = obs_data_temp[lon_obs==lon]
+                            obs_error_final[:, l] = np.sqrt(obs_error[lon_obs==lon].max()**2 + obs_error_conf[lon_obs==lon]**2)
+                        ix = np.ix_(*(np.arange(_) for _ in obs_data.shape))
+                    elif transition == 'HI':
+                        if comp_type == 'integrated':
+                            ix = np.ix_(i_lat_model, i_lon_model)
+                            model_data = model.get_hi_intensity(integrated=True)
+                            obs_error_final = np.sqrt((np.sqrt(vel_model.size)*obs_error)**2+(np.sqrt((obs_error_conf**2).sum(axis=0))**2))[ix_err]
+                        elif comp_type == 'pv':
+                            ix = np.ix_(np.arange(vel_model.size), i_lat_model, i_lon_model)
+                            model_data = model.get_hi_intensity(integrated=False)
+                            obs_error_final = np.sqrt(obs_error**2+obs_error_conf**2)[ix_err]
+                    elif transition in model.species:
+                        if comp_type == 'integrated':
+                            ix = np.ix_(i_lat_model, i_lon_model)
+                            model_data = model.get_species_intensity(transition=transition, include_dust=False, integrated=True)
+                            obs_error_final = np.sqrt((np.sqrt(vel_model.size)*obs_error)**2+(np.sqrt((obs_error_conf**2).sum(axis=0))**2))[ix_err]
+                        elif comp_type == 'pv':
+                            ix = np.ix_(np.arange(vel_model.size), i_lat_model, i_lon_model)
+                            model_data = model.get_species_intensity(transition=transition, include_dust=False, integrated=False)
+                            obs_error_final = np.sqrt(obs_error**2+obs_error_conf**2)[ix_err]
+                    elif transition in model.dust:
+                        ix = np.ix_(i_lat_model, i_lon_model)
+                        model_data = model.get_dust_intensity(wavelength=transition)
+                        obs_error_final = np.sqrt(obs_error**2+obs_error_conf**2)[ix_err]
+                    model_interp = model_data[ix]
+                    obs_data_final = obs_data[ix]
+  
+                    model_interp[model_interp == 0] = np.nan
+                    
+                    if log_comp:
+                        obs_error_final = obs_error_final / np.log(10) / obs_data_final
+                        obs_data_final[obs_data_final <= 0] = 1e-100
+                        obs_data_final = np.log10(obs_data_final)
+                        model_interp[model_interp <= 0] = 1e-100
+                        model_interp = np.log10(model_interp)
+
+                    # Calculate the chi**2 and overall likelihood
+                    chi2 = np.zeros_like(model_interp)
+                    loglikelihood = np.zeros_like(model_interp)
+                    # if ((survey == 'COBE') or (survey == 'COBE-FIRAS')):
+                    if '.idl' in file:
+                        i_signal = np.where(obs_data_final != 0)
+                    else:
+                        i_signal = np.where(obs_data_final != 0)
+                        
+                    chi2[i_signal] = (obs_data_final[i_signal] - model_interp[i_signal]) ** 2 / \
+                                    obs_error_final[i_signal] ** 2
+                    loglikelihood[i_signal] = -chi2[i_signal] / 2 \
+                                            - 0.5 * np.log(2 * np.pi * obs_error_final[i_signal]**2)
+                    
+                    chi2 = np.nan_to_num(chi2, nan=0)
+                    loglikelihood = np.nan_to_num(loglikelihood, nan=0)
+                    
+                    np.save(path + f"fit_results/{survey}/{file.replace('.fits', '')}/{transition}/"
+                            f"{dir_model.replace('/', '').replace('channel_intensity.fits', '') + '_' + comp}_chi2.npy", chi2)
+                    np.save(path + f"fit_results/{survey}/{file.replace('.fits', '')}/{transition}/"
+                            f"{dir_model.replace('/', '').replace('channel_intensity.fits','') + '_' + comp}_loglikelihood.npy", loglikelihood)
+
+                    chi2_grid.append(chi2.sum())
+                    loglikelihood_grid.append(loglikelihood.sum())
+  
+                    model.close()
+                    # del f_model_interp
+                    del model_interp
+                    del chi2
+                    del loglikelihood
+                    del lon_model
+                    del lat_model
+                    del vel_model
+
+                if np.size(loglikelihood_grid) == 0:
+                    continue
+                # print(loglikelihood_grid)
+
+                i_bestfit2 = np.where(loglikelihood_grid == np.max(loglikelihood_grid))[0][0]
+                # print(i_bestfit2)
+                print('\n    The best-fitting model for {} with transition {}\n'.format(file.replace('.fits', ''), transition) +
+                    '  has parameters ' + model_dir.format(*params[i_bestfit2]))
+
+                np.save(path + f"fit_results/{survey}/{file.replace('.fits', '')}/{transition}/{comp}_chi2.npy", chi2_grid)
+                np.save(path + f"fit_results/{survey}/{file.replace('.fits', '')}/{transition}/{comp}_loglikelihood.npy", loglikelihood_grid)
+                np.save(path + f"fit_results/{survey}/{file.replace('.fits', '')}/{transition}/{comp}_parameters.npy", params)
+
+            if '.fits' in file:
+                obs.close()
+            del obs_data
+            del obs_error
+            del lon_obs
+            del lat_obs
+  
+        try:
+            i_bestfit1 = np.where(chi2_grid == np.min(chi2_grid))[0][0]
+            print(f'  The best-fitting model has parameters   {model_dir.format(*params[i_bestfit1])}')
+        except ValueError:
+            pass
 
     return
 
