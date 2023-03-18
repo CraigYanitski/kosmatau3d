@@ -1034,12 +1034,12 @@ class SyntheticModel(object):
             wavelength = self.dust
             idx = range(len(self.dust))
         elif isinstance(wavelength, (tuple, list, np.ndarray)):
-            idx = (self.dust.index(t) for t in wavelength)
+            idx = (list(self.dust).index(t) for t in wavelength)
         elif isinstance(idx, (tuple, list, np.ndarray)):
             wavelength = (self.dust[i] for i in idx)
         elif isinstance(wavelength, str) and wavelength in self.dust:
             wavelength = (wavelength, )
-            idx = (self.dust.index(wavelength[0]), )
+            idx = (list(self.dust).index(wavelength[0]), )
         elif isinstance(idx, int):
             wavelength = (self.dust[idx], )
             idx = (idx, )
