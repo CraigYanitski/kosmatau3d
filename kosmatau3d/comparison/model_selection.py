@@ -2128,8 +2128,8 @@ def model_selection_new(path='/mnt/yanitski_backup/yanitski/projects/pdr/KT3_his
 
                 i_bestfit2 = np.where(loglikelihood_grid == np.max(loglikelihood_grid))[0][0]
                 # print(i_bestfit2)
-                print('\n    The best-fitting model for {} with transition {}\n'.format(file.replace('.fits', ''), transition) +
-                    '  has parameters ' + model_dir.format(*params[i_bestfit2]))
+                print(f'\n\n    The best-fitting model for {file.replace('.fits', '')} with transition {transition}'
+                      f'  \n    has parameters {model_dir.format(*params[i_bestfit2])}')
 
                 np.save(path + f"fit_results/{survey}/{file.replace('.fits', '')}/{transition}/{comp}_chi2.npy", chi2_grid)
                 np.save(path + f"fit_results/{survey}/{file.replace('.fits', '')}/{transition}/{comp}_loglikelihood.npy", loglikelihood_grid)
@@ -2144,7 +2144,7 @@ def model_selection_new(path='/mnt/yanitski_backup/yanitski/projects/pdr/KT3_his
   
         try:
             i_bestfit1 = np.where(chi2_grid == np.min(chi2_grid))[0][0]
-            print(f'  The best-fitting model has parameters   {model_dir.format(*params[i_bestfit1])}')
+            print(f'\n\n  The best-fitting model has parameters   {model_dir.format(*params[i_bestfit1])}')
         except ValueError:
             pass
 
