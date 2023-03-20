@@ -184,15 +184,17 @@ class Observation(object):
 
         if os.path.exists(spectra_path):
             self.files.append(self.survey + '_resampled_conf.csv')
+            self.obs_iid.append(np.array(['C+ 1']))
+            self.obs_i_iid.append(np.array([0]))
             self.obs_spectra = pd.read_csv(spectra_path + self.survey + '_combined.csv')
             self.obs_spectra_resampled = pd.read_csv(spectra_path + self.survey 
                                                      + '_resampled.csv')
             self.obs_spectra_mid = pd.read_csv(spectra_path + self.survey
                                                + '_resampled_conf.csv')
             self.obs_data.append(self.obs_spectra_mid.Tmb.to_numpy())
-            self.obs_lon.append(np.unique(self.obs_spectra_mid.glon))
+            self.obs_lon.append(self.obs_spectra_mid.glon.to_numpy())
             self.obs_lat.append(np.zeros(1))
-            self.obs_vel.append(np.unique(self.obs_spectra_mid.Vel))
+            self.obs_vel.append(self.obs_spectra_mid.Vel.to_numpy())
             self.obs_error_data.append(self.obs_spectra_mid.sigma.to_numpy())
             self.obs_error_conf_data.append(self.obs_spectra_mid.sigma_conf.to_numpy())
             self.obs_spectra_reduced = self.obs_spectra.loc[self.obs_spectra.glat == lat]
@@ -228,7 +230,7 @@ class Observation(object):
             lon = copy(self.obs_lon[idx])
             extent = (lon, lat, None)
             i_extent = (np.arange(lon.size), np.zeros(0))
-        if self.obs_lat[idx].size == 1:
+        elif self.obs_lat[idx].size == 1:
             lon = copy(self.obs_lon[idx])
             lat = copy(self.obs_lat[idx])
             vel = copy(self.obs_vel[idx])
