@@ -7,6 +7,7 @@ from astropy.visualization.wcsaxes.frame import EllipticalFrame
 from scipy.interpolate import interp1d, interp2d
 from scipy.integrate import trapz
 from scipy.io import readsav
+from scipy.stats import binned_statistic
 import matplotlib.pyplot as plt
 import matplotlib.colors as colors
 from functools import lru_cache
@@ -144,7 +145,9 @@ cobe_idl_transitions = np.array(['CO 1', 'CO 2', 'CO 3', 'CO 4', 'C 3', 'CO 5',
 
 
 def determine_rms(hdul, mission='', file=''):
-
+    '''
+    determine RMS of selected surveys.
+    '''
     import astrokit
     print(mission, 'GOT C+', mission=='GOT C+')
 
@@ -1227,7 +1230,9 @@ def view_observation(path='/mnt/hpc_backup/yanitski/projects/pdr/observational_d
 
 
 def error_correction(data, conf=''):
-
+    '''
+    Calculate configuration error
+    '''
     if len(data.shape) == 0:
         return 0
     if data.shape[0] == 1 and data.ndim == 3:
@@ -1843,7 +1848,7 @@ def model_selection(path='/mnt/hpc_backup/yanitski/projects/pdr/KT3_history/Milk
     return
 
 
-def model_selection_new(path='/mnt/yanitski_backup/yanitski/projects/pdr/KT3_history/MilkyWay', missions=None, lat=None,
+def model_selection_new(path='/mnt/yanitski_backup/yanitski/projects/pdr/KT3_history/MilkyWay', missions=None, lat=None, f_idx=0, 
                         model_dir='', model_param=[[]], comp_type='pv', log_comp=True, cmap='gist_ncar',
                         spectra=True, PLOT=False, PRINT=False, debug=False):
     
@@ -1866,6 +1871,20 @@ def model_selection_new(path='/mnt/yanitski_backup/yanitski/projects/pdr/KT3_his
     if model_dir == '' or model_param == [[]]:
         print('Please specify both model_dir and model_param.')
         return
+
+    if isinstance(f_idx, int):
+        f_idx = len(missions) * [f_idx]
+    elif isinstance(f_idx, (tuple, list)):
+        if len(f_idx) == 1:
+            f_idx = len(missions) * f_idx
+        elif len(f_idx) != len(missions):
+            print('A valid index must be specified for f_idx.')
+            return
+        else:
+            pass
+    else:
+        print('An int or list(int) must be specified for f_idx.')
+        return
   
     model_params = np.meshgrid(*model_param)
     # model_params = zip(np.transpose([model_params[n].flatten() for n in range(len(model_param))]))
@@ -1880,7 +1899,7 @@ def model_selection_new(path='/mnt/yanitski_backup/yanitski/projects/pdr/KT3_his
     lon = []
     vel = []
 
-    for survey in missions:
+    for s, survey in enumerate(missions):
 
         print('\n\n  {}'.format(survey))
         print('  ' + '-'*len(survey))
@@ -1904,19 +1923,25 @@ def model_selection_new(path='/mnt/yanitski_backup/yanitski/projects/pdr/KT3_his
         # for i_obs in range(len(obs_data)):
         for f, file in enumerate(obs.files):
 
-            if not ('.fits' in file or '.idl' in file) or 'error' in file:
+            if f < f_idx[s]:
                 continue
+
+            if not ('.fits' in file or '.idl' in file or '.csv' in file) or 'error' in file:
+                continue
+
+            print(file)
 
             transitions = obs.obs_iid[f]
             transition_indeces = obs.obs_i_iid[f]
             obs_data = obs.obs_data[f]
+            obs_data_temp = deepcopy(obs_data)
             obs_error = obs.obs_error_data[f]
             obs_error_conf = obs.obs_error_conf_data[f]
             lon_obs = obs.obs_lon[f]
             lon_obs[lon_obs>180] = lon_obs[lon_obs>180] - 360
             lat_obs = obs.obs_lat[f]
             vel_obs = obs.obs_vel[f]
-            i_lon_obs_init, i_lat_obs_init, i_vel_obs_init = obs.get_obs_extent(idx=f, kind='index')
+            i_lat_obs_init = obs.get_obs_extent(idx=f, kind='index')[1]
 
             for i, transition in enumerate(transitions):
 
@@ -1946,8 +1971,9 @@ def model_selection_new(path='/mnt/yanitski_backup/yanitski/projects/pdr/KT3_his
                 # else:
                 #     obs_error_conf = 0
 
-                print('Average error in observation: {}'.format(np.nanmean(obs_error)))
-                print('Correction due to axisymmetry: {}'.format(np.nanmean(obs_error_conf)))
+                if PRINT:
+                    print('    Average error in observation: {}'.format(np.nanmean(obs_error)))
+                    print('    Correction due to axisymmetry: {}'.format(np.nanmean(obs_error_conf)))
                 
                 model = models.SyntheticModel(base_dir=path)
 
@@ -1996,12 +2022,13 @@ def model_selection_new(path='/mnt/yanitski_backup/yanitski/projects/pdr/KT3_his
                     i_lon_model = np.arange(lon_model.size)
                     i_lat_model = np.where((lat_model >= lat_min)
                                             & (lat_model <= lat_max))[0]
-                    i_lat_obs = np.where((lat_obs >= lat_model[i_lat_model].min())
-                                        & (lat_obs <= lat_model[i_lat_model].max()))[0]
+                    # print(lat_obs, lat_model[i_lat_model])
+                    # i_lat_obs = np.where((lat_obs >= lat_model[i_lat_model].min())
+                    #                     & (lat_obs <= lat_model[i_lat_model].max()))[0]
 
                     ix_err = np.ix_(i_lat_model, i_lon_model)
                     if survey == 'COBE-FIRAS':
-                        bin_edge = [*((obs_lon[:-1]+obs_lon[1:])/2), 182.5]
+                        bin_edge = np.array([*((lon_obs[:-1]+lon_obs[1:])/2), 182.5])
                         if ' + ' in transition:
                             model_intensity = model.get_species_intensity(transition=transition.split(' + '), include_dust=False, integrated=True).sum(0)
                         else:
@@ -2010,8 +2037,8 @@ def model_selection_new(path='/mnt/yanitski_backup/yanitski/projects/pdr/KT3_his
                         lon_model_alt[lon_model_alt<-177.5] = lon_model_alt[lon_model_alt<-177.5] + 360
                         model_data_temp = binned_statistic(lon_model_alt, model_intensity, statistic='mean', bins=bin_edge)[0]
                         model_data = np.array([model_data_temp[:, -1], *model_data_temp.T]).T
-                        obs_data = np.array(model_data.shape[0]*[obs_data[:, transition_indeces[i]]])
-                        ix = np.ix_(i_lat_model, np.arange(obs_lon.size))
+                        obs_data = np.array(model_data_temp.shape[0]*[obs_data_temp[:, transition_indeces[i]]])
+                        ix = np.ix_(i_lat_model, np.arange(lon_obs.size))
                         obs_error_final = np.sqrt(obs_error[:, transition_indeces[i]]**2+obs_error_conf[:, transition_indeces[i]]**2)
                     elif survey == 'GOT_C+' and '.csv' in file:
                         obs_lon = np.unique(lon_obs)
@@ -2020,10 +2047,9 @@ def model_selection_new(path='/mnt/yanitski_backup/yanitski/projects/pdr/KT3_his
                         bin_mid = obs_lon
                         bin_edge = np.array([-180, *((bin_mid[:-1]+bin_mid[1:])/2), 180])
                         model_intensity = model.get_species_intensity(transition='C+ 1', include_dust=False, integrated=False)[:, 4, :]
-                        model_data = binned_statistic(model.map_lon, model_intensity, statistic='mean', bins=bin_edge)
-                        obs_data_temp = deepcopy(obs_data)
+                        model_data = binned_statistic(model.map_lon, model_intensity, statistic='mean', bins=bin_edge)[0]
                         obs_data = np.zeros_like(model_data)
-                        obs_error_final = np.zeros_like(model_data[:1, :])
+                        obs_error_final = np.zeros_like(model_data)
                         for l, lon in enumerate(obs_lon):
                             obs_data[:, l] = obs_data_temp[lon_obs==lon]
                             obs_error_final[:, l] = np.sqrt(obs_error[lon_obs==lon].max()**2 + obs_error_conf[lon_obs==lon]**2)
@@ -2036,7 +2062,7 @@ def model_selection_new(path='/mnt/yanitski_backup/yanitski/projects/pdr/KT3_his
                         elif comp_type == 'pv':
                             ix = np.ix_(np.arange(vel_model.size), i_lat_model, i_lon_model)
                             model_data = model.get_hi_intensity(integrated=False)
-                            obs_error_final = np.sqrt(obs_error**2+obs_error_conf**2)[ix_err]
+                            obs_error_final = np.sqrt(obs_error**2+obs_error_conf**2)[ix]
                     elif transition in model.species:
                         if comp_type == 'integrated':
                             ix = np.ix_(i_lat_model, i_lon_model)
@@ -2045,7 +2071,7 @@ def model_selection_new(path='/mnt/yanitski_backup/yanitski/projects/pdr/KT3_his
                         elif comp_type == 'pv':
                             ix = np.ix_(np.arange(vel_model.size), i_lat_model, i_lon_model)
                             model_data = model.get_species_intensity(transition=transition, include_dust=False, integrated=False)
-                            obs_error_final = np.sqrt(obs_error**2+obs_error_conf**2)[ix_err]
+                            obs_error_final = np.sqrt(obs_error**2+obs_error_conf**2)[ix]
                     elif transition in model.dust:
                         ix = np.ix_(i_lat_model, i_lon_model)
                         model_data = model.get_dust_intensity(wavelength=transition)
@@ -2087,7 +2113,7 @@ def model_selection_new(path='/mnt/yanitski_backup/yanitski/projects/pdr/KT3_his
                     chi2_grid.append(chi2.sum())
                     loglikelihood_grid.append(loglikelihood.sum())
   
-                    model.close()
+                    # model.close()
                     # del f_model_interp
                     del model_interp
                     del chi2
@@ -2109,8 +2135,8 @@ def model_selection_new(path='/mnt/yanitski_backup/yanitski/projects/pdr/KT3_his
                 np.save(path + f"fit_results/{survey}/{file.replace('.fits', '')}/{transition}/{comp}_loglikelihood.npy", loglikelihood_grid)
                 np.save(path + f"fit_results/{survey}/{file.replace('.fits', '')}/{transition}/{comp}_parameters.npy", params)
 
-            if '.fits' in file:
-                obs.close()
+            # if '.fits' in file:
+            #     obs.close()
             del obs_data
             del obs_error
             del lon_obs
