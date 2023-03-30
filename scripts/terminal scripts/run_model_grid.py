@@ -42,7 +42,7 @@ args = parser.parse_args()
 
 if args.grid == 'convergence':
     folder = 'r{}_convergence/'
-    res = (400, ) #(400, 200, 100)
+    res = (400, 200, 100)
     grid_flag = (True, )
     param_keys = ('resolution', 'new_grid')
     params = list(_.flatten() for _ in np.meshgrid(res, grid_flag))
