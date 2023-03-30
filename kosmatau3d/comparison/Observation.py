@@ -8,9 +8,12 @@ from scipy.io import readsav
 
 cobe_idl_linfrq = np.array([115.3, 230.5, 345.8, 424.8, 461.0, 492.2, 556.9, 576.3, 691.5, 808.1,
                             1113, 1460, 2226, 1901, 2060, 2311, 2459, 2589, 921.8])
-cobe_idl_transitions = np.array(['CO 1', 'CO 2', 'CO 3', 'CO 4', 'C 3', 'CO 5',
-                                 'CO 6', 'CO 7 + C 1', 'C+ 1', 'O 1', 'CO 8'])
-cobe_idl_indeces = np.array([0, 1, 2, 4, 5, 7, 8, 9, 13, 14, 18])
+# cobe_idl_transitions = np.array(['CO 1', 'CO 2', 'CO 3', 'CO 4', 'C 3', 'CO 5',
+#                                  'CO 6', 'CO 7 + C 1', 'C+ 1', 'O 1', 'CO 8'])
+cobe_idl_transitions = np.array(['CO 1', 'CO 2', 'CO 3', 'CO 4', 'CO 5',
+                                 'CO 6', 'CO 7 + C 1', 'C+ 1', 'CO 8'])
+# cobe_idl_indeces = np.array([0, 1, 2, 4, 5, 7, 8, 9, 13, 14, 18])
+cobe_idl_indeces = np.array([0, 1, 2, 4, 7, 8, 9, 13, 18])
 missions_2d = ['COBE-FIRAS', 'COBE-DIRBE', 'Planck']
 
 class Observation(object):
@@ -123,9 +126,9 @@ class Observation(object):
                 self.obs_i_iid.append(deepcopy(cobe_idl_indeces))
                 self.obs_frequency.append(deepcopy(cobe_idl_linfrq)*1e9)
                 self.obs_wavelength.append(299792458/self.obs_frequency[-1])
-                self.obs_data.append(self.obs[-1]['amplitude']/(2.9979**3)*(self.obs_frequency[-1]**3)*2*1.38/10**-1)
+                self.obs_data.append(self.obs[-1]['amplitude'] * (2.9979**3) / ((self.obs_frequency[-1]/1e9)**3*2*1.38) * 10**8)
                 self.obs_error.append(None)
-                self.obs_error_data.append(self.obs[-1]['sigma']/(2.9979**3)*(self.obs_frequency[-1]**3)*2*1.38/10**-1)
+                self.obs_error_data.append(self.obs[-1]['sigma'] * (2.9979**3) / ((self.obs_frequency[-1]/1e9)**3*2*1.38) * 10**8)
                 error_conf = np.zeros_like(self.obs_data[-1])
                 for _ in range(int(np.floor(self.obs_data[-1].shape[0]/2))):
                     idx = np.array([_, -1-_])
@@ -284,7 +287,7 @@ class Observation(object):
         if verbose:
             print(filename)
 
-        if integrated and not self.survey in missions_2d:
+        if integrated and not self.survey in (*missions_2d, 'GOT_C+'):
             data = np.trapz(self.obs_data[idx], self.obs_vel[idx], axis=0)
         else:
             data = self.obs_data[idx]
@@ -308,3 +311,5 @@ class Observation(object):
             return data_temp[index]
         else:
             return data_temp
+
+
