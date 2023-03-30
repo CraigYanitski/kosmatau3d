@@ -867,20 +867,21 @@ def regrid_observations(path='/media/hpc_backup/yanitski/projects/pdr/observatio
                 if 'CDELT3' in temp_header.keys():
                     # temp_header['NAXIS'] = 2
                     # del temp_header['NAXIS3']
+                    temp_header['NAXIS'] = 2
+                    del temp_header['NAXIS3']
                     del temp_header['CTYPE3']
                     del temp_header['CDELT3']
                     del temp_header['CRVAL3']
                     del temp_header['CRPIX3']
-                temp_header['NAXIS'] = 3
-                temp_header['NAXIS3'] = obs_data.shape[1]
 
                 # Grid
+                print(obs_data.shape)
                 gridder = cygrid.WcsGrid(temp_header)
                 gridder.set_kernel(*target_kernel)
-                gridder.grid(lon_mesh, lat_mesh, obs_data)
+                gridder.grid(lon_mesh, lat_mesh, obs_data.flatten())
                 gridder_err = cygrid.WcsGrid(temp_header)
                 gridder_err.set_kernel(*target_kernel)
-                gridder_err.grid(lon_mesh, lat_mesh, obs_error)
+                gridder_err.grid(lon_mesh, lat_mesh, obs_error.flatten())
                 temp_header['TRANSL'] = ', '.join(transitions)
                 temp_header['TRANSI'] = ', '.join('{}'.format(_) for _ in np.arange(len(transitions)))
                 grid_hdu = fits.PrimaryHDU(data=gridder.get_datacube(), header=fits.Header(temp_header))
@@ -1933,7 +1934,10 @@ def model_selection_new(path='/mnt/yanitski_backup/yanitski/projects/pdr/KT3_his
 
             transitions = obs.obs_iid[f]
             transition_indeces = obs.obs_i_iid[f]
-            obs_data = obs.obs_data[f]
+            if comp_type == 'integrated':
+                obs_data = obs.get_intensity(idx=f, integrated=True)
+            else:
+                obs_data = obs.get_intensity(idx=f, integrated=False)
             obs_data_temp = deepcopy(obs_data)
             obs_error = obs.obs_error_data[f]
             obs_error_conf = obs.obs_error_conf_data[f]
@@ -1991,15 +1995,15 @@ def model_selection_new(path='/mnt/yanitski_backup/yanitski/projects/pdr/KT3_his
                     model.load_model(directory=dir_model)
 
                     # Locate the species transition (only one dust value is considered; constant background)
-                    if transition in model.dust:
-                        i_spec = np.where(model.dust == transition)[0]
-                    elif transition in model.species:
-                        i_spec = np.where(model.species == transition)[0]
-                    elif transition == 'HI':
-                        i_spec = np.zeros(1)
-                    else:
-                        print(f'  {transition} not in model.  ')
-                        break
+                    # if transition in model.dust:
+                    #     i_spec = np.where(model.dust == transition)[0]
+                    # elif transition in model.species:
+                    #     i_spec = np.where(model.species == transition)[0]
+                    # elif transition == 'HI':
+                    #     i_spec = np.zeros(1)
+                    # else:
+                    #     print(f'  {transition} not in model.  ')
+                    #     break
                     # else:
                     #     i_spec = i_spec[0]
 
@@ -2023,8 +2027,8 @@ def model_selection_new(path='/mnt/yanitski_backup/yanitski/projects/pdr/KT3_his
                     i_lat_model = np.where((lat_model >= lat_min)
                                             & (lat_model <= lat_max))[0]
                     # print(lat_obs, lat_model[i_lat_model])
-                    # i_lat_obs = np.where((lat_obs >= lat_model[i_lat_model].min())
-                    #                     & (lat_obs <= lat_model[i_lat_model].max()))[0]
+                    i_lat_obs = np.where((lat_obs >= lat_model.min())
+                                         & (lat_obs <= lat_model.max()))[0]
 
                     ix_err = np.ix_(i_lat_model, i_lon_model)
                     if survey == 'COBE-FIRAS':
@@ -2039,7 +2043,8 @@ def model_selection_new(path='/mnt/yanitski_backup/yanitski/projects/pdr/KT3_his
                         model_data = np.array([model_data_temp[:, -1], *model_data_temp.T]).T
                         obs_data = np.array(model_data_temp.shape[0]*[obs_data_temp[:, transition_indeces[i]]])
                         ix = np.ix_(i_lat_model, np.arange(lon_obs.size))
-                        obs_error_final = np.sqrt(obs_error[:, transition_indeces[i]]**2+obs_error_conf[:, transition_indeces[i]]**2)
+                        ix_obs = np.ix_(*(np.arange(_) for _ in obs_data.shape))
+                        obs_error_final = np.array(model_data_temp.shape[0]*[np.sqrt(obs_error[:, transition_indeces[i]]**2+obs_error_conf[:, transition_indeces[i]]**2)])[ix_obs][ix]
                     elif survey == 'GOT_C+' and '.csv' in file:
                         obs_lon = np.unique(lon_obs)
                         obs_vel = np.unique(vel_obs)
@@ -2054,48 +2059,62 @@ def model_selection_new(path='/mnt/yanitski_backup/yanitski/projects/pdr/KT3_his
                             obs_data[:, l] = obs_data_temp[lon_obs==lon]
                             obs_error_final[:, l] = np.sqrt(obs_error[lon_obs==lon].max()**2 + obs_error_conf[lon_obs==lon]**2)
                         ix = np.ix_(*(np.arange(_) for _ in obs_data.shape))
+                        ix_obs = ix
                     elif transition == 'HI':
                         if comp_type == 'integrated':
                             ix = np.ix_(i_lat_model, i_lon_model)
+                            ix_obs = np.ix_(i_lat_obs, i_lon_model)
                             model_data = model.get_hi_intensity(integrated=True)
-                            obs_error_final = np.sqrt((np.sqrt(vel_model.size)*obs_error)**2+(np.sqrt((obs_error_conf**2).sum(axis=0))**2))[ix_err]
+                            obs_error_final = np.sqrt((np.sqrt(vel_model.size)*obs_error)**2+(np.sqrt((obs_error_conf**2).sum(axis=0))**2))[i_obs][ix_err]
                         elif comp_type == 'pv':
                             ix = np.ix_(np.arange(vel_model.size), i_lat_model, i_lon_model)
+                            ix_obs = np.ix_(np.arange(vel_model.size), i_lat_obs, i_lon_model)
                             model_data = model.get_hi_intensity(integrated=False)
-                            obs_error_final = np.sqrt(obs_error**2+obs_error_conf**2)[ix]
+                            obs_error_final = np.sqrt(obs_error**2+obs_error_conf**2)[ix_obs][ix]
                     elif transition in model.species:
                         if comp_type == 'integrated':
                             ix = np.ix_(i_lat_model, i_lon_model)
+                            ix_obs = np.ix_(i_lat_obs, i_lon_model)
                             model_data = model.get_species_intensity(transition=transition, include_dust=False, integrated=True)
-                            obs_error_final = np.sqrt((np.sqrt(vel_model.size)*obs_error)**2+(np.sqrt((obs_error_conf**2).sum(axis=0))**2))[ix_err]
+                            obs_error_final = np.sqrt((np.sqrt(vel_model.size)*obs_error)**2+(np.sqrt((obs_error_conf**2).sum(axis=0))**2))[ix_obs][ix_err]
                         elif comp_type == 'pv':
                             ix = np.ix_(np.arange(vel_model.size), i_lat_model, i_lon_model)
+                            ix_obs = np.ix_(np.arange(vel_model.size), i_lat_obs, i_lon_model)
                             model_data = model.get_species_intensity(transition=transition, include_dust=False, integrated=False)
-                            obs_error_final = np.sqrt(obs_error**2+obs_error_conf**2)[ix]
+                            obs_error_final = np.sqrt(obs_error**2+obs_error_conf**2)[ix_obs][ix]
                     elif transition in model.dust:
                         ix = np.ix_(i_lat_model, i_lon_model)
+                        ix_obs = np.ix_(i_lat_obs, i_lon_model)
                         model_data = model.get_dust_intensity(wavelength=transition)
-                        obs_error_final = np.sqrt(obs_error**2+obs_error_conf**2)[ix_err]
+                        obs_error_final = np.sqrt(obs_error**2+obs_error_conf**2)[ix_obs][ix_err]
+
                     model_interp = model_data[ix]
-                    obs_data_final = obs_data[ix]
+                    obs_data_final = obs_data[ix_obs][ix]
   
                     model_interp[model_interp == 0] = np.nan
+
+                    if np.isnan(obs_data_final).all():
+                        print('Observation improperly indexed!')
+                        break
+
+                    # if ((survey == 'COBE') or (survey == 'COBE-FIRAS')):
+                    if '.idl' in file:
+                        i_signal = np.where(~((obs_data_final == 0) | np.isnan(obs_data_final)
+                                              | np.isnan(model_interp)))
+                    else:
+                        i_signal = np.where(~((obs_data_final == 0) | np.isnan(obs_data_final)
+                                              | np.isnan(model_interp)))
                     
                     if log_comp:
-                        obs_error_final = obs_error_final / np.log(10) / obs_data_final
+                        obs_error_final[i_signal] = obs_error_final[i_signal] / np.log(10) / obs_data_final[i_signal]
                         obs_data_final[obs_data_final <= 0] = 1e-100
-                        obs_data_final = np.log10(obs_data_final)
+                        obs_data_final[i_signal] = np.log10(obs_data_final[i_signal])
                         model_interp[model_interp <= 0] = 1e-100
-                        model_interp = np.log10(model_interp)
+                        model_interp[i_signal] = np.log10(model_interp[i_signal])
 
                     # Calculate the chi**2 and overall likelihood
                     chi2 = np.zeros_like(model_interp)
                     loglikelihood = np.zeros_like(model_interp)
-                    # if ((survey == 'COBE') or (survey == 'COBE-FIRAS')):
-                    if '.idl' in file:
-                        i_signal = np.where(obs_data_final != 0)
-                    else:
-                        i_signal = np.where(obs_data_final != 0)
                         
                     chi2[i_signal] = (obs_data_final[i_signal] - model_interp[i_signal]) ** 2 / \
                                     obs_error_final[i_signal] ** 2
@@ -2104,6 +2123,11 @@ def model_selection_new(path='/mnt/yanitski_backup/yanitski/projects/pdr/KT3_his
                     
                     chi2 = np.nan_to_num(chi2, nan=0)
                     loglikelihood = np.nan_to_num(loglikelihood, nan=0)
+
+                    if ~(chi2.any() or np.isnan(chi2)):
+                        print(chi2.any() or np.isnan(chi2))
+                        print('Observation improperly indexed -- all NaN!')
+                        return
                     
                     np.save(path + f"fit_results/{survey}/{file.replace('.fits', '')}/{transition}/"
                             f"{dir_model.replace('/', '').replace('channel_intensity.fits', '') + '_' + comp}_chi2.npy", chi2)
@@ -2128,8 +2152,8 @@ def model_selection_new(path='/mnt/yanitski_backup/yanitski/projects/pdr/KT3_his
 
                 i_bestfit2 = np.where(loglikelihood_grid == np.max(loglikelihood_grid))[0][0]
                 # print(i_bestfit2)
-                print(f'\n\n    The best-fitting model for {file.replace('.fits', '')} with transition {transition}'
-                      f'  \n    has parameters {model_dir.format(*params[i_bestfit2])}')
+                print(f"\n\n    The best-fitting model for {file.replace('.fits', '')} with transition {transition}"
+                      f"  \n    has parameters {model_dir.format(*params[i_bestfit2])}")
 
                 np.save(path + f"fit_results/{survey}/{file.replace('.fits', '')}/{transition}/{comp}_chi2.npy", chi2_grid)
                 np.save(path + f"fit_results/{survey}/{file.replace('.fits', '')}/{transition}/{comp}_loglikelihood.npy", loglikelihood_grid)
