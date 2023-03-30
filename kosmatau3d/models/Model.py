@@ -433,10 +433,97 @@ class SyntheticModel(object):
                       'los_count': 'sightlines', 
                       'log': 'log', }
         
+        # initialise files
+        self.intensity_file = None
+        self.hi_intensity_file = None
+        self.optical_depth_file = None
+        self.hi_optical_depth_file = None
+
+        self.dust_absorption_file = None
+        self.dust_optical_depth_file = None
+        self.species_absorption_file = None
+        self.species_emissivity_file = None
+        self.hi_absorption_file = None
+        self.hi_optical_depth_file = None
+
+        self.f_vox_file = None
+        self.clump_number_file = None
+        self.clump_radius_file = None
+        self.density_file = None
+        self.ensemble_dispersion_file = None
+        self.ensemble_mass_file = None
+        self.hi_mass_file = None
+        self.h2_mass_file = None
+        self.fuv_absorption_dispersion_file = None
+        self.fuv_file = None
+        self.position_file = None
+        self.velocity_file = None
+        
         return
 
+    def close_files(model, **kwargs):
+        '''
+        Close any open FITS files.
+        '''
+
+        def wrapper(self, **kwargs):
+
+            if isinstance(self.intensity_file, fits.hdu.hdulist.HDUList):
+                self.intensity_file.close()
+            if isinstance(self.hi_intensity_file, fits.hdu.hdulist.HDUList):
+                self.hi_intensity_file.close()
+            if isinstance(self.optical_depth_file, fits.hdu.hdulist.HDUList):
+                self.optical_depth_file.close()
+            if isinstance(self.hi_optical_depth_file, fits.hdu.hdulist.HDUList):
+                self.hi_optical_depth_file.close()
+
+            if isinstance(self.dust_absorption_file, fits.hdu.hdulist.HDUList):
+                self.dust_absorption_file.close()
+            if isinstance(self.dust_optical_depth_file, fits.hdu.hdulist.HDUList):
+                self.dust_optical_depth_file.close()
+            if isinstance(self.species_absorption_file, fits.hdu.hdulist.HDUList):
+                self.species_absorption_file.close()
+            if isinstance(self.species_emissivity_file, fits.hdu.hdulist.HDUList):
+                self.species_emissivity_file.close()
+            if isinstance(self.hi_absorption_file, fits.hdu.hdulist.HDUList):
+                self.hi_absorption_file.close()
+            if isinstance(self.hi_optical_depth_file, fits.hdu.hdulist.HDUList):
+                self.hi_optical_depth_file.close()
+
+            if isinstance(self.f_vox_file, fits.hdu.hdulist.HDUList):
+                self.f_vox_file.close()
+            if isinstance(self.clump_number_file, fits.hdu.hdulist.HDUList):
+                self.clump_number_file.close()
+            if isinstance(self.clump_radius_file, fits.hdu.hdulist.HDUList):
+                self.clump_radius_file.close()
+            if isinstance(self.density_file, fits.hdu.hdulist.HDUList):
+                self.density_file.close()
+            if isinstance(self.ensemble_dispersion_file, fits.hdu.hdulist.HDUList):
+                self.ensemble_dispersion_file.close()
+            if isinstance(self.ensemble_mass_file, fits.hdu.hdulist.HDUList):
+                self.ensemble_mass_file.close()
+            if isinstance(self.hi_mass_file, fits.hdu.hdulist.HDUList):
+                self.hi_mass_file.close()
+            if isinstance(self.h2_mass_file, fits.hdu.hdulist.HDUList):
+                self.h2_mass_file.close()
+            if isinstance(self.fuv_absorption_dispersion_file, fits.hdu.hdulist.HDUList):
+                self.fuv_absorption_dispersion_file.close()
+            if isinstance(self.fuv_file, fits.hdu.hdulist.HDUList):
+                self.fuv_file.close()
+            if isinstance(self.position_file, fits.hdu.hdulist.HDUList):
+                self.position_file.close()
+            if isinstance(self.velocity_file, fits.hdu.hdulist.HDUList):
+                self.velocity_file.close()
+
+            return model(self, **kwargs)
+
+        return wrapper
+
     def change_files(model, **kwargs):
-        
+        '''
+        Change the specified filenames.
+        '''
+
         def wrapper(self, **kwargs):
             
             # # Ensure model path exists
@@ -504,6 +591,7 @@ class SyntheticModel(object):
         return wrapper
 
     @change_files
+    @close_files
     def load_model(self, directory='', map_units='deg', **kwargs):
         '''
         Load all of the data for one model. Any additional information such as 
@@ -575,6 +663,9 @@ class SyntheticModel(object):
         if (self.files['f_vox'] + '.fits') in model_files:
             self.f_vox_file = fits.open(self.base_dir + directory + self.files['f_vox'] + '.fits')
             self.f_vox = self.f_vox_file[0].data
+        else:
+            self.f_vox_file = np.nan
+            self.f_vox = np.nan
         if os.path.exists(self.base_dir + directory + self.files['hi_intensity'] + '.fits'):
             self.hi_map = True
             self.hi_intensity_file = fits.open(self.base_dir + directory 
@@ -610,17 +701,26 @@ class SyntheticModel(object):
                                                 + self.files['hi_absorption'] + '.fits')
             self.hi_absorption = self.hi_absorption_file[0].data
         else:
-            self.hi_emissivity = np.nan
+            self.hi_model = False
+            self.hi_absorption_file = np.nan
             self.hi_absorption = np.nan
+            self.hi_emissivity_file = np.nan
+            self.hi_emissivity = np.nan
             print('HI emissivity not found')
         if os.path.exists(self.base_dir + directory + self.files['clump_number'] + '.fits'):
             self.clump_number_file = fits.open(self.base_dir + directory 
                                                + self.files['clump_number'] + '.fits')
             self.clump_number = self.clump_number_file[0].data
+        else:
+            self.clump_number_file = np.nan
+            self.clump_number = np.nan
         if os.path.exists(self.base_dir + directory + self.files['clump_radius'] + '.fits'):
             self.clump_radius_file = fits.open(self.base_dir + directory 
                                                + self.files['clump_radius'] + '.fits')
             self.clump_radius = self.clump_radius_file[0].data
+        else:
+            self.clump_radius_file = np.nan
+            self.clump_radius = np.nan
         self.density_file = fits.open(self.base_dir + directory 
                                       + self.files['density'] + '.fits')
         self.density = self.density_file[0].data
@@ -633,9 +733,15 @@ class SyntheticModel(object):
         if (self.files['hi_mass'] + '.fits') in model_files:
             self.hi_mass_file = fits.open(self.base_dir + directory + self.files['hi_mass'] + '.fits')
             self.hi_mass = self.hi_mass_file[0].data
+        else:
+            self.hi_mass_file = np.nan
+            self.hi_mass = np.nan
         if (self.files['h2_mass'] + '.fits') in model_files:
             self.h2_mass_file = fits.open(self.base_dir + directory + self.files['h2_mass'] + '.fits')
             self.h2_mass = self.h2_mass_file[0].data
+        else:
+            self.h2_mass_file = np.nan
+            self.h2_mass = np.nan
         self.fuv_absorption_file = fits.open(self.base_dir + directory 
                                              + self.files['fuv_absorption'] + '.fits')
         self.fuv_absorption = self.fuv_absorption_file[0].data
@@ -652,6 +758,8 @@ class SyntheticModel(object):
         if os.path.exists(self.base_dir + directory + self.files['log'] + '.txt'):
             with open(self.base_dir + directory + self.files['log'] + '.txt') as f:
                 self.log = f.readlines()
+        else:
+            self.log = np.nan
         
         # Extract headers and create additional axes
         self.info = self.species_absorption_file[0].header['COMMENT']
