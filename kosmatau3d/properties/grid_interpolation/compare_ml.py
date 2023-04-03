@@ -12,6 +12,8 @@ class CompareInterpolation():
 
     def __init__(self, tmb_file='clump_Tmb_LineCenter.dat', tau_file='clump_tau_LineCenter.dat', 
                  n_param=4):
+        '''
+        '''
         filename = inspect.getframeinfo(inspect.currentframe()).filename
         package_path = os.path.abspath(os.path.dirname(filename)+'/../../')  # kosmatau3d dir
         self.path = package_path + '/grid/'  # grid dir
@@ -24,9 +26,12 @@ class CompareInterpolation():
         self.tau_orig = []
         self.tau_interp_lin = []
         self.tau_interp_ml = []
+        
         return
 
     def open_files(self, n_param=4):
+        '''
+        '''
         header = []
         with open(self.path+self.tmb_file) as tmb:
             header.append(tmb.readline())
@@ -40,10 +45,12 @@ class CompareInterpolation():
         self.tmb_data = (tmb[:, :n_param], tmb[:, n_param:])
         tau = np.genfromtxt(self.path+self.tau_file)
         self.tau_data = (tau[:, :n_param], tau[:, n_param:])
+        
         return
 
-    def interpolate(self, transition=None, full_grid=False, all_species=False):
-
+    def interpolate(self, transition=None, full_grid=False, all_species=False, savedir='', verbose=False):
+        '''
+        '''
         if not transition:
             transition = self.species
         elif isinstance(transition, (str, np.ndarray, tuple)):
@@ -59,8 +66,13 @@ class CompareInterpolation():
             print('full grid')
             tmb_data = (self.tmb_data[0], self.tmb_data[1])
             tau_data = (self.tau_data[0], self.tau_data[1])
+        else:
+            print('partial grid')
 
         for i, params in enumerate(self.tmb_data[0]):
+
+            if verbose:
+                print(params)#, end='\r')
 
             tmb_orig = []
             tmb_interp_lin = []
@@ -72,14 +84,13 @@ class CompareInterpolation():
                           for p in range(len(params))], axis=0)
                 
             if not full_grid:
-                print('partial grid')
                 tmb_data = (copy(self.tmb_data[0][~idx]), copy(self.tmb_data[1][~idx]))
                 tau_data = (copy(self.tau_data[0][~idx]), copy(self.tau_data[1][~idx]))
         
             if all_species:
                 i_species = np.arange(len(self.species))
-                print(tmb_data[1][:, i_species].shape)
-                print(tau_data[1][:, i_species].shape)
+                # print(tmb_data[1][:, i_species].shape)
+                # print(tau_data[1][:, i_species].shape)
                 tmb_orig = self.tmb_data[1][idx]
                 tau_orig = self.tau_data[1][idx]
                 lin_interp = LinearNDInterpolator(tmb_data[0], 
@@ -99,6 +110,9 @@ class CompareInterpolation():
                 
                 if all_species:
                     continue
+
+                if verbose:
+                    print(species + '\t\t', end='\r')
                 
                 i_species = self.species.index(species)
 
@@ -123,6 +137,9 @@ class CompareInterpolation():
                 ml_interp = ExtraTreesRegressor(random_state=0)
                 ml_interp.fit(tau_data[0], tau_data[1][:, i_species])
                 tau_interp_ml.append(ml_interp.predict(np.asarray(params).reshape(1, -1)))
+
+            if verbose:
+                print('\r')
             
             self.tmb_orig.append(tmb_orig)
             self.tmb_interp_lin.append(tmb_interp_lin)
@@ -137,10 +154,36 @@ class CompareInterpolation():
         self.tau_orig = np.asarray(self.tau_orig)
         self.tau_interp_lin = np.asarray(self.tau_interp_lin)
         self.tau_interp_ml = np.asarray(self.tau_interp_ml)
+
+        self.save_results(directory=savedir, full_grid=full_grid)
+        print(f'\nsaved comparison to {savedir}')
         
         return
 
+    def save_results(self, directory='', full_grid=True):
+        '''
+        '''
+        if directory:
+            savedir = (directory+'/') if not (directory[-1]=='/') else directory
+        else:
+            os.makedirs(self.path + 'comparison/')
+            savedir = self.path + 'comparison/'
+        if full_grid:
+            suffix = 'full'
+        else:
+            suffix = 'partial'
+        np.save(f"{savedir+self.tmb_file.split('.')[0]}_tmb_orig_{suffix}.npy", self.tmb_orig)
+        np.save(f"{savedir+self.tmb_file.split('.')[0]}_tmb_interp_lin_{suffix}.npy", self.tmb_interp_lin)
+        np.save(f"{savedir+self.tmb_file.split('.')[0]}_tmb_interp_ml_{suffix}.npy", self.tmb_interp_ml)
+        np.save(f"{savedir+self.tmb_file.split('.')[0]}_tau_orig_{suffix}.npy", self.tau_orig)
+        np.save(f"{savedir+self.tmb_file.split('.')[0]}_tau_interp_lin_{suffix}.npy", self.tau_interp_lin)
+        np.save(f"{savedir+self.tmb_file.split('.')[0]}_tau_interp_ml_{suffix}.npy", self.tau_interp_ml)
+
+        return
+
     def plot_result(self, ax=None, transition=None, **kwargs):
+        '''
+        '''
         if not transition:
             warnings.error('Please specify a transition')
             exit()
