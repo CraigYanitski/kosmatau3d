@@ -3017,11 +3017,11 @@ def double_line_plot(obs_path='/mnt/hpc_backup/yanitski/projects/pdr/observation
 
 
 def plot_comparison(path='/mnt/hpc_backup/yanitski/projects/pdr/KT3_history/MilkyWay/fit_results/', file_format='',
-                    missions=[], model_param=[[]], i_x=0, i_y=1,
+                    missions=[], model_param=[[]], i_x=0, i_y=1, stat_lim=1e100, 
                     comp_type='pv', log_comp=True, likelihood=True, log=False, normalise=False,
-                    contour=True, levels=10, fraction=0.1, aspect=20, cmap='viridis',
+                    contour=True, levels=10, fraction=0.1, cb_aspect=20, cmap='viridis',
                     xlabel='', ylabel='', supxlabel='', supylabel='', clabel='', clabel_xa=0.98, clabel_ha='left',
-                    title='', fontsize=20,
+                    title='', fontsize=20, ax_aspect=1.5, 
                     pad=1.0, pad_left=0, pad_right=0.125, pad_bottom=0, pad_top=0.12, wspace=0, hspace=0,
                     figsize=None, save_plot=False, output_file='', output_format='png', transparent=False,
                     verbose=False, debug=False, **kwargs):
@@ -3055,7 +3055,7 @@ def plot_comparison(path='/mnt/hpc_backup/yanitski/projects/pdr/KT3_history/Milk
     if likelihood:
         clabel = r'$log_{10}(\mathcal{L})$'
     else:
-        clabel = r'$\chi^2_r$'
+        clabel = r'$\chi^2$'
 
     dimensions = len(model_param)
     naxis = np.zeros((dimensions), dtype=bool)
@@ -3083,7 +3083,7 @@ def plot_comparison(path='/mnt/hpc_backup/yanitski/projects/pdr/KT3_history/Milk
         sub_x, sub_y = (1, 1)
     elif naxis.size == 3:
         sub_x = lenaxis[~naxis]
-        sub_y =1
+        sub_y = 1
     elif naxis.size == 4:
         sub_x, sub_y = lenaxis[~naxis]
     else:
@@ -3091,7 +3091,7 @@ def plot_comparison(path='/mnt/hpc_backup/yanitski/projects/pdr/KT3_history/Milk
         return
 
     # Initialise likelihood and figure for plot analysing all missions
-    loglikelihood_overall = np.zeros((*x_grid.shape, sub_x, sub_y))
+    loglikelihood_overall = np.zeros((*x_grid.shape, sub_y, sub_x))
     overall_dof = 0
     fig_overall, axes_overall = plt.subplots(sub_y, sub_x, figsize=figsize)
     if not isinstance(axes_overall, np.ndarray):
@@ -3133,7 +3133,7 @@ def plot_comparison(path='/mnt/hpc_backup/yanitski/projects/pdr/KT3_history/Milk
 
         if not figsize:
             subgrid_aspect = sub_x/sub_y
-            figsize = (subgrid_aspect*10, 10)
+            figsize = (subgrid_aspect*15, 10)
         fig, axes = plt.subplots(sub_y, sub_x, figsize=figsize)
         if not isinstance(axes, np.ndarray):
             axes = np.asarray([[axes]])
@@ -3155,7 +3155,7 @@ def plot_comparison(path='/mnt/hpc_backup/yanitski/projects/pdr/KT3_history/Milk
 
             for f,survey_file in enumerate(survey_files):
 
-                if '.png' in survey_file or 'Plots' in survey_file:
+                if '.png' in survey_file or 'Plots' in survey_file or '.npy' in survey_file:
                     continue
                 if not survey_file in os.listdir(path + survey + '/'):
                     print('File {} not available for survey {}'.format(survey_file, survey))
@@ -3165,6 +3165,8 @@ def plot_comparison(path='/mnt/hpc_backup/yanitski/projects/pdr/KT3_history/Milk
                     print(survey_file)
 
                 transitions = os.listdir(path + survey + '/' + survey_file + '/')
+                if 'comparison.npy' in transitions:
+                    transitions.remove('comparison.npy')
 
                 transitions_skipped = []
                 for t in copy(transitions):
@@ -3200,6 +3202,11 @@ def plot_comparison(path='/mnt/hpc_backup/yanitski/projects/pdr/KT3_history/Milk
                         file_format_param = np.zeros(naxis.size, dtype=object)
                         file_format_param[i_x] = x_grid[i, j]
                         file_format_param[i_y] = y_grid[i, j]
+
+                        if verbose:
+                            print(file_format.format(*file_format_param) \
+                                  + '_{}_chi2.npy'.format(comp))
+
                         if naxis.size > 2:
                             file_format_param[~naxis] = param
                         if likelihood:
@@ -3207,11 +3214,15 @@ def plot_comparison(path='/mnt/hpc_backup/yanitski/projects/pdr/KT3_history/Milk
                                        + '_{}_loglikelihood.npy'.format(comp_type)
                         else:
                             filename = file_format.format(*file_format_param) \
-                                       + '_{}_chi2.npy'.format(comp_type)
+                                       + '_{}_chi2.npy'.format(comp)
                             # filename = file_format.format(x_grid[i, j], y_grid[i, j]) \
                             #            + '_{}_loglikelihood.npy'.format(comp_type)
                         param_log_likelihood = [np.load(path + survey + '/' + survey_file + '/' +
                                                             t + '/' + filename) for t in transitions]
+                        # filter out unnecessary pixels
+                        for _ in range(len(param_log_likelihood)):
+                            param_log_likelihood[_][param_log_likelihood[_] == 0] = np.nan
+                            param_log_likelihood[_][param_log_likelihood[_] >= stat_lim] = np.nan
                         log_likelihood[i, j] = log_likelihood[i, j] + np.nansum(param_log_likelihood)
                         for t in range(len(transitions)):
                             transition_log_likelihood[t][i, j] = transition_log_likelihood[t][i, j] \
@@ -3219,6 +3230,7 @@ def plot_comparison(path='/mnt/hpc_backup/yanitski/projects/pdr/KT3_history/Milk
 
                 file_transition_plots.append(copy(transition_plots))
                 file_transition_log_likelihood.append(deepcopy(transition_log_likelihood))
+                np.save(path + survey + '/' + survey_file + '/comparison.npy', file_transition_log_likelihood)
 
             if normalise:
                 if (log_likelihood<0).all():
@@ -3274,8 +3286,8 @@ def plot_comparison(path='/mnt/hpc_backup/yanitski/projects/pdr/KT3_history/Milk
             else:
                 cm = axes[sub_indeces].imshow(log_likelihood/np.sum(file_dof),
                                               extent=[0, lenaxis[i_x], 0, lenaxis[i_y]], cmap=cmap)
-            axes[sub_indeces].set_aspect(lenaxis[i_x]/lenaxis[i_y])
-            cb = fig.colorbar(cm, ax=axes[sub_indeces], fraction=fraction, aspect=aspect)
+            axes[sub_indeces].set_aspect(lenaxis[i_x]/ax_aspect/lenaxis[i_y])
+            cb = fig.colorbar(cm, ax=axes[sub_indeces], fraction=fraction, aspect=cb_aspect)
 
             if contour:
                 axes[sub_indeces].set_xticks(np.arange(lenaxis[i_x]))
@@ -3310,9 +3322,9 @@ def plot_comparison(path='/mnt/hpc_backup/yanitski/projects/pdr/KT3_history/Milk
                                                                                 extent=[0, lenaxis[i_x],
                                                                                         0, lenaxis[i_y]],
                                                                                 cmap=cmap)
-                    file_transition_plots[f][t][1][sub_indeces].set_aspect(lenaxis[i_x]/lenaxis[i_y])
+                    file_transition_plots[f][t][1][sub_indeces].set_aspect(lenaxis[i_x]/ax_aspect/lenaxis[i_y])
                     cb = file_transition_plots[f][t][0].colorbar(cm, ax=file_transition_plots[f][t][1][sub_indeces],
-                                                         fraction=fraction, aspect=aspect)
+                                                         fraction=fraction, aspect=cb_aspect)
 
                     if contour:
                         file_transition_plots[f][t][1][sub_indeces].set_xticks(np.arange(lenaxis[i_x]))
@@ -3365,7 +3377,7 @@ def plot_comparison(path='/mnt/hpc_backup/yanitski/projects/pdr/KT3_history/Milk
         plt.figure(fig)
         if save_plot:
             if output_file == None or output_file == '':
-                output_file = file_format
+                output_file = file_format.replace('{}', '_')
             if likelihood:
                 plt.savefig(path + survey + '/Plots/{}_{}_loglikelihood.{}'.format(output_file, comp, output_format),
                             format=output_format, transparent=transparent)
@@ -3411,7 +3423,7 @@ def plot_comparison(path='/mnt/hpc_backup/yanitski/projects/pdr/KT3_history/Milk
                 plt.figure(file_transition_plots[f][t][0])
                 if save_plot:
                     if output_file == None or output_file == '':
-                        output_file = file_format
+                        output_file = file_format.replace('{}', '_')
                     if likelihood:
                         plt.savefig(path + survey + '/Plots/{}_{}-{}_{}_loglikelihood.{}'
                                     .format(output_file, file, file_transitions[f][t].replace(' ', '-'),
@@ -3450,8 +3462,8 @@ def plot_comparison(path='/mnt/hpc_backup/yanitski/projects/pdr/KT3_history/Milk
         else:
             cm = axes_overall[sub_indeces].imshow(loglikelihood_overall[:, :, sub_indeces[0], sub_indeces[1]]
                                                   / overall_dof, extent=[0, lenaxis[i_x], 0, lenaxis[i_y]], cmap=cmap)
-        axes_overall[sub_indeces].set_aspect(lenaxis[i_x] / lenaxis[i_y])
-        cb = fig_overall.colorbar(cm, ax=axes_overall[sub_indeces], fraction=fraction, aspect=aspect)
+        axes_overall[sub_indeces].set_aspect(lenaxis[i_x]/ax_aspect/lenaxis[i_y])
+        cb = fig_overall.colorbar(cm, ax=axes_overall[sub_indeces], fraction=fraction, aspect=cb_aspect)
 
         if contour:
             axes_overall[sub_indeces].set_xticks(np.arange(lenaxis[i_x]))
@@ -3501,7 +3513,7 @@ def plot_comparison(path='/mnt/hpc_backup/yanitski/projects/pdr/KT3_history/Milk
         if not 'Plots' in os.listdir(path):
             os.mkdir(path + '/Plots/')
         if output_file == None or output_file == '':
-            output_file = file_format
+            output_file = file_format.replace('{}', '_')
         if likelihood:
             plt.savefig(path + '/Plots/{}_{}_loglikelihood.{}'.format(output_file, comp, output_format),
                         format=output_format, transparent=transparent)
