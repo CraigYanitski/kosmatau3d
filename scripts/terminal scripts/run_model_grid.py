@@ -155,10 +155,11 @@ elif args.grid == 'fuv_gc-mass_gc':
     params = list(_.flatten() for _ in np.meshgrid(r_gc, fuv_gc, mhi_gc, mh2_gc, grid_flag))
     param_folders = list(folder.format(*_) for _ in zip(*params))
 elif args.grid == 'fuv_cl':
-    folder = f'r{args.resolution}' + '_log_fuv_cl{:.2f}/'
-    log_fuv = np.arange(1.1, 2.6, 0.1)
-    param_keys = ('clump_log_fuv', )
-    params = list(_.flatten() for _ in np.meshgrid(log_fuv))
+    folder = f'r{args.resolution}' + '_log_fuv_cl{:.2f}_f_fuv{:.2f}/'
+    log_fuv = np.arange(0.1, 1.0, 0.2) # 0.1, 2.6, 0.2
+    f_fuv = 10**np.arange(0.25, 3.1, 0.25)
+    param_keys = ('clump_log_fuv', 'fuv_factor')
+    params = list(_.flatten() for _ in np.meshgrid(log_fuv, f_fuv))
     param_folders = list(folder.format(*_) for _ in zip(*params))
 elif args.grid == 'fuv_icl':
     folder = f'r{args.resolution}' + '_log_fuv_icl{:.2f}/'
@@ -277,6 +278,7 @@ parameters = {
               'interclump_log_fuv' : None,
               'interclump_idx': (False, True), 
               'interclump_density': 19.11, 
+              'disp_gmc': 0.001,
               'velocity_range': [-350, 350],
               'velocity_number': 701,
 
@@ -318,7 +320,7 @@ for i, param in enumerate(list(zip(*params))[index:]):
     # Set the required parameters
     for _, p in enumerate(param_keys):
         parameters[p] = param[_]
-    parameters['folder'] = param_folders[i] 
+    parameters['folder'] = param_folders[index:][i] 
 
     # Set model folder directory
     directory = parameters['history_path'] + parameters['directory'] \
