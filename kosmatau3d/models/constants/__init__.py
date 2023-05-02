@@ -44,6 +44,7 @@ r_gc = 4400
 fuv_scale_gc = 1.0
 mhi_scale_gc = 1.0
 mh2_scale_gc = 1.0
+disp_gmc = 1.1*1000**0.38
 disp_gc = None
 disp_r_gc = 4400
 average_fuv = False

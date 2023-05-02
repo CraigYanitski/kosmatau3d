@@ -129,7 +129,7 @@ class VoxelGrid(object):
             if constants.disp_gc and (np.linalg.norm([x.mean(), y.mean()]) <= constants.disp_r_gc):
                 ensembleDispersion = np.float64(constants.disp_gc)
             else:
-                ensembleDispersion = np.linalg.norm((velocity.std(), constants.clump_dispersion))
+                ensembleDispersion = np.linalg.norm((velocity.std(), constants.clump_dispersion, constants.disp_gmc))
             velocity = velocity.mean()
         
         else:

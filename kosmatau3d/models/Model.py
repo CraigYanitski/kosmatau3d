@@ -48,7 +48,7 @@ class Model(object):
                  fuv_file='galactic_FUV_complete.dat', 
                  l_range=(912, 2066), average_fuv=False, scale_gc=1.0, mhi_gc=1.0, mh2_gc=1.0, r_gc=4400, 
                  like_clumps=False, all_full=False, 
-                 velocity_file='rot_milki2018_14.dat', disp_core=None, r_core=4400,
+                 velocity_file='rot_milki2018_14.dat', disp_core=None, r_core=4400, disp_gmc=None, 
                  x=0, y=0, z=0, model_type='', resolution=1000,
                  transitions='all', dust='molecular', velocity_range=(), velocity_number=0,
                  clump_mass_range=((0, 2), (-2)), clump_mass_number=(3, 1), clump_n_max=(1, 100), 
@@ -144,6 +144,10 @@ class Model(object):
         constants.r_gc = r_gc
         constants.disp_gc = disp_core
         constants.disp_r_gc = r_core
+        if disp_gmc:
+            constants.disp_gmc = disp_gmc
+        else:
+            constants.disp_gmc = 1.1*constants.voxel_size**0.38
         if not interpolations.initialised or new_grid:
             interpolations.initialise_grid(dilled=dilled)
             constants.average_fuv = average_fuv
