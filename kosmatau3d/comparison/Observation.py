@@ -10,10 +10,10 @@ cobe_idl_linfrq = np.array([115.3, 230.5, 345.8, 424.8, 461.0, 492.2, 556.9, 576
                             1113, 1460, 2226, 1901, 2060, 2311, 2459, 2589, 921.8])
 # cobe_idl_transitions = np.array(['CO 1', 'CO 2', 'CO 3', 'CO 4', 'C 3', 'CO 5',
 #                                  'CO 6', 'CO 7 + C 1', 'C+ 1', 'O 1', 'CO 8'])
-cobe_idl_transitions = np.array(['CO 1', 'CO 2', 'CO 3', 'CO 4', 'CO 5',
-                                 'CO 6', 'CO 7 + C 1', 'C+ 1', 'CO 8'])
+cobe_idl_transitions = np.array(['CO 1', 'CO 2', 'CO 3', 'CO 4', 'C 1', 'CO 5',
+                                 'CO 6', 'CO 7 + C 2', 'C+ 1', 'CO 8'])
 # cobe_idl_indeces = np.array([0, 1, 2, 4, 5, 7, 8, 9, 13, 14, 18])
-cobe_idl_indeces = np.array([0, 1, 2, 4, 7, 8, 9, 13, 18])
+cobe_idl_indeces = np.array([0, 1, 2, 4, 5, 7, 8, 9, 13, 18])
 missions_2d = ['COBE-FIRAS', 'COBE-DIRBE', 'Planck']
 
 class Observation(object):

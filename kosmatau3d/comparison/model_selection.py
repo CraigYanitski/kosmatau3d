@@ -10,6 +10,7 @@ from scipy.io import readsav
 from scipy.stats import binned_statistic
 import matplotlib.pyplot as plt
 import matplotlib.colors as colors
+from matplotlib.ticker import StrMethodFormatter
 from functools import lru_cache
 from spectres import spectres
 from pprint import pprint
@@ -139,9 +140,9 @@ sgps_rms_window = {
     'g353.hi.fits' : 2.6,
 }
 cobe_idl_linfrq = np.array([115.3, 230.5, 345.8, 424.8, 461.0, 492.2, 556.9, 576.3, 691.5, 808.1,
-                            1113, 1460, 2226, 1901, 2060, 2311, 2459, 2589, 921.8])
-cobe_idl_transitions = np.array(['CO 1', 'CO 2', 'CO 3', 'CO 4', 'C 3', 'CO 5',
-                                 'CO 6', 'CO 7 + C 1', 'C+ 1', 'O 1', 'CO 8'])
+                             1113,  1460,  2226,  1901,  2060,  2311,  2459,  2589, 921.8])
+cobe_idl_transitions = np.array(['CO 1',       'CO 2', 'CO 3', 'CO 4', 'C 1', 'CO 5',
+                                 'CO 6', 'CO 7 + C 2', 'C+ 1',  'O 1', 'CO 8'])
 
 
 def determine_rms(hdul, mission='', file=''):
@@ -3021,7 +3022,7 @@ def plot_comparison(path='/mnt/hpc_backup/yanitski/projects/pdr/KT3_history/Milk
                     comp_type='pv', log_comp=True, likelihood=True, log=False, normalise=False,
                     contour=True, levels=10, fraction=0.1, cb_aspect=20, cmap='viridis',
                     xlabel='', ylabel='', supxlabel='', supylabel='', clabel='', clabel_xa=0.98, clabel_ha='left',
-                    title='', fontsize=20, ax_aspect=1.5, 
+                    title='', fontsize=24, labelsize=16, ax_aspect=1.5, 
                     pad=1.0, pad_left=0, pad_right=0.125, pad_bottom=0, pad_top=0.12, wspace=0, hspace=0,
                     figsize=None, save_plot=False, output_file='', output_format='png', transparent=False,
                     verbose=False, debug=False, **kwargs):
@@ -3092,7 +3093,7 @@ def plot_comparison(path='/mnt/hpc_backup/yanitski/projects/pdr/KT3_history/Milk
 
     # Initialise likelihood and figure for plot analysing all missions
     loglikelihood_overall = np.zeros((*x_grid.shape, sub_y, sub_x))
-    overall_dof = 0
+    overall_dof = 1#0
     fig_overall, axes_overall = plt.subplots(sub_y, sub_x, figsize=figsize)
     if not isinstance(axes_overall, np.ndarray):
         axes_overall = np.asarray([[axes_overall]])
@@ -3148,8 +3149,8 @@ def plot_comparison(path='/mnt/hpc_backup/yanitski/projects/pdr/KT3_history/Milk
             if debug:
                 print(param)
 
-            survey_dof = 0
-            file_dof = [0] * len(survey_files)
+            survey_dof = 1#0
+            file_dof = [1]#[0] * len(survey_files)
 
             log_likelihood = np.zeros(x_grid.shape)
 
@@ -3165,8 +3166,11 @@ def plot_comparison(path='/mnt/hpc_backup/yanitski/projects/pdr/KT3_history/Milk
                     print(survey_file)
 
                 transitions = os.listdir(path + survey + '/' + survey_file + '/')
-                if 'comparison.npy' in transitions:
-                    transitions.remove('comparison.npy')
+                for _ in copy(transitions):
+                    if '.npy' in _:
+                        transitions.remove(_)
+                #if f'{output_file}_comparison.npy' in transitions:
+                #    transitions.remove(f'{output_file}_comparison.npy')
 
                 transitions_skipped = []
                 for t in copy(transitions):
@@ -3179,8 +3183,8 @@ def plot_comparison(path='/mnt/hpc_backup/yanitski/projects/pdr/KT3_history/Milk
                         print('  transitions compared: {}\n  transitions skipped: {}'.format(transitions,
                                                                                              transitions_skipped))
                 file_transitions.append(copy(transitions))
-                survey_dof += len(transitions)
-                file_dof[f] = len(transitions)
+                #survey_dof += len(transitions)
+                #file_dof[f] = len(transitions)
                 if len(transitions_skipped) and verbose:
                     print('  transitions {} not available.'.format(', '.join(transitions_skipped)))
 
@@ -3230,7 +3234,7 @@ def plot_comparison(path='/mnt/hpc_backup/yanitski/projects/pdr/KT3_history/Milk
 
                 file_transition_plots.append(copy(transition_plots))
                 file_transition_log_likelihood.append(deepcopy(transition_log_likelihood))
-                np.save(path + survey + '/' + survey_file + '/comparison.npy', file_transition_log_likelihood)
+                np.save(path + survey + '/' + survey_file + f'/{output_file}_comparison.npy', file_transition_log_likelihood)
 
             if normalise:
                 if (log_likelihood<0).all():
@@ -3279,15 +3283,29 @@ def plot_comparison(path='/mnt/hpc_backup/yanitski/projects/pdr/KT3_history/Milk
                 = loglikelihood_overall[:, :, sub_indeces[0], sub_indeces[1]] + log_likelihood
             
             # Update overall degrees of freedom
-            overall_dof += np.sum(file_dof)
+            #overall_dof += np.sum(file_dof)
 
             if contour:
-                cm = axes[sub_indeces].contourf(log_likelihood/np.sum(file_dof), levels=levels, cmap=cmap)
+                cm = axes[sub_indeces].contourf(log_likelihood/np.sum(file_dof), antialiased=True, levels=levels, cmap=cmap)
             else:
                 cm = axes[sub_indeces].imshow(log_likelihood/np.sum(file_dof),
                                               extent=[0, lenaxis[i_x], 0, lenaxis[i_y]], cmap=cmap)
             axes[sub_indeces].set_aspect(lenaxis[i_x]/ax_aspect/lenaxis[i_y])
             cb = fig.colorbar(cm, ax=axes[sub_indeces], fraction=fraction, aspect=cb_aspect)
+            minval = (log_likelihood/file_dof).min()
+            minval = np.around(minval/(10**np.floor(np.log10(minval))), 3) * 10**np.floor(np.log10(minval))
+            cb.ax.ticklabel_format(useOffset=minval, style='plain', useMathText=True)
+            cb.ax.yaxis.offsetText.set_text('')
+            #offsetx, offsety = cb.ax.yaxis.offsetText.get_position()
+            cb.ax.text(-1.5, 1.0, f'{cb.ax.yaxis.major.formatter.offset:1.3e}', fontsize=labelsize, ha='center', va='bottom')
+            #cb.ax.yaxis.major.formatter.set_useOffset(False)
+            cb.ax.tick_params(labelsize=labelsize)
+            cb.ax.yaxis.offsetText.set_fontsize(labelsize)
+            cb.ax.yaxis.offsetText.set_ha('left')
+            cb.ax.yaxis.offsetText.set_va('bottom')
+            for c in cm.collections:
+                c.set_edgecolor("face")
+                c.set_linewidth(0.000000000000000001)
 
             if contour:
                 axes[sub_indeces].set_xticks(np.arange(lenaxis[i_x]))
@@ -3300,8 +3318,11 @@ def plot_comparison(path='/mnt/hpc_backup/yanitski/projects/pdr/KT3_history/Milk
                 axes[sub_indeces].set_yticks(np.arange(lenaxis[i_y])+0.5)
                 axes[sub_indeces].set_yticklabels([str(param) for param in model_param[i_y][::-1]])
 
-            axes[sub_indeces].set_xlabel(xlabel, fontsize=fontsize-4)
-            axes[sub_indeces].set_ylabel(ylabel, fontsize=fontsize-4)
+            axes[sub_indeces].set_xlabel(xlabel, fontsize=fontsize)
+            axes[sub_indeces].set_ylabel(ylabel, fontsize=fontsize)
+            axes[sub_indeces].tick_params(labelsize=labelsize)
+            axes[sub_indeces].tick_params(axis='x', pad=10)
+            axes[sub_indeces].tick_params(axis='y', pad=10)
             if axes.size > 1:
                 axes[sub_indeces].set_title('{} {}, {} {}'.format(supylabel, y_param, supxlabel, x_param),
                                             fontsize=fontsize-4)
@@ -3316,7 +3337,7 @@ def plot_comparison(path='/mnt/hpc_backup/yanitski/projects/pdr/KT3_history/Milk
 
                     if contour:
                         cm = file_transition_plots[f][t][1][sub_indeces].contourf(file_transition_log_likelihood[f][t],
-                                                                                  levels=levels, cmap=cmap)
+                                                                                  antialiased=True, levels=levels, cmap=cmap)
                     else:
                         cm = file_transition_plots[f][t][1][sub_indeces].imshow(file_transition_log_likelihood[f][t],
                                                                                 extent=[0, lenaxis[i_x],
@@ -3325,6 +3346,20 @@ def plot_comparison(path='/mnt/hpc_backup/yanitski/projects/pdr/KT3_history/Milk
                     file_transition_plots[f][t][1][sub_indeces].set_aspect(lenaxis[i_x]/ax_aspect/lenaxis[i_y])
                     cb = file_transition_plots[f][t][0].colorbar(cm, ax=file_transition_plots[f][t][1][sub_indeces],
                                                          fraction=fraction, aspect=cb_aspect)
+                    minval = file_transition_log_likelihood[f][t].min()
+                    minval = np.around(minval/(10**np.floor(np.log10(minval))), 3) * 10**np.floor(np.log10(minval))
+                    cb.ax.ticklabel_format(useOffset=minval, style='plain', useMathText=True)
+                    cb.ax.yaxis.offsetText.set_text('')
+                    #offsetx, offsety = cb.ax.yaxis.offsetText.get_position()
+                    cb.ax.text(-1.5, 1.0, f'{cb.ax.yaxis.major.formatter.offset:1.3e}', fontsize=labelsize, ha='center', va='bottom')
+                    #cb.ax.yaxis.major.formatter.set_useOffset(False)
+                    cb.ax.tick_params(labelsize=labelsize)
+                    cb.ax.yaxis.offsetText.set_fontsize(labelsize)
+                    cb.ax.yaxis.offsetText.set_ha('left')
+                    cb.ax.yaxis.offsetText.set_va('bottom')
+                    for c in cm.collections:
+                        c.set_edgecolor("face")
+                        c.set_linewidth(0.000000000000000001)
 
                     if contour:
                         file_transition_plots[f][t][1][sub_indeces].set_xticks(np.arange(lenaxis[i_x]))
@@ -3341,8 +3376,11 @@ def plot_comparison(path='/mnt/hpc_backup/yanitski/projects/pdr/KT3_history/Milk
                         file_transition_plots[f][t][1][sub_indeces].set_yticklabels([str(param) for
                                                                                      param in model_param[i_y][::-1]])
 
-                    file_transition_plots[f][t][1][sub_indeces].set_xlabel(xlabel, fontsize=fontsize-4)
-                    file_transition_plots[f][t][1][sub_indeces].set_ylabel(ylabel, fontsize=fontsize-4)
+                    file_transition_plots[f][t][1][sub_indeces].set_xlabel(xlabel, fontsize=fontsize)
+                    file_transition_plots[f][t][1][sub_indeces].set_ylabel(ylabel, fontsize=fontsize)
+                    file_transition_plots[f][t][1][sub_indeces].tick_params(labelsize=labelsize)
+                    file_transition_plots[f][t][1][sub_indeces].tick_params(axis='x', pad=10)
+                    file_transition_plots[f][t][1][sub_indeces].tick_params(axis='y', pad=10)
                     if file_transition_plots[f][t][1].size > 1:
                         file_transition_plots[f][t][1][sub_indeces].set_title('{} {}, {} {}'.format(supylabel, y_param,
                                                                                                     supxlabel, x_param),
@@ -3364,7 +3402,8 @@ def plot_comparison(path='/mnt/hpc_backup/yanitski/projects/pdr/KT3_history/Milk
             fig.suptitle(suptitle, fontsize=fontsize)
         if clabel == '' or clabel == None:
             clabel = 'Value'
-        fig.supylabel(clabel, x=clabel_xa, ha=clabel_ha, fontsize=fontsize)
+        # fig.supylabel(clabel, x=clabel_xa, ha=clabel_ha, fontsize=fontsize)
+        fig.text(clabel_xa, 0.5, clabel, rotation=90, va='center', ha=clabel_ha, fontsize=fontsize)
 
         if suptitle:
             fig_top = 1 - pad*pad_top
@@ -3409,16 +3448,18 @@ def plot_comparison(path='/mnt/hpc_backup/yanitski/projects/pdr/KT3_history/Milk
                     file_transition_plots[f][t][0].suptitle(suptitle, fontsize=fontsize)
                 if clabel == '' or clabel == None:
                     clabel = 'Value'
-                file_transition_plots[f][t][0].supylabel(clabel, x=clabel_xa, ha=clabel_ha, fontsize=fontsize)
+                # file_transition_plots[f][t][0].supylabel(clabel, x=clabel_xa, ha=clabel_ha, fontsize=fontsize)
+                file_transition_plots[f][t][0].text(clabel_xa, 0.5, clabel, rotation=90, ha=clabel_ha, va='center', fontsize=fontsize)
 
                 if suptitle:
                     fig_top = 1 - pad*pad_top
                 if clabel:
                     fig_right = 1 - pad*pad_right
+                # file_transition_plots[f][t][0].tick_params(labelsize=labelsize)
                 file_transition_plots[f][t][0].subplots_adjust(left=pad*pad_left, right=fig_right,
                                                                bottom=pad*pad_bottom, top=fig_top,
                                                                wspace=wspace, hspace=hspace)
-                # transition_plots[t][0].tight_layout(pad=pad)
+                # file_transition_plots[f][t][0].tight_layout()
 
                 plt.figure(file_transition_plots[f][t][0])
                 if save_plot:
@@ -3458,12 +3499,26 @@ def plot_comparison(path='/mnt/hpc_backup/yanitski/projects/pdr/KT3_history/Milk
 
         if contour:
             cm = axes_overall[sub_indeces].contourf(loglikelihood_overall[:, :, sub_indeces[0], sub_indeces[1]]
-                                                    / overall_dof, levels=levels, cmap=cmap)
+                                                    / overall_dof, antialiased=True, levels=levels, cmap=cmap)
         else:
             cm = axes_overall[sub_indeces].imshow(loglikelihood_overall[:, :, sub_indeces[0], sub_indeces[1]]
                                                   / overall_dof, extent=[0, lenaxis[i_x], 0, lenaxis[i_y]], cmap=cmap)
         axes_overall[sub_indeces].set_aspect(lenaxis[i_x]/ax_aspect/lenaxis[i_y])
         cb = fig_overall.colorbar(cm, ax=axes_overall[sub_indeces], fraction=fraction, aspect=cb_aspect)
+        minval = (loglikelihood_overall[:, :, sub_indeces[0], sub_indeces[1]]/overall_dof).min()
+        minval = np.around(minval/(10**np.floor(np.log10(minval))), 3) * 10**np.floor(np.log10(minval))
+        cb.ax.ticklabel_format(useOffset=minval, style='plain', useMathText=True)
+        cb.ax.yaxis.offsetText.set_text('')
+        #offsetx, offsety = cb.ax.yaxis.offsetText.get_position()
+        cb.ax.text(-1.5, 1.0, f'{cb.ax.yaxis.major.formatter.offset:1.3e}', fontsize=labelsize, ha='center', va='bottom')
+        #cb.ax.yaxis.major.formatter.set_useOffset(False)
+        cb.ax.tick_params(labelsize=labelsize)
+        cb.ax.yaxis.offsetText.set_fontsize(labelsize)
+        cb.ax.yaxis.offsetText.set_ha('left')
+        cb.ax.yaxis.offsetText.set_va('bottom')
+        for c in cm.collections:
+            c.set_edgecolor("face")
+            c.set_linewidth(0.000000000000001)
 
         if contour:
             axes_overall[sub_indeces].set_xticks(np.arange(lenaxis[i_x]))
@@ -3476,8 +3531,11 @@ def plot_comparison(path='/mnt/hpc_backup/yanitski/projects/pdr/KT3_history/Milk
             axes_overall[sub_indeces].set_yticks(np.arange(lenaxis[i_y]) + 0.5)
             axes_overall[sub_indeces].set_yticklabels([str(param) for param in model_param[i_y][::-1]])
 
-        axes_overall[sub_indeces].set_xlabel(xlabel, fontsize=fontsize - 4)
-        axes_overall[sub_indeces].set_ylabel(ylabel, fontsize=fontsize - 4)
+        axes_overall[sub_indeces].set_xlabel(xlabel, fontsize=fontsize)
+        axes_overall[sub_indeces].set_ylabel(ylabel, fontsize=fontsize)
+        axes_overall[sub_indeces].tick_params(labelsize=labelsize)
+        axes_overall[sub_indeces].tick_params(axis='x', pad=10)
+        axes_overall[sub_indeces].tick_params(axis='y', pad=10)
         if axes_overall.size > 1:
             axes_overall[sub_indeces].set_title('{} {}, {} {}'.format(supylabel, y_param, supxlabel, x_param),
                                                 fontsize=fontsize - 4)
@@ -3498,7 +3556,8 @@ def plot_comparison(path='/mnt/hpc_backup/yanitski/projects/pdr/KT3_history/Milk
         fig_overall.suptitle(suptitle, fontsize=fontsize)
     if clabel == '' or clabel == None:
         clabel = 'Value'
-    fig_overall.supylabel(clabel, x=clabel_xa, ha=clabel_ha, fontsize=fontsize)
+    # fig_overall.supylabel(clabel, x=clabel_xa, ha=clabel_ha, fontsize=fontsize)
+    fig_overall.text(clabel_xa, 0.5, clabel, rotation=90, va='center', ha=clabel_ha, fontsize=fontsize)
 
     if suptitle:
         fig_top = 1 - pad * pad_top
