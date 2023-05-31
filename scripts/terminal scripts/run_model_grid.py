@@ -17,8 +17,8 @@ parser.add_argument('-f', '--folder', type=str, default='/mnt/yanitski_backup/ya
                     help='Folder containing kosmatau3d models')
 parser.add_argument('-g', '--grid', type=str, default='convergence', 
                     choices=['convergence', 'f_cm-cm', 'f_icm-icm', 'cm-icm', 'f_cm-f_icm', 
-                             'r_cmz-f_fuv', 'f_hi-f_fuv', 'f_cl-f_icl-f_d-f_fuv', 
-                             'fuv_cl', 'fuv_icl', 'const_fuv', 
+                             'r_cmz-f_fuv', 'f_hi-f_fuv', 'f_cl-f_icl-f_n-f_fuv', 
+                             'fuv_cl', 'fuv_icl', 'const_fuv', 'vox_disp', 
                              'f_fuv_gc', 'disp_gc', 'fuv_gc-disp_gc', 'fuv_gc-mass_gc'], 
                     help='Parameters varied in grid')
 parser.add_argument('-r', '--resolution', type=int, default=400, 
@@ -40,6 +40,7 @@ parser.add_argument('-v', '--verbose', type=bool, default=False,
 
 args = parser.parse_args()
 
+# convergence
 if args.grid == 'convergence':
     folder = 'r{}_convergence/'
     res = (400, 200, 100)
@@ -47,6 +48,7 @@ if args.grid == 'convergence':
     param_keys = ('resolution', 'new_grid')
     params = list(_.flatten() for _ in np.meshgrid(res, grid_flag))
     param_folders = list(folder.format(*_) for _ in zip(*params))
+# f_cm-cm
 elif args.grid == 'f_cm-cm':
     folder = f'r{args.resolution}' + '_fcm{}_cm{}/'
     fmass1 = [0.25, 0.5, 1.0, 2.0, 4.0]
@@ -60,6 +62,7 @@ elif args.grid == 'f_cm-cm':
     params = (fmass1_mesh, mass_bin_mesh, mass_num_mesh)
     mass_cl_strs = list('_'.join([str(_) for _ in mass[0]]) for mass in params[1])
     param_folders = list(folder.format(*_) for _ in zip(*(params[0], mass_cl_strs)))
+# f_icm-icm
 elif args.grid == 'f_icm-icm':
     folder = f'r{args.resolution}' + '_ficm{}_icm{}/'
     fmass2 = [0.25, 0.5, 1.0, 2.0, 4.0]
@@ -73,6 +76,7 @@ elif args.grid == 'f_icm-icm':
     params = (fmass2_mesh, mass_bin_mesh, mass_num_mesh)
     mass_icl_strs = list('_'.join([str(_) for _ in mass[1]]) for mass in params[1])
     param_folders = list(folder.format(*_) for _ in zip(*(params[0], mass_icl_strs)))
+# cm-icm
 elif args.grid == 'cm-icm':
     folder = f'r{args.resolution}' + '_cm{}_icm{}/'
     mass_cl = [[0, 2], [0, 3], [-1, 2], [-1, 3]]
@@ -88,6 +92,7 @@ elif args.grid == 'cm-icm':
     mass_cl_strs = list('_'.join([str(_) for _ in mass[0]]) for mass in params[0])
     mass_icl_strs = list('_'.join([str(_) for _ in mass[1]]) for mass in params[0])
     param_folders = list(folder.format(*_) for _ in zip(*(mass_cl_strs, mass_icl_strs)))
+# f_cm-f_icm
 elif args.grid == 'f_cm-f_icm':
     folder = f'r{args.resolution}' + '_f_cm{}_f_icm{:}/'
     fmass1 = [0.25, 0.5, 1.0, 2.0, 4.0]
@@ -95,6 +100,7 @@ elif args.grid == 'f_cm-f_icm':
     param_keys = ('h2_mass_factor', 'hi_mass_factor')
     params = list(_.flatten() for _ in np.meshgrid(fmass1, fmass2))
     param_folders = list(folder.format(*_) for _ in zip(*params))
+# r_cmz-f_fuv
 elif args.grid == 'r_cmz-f_fuv':
     folder = f'r{args.resolution}' + '_rcmz{}_f_fuv{:.1f}/'
     r_cmz = np.arange(0, 1001, 50, dtype=int)
@@ -102,6 +108,7 @@ elif args.grid == 'r_cmz-f_fuv':
     param_keys = ('r_cmz', 'fuv_factor')
     params = list(_.flatten() for _ in np.meshgrid(r_cmz, f_fuv))
     param_folders = list(folder.format(*_) for _ in zip(*params))
+# f_hi-f_fuv
 elif args.grid == 'f_hi-f_fuv':
     folder = f'r{args.resolution}' + '_fhi{}_fuv{:.1f}/'
     f_hi = [1.0, 0.8, 0.6, 0.4]#[1.0, 0.9, 0.8, 0.7, 0.6, 0.5, 0.4, 0.3]
@@ -109,15 +116,17 @@ elif args.grid == 'f_hi-f_fuv':
     param_keys = ('interclump_hi_ratio', 'fuv_factor')
     params = list(_.flatten() for _ in np.meshgrid(f_hi, f_fuv))
     param_folders = list(folder.format(*_) for _ in zip(*params))
-elif args.grid == 'f_cl-f_icl-f_d-f_fuv':
-    folder = f'r{args.resolution}' + '_cm{}-{}_d{}_uv{}/'
-    f_cl = [0.5, 1.0, 2.0, 4.0]
-    f_icl = [1.0, 2.0]
-    f_d = [0.5, 1.0, 2.0, 4.0]
-    f_fuv = [1, 10, 100]
+# f_cl-f_icl-f_n-f_fuv
+elif args.grid == 'f_cl-f_icl-f_n-f_fuv':
+    folder = f'r{args.resolution}' + '_f_cm{:.1f}_f_icm{:.1f}_f_n{:.0f}_f_fuv{:.0f}/'
+    f_cl = 10**np.array([-1, 0, 1, 2], dtype=float)
+    f_icl = 10**np.array([-1, 0, 1, 2], dtype=float)
+    f_d = 10**np.array([0, 1, 2], dtype=float)
+    f_fuv = 10**np.array([0, 1, 2], dtype=float)
     param_keys = ('h2_mass_factor', 'hi_mass_factor', 'density_factor', 'fuv_factor')
     params = list(_.flatten() for _ in np.meshgrid(f_cl, f_icl, f_d, f_fuv))
     param_folders = list(folder.format(*_) for _ in zip(*params))
+# f_fuv_gc
 elif args.grid == 'f_fuv_gc':
     folder = f'r{args.resolution}' + '_f_fuv_gc{:.2f}_r_gc{}/'
     fuv_gc = (10**np.array([0.5, 1, 1.5, 2]), )
@@ -125,6 +134,7 @@ elif args.grid == 'f_fuv_gc':
     param_keys = ('scale_gc', 'r_gc')
     params = list(_.flatten() for _ in np.meshgrid(fuv_gc, r_gc))
     param_folders = list(folder.format(*_) for _ in zip(*params))
+# disp_gc
 elif args.grid == 'disp_gc':
     folder = f'r{args.resolution}' + '_r_gc{:.2f}_disp_gc{:.2f}/'
     r_gc = (200, 600)
@@ -132,6 +142,7 @@ elif args.grid == 'disp_gc':
     param_keys = ('disp_core', 'r_core', )
     params = list(_.flatten() for _ in np.meshgrid(r_gc, disp_gc))
     param_folders = list(folder.format(*_) for _ in zip(*params))
+# fuv_gc-disp_gc
 elif args.grid == 'fuv_gc-disp_gc':
     folder = f'r{args.resolution}' + '_f_fuv_gc{:.2f}_r_fuv_gc{}_disp_gc{}_r_disp_gc{}/'
     r_gc = (200, 600, 1000, 1400)
@@ -143,6 +154,7 @@ elif args.grid == 'fuv_gc-disp_gc':
     param_keys = ('scale_gc', 'r_gc', 'disp_core', 'r_core', 'new_grid')
     params = list(_.flatten() for _ in np.meshgrid(fuv_gc, r_gc, disp_gc, r_core, grid_flag))
     param_folders = list(folder.format(*_) for _ in zip(*params))
+# fuv_gc-mass_gc
 elif args.grid == 'fuv_gc-mass_gc':
     folder = f'r{args.resolution}' + '_r_gc{}_f_fuv_gc{:.2f}_f_mhi_gc{:.2f}_f_mh2_gc{:.2f}/'
     r_gc = (200, 600, 1000, 1400)
@@ -154,6 +166,7 @@ elif args.grid == 'fuv_gc-mass_gc':
     param_keys = ('r_gc', 'scale_gc', 'mhi_gc', 'mh2_gc', 'new_grid')
     params = list(_.flatten() for _ in np.meshgrid(r_gc, fuv_gc, mhi_gc, mh2_gc, grid_flag))
     param_folders = list(folder.format(*_) for _ in zip(*params))
+# fuv_cl
 elif args.grid == 'fuv_cl':
     folder = f'r{args.resolution}' + '_log_fuv_cl{:.2f}_f_fuv{:.2f}/'
     log_fuv = np.arange(0.1, 1.0, 0.2) # 0.1, 2.6, 0.2
@@ -161,18 +174,28 @@ elif args.grid == 'fuv_cl':
     param_keys = ('clump_log_fuv', 'fuv_factor')
     params = list(_.flatten() for _ in np.meshgrid(log_fuv, f_fuv))
     param_folders = list(folder.format(*_) for _ in zip(*params))
+# fuv_icl
 elif args.grid == 'fuv_icl':
     folder = f'r{args.resolution}' + '_log_fuv_icl{:.2f}/'
     log_fuv = np.arange(1.1, 2.6, 0.1)
     param_keys = ('interclump_log_fuv', )
     params = list(_.flatten() for _ in np.meshgrid(log_fuv))
     param_folders = list(folder.format(*_) for _ in zip(*params))
+# const_fuv
 elif args.grid == 'const_fuv':
     folder = f'r{args.resolution}' + '_log_fuv_cl{:.2f}_log_fuv_icl{:.2f}/'
     log_fuv = np.arange(1.1, 2.6, 0.1)
     param_keys = ('clump_log_fuv', 'interclump_log_fuv', )
     params = list(_.flatten() for _ in np.meshgrid(log_fuv, log_fuv))
     param_folders = list(folder.format(*_) for _ in zip(*params))
+# vox_disp
+elif args.grid == 'vox_disp':
+    folder = f'r{args.resolution}' + '_vox_disp{:.2f}/'
+    vox_disp = [1.1, 1.86, 2.63, 4.47, 6.33, 10.72]
+    param_keys = ('disp_gmc', )
+    params = list(_.flatten() for _ in np.meshgrid(vox_disp))
+    param_folders = list(folder.format(*_) for _ in zip(*params))
+# unknown
 else:
     params = None
     param_keys = None
@@ -190,7 +213,7 @@ elif args.exec == 'RT':
 elif args.exec == 'HI':
     print('HI calculation')
     run_model = False
-    run_rt = True
+    run_rt = False
     hi = True
 elif args.exec == 'all':
     run_model = True
@@ -206,7 +229,7 @@ if args.overwrite == 'true':
 else:
     overwrite = False
 
-index = args.index
+index = args.index-1
 
 debug = args.debug
 
@@ -261,14 +284,14 @@ parameters = {
               'transitions': ['C+ 1', 
                               'C 1', 'C 2', 
                               'CO 1', 'CO 2', 'CO 3', 'CO 4', 'CO 5', 
-                              'CO 6', 'CO 7', 'CO 8', 'CO 9', 'CO 10', 
+                              'CO 6', 'CO 7', 'CO 8', #'CO 9', 'CO 10', 
                               '13C+ 1', 
-                              '13C 1', '13C 2', 
-                              '13CO 1', '13CO 2', '13CO 3', '13CO 4', '13CO 5', 
-                              '13CO 6', '13CO 7', '13CO 8', '13CO 9', '13CO 10', 
-                              'HCO+ 1', 'HCO+ 2', 'HCO+ 3', 'HCO+ 4', 'HCO+ 5',
-                              'H13CO+ 1', 'H13CO+ 2', 'H13CO+ 3', 'H13CO+ 4', 'H13CO+ 5',
-                              'H3O+ 1', 'H3O+ 2', 'H3O+ 3', 'H3O+ 4', 'H3O+ 5'],
+                              #'13C 1', '13C 2', 
+                              '13CO 1', '13CO 2'], #'13CO 3', '13CO 4', '13CO 5', 
+                              #'13CO 6', '13CO 7', '13CO 8', '13CO 9', '13CO 10', 
+                              #'HCO+ 1', 'HCO+ 2', 'HCO+ 3', 'HCO+ 4', 'HCO+ 5',
+                              #'H13CO+ 1', 'H13CO+ 2', 'H13CO+ 3', 'H13CO+ 4', 'H13CO+ 5',
+                              #'H3O+ 1', 'H3O+ 2', 'H3O+ 3', 'H3O+ 4', 'H3O+ 5'],
               # 'dust': 'PAH',
               'dust': ['240um', '550um'],
               'clump_mass_range': [[0, 2], [-3]],
