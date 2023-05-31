@@ -128,6 +128,8 @@ class VoxelGrid(object):
             # this is leftover from Silke's version
             if constants.disp_gc and (np.linalg.norm([x.mean(), y.mean()]) <= constants.disp_r_gc):
                 ensembleDispersion = np.float64(constants.disp_gc)
+            #elif constants.disp_gmc>0.1:
+            #    ensembleDispersion = np.linalg.norm((velocityCirc.std(), constants.clump_dispersion, constants.disp_gmc))
             else:
                 ensembleDispersion = np.linalg.norm((velocity.std(), constants.clump_dispersion, constants.disp_gmc))
             velocity = velocity.mean()
@@ -703,6 +705,7 @@ class VoxelGrid(object):
         header['COMMENT'] = 'mass range (M_Sun): {}'.rjust(kw).format(constants.clump_log_mass_range).ljust(cw)
         header['COMMENT'] = '# clumps: {}'.rjust(kw).format(constants.clump_mass_number).ljust(cw)
         header['COMMENT'] = 'log m_cl (M_Sun): {}'.rjust(kw).format(constants.clump_log_mass).ljust(cw)
+        header['COMMENT'] = 'disp_gmc (km/s): {}'.rjust(kw).format(constants.disp_gmc).ljust(cw)
         header['COMMENT'] = 'N_m_cl: {}'.rjust(kw).format(constants.clump_n_max).ljust(cw)
         header['COMMENT'] = 'v_obs_range (km/s): {}'.rjust(kw).format(constants.velocity_bin).ljust(cw)
         header['COMMENT'] = 'N_v_obs: {}'.rjust(kw).format(constants.velocity_number).ljust(cw)
