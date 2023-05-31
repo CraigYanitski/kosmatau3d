@@ -1,6 +1,7 @@
 import astropy.units as u
 import importlib as il
 import logging
+import matplotlib as mpl
 import matplotlib.pyplot as plt
 import numpy as np
 import os
@@ -1206,6 +1207,10 @@ class SyntheticModel(object):
         Return a 3DAxes with the specitied quantity shown in the colour scale.
         '''
 
+        mpl.rcParams['text.usetex'] = False
+        mpl.rcParams['font.family'] = 'Nimbus Roman'
+        plt.rcParams['mathtext.fontset'] = 'stix'
+
         if verbose:
             print('cmap')
             print(cmap_kwargs)
@@ -1326,14 +1331,19 @@ class SyntheticModel(object):
         return ax
 
     def radial_plot(self, quantity='intensity', transition=['HI'], transition2=None, idx=0, lat=0, 
-                    include_dust=False, integrated=False, scale=False, 
+                    include_dust=False, integrated=False, log=False, scale=False, 
+                    ls='-', lw=2, color='xkcd:maroon', 
                     bins=36, bin_lim=(0, 18000), stat='mean'):
+
+        mpl.rcParams['text.usetex'] = False
+        mpl.rcParams['font.family'] = 'Nimbus Roman'
+        plt.rcParams['mathtext.fontset'] = 'stix'
 
         species = self.species
         positions = self.position
         rgal = np.sqrt(positions[:, 0]**2+positions[:, 1]**2+positions[:, 2]**2)
 
-        fig, ax = plt.subplots(figsize=(10, 10))
+        fig, ax = plt.subplots(figsize=(15, 10))
 
         i_lat = np.where(self.map_lat == lat)[0][0]
         bins = np.linspace(*bin_lim, num=bins)
@@ -1405,16 +1415,28 @@ class SyntheticModel(object):
             return ax
 
         elif quantity == 'ensemble mass':
-            value = f_vox * self.ensemble_mass[:, idx]
-            ylabel = r'$M_\mathrm{ens, '+f'{idx}'+'}$ (M$_\odot$ kpc$^{-1}$)'
+            value = []
+            label_suffix = [' total', ' cl', ' icl']
+            value.append(f_vox * self.ensemble_mass.sum(1))
+            value.append(f_vox * self.ensemble_mass[:, 0])
+            value.append(f_vox * self.ensemble_mass[:, 1])
+            ylabel = r'$M_\mathrm{ens, '+f'{idx}'+r'}$ (M$_\odot$ kpc$^{-1}$)'
 
         elif quantity == 'hi mass':
-            value = f_vox * self.hi_mass[:, idx]
-            ylabel = r'M_\mathrm{HI, '+f'{idx}'+'} (M$_\odot$ kpc$^{-1}$)'
+            value = []
+            label_suffix = [' total', ' cl', ' icl']
+            value.append(f_vox * self.hi_mass.sum(1))
+            value.append(f_vox * self.hi_mass[:, 0])
+            value.append(f_vox * self.hi_mass[:, 1])
+            ylabel = r'M_\mathrm{HI, '+f'{idx}'+r'} (M$_\odot$ kpc$^{-1}$)'
 
         elif quantity == 'h2 mass':
-            value = f_vox * self.h2_mass[:, idx]
-            ylabel = r'M_\mathrm{H_2, '+f'{idx}'+'} (M$_\odot$ kpc$^{-1}$)'
+            value = []
+            label_suffix = [' total', ' cl', ' icl']
+            value.append(f_vox * self.h2_mass.sum(1))
+            value.append(f_vox * self.h2_mass[:, 0])
+            value.append(f_vox * self.h2_mass[:, 1])
+            ylabel = r'M_\mathrm{H_2, '+f'{idx}'+r'} (M$_\odot$ kpc$^{-1}$)'
 
         elif quantity == 'ensemble density':
             value = self.density[:, idx]
@@ -1428,12 +1450,21 @@ class SyntheticModel(object):
             print(f'quantity {quantity} not available...')
             exit()
 
-        value_stat,_,_ = binned_statistic(rgal, value, statistic=stat, bins=bins)
-        ax.plot(bins_mid, value_stat/self.ds*1e3, label=quantity)
-        ax.legend(fontsize=16)
-        ax.tick_params(labelsize=16)
-        ax.set_xlabel(r'$R_\mathrm{gal}$ (kpc)', fontsize=24)
-        ax.set_ylabel(ylabel,fontsize=24)
+        if log:
+            value = np.log10(value)
+            ylabel = r'$\mathrm{log}_{10}$ ' + ylabel
+
+        if 'mass' in quantity:
+            for i, v in enumerate(value):
+                value_stat,_,_ = binned_statistic(rgal, v, statistic=stat, bins=bins)
+                ax.plot(bins_mid, value_stat/self.ds*1e3, lw=lw[i], ls=ls[i], color=color[i], label=quantity+label_suffix[i])
+        else:
+            value_stat,_,_ = binned_statistic(rgal, value, statistic=stat, bins=bins)
+            ax.plot(bins_mid, value_stat/self.ds*1e3, lw=lw, ls=ls, color=color, label=quantity)
+        ax.legend(fontsize=36)
+        ax.tick_params(labelsize=36)
+        ax.set_xlabel(r'$R_\mathrm{gal}$ (kpc)', fontsize=42)
+        ax.set_ylabel(ylabel,fontsize=42)
 
         return ax
 
