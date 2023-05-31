@@ -1198,43 +1198,111 @@ class SyntheticModel(object):
         else:
             return np.array(optical_depth[0])
 
-    def plot_model_quantity(self, quantity=None, transition=None, transition2=None, ens=None, **kwargs):
+    def plot_model_quantity(self, quantity=None, transition=None, transition2=None, ens=None, log=False, 
+                            stat='max', include_dust=False, integrated=False,
+                            cmap_kwargs={'cmap':'magma', 'marker':'s', 'alpha':0.8, 's':27},
+                            cbar_kwargs={}, verbose=False, **kwargs):
         '''
         Return a 3DAxes with the specitied quantity shown in the colour scale.
         '''
 
+        if verbose:
+            print('cmap')
+            print(cmap_kwargs)
+            print()
+            print('cbar')
+            print(cbar_kwargs)
+            print()
+
         if not quantity:
             print('Please specify a property to plot')
 
-        if quantity == 'intensity' and isinstance(transition, (list, np.ndarray)):
+        if quantity == 'intensity' and transition in self.species:
             # transition2 = transition[1]
             transition = transition
-            value = self.get_model_species_intensity(transition=transition, include_dust=False, integrated=True)
-            clabel = r'$\varpi$ (K km s$^{-1}$)'
+            value = self.get_model_species_intensity(transition=transition, 
+                                                     include_dust=include_dust, 
+                                                     integrated=integrated)
+            if integrated:
+                clabel = r'$\varpi_\nu$ (K km s$^{-1}$)'
+            else:
+                clabel = r'$I_\nu$ (K)'
         elif quantity == 'emissivity' and transition in self.species:
             value = self.species_emissivity[:, :, self.species==transition]
-            clabel = r'$\epsilon$ (K pc$^{-1}$)'
+            clabel = r'$\epsilon_\nu$ (K pc$^{-1}$)'
         elif quantity == 'absorption' and transition in self.species:
             value = self.species_absorption[:, :, self.species==transition]
-            clabel = r'$\kappa$ (pc$^{-1}$)'
+            clabel = r'$\kappa_\nu$ (pc$^{-1}$)'
+        if quantity == 'intensity' and transition in self.dust:
+            # transition2 = transition[1]
+            transition = transition
+            value = self.get_model_dust_intensity(transition=transition)
+            clabel = r'$I_\nu$ (K)'
         elif quantity == 'emissivity' and transition in self.dust:
             value = self.species_emissivity[:, :, self.dust==transition]
-            clabel = r'$\epsilon$ (K pc$^{-1}$)'
+            clabel = r'$\epsilon_\nu$ (K pc$^{-1}$)'
         elif quantity == 'absorption' and transition in self.dust:
             value = self.species_absorption[:, :, self.dust==transition]
-            clabel = r'$\kappa$ (pc$^{-1}$)'
+            clabel = r'$\kappa_\nu$ (pc$^{-1}$)'
+        if quantity == 'intensity' and transition == 'HI' and self.hi_model:
+            # transition2 = transition[1]
+            transition = transition
+            value = self.get_model_hi_intensity(include_dust=include_dust, 
+                                                integrated=integrated)
+            if integrated:
+                clabel = r'$\varpi_\nu$ (K km s$^{-1}$)'
+            else:
+                clabel = r'$I_\nu$ (K)'
         elif quantity == 'emissivity' and transition == 'HI' and self.hi_model:
             value = self.hi_emissivity[:, :, 0]
-            clabel = r'$\epsilon$ (K pc$^{-1}$)'
+            clabel = r'$\epsilon_\nu$ (K pc$^{-1}$)'
         elif quantity == 'absorption' and transition == 'HI' and self.hi_model:
             value = self.hi_absorption[:, :, 0]
-            clabel = r'$\kappa$ (pc$^{-1}$)'
+            clabel = r'$\kappa_\nu$ (pc$^{-1}$)'
         elif quantity == 'FUV' or quantity == 'fuv':
             value = self.fuv[:, 0]
-            clabel = r'$\chi$ $\chi_\mathrm{D}$'
+            clabel = r'$\chi$ ($\chi_\mathrm{D}$)'
+        elif quantity == 'dispersion' or quantity == 'sigma':
+            value = self.ensemble_dispersion[:, 0]
+            clabel = r'$\sigma_\mathrm{ens}$ (km s$^{-1}$)'
+        elif quantity == 'f_vox' or quantity == 'voxel-filling factor':
+            value = self.f_vox[:, 0]
+            clabel = r'$f_\mathrm{vox}$'
+        elif quantity == 'f_vol' or quantity == 'volume-filling factor':
+            value = self.get_volume_filling_factor()
+            clabel = r'$f_\mathrm{voxel}$'
+        elif quantity == 'm_h' or quantity == 'atomic mass':
+            if isinstance(ens, int):
+                value = self.hi_mass[:, ens]
+            else:
+                value = self.hi_mass.sum(1)
+            clabel = r'$M_\mathrm{H^0}$ ($M_\odot$)'
+        elif quantity == 'm_h2' or quantity == 'molecular mass':
+            if isinstance(ens, int):
+                value = self.h2_mass[:, ens]
+            else:
+                value = self.h2_mass.sum(1)
+            clabel = r'$M_\mathrm{H^2}$ ($M_\odot$)'
         else:
             print('Quantity not available.')
             return
+
+        if (quantity in ['emissivity', 'absorption']) or (quantity == 'intensity' and integrated is False):
+            if stat == 'std' or stat == 'sigma':
+                value = value.std(1)
+            elif stat == 'mean':
+                value = value.mean(1)
+            elif stat == 'max':
+                value = value.max(1)
+            elif stat == 'min':
+                value = value.min(1)
+            else:
+                print(f'{stat} not available')
+                return
+
+        if log:
+            value = np.log10(value)
+            clabel = r'log$_{10}$ ' + clabel
 
         X, Y, Z = self.position.T
         lims = (X.min(), X.max())
@@ -1242,8 +1310,8 @@ class SyntheticModel(object):
         fig = plt.figure(figsize=(10, 8))
         ax = fig.add_subplot(111, projection='3d')
 
-        cm = ax.scatter(X, Y, Z, c=value, cmap='magma', marker='s', alpha=0.8, s=27)
-        cb = fig.colorbar(cm)
+        cm = ax.scatter(X, Y, Z, c=value, **cmap_kwargs)
+        cb = fig.colorbar(cm, **cbar_kwargs)
 
         ax.set_xlabel('X (kpc)', fontsize=32)
         ax.set_ylabel('Y (kpc)', fontsize=32)
