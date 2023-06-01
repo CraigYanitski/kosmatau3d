@@ -16,7 +16,7 @@ parser = argparse.ArgumentParser()
 parser.add_argument('-f', '--folder', type=str, default='/mnt/yanitski_backup/yanitski/projects/pdr/KT3_history', 
                     help='Folder containing kosmatau3d models')
 parser.add_argument('-g', '--grid', type=str, default='convergence', 
-                    choices=['convergence', 'f_cm-cm', 'f_icm-icm', 'cm-icm', 'f_cm-f_icm', 
+                    choices=['convergence', 'f_cm-cm', 'f_icm-icm', 'cm-icm', 'cm-f_fuv', 'f_cm-f_icm', 
                              'r_cmz-f_fuv', 'f_hi-f_fuv', 'f_cl-f_icl-f_n-f_fuv', 
                              'fuv_cl', 'fuv_icl', 'const_fuv', 'vox_disp', 
                              'f_fuv_gc', 'disp_gc', 'fuv_gc-disp_gc', 'fuv_gc-mass_gc'], 
@@ -29,7 +29,7 @@ parser.add_argument('-e', '--exec', type=str, default='all', choices=['all', 'mo
                     help='Which portion of the code to evaluate')
 parser.add_argument('-o', '--overwrite', type=str, default='false', choices=['true', 'false'], 
                     help='Overwrite the pre-computed model')
-parser.add_argument('-i', '--index', type=int, default=0,
+parser.add_argument('-i', '--index', type=int, default=1,
                     help='Index from which to begin grid. Useful if a grid is interrupted.')
 parser.add_argument('-d', '--debug', type=bool, default=False, 
                     help='Use debugging mode')
@@ -92,6 +92,23 @@ elif args.grid == 'cm-icm':
     mass_cl_strs = list('_'.join([str(_) for _ in mass[0]]) for mass in params[0])
     mass_icl_strs = list('_'.join([str(_) for _ in mass[1]]) for mass in params[0])
     param_folders = list(folder.format(*_) for _ in zip(*(mass_cl_strs, mass_icl_strs)))
+# cm-icm
+elif args.grid == 'cm-f_fuv':
+    folder = f'r{args.resolution}' + '_cm{}_f_fuv{:.2f}/'
+    mass_cl = [[0, 2], [0, 3], [-1, 2], [-1, 3]]
+    # mass_icl = [[-2], [-3, -2], [-3, -1], [-2, -1]]
+    f_fuv = 10**np.linspace(0, 4, num=9)
+    param_keys = ('clump_mass_range', 'clump_mass_number', 'fuv_factor')
+    i_cl_mesh, f_fuv_mesh = list(_.flatten() for _ in np.meshgrid(np.arange(len(mass_cl)), 
+                                                                  f_fuv))
+    mass_bin_mesh = []
+    for _ in range(i_cl_mesh.size):
+        mass_bin_mesh.append([mass_cl[i_cl_mesh[_]], [-3]])
+    mass_num_mesh = list(list(int(np.max(mbin)-np.min(mbin))+1 for mbin in _) for _ in mass_bin_mesh)
+    params = (mass_bin_mesh, mass_num_mesh, f_fuv_mesh)
+    mass_cl_strs = list('_'.join([str(_) for _ in mass[0]]) for mass in params[0])
+    mass_icl_strs = list('_'.join([str(_) for _ in mass[1]]) for mass in params[0])
+    param_folders = list(folder.format(*_) for _ in zip(*(mass_cl_strs, f_fuv)))
 # f_cm-f_icm
 elif args.grid == 'f_cm-f_icm':
     folder = f'r{args.resolution}' + '_f_cm{}_f_icm{:}/'
