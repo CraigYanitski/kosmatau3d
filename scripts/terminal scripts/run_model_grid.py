@@ -106,9 +106,11 @@ elif args.grid == 'cm-f_fuv':
         mass_bin_mesh.append([mass_cl[i_cl_mesh[_]], [-3]])
     mass_num_mesh = list(list(int(np.max(mbin)-np.min(mbin))+1 for mbin in _) for _ in mass_bin_mesh)
     params = (mass_bin_mesh, mass_num_mesh, f_fuv_mesh)
+    pprint(params)
     mass_cl_strs = list('_'.join([str(_) for _ in mass[0]]) for mass in params[0])
     mass_icl_strs = list('_'.join([str(_) for _ in mass[1]]) for mass in params[0])
-    param_folders = list(folder.format(*_) for _ in zip(*(mass_cl_strs, f_fuv)))
+    param_folders = list(folder.format(*_) for _ in zip(*(mass_cl_strs, f_fuv_mesh)))
+    pprint(param_folders)
 # f_cm-f_icm
 elif args.grid == 'f_cm-f_icm':
     folder = f'r{args.resolution}' + '_f_cm{}_f_icm{:}/'
