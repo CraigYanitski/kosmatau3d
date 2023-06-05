@@ -1333,7 +1333,7 @@ class SyntheticModel(object):
 
     def radial_plot(self, quantity='intensity', transition=['HI'], transition2=None, idx=0, lat=0, 
                     include_dust=False, integrated=False, log=False, scale=False, 
-                    ls='-', lw=2, color='xkcd:maroon', 
+                    ls='-', lw=2, color='xkcd:maroon', label='', 
                     bins=36, bin_lim=(0, 18000), stat='mean'):
 
         mpl.rcParams['text.usetex'] = False
@@ -1349,6 +1349,9 @@ class SyntheticModel(object):
         i_lat = np.where(self.map_lat == lat)[0][0]
         bins = np.linspace(*bin_lim, num=bins)
         bins_mid = bins[:-1] + self.ds/2
+
+        if label == '':
+            label = quantity
         
         if scale:
             f_vox = self.f_vox
@@ -1417,27 +1420,27 @@ class SyntheticModel(object):
 
         elif quantity == 'ensemble mass':
             value = []
-            label_suffix = [' total', ' cl', ' icl']
+            label_suffix = [' total', ' clump', ' interclump']
             value.append(f_vox * self.ensemble_mass.sum(1))
             value.append(f_vox * self.ensemble_mass[:, 0])
             value.append(f_vox * self.ensemble_mass[:, 1])
-            ylabel = r'$M_\mathrm{ens, '+f'{idx}'+r'}$ (M$_\odot$ kpc$^{-1}$)'
+            ylabel = r'$M_\mathrm{ens}$ (M$_\odot$ kpc$^{-1}$)'
 
         elif quantity == 'hi mass':
             value = []
-            label_suffix = [' total', ' cl', ' icl']
+            label_suffix = [' total', ' clump', ' interclump']
             value.append(f_vox * self.hi_mass.sum(1))
             value.append(f_vox * self.hi_mass[:, 0])
             value.append(f_vox * self.hi_mass[:, 1])
-            ylabel = r'M_\mathrm{HI, '+f'{idx}'+r'} (M$_\odot$ kpc$^{-1}$)'
+            ylabel = r'$M_\mathrm{HI}$ (M$_\odot$ kpc$^{-1}$)'
 
         elif quantity == 'h2 mass':
             value = []
-            label_suffix = [' total', ' cl', ' icl']
+            label_suffix = [' total', ' clump', ' interclump']
             value.append(f_vox * self.h2_mass.sum(1))
             value.append(f_vox * self.h2_mass[:, 0])
             value.append(f_vox * self.h2_mass[:, 1])
-            ylabel = r'M_\mathrm{H_2, '+f'{idx}'+r'} (M$_\odot$ kpc$^{-1}$)'
+            ylabel = r'$M_\mathrm{H_2}$ (M$_\odot$ kpc$^{-1}$)'
 
         elif quantity == 'ensemble density':
             value = self.density[:, idx]
@@ -1458,10 +1461,10 @@ class SyntheticModel(object):
         if 'mass' in quantity:
             for i, v in enumerate(value):
                 value_stat,_,_ = binned_statistic(rgal, v, statistic=stat, bins=bins)
-                ax.plot(bins_mid, value_stat/self.ds*1e3, lw=lw[i], ls=ls[i], color=color[i], label=quantity+label_suffix[i])
+                ax.plot(bins_mid/1000, value_stat/self.ds*1e3, lw=lw[i], ls=ls[i], color=color[i], label=label+label_suffix[i])
         else:
             value_stat,_,_ = binned_statistic(rgal, value, statistic=stat, bins=bins)
-            ax.plot(bins_mid, value_stat/self.ds*1e3, lw=lw, ls=ls, color=color, label=quantity)
+            ax.plot(bins_mid/1000, value_stat/self.ds*1e3, lw=lw, ls=ls, color=color, label=label)
         ax.legend(fontsize=36)
         ax.tick_params(labelsize=36)
         ax.set_xlabel(r'$R_\mathrm{gal}$ (kpc)', fontsize=42)
