@@ -961,7 +961,7 @@ class SyntheticModel(object):
             wavelength = (self.dust[i] for i in idx)
         elif isinstance(wavelength, str) and wavelength in self.dust:
             wavelength = (wavelength, )
-            idx = (self.dust.index(wavelength[0]), )
+            idx = (list(self.dust).index(wavelength[0]), )
         elif isinstance(idx, int):
             wavelength = (self.dust[idx], )
             idx = (idx, )
@@ -972,7 +972,7 @@ class SyntheticModel(object):
         emissivity = []
 
         for i in idx:
-            emissivity.append(self.dust_emissivity[:, :, i])
+            emissivity.append(self.dust_emissivity[:, i])
         
         if len(emissivity) > 1:
             return np.array(emissivity)
@@ -990,7 +990,7 @@ class SyntheticModel(object):
             wavelength = (self.dust[i] for i in idx)
         elif isinstance(wavelength, str) and wavelength in self.dust:
             wavelength = (wavelength, )
-            idx = (self.dust.index(wavelength[0]), )
+            idx = (list(self.dust).index(wavelength[0]), )
         elif isinstance(idx, int):
             wavelength = (self.dust[idx], )
             idx = (idx, )
@@ -1001,7 +1001,7 @@ class SyntheticModel(object):
         absorption = []
 
         for i in idx:
-            absorption.append(self.dust_absorption[:, :, i])
+            absorption.append(self.dust_absorption[:, i])
         
         if len(absorption) > 1:
             return np.array(absorption)
@@ -1238,18 +1238,18 @@ class SyntheticModel(object):
         elif quantity == 'absorption' and transition in self.species:
             value = self.species_absorption[:, :, self.species==transition]
             clabel = r'$\kappa_\nu$ (pc$^{-1}$)'
-        if quantity == 'intensity' and transition in self.dust:
+        elif quantity == 'intensity' and transition in self.dust:
             # transition2 = transition[1]
             transition = transition
-            value = self.get_model_dust_intensity(transition=transition)
+            value = self.get_model_dust_intensity(wavelength=transition)
             clabel = r'$I_\nu$ (K)'
         elif quantity == 'emissivity' and transition in self.dust:
-            value = self.species_emissivity[:, :, self.dust==transition]
+            value = self.dust_emissivity[:, self.dust==transition]
             clabel = r'$\epsilon_\nu$ (K pc$^{-1}$)'
         elif quantity == 'absorption' and transition in self.dust:
-            value = self.species_absorption[:, :, self.dust==transition]
+            value = self.dust_absorption[:, self.dust==transition]
             clabel = r'$\kappa_\nu$ (pc$^{-1}$)'
-        if quantity == 'intensity' and transition == 'HI' and self.hi_model:
+        elif quantity == 'intensity' and transition == 'HI' and self.hi_model:
             # transition2 = transition[1]
             transition = transition
             value = self.get_model_hi_intensity(include_dust=include_dust, 
@@ -1292,7 +1292,8 @@ class SyntheticModel(object):
             print('Quantity not available.')
             return
 
-        if (quantity in ['emissivity', 'absorption']) or (quantity == 'intensity' and integrated is False):
+        if ((quantity in ['emissivity', 'absorption']) or (quantity == 'intensity' and integrated is False)) \
+            and not (transition in self.dust):
             if stat == 'std' or stat == 'sigma':
                 value = value.std(1)
             elif stat == 'mean':
