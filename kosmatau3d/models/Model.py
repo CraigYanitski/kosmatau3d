@@ -1291,20 +1291,74 @@ class SyntheticModel(object):
         else:
             print('Quantity not available.')
             return
+        
+        if quantity == 'intensity' and transition2 in self.species:
+            # transition2 = transition[1]
+            transition = transition
+            value2 = self.get_model_species_intensity(transition=transition2, 
+                                                      include_dust=include_dust, 
+                                                      integrated=integrated)
+            if integrated:
+                clabel = r'$\varpi_\nu$ ratio (K km s$^{-1}$)'
+            else:
+                clabel = r'$I_\nu$ ratio (K)'
+        elif quantity == 'emissivity' and transition2 in self.species:
+            value2 = self.species_emissivity[:, :, self.species==transition2]
+            clabel = r'$\epsilon_\nu$ ratio (K pc$^{-1}$)'
+        elif quantity == 'absorption' and transition2 in self.species:
+            value2 = self.species_absorption[:, :, self.species==transition2]
+            clabel = r'$\kappa_\nu$ ratio (pc$^{-1}$)'
+        elif quantity == 'intensity' and transition2 in self.dust:
+            # transition2 = transition[1]
+            transition = transition
+            value2 = self.get_model_dust_intensity(wavelength=transition2)
+            clabel = r'$I_\nu$ ratio (K)'
+        elif quantity == 'emissivity' and transition2 in self.dust:
+            value2 = self.dust_emissivity[:, self.dust==transition2]
+            clabel = r'$\epsilon_\nu$ ratio (K pc$^{-1}$)'
+        elif quantity == 'absorption' and transition2 in self.dust:
+            value2 = self.dust_absorption[:, self.dust==transition2]
+            clabel = r'$\kappa_\nu$ ratio (pc$^{-1}$)'
+        elif quantity == 'intensity' and transition2 == 'HI' and self.hi_model:
+            # transition2 = transition[1]
+            transition = transition
+            value2 = self.get_model_hi_intensity(include_dust=include_dust, 
+                                                 integrated=integrated)
+            if integrated:
+                clabel = r'$\varpi_\nu$ ratio (K km s$^{-1}$)'
+            else:
+                clabel = r'$I_\nu$ ratio (K)'
+        elif quantity == 'emissivity' and transition2 == 'HI' and self.hi_model:
+            value2 = self.hi_emissivity[:, :, 0]
+            clabel = r'$\epsilon_\nu$ ratio (K pc$^{-1}$)'
+        elif quantity == 'absorption' and transition2 == 'HI' and self.hi_model:
+            value2 = self.hi_absorption[:, :, 0]
+            clabel = r'$\kappa_\nu$ ratio (pc$^{-1}$)'
 
         if ((quantity in ['emissivity', 'absorption']) or (quantity == 'intensity' and integrated is False)) \
             and not (transition in self.dust):
             if stat == 'std' or stat == 'sigma':
                 value = value.std(1)
+                if transition2:
+                    value = value / value2.std(1)
             elif stat == 'mean':
                 value = value.mean(1)
+                if transition2:
+                    value = value / value2.mean(1)
             elif stat == 'max':
                 value = value.max(1)
+                if transition2:
+                    value = value / value2.max(1)
             elif stat == 'min':
                 value = value.min(1)
+                if transition2:
+                    value = value / value2.min(1)
             else:
                 print(f'{stat} not available')
                 return
+
+        if ((quantity == 'intensity' and integrated is True) or (transition in self.dust)) and not transition2 == None:
+            value = value / value2
 
         if log:
             value = np.log10(value)
