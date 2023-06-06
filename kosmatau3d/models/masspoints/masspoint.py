@@ -131,9 +131,15 @@ def masspoint_emission(interpolation_point, ens, masspoint, velocity=0, verbose=
     if constants.interclump_idx[ens]:
         n_hi = interpolations.interpolate_interclump_hi_column_density(interpolation_point[1:])
         n_h2 = interpolations.interpolate_interclump_h2_column_density(interpolation_point[1:])
+        n_species = []
+        for sp in constants.abundances:
+            n_species.append(interpolations.interpolate_interclump_column_density(interpolation_point[1:], sp))
     else:
         n_hi = interpolations.interpolate_clump_hi_column_density(interpolation_point[1:])
         n_h2 = interpolations.interpolate_clump_h2_column_density(interpolation_point[1:])
+        n_species = []
+        for sp in constants.abundances:
+            n_species.append(interpolations.interpolate_clump_column_density(interpolation_point[1:], sp))
     masspoints.clump_hi_col_dens[ens][0, masspoint] = copy(n_hi)
     masspoints.clump_h2_col_dens[ens][0, masspoint] = copy(n_h2)
 
@@ -143,6 +149,7 @@ def masspoint_emission(interpolation_point, ens, masspoint, velocity=0, verbose=
     tb = t_g * (1-np.exp(-4.1146667e18*kappa*rcl))
     masspoints.clump_hi_tb[ens][masspoint, 0] = copy(tb)
     masspoints.clump_hi_tau[ens][masspoint, 0] = kappa * 4/3*rcl*constants.pc*100
+    masspoints.clump_N_species[ens][masspoint, :] = np.asarray([n_sp * np.pi*(rcl*constants.pc*100)**2 for n_sp in n_species])
     masspoints.clump_hi_mass[ens][0, masspoint] = n_hi * np.pi*(rcl*constants.pc*100)**2 \
             * constants.mass_h/constants.mass_solar
     masspoints.clump_h2_mass[ens][0, masspoint] = n_h2 * np.pi*(rcl*constants.pc*100)**2 \
@@ -310,6 +317,9 @@ def reinitialise():
                                     for _ in range(constants.ensembles)]
     masspoints.clump_h2_mass = [np.zeros((1, constants.clump_mass_number[_])) 
                                     for _ in range(constants.ensembles)]
+    masspoints.clump_N_species = [np.zeros((constants.clump_mass_number[_], 
+                                                 len(constants.abundances)))
+                                       for _ in range(len(constants.clump_mass_number))]
   
     # Emission
   

@@ -20,6 +20,8 @@ clump_hi_col_dens = [np.zeros(constants.clump_mass_number[_]) for _ in range(len
 clump_h2_col_dens = [np.zeros(constants.clump_mass_number[_]) for _ in range(len(constants.clump_mass_number))]
 clump_hi_mass = [np.zeros(constants.clump_mass_number[_]) for _ in range(len(constants.clump_mass_number))]
 clump_h2_mass = [np.zeros(constants.clump_mass_number[_]) for _ in range(len(constants.clump_mass_number))]
+clump_N_species = [np.zeros((constants.clump_mass_number[_], len(constants.abundances)))
+                   for _ in range(len(constants.clump_mass_number))]
 
 # KOSMA-tau outputs
 

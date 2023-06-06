@@ -51,6 +51,7 @@ class Model(object):
                  like_clumps=False, all_full=False, 
                  velocity_file='rot_milki2018_14.dat', disp_core=None, r_core=4400, disp_gmc=None, 
                  x=0, y=0, z=0, model_type='', resolution=1000,
+                 abundances=['ELEC', 'H', 'H2', 'H+'], 
                  transitions='all', dust='molecular', velocity_range=(), velocity_number=0,
                  clump_mass_range=((0, 2), (-2)), clump_mass_number=(3, 1), clump_n_max=(1, 100), 
                  ensemble_mass_factor=(1, 1), interclump_idx=(False, True), interclump_hi_ratio=1,
@@ -96,6 +97,14 @@ class Model(object):
         constants.set_interclump_ensemble(interclump_idx)
         
         # Read grid & input data, specify transitions, and interpolate
+        abundances.remove('ELECTR')
+        abundances.remove('H')
+        abundances.remove('H2')                                                                                                                                                                        
+        abundances.remove('H+')
+        abun = ['ELEC', 'H', 'H2', 'H+']
+        for sp in abundances:
+            abun.append(sp)
+        constants.abundances = copy(abun)
         constants.clump_species_tb_grid_file = clump_tb_grid_file
         constants.clump_species_tau_grid_file = clump_tau_grid_file
         constants.clump_dust_tb_grid_file = clump_tb_grid_file

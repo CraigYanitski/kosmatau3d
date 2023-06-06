@@ -111,6 +111,7 @@ transition_number = 0
 interclump_transitions = []
 interclump_transition_number = 0
 dust = 'all'
+abundances = ['ELECTR', 'H', 'H2', 'H+']
 
 # Model characteristics
 n_sigma = 3

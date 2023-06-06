@@ -27,6 +27,8 @@ def initialise_grid(dilled=False):
     calculate_interclump_grid_interpolation(dilled=dilled)
     interpolations.clump_taufuv_interpolation = calculate_clump_taufuv(dilled=dilled)
     interpolations.interclump_taufuv_interpolation = calculate_interclump_taufuv(dilled=dilled)
+    interpolations.clump_column_density_interpolation = calculate_clump_column_density(dilled=dilled)
+    interpolations.interclump_column_density_interpolation = calculate_clump_column_density(dilled=dilled)
     interpolations.clump_hi_column_density_interpolation = calculate_clump_hi_column_density(dilled=dilled)
     interpolations.interclump_hi_column_density_interpolation = calculate_interclump_hi_column_density(dilled=dilled)
     interpolations.clump_h2_column_density_interpolation = calculate_clump_h2_column_density(dilled=dilled)
@@ -358,6 +360,52 @@ def calculate_interclump_taufuv(verbose=False, dilled=False):
         sys.exit('<<ERROR>>: There is no such method as ' + 
                  '{} to interpolate '.format(constants.interpolation) +
                  'the extinction in the KOSMA-tau grid.\n\nExitting...\n\n')
+
+
+def calculate_clump_column_density(verbose=False, dilled=False):
+    if dilled:
+        with open(constants.GRIDPATH + 'dilled/clump_column_density_interpolation', 'rb') as file:
+            return dill.load(file)
+    if verbose:
+        print('Creating N(H) grid interpolation')
+    nmchi, N = observations.clump_column_density
+    nmchi = nmchi/10.
+    log_N = np.log10(N)
+    column_densities = []
+    if constants.interpolation == 'linear':
+        for sp in constants.abundances:
+            column_densities.append(interpolate.LinearNDInterpolator(nmchi.to_numpy(), log_N[sp]))
+    elif constants.interpolation == 'cubic' or constants.interpolation == 'radial':
+        for sp in constants.abundances:
+            column_densities.append(interpolate.Rbf(nmchi, log_N[sp]))
+    else:
+        sys.exit('<<ERROR>>: There is no such method as ' + 
+                 '{} to interpolate '.format(constants.interpolation) +
+                 'the H column density in the KOSMA-tau grid.\n\nExitting...\n\n')
+    return column_densities
+
+
+def calculate_interclump_column_density(verbose=False, dilled=False):
+    if dilled:
+        with open(constants.GRIDPATH + 'dilled/interclump_column_density_interpolation', 'rb') as file:
+            return dill.load(file)
+    if verbose:
+        print('Creating N(H) grid interpolation')
+    nmchi, N = observations.interclump_column_density
+    nmchi = nmchi/10.
+    log_N = np.log10(N)
+    column_densities = []
+    if constants.interpolation == 'linear':
+        for sp in constants.abundances:
+            column_densities.append(interpolate.LinearNDInterpolator(nmchi.to_numpy(), log_N[sp]))
+    elif constants.interpolation == 'cubic' or constants.interpolation == 'radial':
+        for sp in constants.abundances:
+            column_densities.append(interpolate.Rbf(nmchi, log_N[sp]))
+    else:
+        sys.exit('<<ERROR>>: There is no such method as ' + 
+                 '{} to interpolate '.format(constants.interpolation) +
+                 'the H column density in the KOSMA-tau grid.\n\nExitting...\n\n')
+    return column_densities
 
 
 def calculate_clump_hi_column_density(verbose=False, dilled=False):

@@ -173,6 +173,7 @@ class Voxel(object):
                        interclump_taufuv_grid_file='interclumpTauFUV.dat',
                        interclump_column_density_file='interclumpMeanCols.dat',
                        interclump_temperature_file='interclumpTemperatures_filled.dat',
+                       abundances=['ELECTR', 'H', 'H2', 'H+'], 
                        clump_mass_number=(3,1), clump_mass_range=([0,2],[-3]), clump_n_max=(1, 100), 
                        interclump_idx=[False, True],
                        velocity_range=(-10,10), velocity_number=201, 
@@ -306,6 +307,15 @@ class Voxel(object):
             if constants.interclump_idx != interclump_idx:
                 constants.set_interclump_ensemble(interclump_idx)
                 change_interpolation = True
+
+            abundances.remove('ELECTR')
+            abundances.remove('H')
+            abundances.remove('H2')
+            abundances.remove('H+')
+            abun = ['ELECTR', 'H', 'H2', 'H+']
+            for sp in abundances:
+                abun.append(sp)
+            constants.abundances = copy(abun)
 
             if new_grid or change_interpolation or \
                     not interpolations.initialised or not observations.grid_initialised or \
@@ -853,6 +863,8 @@ class Voxel(object):
                       / (ensemble.clumpNj[_]*10**constants.clump_log_mass[_]).sum() for _ in range(constants.ensembles)]
         self.t_dust = [(ensemble.clumpNj[_]*10**constants.clump_log_mass[_]*masspoints.clump_t_dust[_]).sum()
                        / (ensemble.clumpNj[_]*10**constants.clump_log_mass[_]).sum() for _ in range(constants.ensembles)]
+
+        self.abundances = [(ensemble.clumpNj[_].T*masspoints.clump_column_density[_]).sum(0) for _ in range(constants.ensembles)]
 
         self.__logger.info('NaN in species intensity: {}'.format(np.isnan(self.__intensity_species).any()))
         self.__logger.info('NaN in species optical depth: {}'.format(np.isnan(self.__optical_depth_species).any()))

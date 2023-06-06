@@ -32,6 +32,8 @@ clump_dust_intensity_interpolation = None
 interclump_dust_intensity_interpolation = None
 clump_dust_tau_interpolation = None
 interclump_dust_tau_interpolation = None
+clump_column_density_interpolation = None
+interclump_column_density_interpolation = None
 galaxy_rotation_interpolation = None
 velocity_dispersion_interpolation = None
 number_density_interpolation = None
@@ -350,6 +352,30 @@ def interpolate_interclump_dust_tau(points, verbose=False):
     if verbose:
       print('Calculated the optical depth for {} species.'.format(len(speciesNumber)))
     return tau
+
+
+def interpolate_clump_column_density(points, sp):
+    idx = constants.abundances.index(sp)
+    if constants.interpolation == 'linear':
+        return 10**clump_column_density_interpolation[idx](points)[0]
+    elif constants.interpolation == 'radial' or constants.interpolation == 'cubic':
+        return 10**clump_column_density_interpolation[idx](points[0], points[1], points[2])
+    else:
+        sys.exit('<<ERROR>>: There is no such method as ' + 
+                 '{} to interpolate the '.format(constants.interpolation) +
+                 'column density from the KOSMA-tau grid.\n\nExitting...\n\n')
+
+
+def interpolate_interclump_column_density(points, sp):
+    idx = constants.abundances.index(sp)
+    if constants.interpolation == 'linear':
+        return 10**interclump_column_density_interpolation[idx](points)[0]
+    elif constants.interpolation == 'radial' or constants.interpolation == 'cubic':
+        return 10**interclump_column_density_interpolation[idx](points[0], points[1], points[2])
+    else:
+        sys.exit('<<ERROR>>: There is no such method as ' + 
+                 '{} to interpolate the '.format(constants.interpolation) +
+                 'column density from the KOSMA-tau grid.\n\nExitting...\n\n')
 
 
 def interpolate_clump_hi_column_density(points):
