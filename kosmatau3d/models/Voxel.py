@@ -849,6 +849,11 @@ class Voxel(object):
             self.__absorption_dust = [self.__optical_depth_dust[ens]/constants.voxel_size
                                       for ens in range(len(constants.clump_mass_number))]
 
+        self.t_gas = [(ensemble.clumpNj[_]*10**constants.clump_log_mass[_]*masspoints.clump_t_gas[_]).sum(0)
+                      / (ensemble.clumpNj[_]*10**constants.clump_log_mass[_]).sum(0) for _ in range(constants.ensembles)]
+        self.t_dust = [(ensemble.clumpNj[_]*10**constants.clump_log_mass[_]*masspoints.clump_t_dust[_]).sum(0)
+                       / (ensemble.clumpNj[_]*10**constants.clump_log_mass[_]).sum(0) for _ in range(constants.ensembles)]
+
         self.__logger.info('NaN in species intensity: {}'.format(np.isnan(self.__intensity_species).any()))
         self.__logger.info('NaN in species optical depth: {}'.format(np.isnan(self.__optical_depth_species).any()))
         self.__logger.info('NaN in dust intensity: {}'.format(np.isnan(self.__intensity_dust).any()))
