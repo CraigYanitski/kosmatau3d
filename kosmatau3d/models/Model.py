@@ -51,7 +51,7 @@ class Model(object):
                  like_clumps=False, all_full=False, 
                  velocity_file='rot_milki2018_14.dat', disp_core=None, r_core=4400, disp_gmc=None, 
                  x=0, y=0, z=0, model_type='', resolution=1000,
-                 abundances=['ELEC', 'H', 'H2', 'H+'], 
+                 abundances=['ELECTR', 'H', 'H2', 'H+'], 
                  transitions='all', dust='molecular', velocity_range=(), velocity_number=0,
                  clump_mass_range=((0, 2), (-2)), clump_mass_number=(3, 1), clump_n_max=(1, 100), 
                  ensemble_mass_factor=(1, 1), interclump_idx=(False, True), interclump_hi_ratio=1,
@@ -97,11 +97,15 @@ class Model(object):
         constants.set_interclump_ensemble(interclump_idx)
         
         # Read grid & input data, specify transitions, and interpolate
-        abundances.remove('ELECTR')
-        abundances.remove('H')
-        abundances.remove('H2')                                                                                                                                                                        
-        abundances.remove('H+')
-        abun = ['ELEC', 'H', 'H2', 'H+']
+        if 'ELECTR' in abundances:
+            abundances.remove('ELECTR')
+        if 'H' in abundances:
+            abundances.remove('H')
+        if 'H2' in abundances:
+            abundances.remove('H2')
+        if 'H+' in abundances:
+            abundances.remove('H+')
+        abun = ['ELECTR', 'H', 'H2', 'H+']
         for sp in abundances:
             abun.append(sp)
         constants.abundances = copy(abun)
@@ -420,6 +424,7 @@ class SyntheticModel(object):
         '''
 
         self.base_dir = base_dir
+        self.dir_path = ''
         self.hi_model = False
         self.hi_map = False
         self.files = {'intensity': 'synthetic_intensity', 
@@ -427,6 +432,9 @@ class SyntheticModel(object):
                       'hi_intensity': 'synthetic_hi_intensity', 
                       'hi_optical_depth': 'synthetic_hi_optical_depth', 
                       'f_vox': 'voxel-filling_factor', 
+                      'species_number': 'species_number',
+                      't_gas': 'voxel_t_gas', 
+                      't_dust': 'voxel_t_dust', 
                       'dust_absorption': 'dust_absorption', 
                       'dust_emissivity': 'dust_emissivity', 
                       'species_absorption': 'species_absorption', 
@@ -453,6 +461,7 @@ class SyntheticModel(object):
         self.optical_depth_file = None
         self.hi_optical_depth_file = None
 
+        self.species_number_file = None
         self.dust_absorption_file = None
         self.dust_optical_depth_file = None
         self.species_absorption_file = None
@@ -460,6 +469,8 @@ class SyntheticModel(object):
         self.hi_absorption_file = None
         self.hi_optical_depth_file = None
 
+        self.t_gas_file = None
+        self.t_dust_file = None
         self.f_vox_file = None
         self.clump_number_file = None
         self.clump_radius_file = None
@@ -474,6 +485,16 @@ class SyntheticModel(object):
         self.velocity_file = None
         
         return
+
+    def __open_file(self, filename):
+        if (filename + '.fits') in self.model_files:
+            file_data = fits.open(os.path.join(self.dir_path, filename + '.fits'))
+        elif (filename + '.txt') in self.model_files:
+            with open(os.path.join(self.dir_path, filename + '.txt')) as f:
+                file_data = f.readlines()
+        else:
+            file_data = np.nan
+        return file_data
 
     def close_files(model, **kwargs):
         '''
@@ -491,6 +512,8 @@ class SyntheticModel(object):
             if isinstance(self.hi_optical_depth_file, fits.hdu.hdulist.HDUList):
                 self.hi_optical_depth_file.close()
 
+            if isinstance(self.species_number_file, fits.hdu.hdulist.HDUList):
+                self.species_number_file.close()
             if isinstance(self.dust_absorption_file, fits.hdu.hdulist.HDUList):
                 self.dust_absorption_file.close()
             if isinstance(self.dust_optical_depth_file, fits.hdu.hdulist.HDUList):
@@ -504,6 +527,10 @@ class SyntheticModel(object):
             if isinstance(self.hi_optical_depth_file, fits.hdu.hdulist.HDUList):
                 self.hi_optical_depth_file.close()
 
+            if isinstance(self.t_gas_file, fits.hdu.hdulist.HDUList):
+                self.t_gas_file.close()
+            if isinstance(self.t_dust_file, fits.hdu.hdulist.HDUList):
+                self.t_dust_file.close()
             if isinstance(self.f_vox_file, fits.hdu.hdulist.HDUList):
                 self.f_vox_file.close()
             if isinstance(self.clump_number_file, fits.hdu.hdulist.HDUList):
@@ -561,6 +588,12 @@ class SyntheticModel(object):
                 self.files['hi_optical_depth'] = kwargs['hi_optical_depth']
             if 'f_vox' in kwarg_keys:
                 self.files['f_vox'] = kwargs['f_vox']
+            if 'species_number' in kwarg_keys:
+                self.files['species_number'] = kwargs['species_number']
+            if 't_gas' in kwarg_keys:
+                self.files['t_gas'] = kwargs['t_gas']
+            if 't_dust' in kwarg_keys:
+                self.files['t_dust'] = kwargs['t_dust']
             if 'dust_absorption' in kwarg_keys:
                 self.files['dust_absorption'] = kwargs['dust_absorption']
             if 'dust_emissivity' in kwarg_keys:
@@ -621,11 +654,13 @@ class SyntheticModel(object):
 
 
         '''
-
+        
+        self.dirpath = os.path.join(self.base_dir, directory)
         # Ensure model path exists
-        if os.path.exists(self.base_dir + directory + self.files['intensity'] + '.fits'):
+        if os.path.exists(self.dirpath):
+        #if os.path.exists(self.base_dir + directory + self.files['intensity'] + '.fits'):
             self.files['directory'] = directory
-            model_files = os.listdir(self.base_dir + directory)
+            self.model_files = os.listdir(self.base_dir + directory)
         else:
             raise FileNotFoundError(f'Directory {self.base_dir + directory} is not valid!! Check '
                                     +'to see if `base_dir` was set when initialising or if the '
@@ -665,20 +700,23 @@ class SyntheticModel(object):
         #     self.files['log'] = kwargs['log']
         
         # Load all model data (can be expensive for memory)
-        self.intensity_file = fits.open(self.base_dir + directory 
-                                        + self.files['intensity'] + '.fits')
-        self.map_positions = self.intensity_file[0].data
-        self.intensity_species = self.intensity_file[1].data
-        self.intensity_dust = self.intensity_file[2].data
-        self.optical_depth_file = fits.open(self.base_dir + directory 
-                                            + self.files['optical_depth'] + '.fits')
-        self.optical_depth_species = self.optical_depth_file[1].data
-        self.optical_depth_dust = self.optical_depth_file[2].data
-        if (self.files['f_vox'] + '.fits') in model_files:
-            self.f_vox_file = fits.open(self.base_dir + directory + self.files['f_vox'] + '.fits')
+        self.intensity_file = self.__open_file(self.files['intensity'])
+        if not np.isnan(self.intensity_file):
+            self.map_positions = self.intensity_file[0].data
+            self.intensity_species = self.intensity_file[1].data
+            self.intensity_dust = self.intensity_file[2].data
+        else:
+            self.map_positions = np.nan
+            self.intensity_species = np.nan
+            self.intensity_dust = np.nan
+        self.optical_depth_file = self.__open_file(self.files['optical_depth'])
+        if not np.isnan(self.optical_depth_file):
+            self.optical_depth_species = self.optical_depth_file[1].data
+            self.optical_depth_dust = self.optical_depth_file[2].data
+        self.f_vox_file = self.__open_file(self.files['f_vox'])
+        if not np.isnan(self.f_vox_file):
             self.f_vox = self.f_vox_file[0].data
         else:
-            self.f_vox_file = np.nan
             self.f_vox = np.nan
         if os.path.exists(self.base_dir + directory + self.files['hi_intensity'] + '.fits'):
             self.hi_map = True
@@ -744,13 +782,13 @@ class SyntheticModel(object):
         self.ensemble_mass_file = fits.open(self.base_dir + directory 
                                             + self.files['ensemble_mass'] + '.fits')
         self.ensemble_mass = self.ensemble_mass_file[0].data
-        if (self.files['hi_mass'] + '.fits') in model_files:
+        if (self.files['hi_mass'] + '.fits') in self.model_files:
             self.hi_mass_file = fits.open(self.base_dir + directory + self.files['hi_mass'] + '.fits')
             self.hi_mass = self.hi_mass_file[0].data
         else:
             self.hi_mass_file = np.nan
             self.hi_mass = np.nan
-        if (self.files['h2_mass'] + '.fits') in model_files:
+        if (self.files['h2_mass'] + '.fits') in self.model_files:
             self.h2_mass_file = fits.open(self.base_dir + directory + self.files['h2_mass'] + '.fits')
             self.h2_mass = self.h2_mass_file[0].data
         else:
