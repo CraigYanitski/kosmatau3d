@@ -308,10 +308,14 @@ class Voxel(object):
                 constants.set_interclump_ensemble(interclump_idx)
                 change_interpolation = True
 
-            abundances.remove('ELECTR')
-            abundances.remove('H')
-            abundances.remove('H2')
-            abundances.remove('H+')
+            if 'ELECTR' in abundances:
+                abundances.remove('ELECTR')
+            if 'H' in abundances:
+                abundances.remove('H')
+            if 'H2' in abundances:
+                abundances.remove('H2')
+            if 'H+' in abundances:
+                abundances.remove('H+')
             abun = ['ELECTR', 'H', 'H2', 'H+']
             for sp in abundances:
                 abun.append(sp)
@@ -510,20 +514,29 @@ class Voxel(object):
     def get_density(self):
         return self.__ensemble_density
   
-    def get_ensemble_mass(self):
-        return self.__ensemble_mass
+    def get_ensemble_mass(self, total=False):
+        if total:
+            return np.sum(self.__ensemble_mass)
+        else:
+            return self.__ensemble_mass
   
-    def get_model_mass(self):
-        if self.suggested_calc:
-            return self.__model_mass / np.sqrt(2*np.pi) / constants.clump_dispersion
+    def get_model_mass(self, total=False):
+        if total:
+            return np.sum(self.__model_mass)
         else:
             return self.__model_mass
 
-    def get_hi_mass(self):
-        return self.__hi_mass
+    def get_hi_mass(self, total=False):
+        if total:
+            return np.sum(self.__hi_mass)
+        else:
+            return self.__hi_mass
 
-    def get_h2_mass(self):
-        return self.__h2_mass
+    def get_h2_mass(self, total=False):
+        if total:
+            return np.sum(self.__h2_mass)
+        else:
+            return self.__h2_mass
   
     def get_volume_filling_factor(self):
         return self.__volume_factor
@@ -539,6 +552,56 @@ class Voxel(object):
   
     def get_taufuv(self):
         return self.__taufuv
+
+    def get_species_number(self, species=None, abun=False, nref=['H', 'H2'], total=True):
+        if species in [None, 'all']:
+            species = constants.abundances
+        elif isinstance(species, str):
+            species = [species]
+        
+        if nref == None:
+            nref = ['H', 'H2']
+        elif isinstance(nref, str):
+            nref = [nref]
+
+        N_species = []
+
+        for ens in range(constants.ensembles):
+
+            if abun:
+                N_0 = 0
+                for sp in nref:
+                    N_0 += self.clump_N_species[ens][constants.abundances.index(sp)]
+            else:
+                N_0 = 1
+
+            N_sp = []
+            for sp in species:
+                N_sp.append(self.clump_N_species[ens][constants.abundances.index(sp)]/N_0)
+
+            N_species.append(copy(N_sp))
+
+        if total:
+            return np.sum(N_species, axis=0)
+        else:
+            return N_species
+
+    def get_abundances(self, *args, **kwargs):
+        return self.get_species_number(*args, **kwargs, abun=True)
+
+    def get_dust_temperature(self, total=True):
+        if total:
+            return (np.asarray(self.__ensemble_mass)*np.asarray(self.t_dust)).sum() \
+                    / np.asarray(self.__ensemble_mass).sum()
+        else:
+            return self.t_dust
+
+    def get_gas_temperature(self, total=True):
+        if total:
+            return (np.asarray(self.__ensemble_mass)*np.asarray(self.t_gas)).sum() \
+                    / np.asarray(self.__ensemble_mass).sum()
+        else:
+            return self.t_gas
   
     # @jit
     def calculate_emission(self, taufuv=0, 
@@ -864,7 +927,7 @@ class Voxel(object):
         self.t_dust = [(ensemble.clumpNj[_]*10**constants.clump_log_mass[_]*masspoints.clump_t_dust[_]).sum()
                        / (ensemble.clumpNj[_]*10**constants.clump_log_mass[_]).sum() for _ in range(constants.ensembles)]
 
-        self.abundances = [(ensemble.clumpNj[_].T*masspoints.clump_column_density[_]).sum(0) for _ in range(constants.ensembles)]
+        self.clump_N_species = [(ensemble.clumpNj[_].T*masspoints.clump_N_species[_]).sum(0) for _ in range(constants.ensembles)]
 
         self.__logger.info('NaN in species intensity: {}'.format(np.isnan(self.__intensity_species).any()))
         self.__logger.info('NaN in species optical depth: {}'.format(np.isnan(self.__optical_depth_species).any()))
