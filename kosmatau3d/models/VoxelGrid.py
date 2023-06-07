@@ -252,6 +252,13 @@ class VoxelGrid(object):
         # self.__unusedVoxels = []
         
         # Setup fits files to stream the voxel emissivity and absorption.
+        # number
+        dim = [len(species.clump_transition_wavelengths), constants.velocity_range.size, self.__voxel_number]
+        if verbose:
+            print('species number dimension:', dim)
+        shdu_ensemble_species_number = self.shdu_header(name='Clump species number', units='#', 
+                                                        abundance=True, filename='species_number',
+                                                        velocity=True, dim=dim)
         # species
         dim = [len(species.clump_transition_wavelengths), constants.velocity_range.size, self.__voxel_number]
         if verbose:
@@ -294,6 +301,10 @@ class VoxelGrid(object):
                                               dim=dim)
         shdu_h2_mass = self.shdu_header(name='H2 mass', units='Msol', filename='voxel_h2_mass',
                                               dim=dim)
+        shdu_t_gas = self.shdu_header(name='T_gas', units='K', filename='voxel_t_gas',
+                                      dim=dim)
+        shdu_t_dust = self.shdu_header(name='T_dust', units='K', filename='voxel_t_dust',
+                                       dim=dim)
         shdu_ensemble_density = self.shdu_header(name='Density', units='cm^-3', filename='voxel_density', dim=dim)
         dim = [3, self.__voxel_number]
         shdu_voxel_position = self.shdu_header(name='Position', units='pc', filename='voxel_position', dim=dim)
@@ -372,6 +383,9 @@ class VoxelGrid(object):
                 shdu_ensemble_mass.write(np.asarray(voxel.get_ensemble_mass()))
                 shdu_hi_mass.write(np.asarray(voxel.get_hi_mass()))
                 shdu_h2_mass.write(np.asarray(voxel.get_h2_mass()))
+                shdu_ensemble_species_number.write(np.asarray(voxel.get_species_number(total=False)))
+                shdu_t_gas.write(np.asarray(voxel.get_gas_temperature(total=False)))
+                shdu_t_dust.write(np.asarray(voxel.get_dust_temperature(total=False)))
                 shdu_ensemble_density.write(np.asarray(voxel.get_density()))
                 shdu_fuv.write(np.array([voxel.get_fuv()]))
                 shdu_taufuv.write(np.asarray([voxel.get_taufuv()]))
@@ -392,6 +406,26 @@ class VoxelGrid(object):
                     self.__logger.info('Voxel calculated: {:.4f} s / {:.4f} s'.format(time()-t2, time()-t1))
         
                 progress.update()
+
+            shdu_clumpNj.close()
+            shdu_clumpRj.close()
+            shdu_voxel_position.close()
+            shdu_voxel_velocity.close()
+            shdu_voxel_dispersion.close()
+            shdu_f_vox.close()
+            shdu_ensemble_mass.close()
+            shdu_ensemble_species_number.close()
+            shdu_t_gas.close()
+            shdu_t_dust.close()
+            shdu_ensemble_density.close()
+            shdu_fuv.close()
+            shdu_taufuv.close()
+            shdu_voxel_emissivity_species.close()
+            shdu_voxel_absorption_species.close()
+            shdu_voxel_emissivity_hi.close()
+            shdu_voxel_absorption_hi.close()
+            shdu_voxel_emissivity_dust.close()
+            shdu_voxel_absorption_dust.close()
       
             progress.close()
       
@@ -452,7 +486,10 @@ class VoxelGrid(object):
         dim = [len(constants.clump_mass_number), self.__voxelNumber]
         shdu_FUV = self.shdu_header(name='FUV', units='Draine', filename='voxel_fuv', dim=dim)
         shdu_FUVabsorption = self.shdu_header(name='tau_FUV', units='mag', filename='voxel_FUVabsorption', dim=dim)
-    
+
+        dim = [len(constants.clump_mass_number), constants.abundances, self.__voxelNumber]
+        shdu_species_number = self.shdu_header(name='N_species', units='#', filename='voxel_N_species', abundance=True, dim=dim)
+
         # This is for a test of the voxel Emissions before streaming
         wav = np.append(constants.wavelengths[constants.n_dust], species.molecule_wavelengths)
         nDust = constants.wavelengths[constants.n_dust].size
@@ -596,7 +633,7 @@ class VoxelGrid(object):
         print(self.__properties)
         return
   
-    def shdu_header(self, name='', units='', molecules=False, hi=False, dust=False, velocity=False, 
+    def shdu_header(self, name='', units='', molecules=False, hi=False, dust=False, abundance=False, velocity=False, 
                     dim=None, kw=25, cw=50, filename=None):
   
         if filename == None or dim == None:
@@ -610,10 +647,14 @@ class VoxelGrid(object):
         header['EXTEND'] = True
         if molecules:
             header['SPECIES'] = ', '.join(species.clump_transitions)
-        if hi:
+        elif hi:
             header['SPECIES'] = 'HI'
-        if dust:
+        elif abundance:
+            header['SPECIES'] = ', '.join(constants.abundances)
+        elif dust:
             header['DUST'] = ', '.join(constants.dust_names[constants.n_dust])
+        else:
+            pass
     
         header['NAME'] = name
         header['UNITS'] = units
