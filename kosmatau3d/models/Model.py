@@ -489,6 +489,8 @@ class SyntheticModel(object):
     def __open_file(self, filename):
         if (filename + '.fits') in self.model_files:
             file_data = fits.open(os.path.join(self.dir_path, filename + '.fits'))
+        elif (filename + '.csv') in self.model_files:
+            file_data = np.loadtxt(os.path.join(self.dir_path, filename + '.csv'))
         elif (filename + '.txt') in self.model_files:
             with open(os.path.join(self.dir_path, filename + '.txt')) as f:
                 file_data = f.readlines()
@@ -655,9 +657,9 @@ class SyntheticModel(object):
 
         '''
         
-        self.dirpath = os.path.join(self.base_dir, directory)
+        self.dir_path = os.path.join(self.base_dir, directory)
         # Ensure model path exists
-        if os.path.exists(self.dirpath):
+        if os.path.exists(self.dir_path):
         #if os.path.exists(self.base_dir + directory + self.files['intensity'] + '.fits'):
             self.files['directory'] = directory
             self.model_files = os.listdir(self.base_dir + directory)
@@ -701,7 +703,7 @@ class SyntheticModel(object):
         
         # Load all model data (can be expensive for memory)
         self.intensity_file = self.__open_file(self.files['intensity'])
-        if not np.isnan(self.intensity_file):
+        if isinstance(self.intensity_file, fits.HDUList):
             self.map_positions = self.intensity_file[0].data
             self.intensity_species = self.intensity_file[1].data
             self.intensity_dust = self.intensity_file[2].data
@@ -710,147 +712,190 @@ class SyntheticModel(object):
             self.intensity_species = np.nan
             self.intensity_dust = np.nan
         self.optical_depth_file = self.__open_file(self.files['optical_depth'])
-        if not np.isnan(self.optical_depth_file):
+        if isinstance(self.optical_depth_file, fits.HDUList):
             self.optical_depth_species = self.optical_depth_file[1].data
             self.optical_depth_dust = self.optical_depth_file[2].data
+        else:
+            self.optical_depth_species = np.nan
+            self.optical_depth_dust = np.nan
         self.f_vox_file = self.__open_file(self.files['f_vox'])
-        if not np.isnan(self.f_vox_file):
+        if isinstance(self.f_vox_file, fits.HDUList):
             self.f_vox = self.f_vox_file[0].data
         else:
             self.f_vox = np.nan
-        if os.path.exists(self.base_dir + directory + self.files['hi_intensity'] + '.fits'):
+        self.hi_intensity_file = self.__open_file(self.files['hi_intensity'])
+        if isinstance(self.hi_intensity_file, fits.HDUList):
             self.hi_map = True
-            self.hi_intensity_file = fits.open(self.base_dir + directory 
-                                               + self.files['hi_intensity'] + '.fits')
             self.hi_map_positions = self.hi_intensity_file[0].data
             self.hi_intensity_species = self.hi_intensity_file[1].data
             self.hi_intensity_dust = self.hi_intensity_file[2].data
-            self.hi_optical_depth_file = fits.open(self.base_dir + directory 
-                                                   + self.files['hi_optical_depth'] + '.fits')
+        else:
+            self.hi_map_positions = np.nan
+            self.hi_intensity_species = np.nan
+            self.hi_intensity_dust = np.nan
+        self.hi_optical_depth_file = self.__open_file(self.files['hi_optical_depth'])
+        if isinstance(self.hi_optical_depth_file, fits.HDUList):
             self.hi_optical_depth_species = self.hi_optical_depth_file[1].data
             self.hi_optical_depth_dust = self.hi_optical_depth_file[2].data
         else:
-            print('HI intensity map not found')
-        self.dust_absorption_file = fits.open(self.base_dir + directory 
-                                              + self.files['dust_absorption'] + '.fits')
-        self.dust_absorption = self.dust_absorption_file[0].data
-        self.dust_emissivity_file = fits.open(self.base_dir + directory 
-                                              + self.files['dust_emissivity'] + '.fits')
-        self.dust_emissivity = self.dust_emissivity_file[0].data
-        self.species_absorption_file = fits.open(self.base_dir + directory 
-                                                 + self.files['species_absorption'] + '.fits')
-        self.species_absorption = self.species_absorption_file[0].data
-        self.species_emissivity_file = fits.open(self.base_dir + directory 
-                                                 + self.files['species_emissivity'] + '.fits')
-        self.species_emissivity = self.species_emissivity_file[0].data
-        if os.path.exists(self.base_dir + directory + self.files['hi_emissivity'] + '.fits'):
-            # print('Loading HI emissivity')
-            self.hi_model = True
-            self.hi_emissivity_file = fits.open(self.base_dir + directory 
-                                                + self.files['hi_emissivity'] + '.fits')
-            self.hi_emissivity = self.hi_emissivity_file[0].data
-            self.hi_absorption_file = fits.open(self.base_dir + directory 
-                                                + self.files['hi_absorption'] + '.fits')
+            self.hi_optical_depth_species = np.nan
+            self.hi_optical_depth_dust = np.nan
+        self.dust_absorption_file = self.__open_file(self.files['dust_absorption'])
+        if isinstance(self.dust_absorption_file, fits.HDUList):
+            self.dust_absorption = self.dust_absorption_file[0].data
+        else:
+            self.dust_absorption = np.nan
+        self.dust_emissivity_file = self.__open_file(self.files['dust_emissivity'])
+        if isinstance(self.dust_emissivity_file, fits.HDUList):
+            self.dust_emissivity = self.dust_emissivity_file[0].data
+        else:
+            self.dust_emissivity = np.nan
+        self.species_absorption_file = self.__open_file(self.files['species_absorption'])
+        if isinstance(self.species_absorption_file, fits.HDUList):
+            self.species_absorption = self.species_absorption_file[0].data
+        else:
+            self.species_absorption = np.nan
+        self.species_emissivity_file = self.__open_file(self.files['species_emissivity'])
+        if isinstance(self.species_emissivity_file, fits.HDUList):
+            self.species_emissivity = self.species_emissivity_file[0].data
+        else:
+            self.species_emissivity = np.nan
+        self.hi_absorption_file = self.__open_file(self.files['hi_absorption'])
+        if isinstance(self.hi_absorption_file, fits.HDUList):
             self.hi_absorption = self.hi_absorption_file[0].data
         else:
-            self.hi_model = False
-            self.hi_absorption_file = np.nan
             self.hi_absorption = np.nan
-            self.hi_emissivity_file = np.nan
+        self.hi_emissivity_file = self.__open_file(self.files['hi_emissivity'])
+        if isinstance(self.hi_emissivity_file, fits.HDUList):
+            self.hi_emissivity = self.hi_emissivity_file[0].data
+        else:
             self.hi_emissivity = np.nan
-            print('HI emissivity not found')
-        if os.path.exists(self.base_dir + directory + self.files['clump_number'] + '.fits'):
-            self.clump_number_file = fits.open(self.base_dir + directory 
-                                               + self.files['clump_number'] + '.fits')
+        self.species_number_file = self.__open_file(self.files['species_number'])
+        if isinstance(self.species_number_file, fits.HDUList):
+            self.species_number = self.species_number_file[0].data
+        else:
+            self.species_number = np.nan
+        self.t_gas_file = self.__open_file(self.files['t_gas'])
+        if isinstance(self.t_gas_file, fits.HDUList):
+            self.t_gas = self.t_gas_file[0].data
+        else:
+            self.t_gas = np.nan
+        self.t_dust_file = self.__open_file(self.files['t_dust'])
+        if isinstance(self.t_dust_file, fits.HDUList):
+            self.t_dust = self.t_dust_file[0].data
+        else:
+            self.t_dust = np.nan
+        self.clump_number_file = self.__open_file(self.files['clump_number'])
+        if isinstance(self.clump_number_file, fits.HDUList):
             self.clump_number = self.clump_number_file[0].data
         else:
-            self.clump_number_file = np.nan
             self.clump_number = np.nan
-        if os.path.exists(self.base_dir + directory + self.files['clump_radius'] + '.fits'):
-            self.clump_radius_file = fits.open(self.base_dir + directory 
-                                               + self.files['clump_radius'] + '.fits')
+        self.clump_radius_file = self.__open_file(self.files['clump_radius'])
+        if isinstance(self.clump_radius_file, fits.HDUList):
             self.clump_radius = self.clump_radius_file[0].data
         else:
-            self.clump_radius_file = np.nan
             self.clump_radius = np.nan
-        self.density_file = fits.open(self.base_dir + directory 
-                                      + self.files['density'] + '.fits')
-        self.density = self.density_file[0].data
-        self.ensemble_dispersion_file = fits.open(self.base_dir + directory 
-                                                  + self.files['ensemble_dispersion'] + '.fits')
-        self.ensemble_dispersion = self.ensemble_dispersion_file[0].data
-        self.ensemble_mass_file = fits.open(self.base_dir + directory 
-                                            + self.files['ensemble_mass'] + '.fits')
-        self.ensemble_mass = self.ensemble_mass_file[0].data
-        if (self.files['hi_mass'] + '.fits') in self.model_files:
-            self.hi_mass_file = fits.open(self.base_dir + directory + self.files['hi_mass'] + '.fits')
+        self.density_file = self.__open_file(self.files['density'])
+        if isinstance(self.density_file, fits.HDUList):
+            self.density = self.density_file[0].data
+        else:
+            self.density = np.nan
+        self.ensemble_dispersion_file = self.__open_file(self.files['ensemble_dispersion'])
+        if isinstance(self.ensemble_dispersion_file, fits.HDUList):
+            self.ensemble_dispersion = self.ensemble_dispersion_file[0].data
+        else:
+            self.ensemble_dispersion = np.nan
+        self.ensemble_mass_file = self.__open_file(self.files['ensemble_mass'])
+        if isinstance(self.ensemble_mass_file, fits.HDUList):
+            self.ensemble_mass = self.ensemble_mass_file[0].data
+        else:
+            self.ensemble_mass = np.nan
+        self.hi_mass_file = self.__open_file(self.files['hi_mass'])
+        if isinstance(self.hi_mass_file, fits.HDUList):
             self.hi_mass = self.hi_mass_file[0].data
         else:
-            self.hi_mass_file = np.nan
             self.hi_mass = np.nan
-        if (self.files['h2_mass'] + '.fits') in self.model_files:
-            self.h2_mass_file = fits.open(self.base_dir + directory + self.files['h2_mass'] + '.fits')
+        self.h2_mass_file = self.__open_file(self.files['h2_mass'])
+        if isinstance(self.h2_mass_file, fits.HDUList):
             self.h2_mass = self.h2_mass_file[0].data
         else:
-            self.h2_mass_file = np.nan
             self.h2_mass = np.nan
-        self.fuv_absorption_file = fits.open(self.base_dir + directory 
-                                             + self.files['fuv_absorption'] + '.fits')
-        self.fuv_absorption = self.fuv_absorption_file[0].data
-        self.fuv_file = fits.open(self.base_dir + directory 
-                                  + self.files['fuv'] + '.fits')
-        self.fuv = self.fuv_file[0].data
-        self.position_file = fits.open(self.base_dir + directory 
-                                       + self.files['position'] + '.fits')
-        self.position = self.position_file[0].data
-        self.velocity_file = fits.open(self.base_dir + directory 
-                                       + self.files['velocity'] + '.fits')
-        self.velocity = self.velocity_file[0].data
-        self.los_count = np.loadtxt(self.base_dir + directory + self.files['los_count'] + '.csv')
-        if os.path.exists(self.base_dir + directory + self.files['log'] + '.txt'):
-            with open(self.base_dir + directory + self.files['log'] + '.txt') as f:
-                self.log = f.readlines()
+        self.fuv_absorption_file = self.__open_file(self.files['fuv_absorption'])
+        if isinstance(self.fuv_absorption_file, fits.HDUList):
+            self.fuv_absorption = self.fuv_absorption_file[0].data
         else:
-            self.log = np.nan
+            self.fuv_absorption = np.nan
+        self.fuv_file = self.__open_file(self.files['fuv'])
+        if isinstance(self.fuv_file, fits.HDUList):
+            self.fuv = self.fuv_file[0].data
+        else:
+            self.fuv = np.nan
+        self.position_file = self.__open_file(self.files['position'])
+        if isinstance(self.position_file, fits.HDUList):
+            self.position = self.position_file[0].data
+        else:
+            self.position = np.nan
+        self.velocity_file = self.__open_file(self.files['velocity'])
+        if isinstance(self.velocity_file, fits.HDUList):
+            self.velocity = self.velocity_file[0].data
+        else:
+            self.velocity = np.nan
+        self.los_count = self.__open_file(self.files['los_count'])
+        self.log = self.__open_file(self.files['log'])
         
         # Extract headers and create additional axes
-        self.info = self.species_absorption_file[0].header['COMMENT']
-        self.species_header = self.intensity_file[1].header
-        self.species_header['BUNIT'] = self.intensity_file[1].header['BUNIT'] + '/' \
-                                       + self.optical_depth_file[1].header['BUNIT']
-        self.dust_header = self.intensity_file[2].header
-        self.dust_header['BUNIT'] = self.intensity_file[2].header['BUNIT'] + '/' \
-                                    + self.optical_depth_file[2].header['BUNIT']
-        self.species = np.array(self.species_header['SPECIES'].split(', '))
-        self.dust = np.array(self.dust_header['DUST'].split(', '))
-        self.dust_header['BUNIT'] = self.intensity_file[2].header['BUNIT'] + '/' \
-                                    + self.optical_depth_file[2].header['BUNIT']
-        self.map_lon = np.linspace(self.species_header['CRVAL2'] 
-                                   - self.species_header['CDELT2']*(self.species_header['CRPIX2']-0.5), 
-                                   self.species_header['CRVAL2'] 
-                                   + self.species_header['CDELT2']*(self.species_header['NAXIS2']
-                                                                    -self.species_header['CRPIX2']-0.5), 
-                                   num=self.species_header['NAXIS2'])
-        self.map_lat = np.linspace(self.species_header['CRVAL3'] 
-                                   - self.species_header['CDELT3']*(self.species_header['CRPIX3']-0.5), 
-                                   self.species_header['CRVAL3'] 
-                                   + self.species_header['CDELT3']*(self.species_header['NAXIS3']
-                                                                    -self.species_header['CRPIX3']-0.5), 
-                                   num=self.species_header['NAXIS3'])
-        self.map_vel = np.linspace(self.species_header['CRVAL4'] 
-                                   - self.species_header['CDELT4']*(self.species_header['CRPIX4']), 
-                                   self.species_header['CRVAL4'] 
-                                   + self.species_header['CDELT4']*(self.species_header['NAXIS4']
-                                                                    -self.species_header['CRPIX4']-1), 
-                                   num=self.species_header['NAXIS4'])
+        if isinstance(self.species_absorption_file, fits.HDUList):
+            self.info = self.species_absorption_file[0].header['COMMENT']
+            self.ds = float(self.info[1].split()[1])   #position of voxel size
+        else:
+            self.info = '''N/A'''
+            self.ds = np.nan
+        if isinstance(self.species_number_file, fits.HDUList):
+            self.N_species = self.species_number_file[0].header['SPECIES'].split(', ')
+        else:
+            self.N_species = np.nan
+        if (isinstance(self.intensity_file, fits.HDUList) and
+            isinstance(self.optical_depth_file, fits.HDUList)):
+            self.species_header = self.intensity_file[1].header
+            self.species_header['BUNIT'] = self.intensity_file[1].header['BUNIT'] + '/' \
+                                           + self.optical_depth_file[1].header['BUNIT']
+            self.dust_header = self.intensity_file[2].header
+            self.dust_header['BUNIT'] = self.intensity_file[2].header['BUNIT'] + '/' \
+                                        + self.optical_depth_file[2].header['BUNIT']
+            self.species = np.array(self.species_header['SPECIES'].split(', '))
+            self.dust = np.array(self.dust_header['DUST'].split(', '))
+            self.dust_header['BUNIT'] = self.intensity_file[2].header['BUNIT'] + '/' \
+                                        + self.optical_depth_file[2].header['BUNIT']
+            self.map_lon = np.linspace(self.species_header['CRVAL2'] 
+                                       - self.species_header['CDELT2']*(self.species_header['CRPIX2']-0.5), 
+                                       self.species_header['CRVAL2'] 
+                                       + self.species_header['CDELT2']*(self.species_header['NAXIS2']
+                                                                        -self.species_header['CRPIX2']-0.5), 
+                                       num=self.species_header['NAXIS2'])
+            self.map_lat = np.linspace(self.species_header['CRVAL3'] 
+                                       - self.species_header['CDELT3']*(self.species_header['CRPIX3']-0.5), 
+                                       self.species_header['CRVAL3'] 
+                                       + self.species_header['CDELT3']*(self.species_header['NAXIS3']
+                                                                        -self.species_header['CRPIX3']-0.5), 
+                                       num=self.species_header['NAXIS3'])
+            self.map_vel = np.linspace(self.species_header['CRVAL4'] 
+                                       - self.species_header['CDELT4']*(self.species_header['CRPIX4']), 
+                                       self.species_header['CRVAL4'] 
+                                       + self.species_header['CDELT4']*(self.species_header['NAXIS4']
+                                                                        -self.species_header['CRPIX4']-1), 
+                                       num=self.species_header['NAXIS4'])
+        else:
+            self.species_header = np.nan
+            self.dust_header = np.nan
+            self.map_lon = np.nan
+            self.map_lat = np.nan
+            self.map_vel = np.nan
         
         # convert from radians to degrees if specified
+        # (rounding removes floating point error)
         if map_units == 'deg' or map_units == 'degrees':
-            self.map_lon = (self.map_lon * 180/np.pi).round(decimals=8)
-            self.map_lat = (self.map_lat * 180/np.pi).round(decimals=8)
-
-        # Extract voxel size from model info
-        self.ds = float(self.info[1].split()[1])
+            self.map_lon = np.round(self.map_lon * 180/np.pi, decimals=8)
+            self.map_lat = np.round(self.map_lat * 180/np.pi, decimals=8)
 
         return
 
@@ -859,7 +904,10 @@ class SyntheticModel(object):
         return list([w.decompose() for w in wav])
 
     def get_volume_filling_factor(self):
-        return (4/3*np.pi*self.clump_number*self.clump_radius**3).sum(1)/self.ds**3
+        if isinstance(self.clump_number, np.ndarray) and isinstance(self.clump_radius, np.ndarray):
+            return (4/3*np.pi*self.clump_number*self.clump_radius**3).sum(1)/self.ds**3
+        else:
+            raise TypeError
 
     def get_model_species_emissivity(self, transition=None, idx=None, include_dust=False):
 

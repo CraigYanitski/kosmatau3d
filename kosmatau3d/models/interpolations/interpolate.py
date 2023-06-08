@@ -392,6 +392,7 @@ def calculate_interclump_column_density(verbose=False, dilled=False):
     if verbose:
         print('Creating N(H) grid interpolation')
     nmchi, N = observations.interclump_column_density
+    print('\n\n', nmchi.n.min(), '\n\n')
     nmchi = nmchi/10.
     log_N = np.log10(N)
     column_densities = []
