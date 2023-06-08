@@ -383,7 +383,6 @@ class VoxelGrid(object):
                 shdu_ensemble_mass.write(np.asarray(voxel.get_ensemble_mass()))
                 shdu_hi_mass.write(np.asarray(voxel.get_hi_mass()))
                 shdu_h2_mass.write(np.asarray(voxel.get_h2_mass()))
-                print(voxel.get_species_number(total=False))
                 shdu_ensemble_species_number.write(np.asarray(voxel.get_species_number(total=False)))
                 shdu_t_gas.write(np.asarray(voxel.get_gas_temperature(total=False)))
                 shdu_t_dust.write(np.asarray(voxel.get_dust_temperature(total=False)))
