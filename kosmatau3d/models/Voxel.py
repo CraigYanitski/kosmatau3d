@@ -553,7 +553,7 @@ class Voxel(object):
     def get_taufuv(self):
         return self.__taufuv
 
-    def get_species_number(self, species=None, abun=False, nref=['H', 'H2'], total=True):
+    def get_species_number(self, species=None, abun=False, nref=[('H', 1), ('H2', 2)], total=True):
         if species in [None, 'all']:
             species = constants.abundances
         elif isinstance(species, str):
@@ -571,7 +571,7 @@ class Voxel(object):
             if abun:
                 N_0 = 0
                 for sp in nref:
-                    N_0 += self.clump_N_species[ens][constants.abundances.index(sp)]
+                    N_0 += sp[1] * self.clump_N_species[ens][constants.abundances.index(sp[0])]
             else:
                 N_0 = 1
 

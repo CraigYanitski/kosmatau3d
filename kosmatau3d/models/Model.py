@@ -838,7 +838,7 @@ class SyntheticModel(object):
         else:
             raise TypeError
 
-    def get_species_number(self, species=None, abun=False, nref=['H', 'H2'], total=True):
+    def get_species_number(self, species=None, abun=False, nref=[('H', 1), ('H2', 2)], total=True):
         if species in [None, 'all']:
             species = self.N_species
         elif isinstance(species, str):
@@ -847,7 +847,7 @@ class SyntheticModel(object):
         if abun:
             N_0 = 0
             for sp in nref:
-                N_0 += self.species_number[:, :, self.N_species.index(sp)]
+                N_0 += sp[1] * self.species_number[:, :, self.N_species.index(sp[0])]
         else:
             N_0 = 0
         N_species = []
