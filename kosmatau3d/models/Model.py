@@ -498,6 +498,17 @@ class SyntheticModel(object):
             file_data = np.nan
         return file_data
 
+    def __hdul_data(self, hdul, idx=0):
+        if isinstance(hdul, fits.HDUList):
+            if isinstance(idx, list):
+                return tuple(hdul[i].data for i in idx)
+            else:
+                return hdul[idx].data
+        elif isinstance(idx, list):
+            return tuple(np.nan for i in idx)
+        else:
+            return np.nan
+
     def close_files(model, **kwargs):
         '''
         Close any open FITS files.
@@ -703,143 +714,61 @@ class SyntheticModel(object):
         
         # Load all model data (can be expensive for memory)
         self.intensity_file = self.__open_file(self.files['intensity'])
-        if isinstance(self.intensity_file, fits.HDUList):
-            self.map_positions = self.intensity_file[0].data
-            self.intensity_species = self.intensity_file[1].data
-            self.intensity_dust = self.intensity_file[2].data
-        else:
-            self.map_positions = np.nan
-            self.intensity_species = np.nan
-            self.intensity_dust = np.nan
+        (self.map_positions,
+         self.intensity_species,
+         self.intensity_dust) = self.__hdul_data(self.intensity_file, idx=[0, 1, 2])
         self.optical_depth_file = self.__open_file(self.files['optical_depth'])
-        if isinstance(self.optical_depth_file, fits.HDUList):
-            self.optical_depth_species = self.optical_depth_file[1].data
-            self.optical_depth_dust = self.optical_depth_file[2].data
-        else:
-            self.optical_depth_species = np.nan
-            self.optical_depth_dust = np.nan
+        (self.optical_depth_species,
+         self.optical_depth_dust) = self.__hdul_data(self.optical_depth_file, idx=[1, 2])
         self.f_vox_file = self.__open_file(self.files['f_vox'])
-        if isinstance(self.f_vox_file, fits.HDUList):
-            self.f_vox = self.f_vox_file[0].data
-        else:
-            self.f_vox = np.nan
+        self.f_vox = self.__hdul_data(self.f_vox_file)
         self.hi_intensity_file = self.__open_file(self.files['hi_intensity'])
-        if isinstance(self.hi_intensity_file, fits.HDUList):
-            self.hi_map = True
-            self.hi_map_positions = self.hi_intensity_file[0].data
-            self.hi_intensity_species = self.hi_intensity_file[1].data
-            self.hi_intensity_dust = self.hi_intensity_file[2].data
-        else:
-            self.hi_map_positions = np.nan
-            self.hi_intensity_species = np.nan
-            self.hi_intensity_dust = np.nan
+        (self.hi_map_positions,
+         self.hi_intensity_species,
+         self.hi_intensity_dust) = self.__hdul_data(self.hi_intensity_file, idx=[0, 1, 2])
         self.hi_optical_depth_file = self.__open_file(self.files['hi_optical_depth'])
-        if isinstance(self.hi_optical_depth_file, fits.HDUList):
-            self.hi_optical_depth_species = self.hi_optical_depth_file[1].data
-            self.hi_optical_depth_dust = self.hi_optical_depth_file[2].data
-        else:
-            self.hi_optical_depth_species = np.nan
-            self.hi_optical_depth_dust = np.nan
+        (self.hi_optical_depth_species,
+         self.hi_optical_depth_dust) = self.__hdul_data(self.hi_optical_depth_file, idx=[1, 2])
         self.dust_absorption_file = self.__open_file(self.files['dust_absorption'])
-        if isinstance(self.dust_absorption_file, fits.HDUList):
-            self.dust_absorption = self.dust_absorption_file[0].data
-        else:
-            self.dust_absorption = np.nan
+        self.dust_absorption = self.__hdul_data(self.dust_absorption_file)
         self.dust_emissivity_file = self.__open_file(self.files['dust_emissivity'])
-        if isinstance(self.dust_emissivity_file, fits.HDUList):
-            self.dust_emissivity = self.dust_emissivity_file[0].data
-        else:
-            self.dust_emissivity = np.nan
+        self.dust_emissivity = self.__hdul_data(self.dust_emissivity_file)
         self.species_absorption_file = self.__open_file(self.files['species_absorption'])
-        if isinstance(self.species_absorption_file, fits.HDUList):
-            self.species_absorption = self.species_absorption_file[0].data
-        else:
-            self.species_absorption = np.nan
+        self.species_absorption = self.__hdul_data(self.species_absorption_file)
         self.species_emissivity_file = self.__open_file(self.files['species_emissivity'])
-        if isinstance(self.species_emissivity_file, fits.HDUList):
-            self.species_emissivity = self.species_emissivity_file[0].data
-        else:
-            self.species_emissivity = np.nan
+        self.species_emissivity = self.__hdul_data(self.species_emissivity_file)
         self.hi_absorption_file = self.__open_file(self.files['hi_absorption'])
-        if isinstance(self.hi_absorption_file, fits.HDUList):
-            self.hi_absorption = self.hi_absorption_file[0].data
-        else:
-            self.hi_absorption = np.nan
+        self.hi_absorption = self.__hdul_data(self.hi_absorption_file)
         self.hi_emissivity_file = self.__open_file(self.files['hi_emissivity'])
-        if isinstance(self.hi_emissivity_file, fits.HDUList):
-            self.hi_emissivity = self.hi_emissivity_file[0].data
-        else:
-            self.hi_emissivity = np.nan
+        self.hi_emissivity = self.__hdul_data(self.hi_emissivity_file)
         self.species_number_file = self.__open_file(self.files['species_number'])
-        if isinstance(self.species_number_file, fits.HDUList):
-            self.species_number = self.species_number_file[0].data
-        else:
-            self.species_number = np.nan
+        self.species_number = self.__hdul_data(self.species_number_file)
         self.t_gas_file = self.__open_file(self.files['t_gas'])
-        if isinstance(self.t_gas_file, fits.HDUList):
-            self.t_gas = self.t_gas_file[0].data
-        else:
-            self.t_gas = np.nan
+        self.t_gas = self.__hdul_data(self.t_gas_file)
         self.t_dust_file = self.__open_file(self.files['t_dust'])
-        if isinstance(self.t_dust_file, fits.HDUList):
-            self.t_dust = self.t_dust_file[0].data
-        else:
-            self.t_dust = np.nan
+        self.t_dust = self.__hdul_data(self.t_dust_file)
         self.clump_number_file = self.__open_file(self.files['clump_number'])
-        if isinstance(self.clump_number_file, fits.HDUList):
-            self.clump_number = self.clump_number_file[0].data
-        else:
-            self.clump_number = np.nan
+        self.clump_number = self.__hdul_data(self.clump_number_file)
         self.clump_radius_file = self.__open_file(self.files['clump_radius'])
-        if isinstance(self.clump_radius_file, fits.HDUList):
-            self.clump_radius = self.clump_radius_file[0].data
-        else:
-            self.clump_radius = np.nan
+        self.clump_radius = self.__hdul_data(self.clump_radius_file)
         self.density_file = self.__open_file(self.files['density'])
-        if isinstance(self.density_file, fits.HDUList):
-            self.density = self.density_file[0].data
-        else:
-            self.density = np.nan
+        self.density = self.__hdul_data(self.density_file)
         self.ensemble_dispersion_file = self.__open_file(self.files['ensemble_dispersion'])
-        if isinstance(self.ensemble_dispersion_file, fits.HDUList):
-            self.ensemble_dispersion = self.ensemble_dispersion_file[0].data
-        else:
-            self.ensemble_dispersion = np.nan
+        self.ensemble_dispersion = self.__hdul_data(self.ensemble_dispersion_file)
         self.ensemble_mass_file = self.__open_file(self.files['ensemble_mass'])
-        if isinstance(self.ensemble_mass_file, fits.HDUList):
-            self.ensemble_mass = self.ensemble_mass_file[0].data
-        else:
-            self.ensemble_mass = np.nan
+        self.ensemble_mass = self.__hdul_data(self.ensemble_mass_file)
         self.hi_mass_file = self.__open_file(self.files['hi_mass'])
-        if isinstance(self.hi_mass_file, fits.HDUList):
-            self.hi_mass = self.hi_mass_file[0].data
-        else:
-            self.hi_mass = np.nan
+        self.hi_mass = self.__hdul_data(self.hi_mass_file)
         self.h2_mass_file = self.__open_file(self.files['h2_mass'])
-        if isinstance(self.h2_mass_file, fits.HDUList):
-            self.h2_mass = self.h2_mass_file[0].data
-        else:
-            self.h2_mass = np.nan
+        self.h2_mass = self.__hdul_data(self.h2_mass_file)
         self.fuv_absorption_file = self.__open_file(self.files['fuv_absorption'])
-        if isinstance(self.fuv_absorption_file, fits.HDUList):
-            self.fuv_absorption = self.fuv_absorption_file[0].data
-        else:
-            self.fuv_absorption = np.nan
+        self.fuv_absorption = self.__hdul_data(self.fuv_absorption_file)
         self.fuv_file = self.__open_file(self.files['fuv'])
-        if isinstance(self.fuv_file, fits.HDUList):
-            self.fuv = self.fuv_file[0].data
-        else:
-            self.fuv = np.nan
+        self.fuv = self.__hdul_data(self.fuv_file)
         self.position_file = self.__open_file(self.files['position'])
-        if isinstance(self.position_file, fits.HDUList):
-            self.position = self.position_file[0].data
-        else:
-            self.position = np.nan
+        self.position = self.__hdul_data(self.position_file)
         self.velocity_file = self.__open_file(self.files['velocity'])
-        if isinstance(self.velocity_file, fits.HDUList):
-            self.velocity = self.velocity_file[0].data
-        else:
-            self.velocity = np.nan
+        self.velocity = self.__hdul_data(self.velocity_file)
         self.los_count = self.__open_file(self.files['los_count'])
         self.log = self.__open_file(self.files['log'])
         
@@ -908,6 +837,41 @@ class SyntheticModel(object):
             return (4/3*np.pi*self.clump_number*self.clump_radius**3).sum(1)/self.ds**3
         else:
             raise TypeError
+
+    def get_species_number(self, species=None, abun=False, nref=['H', 'H2'], total=True):
+        if species in [None, 'all']:
+            species = self.N_species
+        elif isinstance(species, str):
+            species = [species]
+
+        if abun:
+            N_0 = 0
+            for sp in nref:
+                N_0 += self.species_number[:, :, self.N_species.index(sp)]
+        else:
+            N_0 = 0
+        N_species = []
+        for sp in species:
+            N_species.append(self.species_number[:, :, self.N_species.index(sp)]/N_0)
+        if total:
+            return np.sum(N_species, axis=2)
+        else:
+            return N_species
+
+    def get_abundances(self, *args, **kwargs):
+        return self.get_species_number(*args, **kwargs, abun=True)
+
+    def get_gas_temperature(self, total=True):
+        if total:
+            return (self.ensemble_mass*self.t_gas).sum(1) / self.ensemble_mass.sum(1)
+        else:
+            return copy(self.t_gas)
+
+    def get_dust_temperature(self, total=True):
+        if total:
+            return (self.ensemble_mass*self.t_dust).sum(1) / self.ensemble_mass.sum(1)
+        else:
+            return copy(self.t_dust)
 
     def get_model_species_emissivity(self, transition=None, idx=None, include_dust=False):
 
@@ -1365,6 +1329,18 @@ class SyntheticModel(object):
         elif quantity == 'dispersion' or quantity == 'sigma':
             value = self.ensemble_dispersion[:, 0]
             clabel = r'$\sigma_\mathrm{ens}$ (km s$^{-1}$)'
+        elif quantity in ['t_gas', 'gas temperature']:
+            if isinstance(ens, int):
+                value = self.get_gas_temperature(total=False)[:, ens]
+            else:
+                value = self.get_gas_temperature(total=True)
+            clabel = r'$T_\mathrm{gas}$ (K)'
+        elif quantity in ['t_dust', 'dust temperature']:
+            if isinstance(ens, int):
+                value = self.get_dust_temperature(total=False)[:, ens]
+            else:
+                value = self.get_dust_temperature(total=True)
+            clabel = r'$T_\mathrm{dust}$ (K)'
         elif quantity == 'f_vox' or quantity == 'voxel-filling factor':
             value = self.f_vox[:, 0]
             clabel = r'$f_\mathrm{vox}$'
