@@ -146,26 +146,75 @@ class VoxelGrid(object):
         # ensembleDispersion = ensembleDispersion.mean()
 
         # Voxel-filling factor
-        f_vox = [interpolations.interpolate_h2_voxel_filling_factor(rPol, Z), 
-                 interpolations.interpolate_hi_voxel_filling_factor(rPol, Z)]
+        # These lines were hard-coded
+        # f_vox = [interpolations.interpolate_h2_voxel_filling_factor(rPol, Z), 
+        #          interpolations.interpolate_hi_voxel_filling_factor(rPol, Z)]
+        f_vox = []
+        for ens in range(constants.ensembles):
+            if constants.interclump_idx[ens]:
+                if constants.interclump_wnm_idx[ens]:
+                    f_vox.append(constants.interclump_wnm_ratio
+                                 * interpolations.interpolate_hi_voxel_filling_factor(rPol, Z))
+                else:
+                    f_vox.append((1-constants.interclump_wnm_ratio)
+                                 * interpolations.interpolate_hi_voxel_filling_factor(rPol, Z))
+            else:
+                f_vox.append(interpolations.interpolate_h2_voxel_filling_factor(rPol, Z))
 
         # Mass (clump mass MH2+(1-f)*MHI, interclump mass f*MHI)
-        ensembleMass = [(constants.h2_mass_factor
-                         * interpolations.interpolate_h2_mass(rPol, Z)
-                         + (1-constants.interclump_hi_ratio) 
-                         * constants.hi_mass_factor
-                         * interpolations.interpolate_hi_mass(rPol, Z)),
-                        (constants.interclump_hi_ratio
-                         * constants.hi_mass_factor
-                         * interpolations.interpolate_hi_mass(rPol, Z))]
-        ensembleMass = [constants.ensemble_mass_factor[ens]*np.asarray(ensembleMass).mean(1)[ens]
-                        for ens in range(constants.ensembles)]
+        # These lines were hard-coded
+        # ensembleMass = [(constants.h2_mass_factor
+        #                  * interpolations.interpolate_h2_mass(rPol, Z)
+        #                  + (1-constants.interclump_hi_ratio) 
+        #                  * constants.hi_mass_factor
+        #                  * interpolations.interpolate_hi_mass(rPol, Z)),
+        #                 (constants.interclump_hi_ratio
+        #                  * constants.hi_mass_factor
+        #                  * interpolations.interpolate_hi_mass(rPol, Z))]
+        # ensembleMass = [constants.ensemble_mass_factor[ens]*np.asarray(ensembleMass).mean(1)[ens]
+        #                 for ens in range(constants.ensembles)]
+        ensemble_mass = []
+        for ens in range(constants.ensembles):
+            if constants.interclump_idx[ens]:
+                if constants.interclump_wnm_idx[ens]:
+                    ensemble_mass.append(constants.ensemble_mass_factor[ens]
+                                         * (constants.interclump_wnm_ratio
+                                            * constants.interclump_hi_ratio
+                                            * constants.hi_mass_factor
+                                            * interpolations.interpolate_hi_mass(rPol, Z)).mean())
+                else:
+                    ensemble_mass.append(constants.ensemble_mass_factor[ens]
+                                         * ((1-constants.interclump_wnm_ratio)
+                                            * constants.interclump_hi_ratio
+                                            * constants.hi_mass_factor
+                                            * interpolations.interpolate_hi_mass(rPol, Z)).mean())
+            else:
+                ensemble_mass.append(constants.ensemble_mass_factor[ens]
+                                     * (constants.h2_mass_factor
+                                        * interpolations.interpolate_h2_mass(rPol, Z)
+                                        + constants.ensemble_mass_factor[ens]
+                                        * (1 - constants.interclump_hi_ratio)
+                                        * constants.hi_mass_factor
+                                        * interpolations.interpolate_hi_mass(rPol, Z)).mean())
+            
 
         # Ensemble density
-        ensembleDensity = interpolations.interpolate_number_density(rPol)
-        ensembleDensity = constants.density_factor*ensembleDensity.mean()
+        # These lines were hard-coded
+        # ensembleDensity = interpolations.interpolate_number_density(rPol)
+        # ensembleDensity = constants.density_factor*ensembleDensity.mean()
         # ensembleDensity = [ensembleDensity, np.max([0.01*ensembleDensity, constants.interclump_density])]
-        ensembleDensity = [ensembleDensity, np.max([10, constants.interclump_density])]
+        # ensembleDensity = [ensembleDensity, np.max([10, constants.interclump_density])]
+        ensemble_density = []
+        for ens in range(constants.ensembles):
+            if constants.interclump_idx[ens]:
+                if constants.interclump_wnm_idx[ens]:
+                    # Change this if you want a different WNM density (such as 0.1 cm^-3)
+                    ensemble_density.append(np.max([10, constants.interclump_density]))
+                else:
+                    ensemble_density.append(np.max([10, constants.interclump_density]))
+            else:
+                ensemble_density.append(constants.density_factor
+                                        * interpolations.interpolate_number_density(rPol).mean())
 
         # FUV
         fuv = constants.fuv_factor * interpolations.interpolate_fuv(rPol, Z)
@@ -179,7 +228,22 @@ class VoxelGrid(object):
         else:
             # interclump_fuv = np.clip(fuv, np.max((1, 10**constants.clumpLogFUV)), None).mean()
             interclump_fuv = np.clip(fuv, constants.fuv_ism, None).mean()
-        FUV = [copy(clump_fuv), copy(interclump_fuv)]
+        if not constants.interclump_wnm_log_fuv is None:
+            interclump_wnm_fuv = 10**constants.interclump_wnm_log_fuv
+        else:
+            # interclump_fuv = np.clip(fuv, np.max((1, 10**constants.clumpLogFUV)), None).mean()
+            interclump_wnm_fuv = np.clip(constants.interclump_f_fuv_wnm*fuv, constants.fuv_ism, None).mean()
+        # This line was hard-coded
+        # FUV = [copy(clump_fuv), copy(interclump_fuv)]
+        FUV = []
+        for ens in range(constants.ensembles):
+            if constants.interclump_idx[ens]:
+                if constants.interclump_wnm_idx[ens]:
+                    FUV.append(copy(interclump_wnm_fuv))
+                else:
+                    FUV.append(copy(interclump_fuv))
+            else:
+                FUV.append(copy(clump_fuv))
 
         # CRIR
         if rPol.mean() >= constants.r_cmz:
@@ -190,8 +254,8 @@ class VoxelGrid(object):
         # Save the properties in private lists
         self.__voxel_velocities.append(velocity)
         self.__voxel_dispersion.append(ensembleDispersion)
-        self.__voxel_mass.append(ensembleMass)
-        self.__voxel_density.append(ensembleDensity)
+        self.__voxel_mass.append(ensemble_mass)
+        self.__voxel_density.append(ensemble_density)
         self.__voxel_fuv.append(FUV)
         self.__voxel_crir.append(crir)
     
@@ -209,8 +273,8 @@ class VoxelGrid(object):
             'velocity': velocity,
             'ensemble_dispersion': ensembleDispersion,
             'voxel_factor': f_vox,
-            'ensemble_mass': ensembleMass,
-            'ensemble_density': ensembleDensity,
+            'ensemble_mass': ensemble_mass,
+            'ensemble_density': ensemble_density,
             'fuv': FUV,
             'crir': crir,
 
@@ -759,9 +823,12 @@ class VoxelGrid(object):
         header['COMMENT'] = 'f_Mens: {}'.rjust(kw).format(constants.ensemble_mass_factor).ljust(cw)
         header['COMMENT'] = 'f_n: {}'.rjust(kw).format(constants.density_factor).ljust(cw)
         header['COMMENT'] = 'f_FUV: {}'.rjust(kw).format(constants.fuv_factor).ljust(cw)
+        header['COMMENT'] = 'f_FUV_WNM: {}'.rjust(kw).format(constants.interclump_f_fuv_wnm).ljust(cw)
         header['COMMENT'] = 'f_HI: {}'.rjust(kw).format(constants.interclump_hi_ratio).ljust(cw)
+        header['COMMENT'] = 'f_WNM: {}'.rjust(kw).format(constants.interclump_wnm_ratio).ljust(cw)
         header['COMMENT'] = 'log chi_cl: {}'.rjust(kw).format(constants.clump_log_fuv).ljust(cw)
         header['COMMENT'] = 'log chi_icl: {}'.rjust(kw).format(constants.interclump_log_fuv).ljust(cw)
+        header['COMMENT'] = 'log chi_wnm: {}'.rjust(kw).format(constants.interclump_wnm_log_fuv).ljust(cw)
         header['COMMENT'] = 'R_gal,CMZ: {}'.rjust(kw).format(constants.r_cmz).ljust(cw)
         header['COMMENT'] = 'zeta_CMZ: {}'.rjust(kw).format(constants.zeta_cmz).ljust(cw)
         header['COMMENT'] = 'zeta_Sun: {}'.rjust(kw).format(constants.zeta_sol).ljust(cw)
@@ -785,3 +852,4 @@ class VoxelGrid(object):
         shdu = fits.StreamingHDU(filename, header)
         
         return shdu
+

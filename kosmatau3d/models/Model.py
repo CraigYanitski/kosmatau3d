@@ -54,8 +54,11 @@ class Model(object):
                  abundances=['ELECTR', 'H', 'H2', 'H+'], 
                  transitions='all', dust='molecular', velocity_range=(), velocity_number=0,
                  clump_mass_range=((0, 2), (-2)), clump_mass_number=(3, 1), clump_n_max=(1, 100), 
-                 ensemble_mass_factor=(1, 1), interclump_idx=(False, True), interclump_hi_ratio=1,
-                 interclump_fillingfactor=None, interclump_density=1911, interclump_log_fuv=None, clump_log_fuv=None,
+                 ensemble_mass_factor=(1, 1), interclump_idx=(False, True), interclump_wnm_idx=(False, False), 
+                 interclump_hi_ratio=1, interclump_wnm_ratio=0.2, 
+                 interclump_wnm_log_fuv=None, interclump_f_fuv_wnm=1e4, 
+                 interclump_fillingfactor=None, interclump_density=1911, 
+                 interclump_log_fuv=None, clump_log_fuv=None, 
                  hi_mass_factor=1, h2_mass_factor=1, fuv_factor=1, density_factor=1, global_uv=10, 
                  r_cmz=0, zeta_cmz=1e-14, zeta_sol=2e-16, new_grid=True, suggested_calc=True,
                  dilled=False, timed=False, verbose=False, debug=False):
@@ -73,12 +76,26 @@ class Model(object):
         constants.HISTORYPATH = history_path
         constants.history = folder
         constants.change_directory(directory)
+
+        # Clump properties
+        constants.change_velocity_range(velocity_range)
+        constants.change_velocity_number(velocity_number)
+        constants.add_clumps(mass_range=clump_mass_range, num=clump_mass_number, n_max=clump_n_max, reset=True)
+        constants.set_interclump_ensemble(interclump_idx)
+        constants.set_interclump_wnm(interclump_wnm_idx)
         
         # Factors
         constants.ensemble_mass_factor = ensemble_mass_factor
         constants.hi_mass_factor = hi_mass_factor
         constants.h2_mass_factor = h2_mass_factor
-        constants.interclump_hi_ratio = interclump_hi_ratio
+        if np.any(constants.interclump_idx) == False:
+            constants.interclump_hi_ratio = 0
+        else:
+            constants.interclump_hi_ratio = interclump_hi_ratio
+        if np.any(constants.interclump_wnm_idx) == False:
+            constants.interclump_wnm_ratio = 0
+        else:
+            constants.interclump_wnm_ratio = interclump_wnm_ratio
         constants.interclump_fillingfactor = interclump_fillingfactor
         constants.density_factor = density_factor
         constants.interclump_density = interclump_density
@@ -86,15 +103,11 @@ class Model(object):
         # constants.globalUV = globalUV
         constants.clump_log_fuv = clump_log_fuv
         constants.interclump_log_fuv = interclump_log_fuv
+        constants.interclump_wnm_log_fuv = interclump_wnm_log_fuv
+        constants.interclump_f_fuv_wnm = interclump_f_fuv_wnm
         constants.r_cmz = r_cmz
         constants.zeta_cmz = zeta_cmz
         constants.zeta_sol = zeta_sol
-
-        # Clump properties
-        constants.change_velocity_range(velocity_range)
-        constants.change_velocity_number(velocity_number)
-        constants.add_clumps(mass_range=clump_mass_range, num=clump_mass_number, n_max=clump_n_max, reset=True)
-        constants.set_interclump_ensemble(interclump_idx)
         
         # Read grid & input data, specify transitions, and interpolate
         if 'ELECTR' in abundances:

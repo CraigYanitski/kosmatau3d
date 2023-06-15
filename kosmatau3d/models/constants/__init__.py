@@ -63,6 +63,7 @@ dtype = np.float64
 hi_mass_factor = 1  # adjust the neutral hydrogen mass in the model
 h2_mass_factor = 1  # adjust the molecular hydrogen mass in the model
 interclump_hi_ratio = 1
+interclump_wnm_ratio = 0.2  # adjust to change how much of the interclump medium is in the WNM
 ensemble_mass_factor = [1, 1]  # adjust the mass factor for each ensemble
 density_factor = 1
 fuv_factor = 1
@@ -140,10 +141,13 @@ clump_density = [None, 1911]  # use None to take the voxel density
 clump_log_fuv = None
 
 interclump_idx = (False, True)
+interclump_wnm_idx = (False, False)
 interclump_hifactor = 1
 interclump_fillingfactor = None
 interclump_density = 1911  # as defined in the old version of this code
 interclump_log_fuv = None
+interclump_wnm_log_fuv = None
+interclump_f_fuv_wnm = 1e4
 interclump_mass_number = 1
 interclump_log_mass_range = [-2]
 interclump_log_mass = np.linspace(interclump_log_mass_range[0], interclump_log_mass_range[-1], num=interclump_mass_number)
