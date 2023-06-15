@@ -19,7 +19,8 @@ parser.add_argument('-g', '--grid', type=str, default='convergence',
                     choices=['convergence', 'f_cm-cm', 'f_icm-icm', 'cm-icm', 'cm-f_fuv', 'f_cm-f_icm', 
                              'r_cmz-f_fuv', 'f_hi-f_fuv', 'f_cl-f_icl-f_n-f_fuv', 
                              'fuv_cl', 'fuv_icl', 'const_fuv', 'vox_disp', 
-                             'f_fuv_gc', 'disp_gc', 'fuv_gc-disp_gc', 'fuv_gc-mass_gc'], 
+                             'f_fuv_gc', 'disp_gc', 'fuv_gc-disp_gc', 'fuv_gc-mass_gc', 
+                             'wnm'], 
                     help='Parameters varied in grid')
 parser.add_argument('-r', '--resolution', type=int, default=400, 
                     help='Voxel size in the model')
@@ -214,6 +215,24 @@ elif args.grid == 'vox_disp':
     param_keys = ('disp_gmc', )
     params = list(_.flatten() for _ in np.meshgrid(vox_disp))
     param_folders = list(folder.format(*_) for _ in zip(*params))
+# wnm
+elif args.grid == 'wnm':
+    folder = f'r{args.resolution}' + '_f_wnm{:.1f}_log_fuv_wnm{:.1f}'
+    f_wnm = [0.2, ]#[0.2, 0.3, 0.4, 0.5]
+    log_fuv = [2, ]#[2, 3, 4, 5]
+    interclump_idx = [False, True, True]
+    interclump_wnm_idx = [False, False, True]
+    clump_mass_range = [[0, 2], [-3], [-3]]
+    clump_mass_number = [3, 1, 1]
+    clump_n_max = [1, 100, 100]
+    ensemble_mass_factor = [1, 1, 1]
+    param_keys = ('interclump_wnm_ratio', 'interclump_wnm_log_fuv', 'interclump_idx', 'interclump_wnm_idx', 
+                  'clump_mass_range', 'clump_mass_number', 'clump_n_max', 'ensemble_mass_factor')
+    params = list(_.flatten() for _ in np.meshgrid(f_wnm, log_fuv))
+    param_folders = list(folder.format(*_) for _ in zip(*params))
+    for _ in (interclump_idx, interclump_wnm_idx, clump_mass_range, clump_mass_number, 
+              clump_n_max, ensemble_mass_factor):
+        params.append([_]*len(params[0]))
 # unknown
 else:
     params = None
@@ -319,7 +338,9 @@ parameters = {
               'clump_n_max': [1, 100],
               'clump_log_fuv' : None,
               'interclump_log_fuv' : None,
+              'interclump_wnm_log_fuv' : None,
               'interclump_idx': (False, True), 
+              'interclump_wnm_idx': (False, False), 
               'interclump_density': 19.11, 
               'disp_gmc': 0.001,
               'velocity_range': [-350, 350],
@@ -373,9 +394,6 @@ for i, param in enumerate(list(zip(*params))[index:]):
     if not os.path.exists(directory):
         os.makedirs(directory)
 
-    # Initialise model instance
-    kosma = models.Model(**parameters)
-
     # Print details
     print('\n\n   ==> Model {} of {}'.format(i+index+1, i_max))
     print('       ' + models.constants.history)
@@ -400,6 +418,9 @@ for i, param in enumerate(list(zip(*params))[index:]):
     for _, p in enumerate(param_keys):
         print(f'  {p} ->'.rjust(25) + f' {param[_]}')
     print()
+
+    # Initialise model instance
+    kosma = models.Model(**parameters)
 
     # Run model if selected
     if run_model and ((not 'species_emissivity.fits' in os.listdir(directory)) or overwrite):
