@@ -175,7 +175,7 @@ class Voxel(object):
                        interclump_temperature_file='interclumpTemperatures_filled.dat',
                        abundances=['ELECTR', 'H', 'H2', 'H+'], 
                        clump_mass_number=(3,1), clump_mass_range=([0,2],[-3]), clump_n_max=(1, 100), 
-                       interclump_idx=[False, True],
+                       interclump_idx=[False, True], interclump_wnm_idx=[False, False], 
                        velocity_range=(-10,10), velocity_number=201, 
                        velocity=0., velocity_resolution=10, 
                        ensemble_mass=(100,40), ensemble_dispersion=2, 
@@ -307,6 +307,9 @@ class Voxel(object):
             if constants.interclump_idx != interclump_idx:
                 constants.set_interclump_ensemble(interclump_idx)
                 change_interpolation = True
+
+            if constants.interclump_wnm_idx != interclump_idx:
+                constants.set_interclump_wnm(interclump_wnm_idx)
 
             if 'ELECTR' in abundances:
                 abundances.remove('ELECTR')
