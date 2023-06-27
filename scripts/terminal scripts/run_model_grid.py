@@ -217,9 +217,9 @@ elif args.grid == 'vox_disp':
     param_folders = list(folder.format(*_) for _ in zip(*params))
 # wnm
 elif args.grid == 'wnm':
-    folder = f'r{args.resolution}' + '_f_wnm{:.1f}_log_fuv_wnm{:.1f}'
-    f_wnm = [0.2, ]#[0.2, 0.3, 0.4, 0.5]
-    log_fuv = [2, ]#[2, 3, 4, 5]
+    folder = f'r{args.resolution}' + '_f_wnm{:.1f}_log_fuv_wnm{:.1f}/'
+    f_wnm = [0.2, 0.3, 0.4, 0.5]
+    log_fuv = [2, 3, 4, 5]
     interclump_idx = [False, True, True]
     interclump_wnm_idx = [False, False, True]
     clump_mass_range = [[0, 2], [-3], [-3]]
@@ -333,14 +333,15 @@ parameters = {
               # 'dust': 'PAH',
               'dust': ['240um', '550um'],
               'abundances': ['C+', 'C', 'CO', '13C+', '13C', '13CO'], 
-              'clump_mass_range': [[0, 2], [-3]],
-              'clump_mass_number': [3, 1],
-              'clump_n_max': [1, 100],
+              'clump_mass_range': [[0, 2], [-3], [-3]],
+              'clump_mass_number': [3, 1, 1],
+              'clump_n_max': [1, 100, 100],
               'clump_log_fuv' : None,
               'interclump_log_fuv' : None,
-              'interclump_wnm_log_fuv' : None,
-              'interclump_idx': (False, True), 
-              'interclump_wnm_idx': (False, False), 
+              'interclump_wnm_log_fuv' : 5,
+              'interclump_wnm_ratio': 0.5, 
+              'interclump_idx': (False, True, True), 
+              'interclump_wnm_idx': (False, False, True), 
               'interclump_density': 19.11, 
               'disp_gmc': 0.001,
               'velocity_range': [-350, 350],
@@ -353,7 +354,7 @@ parameters = {
               # Property factors
               'hi_mass_factor': 1,
               'h2_mass_factor': 1,
-              'ensemble_mass_factor': [1, 1],
+              'ensemble_mass_factor': [1, 1, 1],
               'fuv_factor': 1,
               'density_factor': 1,
               'interclump_hi_ratio': 1,
@@ -395,28 +396,28 @@ for i, param in enumerate(list(zip(*params))[index:]):
         os.makedirs(directory)
 
     # Print details
-    print('\n\n   ==> Model {} of {}'.format(i+index+1, i_max))
-    print('       ' + models.constants.history)
-    print('       ' + '-'*len(models.constants.history))
+    print(f"\n\n   ==> Model {i+index+1} of {i_max}")
+    print(f"       {parameters['folder']}")
+    print(f"       {'-'*len(parameters['folder'])}")
     if args.verbose:
         print()
         pprint(parameters)
     print()
-    print("resolution: ".rjust(25) + f"{parameters['resolution']}")
-    print("clump mass range: ".rjust(25) + f"{parameters['clump_mass_range']}")
-    print("clump mass number: ".rjust(25) + f"{parameters['clump_mass_number']}")
+    print("resolution: ".rjust(30) + f"{parameters['resolution']}")
+    print("clump mass range: ".rjust(30) + f"{parameters['clump_mass_range']}")
+    print("clump mass number: ".rjust(30) + f"{parameters['clump_mass_number']}")
     print()
-    print("R_CMZ: ".rjust(25) + f"{parameters['r_cmz']}")
-    print("ensemble mass factor: ".rjust(25) + f"{parameters['ensemble_mass_factor']}")
-    print("H2 mass factor: ".rjust(25) + f"{parameters['h2_mass_factor']}")
-    print("HI mass factor: ".rjust(25) + f"{parameters['hi_mass_factor']}")
-    print("HI interclump ratio: ".rjust(25) + f"{parameters['interclump_hi_ratio']}")
-    print("clump density factor: ".rjust(25) + f"{parameters['density_factor']}")
-    print("FUV factor: ".rjust(25) + f"{parameters['fuv_factor']}")
+    print("R_CMZ: ".rjust(30) + f"{parameters['r_cmz']}")
+    print("ensemble mass factor: ".rjust(30) + f"{parameters['ensemble_mass_factor']}")
+    print("H2 mass factor: ".rjust(30) + f"{parameters['h2_mass_factor']}")
+    print("HI mass factor: ".rjust(30) + f"{parameters['hi_mass_factor']}")
+    print("HI interclump ratio: ".rjust(30) + f"{parameters['interclump_hi_ratio']}")
+    print("clump density factor: ".rjust(30) + f"{parameters['density_factor']}")
+    print("FUV factor: ".rjust(30) + f"{parameters['fuv_factor']}")
     print()
-    print('    -- parameters changed')
+    print("    -- parameters changed")
     for _, p in enumerate(param_keys):
-        print(f'  {p} ->'.rjust(25) + f' {param[_]}')
+        print(f'  {p} ->'.rjust(30) + f' {param[_]}')
     print()
 
     # Initialise model instance
