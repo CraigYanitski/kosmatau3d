@@ -630,7 +630,7 @@ def regrid_observations(path='/media/hpc_backup/yanitski/projects/pdr/observatio
                 elif 'CGPS' in file:
                     vel = vel[::-1]
                     obs_data = np.swapaxes(obs[0].data[0, ::-1, :, :], 0, 2)
-                elif 'CAR' in file:
+                elif 'CAR' in file or 'SIN' in file:
                     obs_data = np.swapaxes(obs[0].data, 0, 2)
                 else:
                     obs_data = np.swapaxes(obs[0].data[0], 0, 2)
