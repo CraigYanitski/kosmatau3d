@@ -1337,10 +1337,22 @@ class SyntheticModel(object):
             value = self.hi_absorption[:, :, 0]
             clabel = r'$\kappa_\nu$ (pc$^{-1}$)'
         elif quantity == 'FUV' or quantity == 'fuv':
-            value = self.fuv[:, 0]
+            if isinstance(ens, int):
+                value = self.fuv[:, ens]
+            else:
+                value = self.fuv[:, 0]
             clabel = r'$\chi$ ($\chi_\mathrm{D}$)'
+        elif quantity in ['density', 'n']:
+            if isinstance(ens, int):
+                value = self.density[:, ens]
+            else:
+                value = self.density[:, 0]
+            clabel = r'$n_\mathrm{ens}$ (cm$^{-3}$)'
         elif quantity == 'dispersion' or quantity == 'sigma':
-            value = self.ensemble_dispersion[:, 0]
+            if isinstance(ens, int):
+                value = self.ensemble_dispersion[:, ens]
+            else:
+                value = self.ensemble_dispersion[:, 0]
             clabel = r'$\sigma_\mathrm{ens}$ (km s$^{-1}$)'
         elif quantity in ['t_gas', 'gas temperature']:
             if isinstance(ens, int):
@@ -1580,9 +1592,14 @@ class SyntheticModel(object):
             value.append(f_vox * self.h2_mass[:, 1])
             ylabel = r'$M_\mathrm{H_2}$ (M$_\odot$ kpc$^{-1}$)'
 
+        elif quantity in ['X_CO', 'Xco', 'xco']:
+            value = self.get_species_number(species='H2')/(self.ds*constants.pc*100)**2 \
+                    / self.get_model_species_intensity(transition='CO 1', include_dust=False, integrated=True)
+            ylabel = r'$X_\mathrm{CO}$'
+
         elif quantity == 'ensemble density':
             value = self.density[:, idx]
-            ylabel = r'n_\mathrm{ens, '+f'{idx}'+'} (cm$^{-3}$ kpc$^{-1}$)'
+            ylabel = r'$n_\mathrm{ens, '+f'{idx}'+'}$ (cm$^{-3}$ kpc$^{-1}$)'
 
         elif quantity == 'ensemble FUV':
             value = self.fuv[:, idx]
