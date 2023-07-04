@@ -974,8 +974,13 @@ class SyntheticModel(object):
         i_nan = kap == 0
         intensity[~i_nan] = eps[~i_nan]/kap[~i_nan] * (1 - np.exp(-kap[~i_nan]*self.ds))
         intensity[i_nan] = eps[i_nan]
-
-        return np.array(intensity)
+        
+        if integrated and (intensity.ndim == 3):
+            return np.trapz(intensity, self.map_vel, axis=2)
+        elif integrated and (intensity.ndim == 2):
+            return np.trapz(intensity, self.map_vel, axis=1)
+        else:
+            return np.array(intensity)
 
     def get_model_hi_emissivity(self, include_dust=False):
 
@@ -1593,8 +1598,8 @@ class SyntheticModel(object):
             ylabel = r'$M_\mathrm{H_2}$ (M$_\odot$ kpc$^{-1}$)'
 
         elif quantity in ['X_CO', 'Xco', 'xco']:
-            value = self.get_species_number(species='H2')/(self.ds*constants.pc*100)**2 \
-                    / self.get_model_species_intensity(transition='CO 1', include_dust=False, integrated=True)
+            value = self.get_species_number(species='H2', total=True)/(self.ds*constants.pc*100)**2 \
+                    / self.get_model_species_intensity(include_dust=False, integrated=True)[list(self.species).index('CO 1'), :]
             ylabel = r'$X_\mathrm{CO}$'
 
         elif quantity == 'ensemble density':
