@@ -43,8 +43,8 @@ args = parser.parse_args()
 
 # convergence
 if args.grid == 'convergence':
-    folder = 'r{}_convergence/'
-    res = (400, 200, 100)
+    folder = 'r{}_convergence-new/'
+    res = (400)#, 200, 100)
     grid_flag = (True, )
     param_keys = ('resolution', 'new_grid')
     params = list(_.flatten() for _ in np.meshgrid(res, grid_flag))
@@ -311,8 +311,8 @@ parameters = {
               'history_path': args.folder,
               'directory': r'/MilkyWay',
               'folder': '',
-              'x': 36,
-              'y': 36,
+              'x': 35.6,
+              'y': 35.6,
               'z': 0,
               'model_type': 'disk',
 
@@ -339,7 +339,7 @@ parameters = {
               'clump_log_fuv' : None,
               'interclump_log_fuv' : None,
               'interclump_wnm_log_fuv' : 5,
-              'interclump_wnm_ratio': 0.5, 
+              'interclump_wnm_ratio': 0.2, 
               'interclump_idx': (False, True, True), 
               'interclump_wnm_idx': (False, False, True), 
               'interclump_density': 19.11, 
