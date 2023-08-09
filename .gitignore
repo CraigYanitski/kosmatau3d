@@ -12,3 +12,4 @@ kosmatau3d/grid/dilled/*
 *.synctex.gz
 *.ipynb_checkpoints/
 */plots/*.png
+*/.obsidian
