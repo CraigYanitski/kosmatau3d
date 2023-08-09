@@ -862,12 +862,16 @@ class SyntheticModel(object):
             for sp in nref:
                 N_0 += sp[1] * self.species_number[:, :, self.N_species.index(sp[0])]
         else:
-            N_0 = 0
+            N_0 = 1
         N_species = []
         for sp in species:
             N_species.append(self.species_number[:, :, self.N_species.index(sp)]/N_0)
-        if total:
+        if total and len(species) == 1:
+            return np.sum(N_species, axis=2)[0]
+        elif total:
             return np.sum(N_species, axis=2)
+        elif len(species) == 1:
+            return N_species[0]
         else:
             return N_species
 
@@ -1486,8 +1490,8 @@ class SyntheticModel(object):
 
         return ax
 
-    def radial_plot(self, quantity='intensity', transition=['HI'], transition2=None, idx=0, lat=0, 
-                    include_dust=False, integrated=False, log=False, scale=False, 
+    def radial_plot(self, quantity='intensity', transition=['CO 1'], transition2=None, idx=0, lat=0, 
+                    include_dust=False, integrated=False, log=False, scale=False, normalized=False, 
                     ls='-', lw=2, color='xkcd:maroon', label='', 
                     bins=36, bin_lim=(0, 18000), stat='mean'):
 
@@ -1584,23 +1588,38 @@ class SyntheticModel(object):
         elif quantity == 'hi mass':
             value = []
             label_suffix = [' total', ' clump', ' interclump']
-            value.append(f_vox * self.hi_mass.sum(1))
-            value.append(f_vox * self.hi_mass[:, 0])
-            value.append(f_vox * self.hi_mass[:, 1])
-            ylabel = r'$M_\mathrm{HI}$ (M$_\odot$ kpc$^{-1}$)'
+            mass_cl = self.f_vox[:, 0] * self.hi_mass[:, 0]
+            if self.hi_mass.shape[1] == 3:
+                f_vox_int = self.f_vox[:, 1] + self.f_vox[:, 2]
+                mass_int = f_vox_int * (self.hi_mass[:, 1] + self.hi_mass[:, 2])
+            else:
+                f_vox_int = self.f_vox[:, 1]
+                mass_int = f_vox_int * self.hi_mass[:, 1]
+            value.append(mass_cl + mass_int)
+            value.append(mass_cl)
+            value.append(mass_int)
+            ylabel = r'$M_\mathrm{H^0}$ (M$_\odot$ kpc$^{-1}$)'
 
         elif quantity == 'h2 mass':
             value = []
             label_suffix = [' total', ' clump', ' interclump']
-            value.append(f_vox * self.h2_mass.sum(1))
-            value.append(f_vox * self.h2_mass[:, 0])
-            value.append(f_vox * self.h2_mass[:, 1])
+            mass_cl = self.f_vox[:, 0] * self.h2_mass[:, 0]
+            if self.hi_mass.shape[1] == 3:
+                f_vox_int = self.f_vox[:, 1] + self.f_vox[:, 2]
+                mass_int = f_vox_int * (self.h2_mass[:, 1] + self.h2_mass[:, 2])
+            else:
+                f_vox_int = self.f_vox[:, 1]
+                mass_int = f_vox_int * self.h2_mass[:, 1]
+            value.append(mass_cl + mass_int)
+            value.append(mass_cl)
+            value.append(mass_int)
             ylabel = r'$M_\mathrm{H_2}$ (M$_\odot$ kpc$^{-1}$)'
 
         elif quantity in ['X_CO', 'Xco', 'xco']:
             value = self.get_species_number(species='H2', total=True)/(self.ds*constants.pc*100)**2 \
-                    / self.get_model_species_intensity(include_dust=False, integrated=True)[list(self.species).index('CO 1'), :]
-            ylabel = r'$X_\mathrm{CO}$'
+                    / self.get_model_species_intensity(include_dust=False, integrated=True)[list(self.species).index(transition[0]), :] \
+                    / 2e20
+            ylabel = r'$X_\mathrm{CO}$ / $X_\mathrm{CO, MW}$'
 
         elif quantity == 'ensemble density':
             value = self.density[:, idx]
@@ -1608,7 +1627,29 @@ class SyntheticModel(object):
 
         elif quantity == 'ensemble FUV':
             value = self.fuv[:, idx]
-            ylabel = r'u_\mathrm{FUV, '+f'{idx}'+'} ($\chi_\mathrm{D}$ kpc$^{-1}$)'
+            ylabel = r'$\chi$ ($\chi_\mathrm{D}$)'
+
+        elif quantity in ['fvox', 'f_vox']:
+            ylabel = r'$f_\mathrm{vox}$'
+            
+            value = self.f_vox[:, 0]
+            value_stat,_,_ = binned_statistic(rgal, value, statistic=stat, bins=bins)
+            label = r'H$_\mathrm{2}$'
+            ax.plot(bins_mid/1e3, value_stat, ls='--', lw=3, color='xkcd:sapphire', label=label)
+            
+            if self.f_vox.shape[1] == 3:
+                value = self.f_vox[:, 1] + self.f_vox[:, 2]
+            else:
+                value = self.f_vox[:, 1]
+            value_stat,_,_ = binned_statistic(rgal, value, statistic=stat, bins=bins)
+            label = r'H$^\mathrm{0}$'
+            ax.plot(bins_mid/1e3, value_stat, ls='--', lw=3, color='xkcd:maroon', label=label)
+            
+            ax.legend(fontsize=36)
+            ax.tick_params(labelsize=36)
+            ax.set_xlabel(r'$R_\mathrm{gal}$ (kpc)', fontsize=42)
+            ax.set_ylabel(ylabel, fontsize=42)
+            return ax
 
         else:
             print(f'quantity {quantity} not available...')
@@ -1618,13 +1659,17 @@ class SyntheticModel(object):
             value = np.log10(value)
             ylabel = r'$\mathrm{log}_{10}$ ' + ylabel
 
+        if normalized:
+            factor = self.ds/1e3
+        else:
+            factor = 1
         if 'mass' in quantity:
             for i, v in enumerate(value):
                 value_stat,_,_ = binned_statistic(rgal, v, statistic=stat, bins=bins)
-                ax.plot(bins_mid/1000, value_stat/self.ds*1e3, lw=lw[i], ls=ls[i], color=color[i], label=label+label_suffix[i])
+                ax.plot(bins_mid/1e3, value_stat/factor, lw=lw[i], ls=ls[i], color=color[i], label=label+label_suffix[i])
         else:
             value_stat,_,_ = binned_statistic(rgal, value, statistic=stat, bins=bins)
-            ax.plot(bins_mid/1000, value_stat/self.ds*1e3, lw=lw, ls=ls, color=color, label=label)
+            ax.plot(bins_mid/1000, value_stat/factor, lw=lw, ls=ls, color=color, label=label)
         ax.legend(fontsize=36)
         ax.tick_params(labelsize=36)
         ax.set_xlabel(r'$R_\mathrm{gal}$ (kpc)', fontsize=42)

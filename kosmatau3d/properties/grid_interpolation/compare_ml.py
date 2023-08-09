@@ -175,9 +175,9 @@ class CompareInterpolation():
         np.save(f"{savedir+self.tmb_file.split('.')[0]}_tmb_orig_{suffix}.npy", self.tmb_orig)
         np.save(f"{savedir+self.tmb_file.split('.')[0]}_tmb_interp_lin_{suffix}.npy", self.tmb_interp_lin)
         np.save(f"{savedir+self.tmb_file.split('.')[0]}_tmb_interp_ml_{suffix}.npy", self.tmb_interp_ml)
-        np.save(f"{savedir+self.tmb_file.split('.')[0]}_tau_orig_{suffix}.npy", self.tau_orig)
-        np.save(f"{savedir+self.tmb_file.split('.')[0]}_tau_interp_lin_{suffix}.npy", self.tau_interp_lin)
-        np.save(f"{savedir+self.tmb_file.split('.')[0]}_tau_interp_ml_{suffix}.npy", self.tau_interp_ml)
+        np.save(f"{savedir+self.tau_file.split('.')[0]}_tau_orig_{suffix}.npy", self.tau_orig)
+        np.save(f"{savedir+self.tau_file.split('.')[0]}_tau_interp_lin_{suffix}.npy", self.tau_interp_lin)
+        np.save(f"{savedir+self.tau_file.split('.')[0]}_tau_interp_ml_{suffix}.npy", self.tau_interp_ml)
 
         return
 
