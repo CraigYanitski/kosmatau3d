@@ -43,12 +43,14 @@ args = parser.parse_args()
 
 # convergence
 if args.grid == 'convergence':
-    folder = 'r{}_convergence-new/'
-    res = (400)#, 200, 100)
-    grid_flag = (True, )
-    param_keys = ('resolution', 'new_grid')
-    params = list(_.flatten() for _ in np.meshgrid(res, grid_flag))
+    folder = 'r{}_convergence/'
+    res = (400, 200, 100)
+    diameter = list(36 - _/1e3 for _ in res)
+    grid_flag = True
+    param_keys = ('resolution', 'x', 'y', 'new_grid')
+    params = [res, diameter, diameter]
     param_folders = list(folder.format(*_) for _ in zip(*params))
+    params.append([grid_flag]*len(params[0]))
 # f_cm-cm
 elif args.grid == 'f_cm-cm':
     folder = f'r{args.resolution}' + '_fcm{}_cm{}/'
@@ -107,11 +109,11 @@ elif args.grid == 'cm-f_fuv':
         mass_bin_mesh.append([mass_cl[i_cl_mesh[_]], [-3]])
     mass_num_mesh = list(list(int(np.max(mbin)-np.min(mbin))+1 for mbin in _) for _ in mass_bin_mesh)
     params = (mass_bin_mesh, mass_num_mesh, f_fuv_mesh)
-    pprint(params)
+    #pprint(params)
     mass_cl_strs = list('_'.join([str(_) for _ in mass[0]]) for mass in params[0])
     mass_icl_strs = list('_'.join([str(_) for _ in mass[1]]) for mass in params[0])
     param_folders = list(folder.format(*_) for _ in zip(*(mass_cl_strs, f_fuv_mesh)))
-    pprint(param_folders)
+    #pprint(param_folders)
 # f_cm-f_icm
 elif args.grid == 'f_cm-f_icm':
     folder = f'r{args.resolution}' + '_f_cm{}_f_icm{:}/'
@@ -123,8 +125,8 @@ elif args.grid == 'f_cm-f_icm':
 # r_cmz-f_fuv
 elif args.grid == 'r_cmz-f_fuv':
     folder = f'r{args.resolution}' + '_rcmz{}_f_fuv{:.1f}/'
-    r_cmz = np.arange(0, 1001, 50, dtype=int)
-    f_fuv = 10**np.linspace(0, 1.5, num=13)
+    r_cmz = (200, 600, 1000, 1400) #np.arange(0, 1001, 50, dtype=int)
+    f_fuv = 10**np.linspace(0, 4, num=9)
     param_keys = ('r_cmz', 'fuv_factor')
     params = list(_.flatten() for _ in np.meshgrid(r_cmz, f_fuv))
     param_folders = list(folder.format(*_) for _ in zip(*params))
@@ -149,7 +151,7 @@ elif args.grid == 'f_cl-f_icl-f_n-f_fuv':
 # f_fuv_gc
 elif args.grid == 'f_fuv_gc':
     folder = f'r{args.resolution}' + '_f_fuv_gc{:.2f}_r_gc{}/'
-    fuv_gc = (10**np.array([0.5, 1, 1.5, 2]), )
+    fuv_gc = 10**np.linspace(0, 4, num=9)
     r_gc = (200, 600, 1000, 1400)
     param_keys = ('scale_gc', 'r_gc')
     params = list(_.flatten() for _ in np.meshgrid(fuv_gc, r_gc))
@@ -179,7 +181,7 @@ elif args.grid == 'fuv_gc-mass_gc':
     folder = f'r{args.resolution}' + '_r_gc{}_f_fuv_gc{:.2f}_f_mhi_gc{:.2f}_f_mh2_gc{:.2f}/'
     r_gc = (200, 600, 1000, 1400)
     # fuv_gc = (10**np.array([0, 0.5, 1, 1.5, 2]), )
-    fuv_gc = (*10**np.array([0, 0.5, 1, 1.5, 2]), )
+    fuv_gc = (*10**np.array([0, 0.5, 1, 1.5, 2, 2.5, 3.0]), )
     mhi_gc = (*10**np.array([0, 0.5, 1, 1.5]), )
     mh2_gc = (*10**np.array([0, 0.5, 1, 1.5]), )
     grid_flag = (True, )
@@ -211,7 +213,7 @@ elif args.grid == 'const_fuv':
 # vox_disp
 elif args.grid == 'vox_disp':
     folder = f'r{args.resolution}' + '_vox_disp{:.2f}/'
-    vox_disp = [1.1, 1.86, 2.63, 4.47, 6.33, 10.72]
+    vox_disp = [0.001, 1.1, 1.86, 2.42, 4.47, 5.82, 10.72]
     param_keys = ('disp_gmc', )
     params = list(_.flatten() for _ in np.meshgrid(vox_disp))
     param_folders = list(folder.format(*_) for _ in zip(*params))
@@ -333,17 +335,17 @@ parameters = {
               # 'dust': 'PAH',
               'dust': ['240um', '550um'],
               'abundances': ['C+', 'C', 'CO', '13C+', '13C', '13CO'], 
-              'clump_mass_range': [[0, 2], [-3], [-3]],
-              'clump_mass_number': [3, 1, 1],
-              'clump_n_max': [1, 100, 100],
+              'clump_mass_range': [[0, 2], [-3]], #[-3]
+              'clump_mass_number': [3, 1], #1
+              'clump_n_max': [1, 100], #100
               'clump_log_fuv' : None,
               'interclump_log_fuv' : None,
               'interclump_wnm_log_fuv' : 5,
-              'interclump_wnm_ratio': 0.2, 
-              'interclump_idx': (False, True, True), 
-              'interclump_wnm_idx': (False, False, True), 
+              'interclump_wnm_ratio': 0, 
+              'interclump_idx': (False, True), #True
+              'interclump_wnm_idx': (False, False), #True
               'interclump_density': 19.11, 
-              'disp_gmc': 0.001,
+              'disp_gmc': 1.1*40**0.38, #0.001,
               'velocity_range': [-350, 350],
               'velocity_number': 701,
 
@@ -354,7 +356,7 @@ parameters = {
               # Property factors
               'hi_mass_factor': 1,
               'h2_mass_factor': 1,
-              'ensemble_mass_factor': [1, 1, 1],
+              'ensemble_mass_factor': [1, 1], #1
               'fuv_factor': 1,
               'density_factor': 1,
               'interclump_hi_ratio': 1,
@@ -379,6 +381,7 @@ models.constants.fuv_ism = 1
 fuv = 1.8
 
 i_max = len(params[0])
+print(i_max)
 
 for i, param in enumerate(list(zip(*params))[index:]):
     
@@ -448,4 +451,6 @@ for i, param in enumerate(list(zip(*params))[index:]):
                                                       nsl=[721, 9], terminal=True, debug=False)
     else:
         print('Will not overwrite HI datacube.')
+    
+    del kosma
 

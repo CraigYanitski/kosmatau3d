@@ -729,7 +729,7 @@ def regrid_observations(path='/media/hpc_backup/yanitski/projects/pdr/observatio
                     obs_t = obs[1].data['TEMP_ML']
                     obs_beta = obs[1].data['BETA_ML']
                     obs_gamma = 6.646e-34/1.38e-23/obs_t
-                    obs_data = obs_tkj * (nu_planck/545e9)**(obs_beta+1) * (np.exp(obs_gamma*545e9)-1)/(np.exp(obs_gamma*nu_planck)-1)
+                    obs_data = obs_tkj #* (nu_planck/545e9)**(obs_beta+1) * (np.exp(obs_gamma*545e9)-1)/(np.exp(obs_gamma*nu_planck)-1)
                     obs_error = obs[1].data['I_RMS'] * 1e-6
                 elif 'GNILC' in file:
                     freq = int(file.split('F')[1].split('_')[0])
@@ -772,7 +772,7 @@ def regrid_observations(path='/media/hpc_backup/yanitski/projects/pdr/observatio
                                           obs_error[_*chunck:(_+1)*chunck])
 
                 print('save file')
-                temp_header['TRANSL'] = 'Dust'
+                temp_header['TRANSL'] = transitions[0]
                 temp_header['TRANSI'] = '0'
                 grid_hdu = fits.PrimaryHDU(data=dust_gridder.get_datacube(), header=fits.Header(temp_header))
                 grid_hdu_err = fits.PrimaryHDU(data=dust_gridder_err.get_datacube(), header=fits.Header(twod_header))
@@ -1887,6 +1887,8 @@ def model_selection_new(path='/mnt/yanitski_backup/yanitski/projects/pdr/KT3_his
     # model_params = zip(np.transpose([model_params[n].flatten() for n in range(len(model_param))]))
     model_params = np.transpose([model_params[n].flatten() for n in range(len(model_param))])
 
+    # pprint([model_dir.format(*m) for m in model_params])
+
     if log_comp:
         comp = comp_type + '_logT'
     else:
@@ -1984,7 +1986,9 @@ def model_selection_new(path='/mnt/yanitski_backup/yanitski/projects/pdr/KT3_his
 
                     # Check existance of model
                     dir_model = model_dir.format(*param)#
-                    if not os.path.isfile(path + dir_model + 'synthetic_intensity.fits'): continue
+                    if not os.path.isfile(path + dir_model + 'synthetic_intensity.fits'): 
+                        print('No intensity')
+                        continue
 
                     # Open the model
                     params.append(param)
@@ -3061,7 +3065,7 @@ def plot_comparison(path='/mnt/hpc_backup/yanitski/projects/pdr/KT3_history/Milk
     dimensions = len(model_param)
     naxis = np.zeros((dimensions), dtype=bool)
     naxis[[i_x, i_y]] = True
-    print(model_param)
+    # print(model_param)
     lenaxis = np.asarray([len(arr) for arr in model_param])
 
     model_param_grid = np.meshgrid(*np.asarray(model_param, dtype=object)[naxis])
@@ -3175,7 +3179,8 @@ def plot_comparison(path='/mnt/hpc_backup/yanitski/projects/pdr/KT3_history/Milk
 
             for f,survey_file in enumerate(survey_files):
 
-                if '.png' in survey_file or 'Plots' in survey_file or '.npy' in survey_file:
+                if '.png' in survey_file or 'Plots' in survey_file or '.npy' in survey_file \
+                        or '.npz' in survey_file:
                     continue
                 if not survey_file in os.listdir(path + survey + '/'):
                     print('File {} not available for survey {}'.format(survey_file, survey))
@@ -3189,7 +3194,7 @@ def plot_comparison(path='/mnt/hpc_backup/yanitski/projects/pdr/KT3_history/Milk
                 else:
                     transitions = os.listdir(path + survey + '/' + survey_file + '/')
                     for _ in copy(transitions):
-                        if '.npy' in _:
+                        if '.npy' in _ or '.npz' in _:
                             transitions.remove(_)
                     #if f'{output_file}_comparison.npy' in transitions:
                     #    transitions.remove(f'{output_file}_comparison.npy')
@@ -3256,7 +3261,7 @@ def plot_comparison(path='/mnt/hpc_backup/yanitski/projects/pdr/KT3_history/Milk
 
                 file_transition_plots.append(copy(transition_plots))
                 file_transition_log_likelihood.append(deepcopy(transition_log_likelihood))
-                np.save(path + survey + '/' + survey_file + f'/{prefix}{output_file}_comparison.npy', file_transition_log_likelihood)
+                np.savez(f'{path}{survey}/{survey_file}/{prefix}{output_file}_comparison.npz', trans=file_transitions, chi2=file_transition_log_likelihood)
 
             if normalise:
                 if (log_likelihood<0).all():
