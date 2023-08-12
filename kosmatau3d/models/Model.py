@@ -1281,9 +1281,9 @@ class SyntheticModel(object):
             return np.array(optical_depth[0])
 
     def plot_model_quantity(self, quantity=None, transition=None, transition2=None, ens=None, log=False, 
-                            stat='max', include_dust=False, integrated=False,
+                            stat='max', include_dust=False, integrated=False, vmin=None, vmax=None, 
                             cmap_kwargs={'cmap':'magma', 'marker':'s', 'alpha':0.8, 's':27},
-                            cbar_kwargs={}, verbose=False, **kwargs):
+                            cbar_kwargs={}, label_axes=False, verbose=False, **kwargs):
         '''
         Return a 3DAxes with the specitied quantity shown in the colour scale.
         '''
@@ -1475,12 +1475,13 @@ class SyntheticModel(object):
         fig = plt.figure(figsize=(10, 8))
         ax = fig.add_subplot(111, projection='3d')
 
-        cm = ax.scatter(X, Y, Z, c=value, **cmap_kwargs)
+        cm = ax.scatter(X, Y, Z, c=value, vmin=vmin, vmax=vmax, **cmap_kwargs)
         cb = fig.colorbar(cm, **cbar_kwargs)
 
-        ax.set_xlabel('X (kpc)', fontsize=32)
-        ax.set_ylabel('Y (kpc)', fontsize=32)
-        ax.set_zlabel('Z (kpc)', fontsize=32)
+        if label_axes:
+            ax.set_xlabel('X (kpc)', fontsize=32)
+            ax.set_ylabel('Y (kpc)', fontsize=32)
+            ax.set_zlabel('Z (kpc)', fontsize=32)
         cb.ax.set_ylabel(clabel, fontsize=32)
         ax.tick_params(labelsize=16)
         ax.set_xlim(lims)
@@ -1490,10 +1491,11 @@ class SyntheticModel(object):
 
         return ax
 
-    def radial_plot(self, quantity='intensity', transition=['CO 1'], transition2=None, idx=0, lat=0, 
+    def radial_plot(self, quantity='intensity', transition=['CO 1'], transition2=[], idx=0, lat=0, 
                     include_dust=False, integrated=False, log=False, scale=False, normalized=False, 
-                    ls='-', lw=2, color='xkcd:maroon', label='', 
-                    bins=36, bin_lim=(0, 18000), stat='mean'):
+                    ls='-', lw=2, color='xkcd:maroon', label='', fontsize=42, labelsize=36, 
+                    legendsize=36, legendloc=0, 
+                    bins=36, bin_lim=(0, 18000), stat='mean', voxel_size=None, ax=None):
 
         mpl.rcParams['text.usetex'] = False
         mpl.rcParams['font.family'] = 'Nimbus Roman'
@@ -1503,7 +1505,10 @@ class SyntheticModel(object):
         positions = self.position
         rgal = np.sqrt(positions[:, 0]**2+positions[:, 1]**2+positions[:, 2]**2)
 
-        fig, ax = plt.subplots(figsize=(15, 10))
+        if isinstance(ax, mpl.axes._axes.Axes):
+            fig = ax.get_figure()
+        else:
+            fig, ax = plt.subplots(figsize=(15, 10))
 
         i_lat = np.where(self.map_lat == lat)[0][0]
         bins = np.linspace(*bin_lim, num=bins)
@@ -1527,29 +1532,62 @@ class SyntheticModel(object):
                     eps = self.get_model_species_emissivity(transition=t, include_dust=include_dust) / f_vox
                     kap = self.get_model_species_absorption(transition=t, include_dust=include_dust) / f_vox
                     intensity = self.get_model_species_intensity(transition=t, include_dust=include_dust) / f_vox
+
+                if len(transition2) == 1:
+                    if transition2[0] == 'HI':
+                        eps2 = self.get_model_hi_emissivity(include_dust=include_dust) / f_vox
+                        kap2 = self.get_model_hi_absorption(include_dust=include_dust) / f_vox
+                        intensity2 = self.get_model_hi_intensity(include_dust=include_dust) / f_vox
+                    else:
+                        eps2 = self.get_model_species_emissivity(transition=transition2, include_dust=include_dust) / f_vox
+                        kap2 = self.get_model_species_absorption(transition=transition2, include_dust=include_dust) / f_vox
+                        intensity2 = self.get_model_species_intensity(transition=transition2[0], include_dust=include_dust) / f_vox
+                else:
+                    eps2 = None
+                    kap2 = None
+                    intensity2 = None
                 
                 # intensity = eps/kap * (1-np.exp(-kap*self.ds))
                 
-                if quantity == 'emissivity':
-                    value = eps.max()
-                    ylabel = r'$\epsilon$ (K pc$^{-1}$ kpc$^{-1}$)'
-                elif quantity == 'absorption':
-                    value = kap.max()
-                    ylabel = r'$\kappa$ (pc$^{-1}$ kpc$^{-1}$)'
-                elif integrated:
-                    value = np.trapz(intensity, self.map_vel, axis=1)
-                    ylabel = r'$W$ (K km s$^{-1}$ kpc$^{-1}$)'
+                if len(transition2) == 0:
+                    if quantity == 'emissivity':
+                        value = eps.max(1)
+                        ylabel = r'$\epsilon$ (K pc$^{-1}$ kpc$^{-1}$)'
+                    elif quantity == 'absorption':
+                        value = kap.max(1)
+                        ylabel = r'$\kappa$ (pc$^{-1}$ kpc$^{-1}$)'
+                    elif integrated:
+                        value = np.trapz(intensity, self.map_vel, axis=1)
+                        ylabel = r'$W$ (K km s$^{-1}$ kpc$^{-1}$)'
+                    else:
+                        value = intensity.max(1)
+                        ylabel = r'$I$ (K kpc$^{-1}$)'
                 else:
-                    value = intensity.max()
-                    ylabel = r'$I$ (K kpc$^{-1}$)'
+                    if quantity == 'emissivity':
+                        value = eps.max(1) / eps2.max(1)
+                        ylabel = r'$R_\epsilon$ (K pc$^{-1}$ kpc$^{-1}$)'
+                    elif quantity == 'absorption':
+                        value = kap.max(1) / kap2.max(1)
+                        ylabel = r'$R_\kappa$ (pc$^{-1}$ kpc$^{-1}$)'
+                    elif integrated:
+                        value = np.trapz(intensity, self.map_vel, axis=1) / np.trapz(intensity2, self.map_vel, axis=1)
+                        ylabel = r'$R_W$ (K km s$^{-1}$ kpc$^{-1}$)'
+                    else:
+                        value = intensity.max(1) / intensity2.max(1)
+                        ylabel = r'$R_I$ (K kpc$^{-1}$)'
+
+                if voxel_size == 1:
+                    ylabel = ylabel.replace(r' kpc$^{-1}$', '')
+                elif voxel_size is None:
+                    voxel_size = self.ds/1e3
 
                 value_stat,_,_ = binned_statistic(rgal, value, statistic=stat, bins=bins)
-                ax.plot(bins_mid, value_stat/self.ds*1e3, label=t)
+                ax.plot(bins_mid, value_stat/voxel_size, lw=lw, ls=ls, label=t)
 
-            ax.legend(fontsize=16)
-            ax.tick_params(labelsize=16)
-            ax.set_xlabel(r'$R_\mathrm{gal}$ (kpc)', fontsize=24)
-            ax.set_ylabel(ylabel,fontsize=24)
+            ax.legend(fontsize=legendsize, loc=legendloc)
+            ax.tick_params(labelsize=labelsize)
+            ax.set_xlabel(r'$R_\mathrm{gal}$ (kpc)', fontsize=fontsize)
+            ax.set_ylabel(ylabel,fontsize=fontsize)
             return ax
 
         elif quantity == 'mass':
@@ -1625,6 +1663,11 @@ class SyntheticModel(object):
             value = self.density[:, idx]
             ylabel = r'$n_\mathrm{ens, '+f'{idx}'+'}$ (cm$^{-3}$ kpc$^{-1}$)'
 
+        elif quantity in ['R_sa', 'r_sa']:
+            value = np.nanmax((self.get_model_species_emissivity(transition=transition[0], include_dust=include_dust) /
+                              self.get_model_species_intensity(transition=transition[0], include_dust=include_dust)), 1)
+            ylabel = r'$R_\mathrm{' + f'{transition[0]}' + r'}$'
+
         elif quantity == 'ensemble FUV':
             value = self.fuv[:, idx]
             ylabel = r'$\chi$ ($\chi_\mathrm{D}$)'
@@ -1670,10 +1713,10 @@ class SyntheticModel(object):
         else:
             value_stat,_,_ = binned_statistic(rgal, value, statistic=stat, bins=bins)
             ax.plot(bins_mid/1000, value_stat/factor, lw=lw, ls=ls, color=color, label=label)
-        ax.legend(fontsize=36)
-        ax.tick_params(labelsize=36)
-        ax.set_xlabel(r'$R_\mathrm{gal}$ (kpc)', fontsize=42)
-        ax.set_ylabel(ylabel,fontsize=42)
+        ax.legend(fontsize=legendsize, loc=legendloc)
+        ax.tick_params(labelsize=labelsize)
+        ax.set_xlabel(r'$R_\mathrm{gal}$ (kpc)', fontsize=fontsize)
+        ax.set_ylabel(ylabel,fontsize=fontsize)
 
         return ax
 
