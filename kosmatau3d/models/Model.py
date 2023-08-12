@@ -1482,6 +1482,8 @@ class SyntheticModel(object):
             ax.set_xlabel('X (kpc)', fontsize=32)
             ax.set_ylabel('Y (kpc)', fontsize=32)
             ax.set_zlabel('Z (kpc)', fontsize=32)
+        else:
+            ax.set_axis_off()
         cb.ax.set_ylabel(clabel, fontsize=32)
         ax.tick_params(labelsize=16)
         ax.set_xlim(lims)
