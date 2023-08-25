@@ -1524,25 +1524,29 @@ class SyntheticModel(object):
         else:
             f_vox = 1
 
-        if quantity in ['intensity', 'emissivity', 'absorption']:
+        if quantity in ['intensity', 'optical depth', 'emissivity', 'absorption']:
             for i, t in enumerate(transition):
                 if t == 'HI':
                     eps = self.get_model_hi_emissivity(include_dust=include_dust) / f_vox
                     kap = self.get_model_hi_absorption(include_dust=include_dust) / f_vox
+                    tau = kap * self.ds
                     intensity = self.get_model_hi_intensity(include_dust=include_dust) / f_vox
                 else:
                     eps = self.get_model_species_emissivity(transition=t, include_dust=include_dust) / f_vox
                     kap = self.get_model_species_absorption(transition=t, include_dust=include_dust) / f_vox
+                    tau = kap * self.ds
                     intensity = self.get_model_species_intensity(transition=t, include_dust=include_dust) / f_vox
 
                 if len(transition2) == 1:
                     if transition2[0] == 'HI':
                         eps2 = self.get_model_hi_emissivity(include_dust=include_dust) / f_vox
                         kap2 = self.get_model_hi_absorption(include_dust=include_dust) / f_vox
+                        tau2 = kap2 * self.ds
                         intensity2 = self.get_model_hi_intensity(include_dust=include_dust) / f_vox
                     else:
                         eps2 = self.get_model_species_emissivity(transition=transition2, include_dust=include_dust) / f_vox
                         kap2 = self.get_model_species_absorption(transition=transition2, include_dust=include_dust) / f_vox
+                        tau2 = kap2 * self.ds
                         intensity2 = self.get_model_species_intensity(transition=transition2[0], include_dust=include_dust) / f_vox
                 else:
                     eps2 = None
@@ -1558,6 +1562,9 @@ class SyntheticModel(object):
                     elif quantity == 'absorption':
                         value = kap.max(1)
                         ylabel = r'$\kappa$ (pc$^{-1}$ kpc$^{-1}$)'
+                    elif quantity == 'optical depth':
+                        value = tau.max(1)
+                        ylabel = r'$\tau$ (kpc$^{-1}$)'
                     elif integrated:
                         value = np.trapz(intensity, self.map_vel, axis=1)
                         ylabel = r'$W$ (K km s$^{-1}$ kpc$^{-1}$)'
@@ -1571,6 +1578,9 @@ class SyntheticModel(object):
                     elif quantity == 'absorption':
                         value = kap.max(1) / kap2.max(1)
                         ylabel = r'$R_\kappa$ (pc$^{-1}$ kpc$^{-1}$)'
+                    elif quantity == 'optical depth':
+                        value = tau.max(1) / tau2.max(1)
+                        ylabel = r'$R_\tau$ (kpc$^{-1}$)'
                     elif integrated:
                         value = np.trapz(intensity, self.map_vel, axis=1) / np.trapz(intensity2, self.map_vel, axis=1)
                         ylabel = r'$R_W$ (K km s$^{-1}$ kpc$^{-1}$)'
