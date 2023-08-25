@@ -44,7 +44,7 @@ args = parser.parse_args()
 # convergence
 if args.grid == 'convergence':
     folder = 'r{}_convergence/'
-    res = (400, 200, 100)
+    res = (400, )#, 200, 100)
     diameter = list(36 - _/1e3 for _ in res)
     grid_flag = True
     param_keys = ('resolution', 'x', 'y', 'new_grid')
@@ -340,7 +340,7 @@ parameters = {
               'clump_n_max': [1, 100], #100
               'clump_log_fuv' : None,
               'interclump_log_fuv' : None,
-              'interclump_wnm_log_fuv' : 5,
+              'interclump_wnm_log_fuv' : 2,
               'interclump_wnm_ratio': 0, 
               'interclump_idx': (False, True), #True
               'interclump_wnm_idx': (False, False), #True
