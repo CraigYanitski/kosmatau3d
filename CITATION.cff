@@ -1,0 +1,22 @@
+# This CITATION.cff file was generated with cffinit.
+# Visit https://bit.ly/cffinit to generate yours today!
+
+cff-version: 1.2.0
+title: kosmatau3d
+message: >-
+  If you use this software, please cite it using the
+  metadata from this file.
+type: software
+authors:
+  - given-names: Craig Nicholas
+    family-names: Yanitski
+    email: yanitski@ph1.uni-koeln.de
+    affiliation: Universität zu Köln
+    orcid: 'https://orcid.org/0009-0009-3294-6320'
+repository-code: 'https://github.com/CraigYanitski/kosmatau3d'
+keywords:
+  - photodissociation region (PDR)
+  - Interstellar medium (ISM)
+  - fractal structure
+  - numerical modelling
+license: GPL-3.0
