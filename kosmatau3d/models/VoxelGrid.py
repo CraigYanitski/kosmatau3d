@@ -1,3 +1,7 @@
+'''
+A module containing the VoxelGrid class.
+'''
+
 import os
 import importlib as il
 import gc

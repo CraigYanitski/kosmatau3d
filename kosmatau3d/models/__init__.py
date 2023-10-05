@@ -1,3 +1,18 @@
+'''
+The `models` subpackage contains all of the code relevant for creating voxels.
+There are currently two ways to model PDRs:
+
+    - single-voxel model (`class Voxel()`): this is useful to a homogeneous voxel to compare to pixels in an observation. Note that the voxel does not necessarily need to be cubic; PDR clumps can *overfill* a voxel resulting in a homogeneous *column*. This functionality will require more attention if you plan to integrate the radiative transfer equation.
+    - full 3-D model (`class Model()`): The full three-dimensional model used in the first applications of this code (Andree-Labsch et al. 2017, Yanitski et al. 2023). This requires knowledge of the three-dimensional structure and distribution of interstellar gas in the object being modelled. Currently this is setup to model a Milky-Way-type galaxy.
+
+Most of the calculations are split into subsubpackages, although there is an object containing all
+of the evaluated voxels.
+This structure to the code was implemented with the intention of creating a model in memory to adjust
+the orientation of the model and thus the synthetic observation of it.
+While the Milky Way models are too large to utilise this feature, it is left in for future 
+development of the code.
+'''
+
 import dill
 import sys
 

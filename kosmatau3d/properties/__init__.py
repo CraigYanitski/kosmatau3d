@@ -1,6 +1,11 @@
-from . import fuv_models
-from . import grid_interpolation
-from .data_check import *
+'''
+This is a submodule containing various methods to examine the properties of the 
+clumpy ensemble description of PDRs.
+'''
+
+from kosmatau3d.properties import fuv_models
+from kosmatau3d.properties import grid_interpolation
+from kosmatau3d.properties.data_check import *
 
 
 def help():
