@@ -1,0 +1,872 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>scipy.interpolate._polyint &mdash; kosmatau3d 1.0.3 documentation</title>
+      <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="../../../_static/css/theme.css" type="text/css" />
+      <link rel="stylesheet" href="../../../_static/readthedocs-custom.css" type="text/css" />
+  <!--[if lt IE 9]>
+    <script src="../../../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script src="../../../_static/documentation_options.js?v=baaebd52"></script>
+        <script src="../../../_static/doctools.js?v=888ff710"></script>
+        <script src="../../../_static/sphinx_highlight.js?v=dc90522c"></script>
+        <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+    <script src="../../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../../../index.html" class="icon icon-home">
+            kosmatau3d
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../installation.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../properties.html">KOSMA-$\tau$ Properties</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../voxel.html">Voxels</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../model.html">3D Models</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../comparison.html">Comparison to Observations</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../development.html">Future Development</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../_autosummary/kosmatau3d.html">API Reference</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../acknowledgements.html">Acknowledgements</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../index.html">kosmatau3d</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../../index.html">Module code</a></li>
+      <li class="breadcrumb-item active">scipy.interpolate._polyint</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <h1>Source code for scipy.interpolate._polyint</h1><div class="highlight"><pre>
+<span></span><span class="kn">import</span> <span class="nn">warnings</span>
+
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<span class="kn">from</span> <span class="nn">scipy.special</span> <span class="kn">import</span> <span class="n">factorial</span>
+<span class="kn">from</span> <span class="nn">scipy._lib._util</span> <span class="kn">import</span> <span class="n">_asarray_validated</span><span class="p">,</span> <span class="n">float_factorial</span>
+
+
+<span class="n">__all__</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;KroghInterpolator&quot;</span><span class="p">,</span> <span class="s2">&quot;krogh_interpolate&quot;</span><span class="p">,</span> <span class="s2">&quot;BarycentricInterpolator&quot;</span><span class="p">,</span>
+           <span class="s2">&quot;barycentric_interpolate&quot;</span><span class="p">,</span> <span class="s2">&quot;approximate_taylor_polynomial&quot;</span><span class="p">]</span>
+
+
+<span class="k">def</span> <span class="nf">_isscalar</span><span class="p">(</span><span class="n">x</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Check whether x is if a scalar type, or 0-dim&quot;&quot;&quot;</span>
+    <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">isscalar</span><span class="p">(</span><span class="n">x</span><span class="p">)</span> <span class="ow">or</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="s1">&#39;shape&#39;</span><span class="p">)</span> <span class="ow">and</span> <span class="n">x</span><span class="o">.</span><span class="n">shape</span> <span class="o">==</span> <span class="p">()</span>
+
+
+<span class="k">class</span> <span class="nc">_Interpolator1D</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Common features in univariate interpolation</span>
+
+<span class="sd">    Deal with input data type and interpolation axis rolling. The</span>
+<span class="sd">    actual interpolator can assume the y-data is of shape (n, r) where</span>
+<span class="sd">    `n` is the number of x-points, and `r` the number of variables,</span>
+<span class="sd">    and use self.dtype as the y-data type.</span>
+
+<span class="sd">    Attributes</span>
+<span class="sd">    ----------</span>
+<span class="sd">    _y_axis</span>
+<span class="sd">        Axis along which the interpolation goes in the original array</span>
+<span class="sd">    _y_extra_shape</span>
+<span class="sd">        Additional trailing shape of the input arrays, excluding</span>
+<span class="sd">        the interpolation axis.</span>
+<span class="sd">    dtype</span>
+<span class="sd">        Dtype of the y-data arrays. Can be set via _set_dtype, which</span>
+<span class="sd">        forces it to be float or complex.</span>
+
+<span class="sd">    Methods</span>
+<span class="sd">    -------</span>
+<span class="sd">    __call__</span>
+<span class="sd">    _prepare_x</span>
+<span class="sd">    _finish_y</span>
+<span class="sd">    _reshape_yi</span>
+<span class="sd">    _set_yi</span>
+<span class="sd">    _set_dtype</span>
+<span class="sd">    _evaluate</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="vm">__slots__</span> <span class="o">=</span> <span class="p">(</span><span class="s1">&#39;_y_axis&#39;</span><span class="p">,</span> <span class="s1">&#39;_y_extra_shape&#39;</span><span class="p">,</span> <span class="s1">&#39;dtype&#39;</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">xi</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">yi</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_y_axis</span> <span class="o">=</span> <span class="n">axis</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_y_extra_shape</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">dtype</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="k">if</span> <span class="n">yi</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_set_yi</span><span class="p">(</span><span class="n">yi</span><span class="p">,</span> <span class="n">xi</span><span class="o">=</span><span class="n">xi</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="n">axis</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="fm">__call__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Evaluate the interpolant</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        x : array_like</span>
+<span class="sd">            Points to evaluate the interpolant at.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        y : array_like</span>
+<span class="sd">            Interpolated values. Shape is determined by replacing</span>
+<span class="sd">            the interpolation axis in the original array with the shape of x.</span>
+
+<span class="sd">        Notes</span>
+<span class="sd">        -----</span>
+<span class="sd">        Input values `x` must be convertible to `float` values like `int`</span>
+<span class="sd">        or `float`.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">x</span><span class="p">,</span> <span class="n">x_shape</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_prepare_x</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
+        <span class="n">y</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_evaluate</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_finish_y</span><span class="p">(</span><span class="n">y</span><span class="p">,</span> <span class="n">x_shape</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">_evaluate</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Actually evaluate the value of the interpolator.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">()</span>
+
+    <span class="k">def</span> <span class="nf">_prepare_x</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Reshape input x array to 1-D&quot;&quot;&quot;</span>
+        <span class="n">x</span> <span class="o">=</span> <span class="n">_asarray_validated</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">check_finite</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">as_inexact</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+        <span class="n">x_shape</span> <span class="o">=</span> <span class="n">x</span><span class="o">.</span><span class="n">shape</span>
+        <span class="k">return</span> <span class="n">x</span><span class="o">.</span><span class="n">ravel</span><span class="p">(),</span> <span class="n">x_shape</span>
+
+    <span class="k">def</span> <span class="nf">_finish_y</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">x_shape</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Reshape interpolated y back to an N-D array similar to initial y&quot;&quot;&quot;</span>
+        <span class="n">y</span> <span class="o">=</span> <span class="n">y</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="n">x_shape</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">_y_extra_shape</span><span class="p">)</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_y_axis</span> <span class="o">!=</span> <span class="mi">0</span> <span class="ow">and</span> <span class="n">x_shape</span> <span class="o">!=</span> <span class="p">():</span>
+            <span class="n">nx</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">x_shape</span><span class="p">)</span>
+            <span class="n">ny</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_y_extra_shape</span><span class="p">)</span>
+            <span class="n">s</span> <span class="o">=</span> <span class="p">(</span><span class="nb">list</span><span class="p">(</span><span class="nb">range</span><span class="p">(</span><span class="n">nx</span><span class="p">,</span> <span class="n">nx</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">_y_axis</span><span class="p">))</span>
+                 <span class="o">+</span> <span class="nb">list</span><span class="p">(</span><span class="nb">range</span><span class="p">(</span><span class="n">nx</span><span class="p">))</span> <span class="o">+</span> <span class="nb">list</span><span class="p">(</span><span class="nb">range</span><span class="p">(</span><span class="n">nx</span><span class="o">+</span><span class="bp">self</span><span class="o">.</span><span class="n">_y_axis</span><span class="p">,</span> <span class="n">nx</span><span class="o">+</span><span class="n">ny</span><span class="p">)))</span>
+            <span class="n">y</span> <span class="o">=</span> <span class="n">y</span><span class="o">.</span><span class="n">transpose</span><span class="p">(</span><span class="n">s</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">y</span>
+
+    <span class="k">def</span> <span class="nf">_reshape_yi</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">yi</span><span class="p">,</span> <span class="n">check</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+        <span class="n">yi</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">moveaxis</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">yi</span><span class="p">),</span> <span class="bp">self</span><span class="o">.</span><span class="n">_y_axis</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">check</span> <span class="ow">and</span> <span class="n">yi</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">:]</span> <span class="o">!=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_y_extra_shape</span><span class="p">:</span>
+            <span class="n">ok_shape</span> <span class="o">=</span> <span class="s2">&quot;</span><span class="si">%r</span><span class="s2"> + (N,) + </span><span class="si">%r</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_y_extra_shape</span><span class="p">[</span><span class="o">-</span><span class="bp">self</span><span class="o">.</span><span class="n">_y_axis</span><span class="p">:],</span>
+                                           <span class="bp">self</span><span class="o">.</span><span class="n">_y_extra_shape</span><span class="p">[:</span><span class="o">-</span><span class="bp">self</span><span class="o">.</span><span class="n">_y_axis</span><span class="p">])</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Data must be of shape </span><span class="si">%s</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="n">ok_shape</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">yi</span><span class="o">.</span><span class="n">reshape</span><span class="p">((</span><span class="n">yi</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="o">-</span><span class="mi">1</span><span class="p">))</span>
+
+    <span class="k">def</span> <span class="nf">_set_yi</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">yi</span><span class="p">,</span> <span class="n">xi</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="k">if</span> <span class="n">axis</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">axis</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_y_axis</span>
+        <span class="k">if</span> <span class="n">axis</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;no interpolation axis specified&quot;</span><span class="p">)</span>
+
+        <span class="n">yi</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">yi</span><span class="p">)</span>
+
+        <span class="n">shape</span> <span class="o">=</span> <span class="n">yi</span><span class="o">.</span><span class="n">shape</span>
+        <span class="k">if</span> <span class="n">shape</span> <span class="o">==</span> <span class="p">():</span>
+            <span class="n">shape</span> <span class="o">=</span> <span class="p">(</span><span class="mi">1</span><span class="p">,)</span>
+        <span class="k">if</span> <span class="n">xi</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="n">shape</span><span class="p">[</span><span class="n">axis</span><span class="p">]</span> <span class="o">!=</span> <span class="nb">len</span><span class="p">(</span><span class="n">xi</span><span class="p">):</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;x and y arrays must be equal in length along &quot;</span>
+                             <span class="s2">&quot;interpolation axis.&quot;</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">_y_axis</span> <span class="o">=</span> <span class="p">(</span><span class="n">axis</span> <span class="o">%</span> <span class="n">yi</span><span class="o">.</span><span class="n">ndim</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_y_extra_shape</span> <span class="o">=</span> <span class="n">yi</span><span class="o">.</span><span class="n">shape</span><span class="p">[:</span><span class="bp">self</span><span class="o">.</span><span class="n">_y_axis</span><span class="p">]</span><span class="o">+</span><span class="n">yi</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">_y_axis</span><span class="o">+</span><span class="mi">1</span><span class="p">:]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">dtype</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_set_dtype</span><span class="p">(</span><span class="n">yi</span><span class="o">.</span><span class="n">dtype</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">_set_dtype</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">dtype</span><span class="p">,</span> <span class="n">union</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+        <span class="k">if</span> <span class="n">np</span><span class="o">.</span><span class="n">issubdtype</span><span class="p">(</span><span class="n">dtype</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">complexfloating</span><span class="p">)</span> \
+               <span class="ow">or</span> <span class="n">np</span><span class="o">.</span><span class="n">issubdtype</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">dtype</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">complexfloating</span><span class="p">):</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">dtype</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">complex_</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="n">union</span> <span class="ow">or</span> <span class="bp">self</span><span class="o">.</span><span class="n">dtype</span> <span class="o">!=</span> <span class="n">np</span><span class="o">.</span><span class="n">complex_</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">dtype</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">float_</span>
+
+
+<span class="k">class</span> <span class="nc">_Interpolator1DWithDerivatives</span><span class="p">(</span><span class="n">_Interpolator1D</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">derivatives</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="n">der</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Evaluate many derivatives of the polynomial at the point x</span>
+
+<span class="sd">        Produce an array of all derivative values at the point x.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        x : array_like</span>
+<span class="sd">            Point or points at which to evaluate the derivatives</span>
+<span class="sd">        der : int or None, optional</span>
+<span class="sd">            How many derivatives to extract; None for all potentially</span>
+<span class="sd">            nonzero derivatives (that is a number equal to the number</span>
+<span class="sd">            of points). This number includes the function value as 0th</span>
+<span class="sd">            derivative.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        d : ndarray</span>
+<span class="sd">            Array with derivatives; d[j] contains the jth derivative.</span>
+<span class="sd">            Shape of d[j] is determined by replacing the interpolation</span>
+<span class="sd">            axis in the original array with the shape of x.</span>
+
+<span class="sd">        Examples</span>
+<span class="sd">        --------</span>
+<span class="sd">        &gt;&gt;&gt; from scipy.interpolate import KroghInterpolator</span>
+<span class="sd">        &gt;&gt;&gt; KroghInterpolator([0,0,0],[1,2,3]).derivatives(0)</span>
+<span class="sd">        array([1.0,2.0,3.0])</span>
+<span class="sd">        &gt;&gt;&gt; KroghInterpolator([0,0,0],[1,2,3]).derivatives([0,0])</span>
+<span class="sd">        array([[1.0,1.0],</span>
+<span class="sd">               [2.0,2.0],</span>
+<span class="sd">               [3.0,3.0]])</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">x</span><span class="p">,</span> <span class="n">x_shape</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_prepare_x</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
+        <span class="n">y</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_evaluate_derivatives</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">der</span><span class="p">)</span>
+
+        <span class="n">y</span> <span class="o">=</span> <span class="n">y</span><span class="o">.</span><span class="n">reshape</span><span class="p">((</span><span class="n">y</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">],)</span> <span class="o">+</span> <span class="n">x_shape</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">_y_extra_shape</span><span class="p">)</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_y_axis</span> <span class="o">!=</span> <span class="mi">0</span> <span class="ow">and</span> <span class="n">x_shape</span> <span class="o">!=</span> <span class="p">():</span>
+            <span class="n">nx</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">x_shape</span><span class="p">)</span>
+            <span class="n">ny</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_y_extra_shape</span><span class="p">)</span>
+            <span class="n">s</span> <span class="o">=</span> <span class="p">([</span><span class="mi">0</span><span class="p">]</span> <span class="o">+</span> <span class="nb">list</span><span class="p">(</span><span class="nb">range</span><span class="p">(</span><span class="n">nx</span><span class="o">+</span><span class="mi">1</span><span class="p">,</span> <span class="n">nx</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">_y_axis</span><span class="o">+</span><span class="mi">1</span><span class="p">))</span>
+                 <span class="o">+</span> <span class="nb">list</span><span class="p">(</span><span class="nb">range</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="n">nx</span><span class="o">+</span><span class="mi">1</span><span class="p">))</span> <span class="o">+</span>
+                 <span class="nb">list</span><span class="p">(</span><span class="nb">range</span><span class="p">(</span><span class="n">nx</span><span class="o">+</span><span class="mi">1</span><span class="o">+</span><span class="bp">self</span><span class="o">.</span><span class="n">_y_axis</span><span class="p">,</span> <span class="n">nx</span><span class="o">+</span><span class="n">ny</span><span class="o">+</span><span class="mi">1</span><span class="p">)))</span>
+            <span class="n">y</span> <span class="o">=</span> <span class="n">y</span><span class="o">.</span><span class="n">transpose</span><span class="p">(</span><span class="n">s</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">y</span>
+
+    <span class="k">def</span> <span class="nf">derivative</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="n">der</span><span class="o">=</span><span class="mi">1</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Evaluate one derivative of the polynomial at the point x</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        x : array_like</span>
+<span class="sd">            Point or points at which to evaluate the derivatives</span>
+
+<span class="sd">        der : integer, optional</span>
+<span class="sd">            Which derivative to extract. This number includes the</span>
+<span class="sd">            function value as 0th derivative.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        d : ndarray</span>
+<span class="sd">            Derivative interpolated at the x-points. Shape of d is</span>
+<span class="sd">            determined by replacing the interpolation axis in the</span>
+<span class="sd">            original array with the shape of x.</span>
+
+<span class="sd">        Notes</span>
+<span class="sd">        -----</span>
+<span class="sd">        This is computed by evaluating all derivatives up to the desired</span>
+<span class="sd">        one (using self.derivatives()) and then discarding the rest.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">x</span><span class="p">,</span> <span class="n">x_shape</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_prepare_x</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
+        <span class="n">y</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_evaluate_derivatives</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">der</span><span class="o">+</span><span class="mi">1</span><span class="p">)</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_finish_y</span><span class="p">(</span><span class="n">y</span><span class="p">[</span><span class="n">der</span><span class="p">],</span> <span class="n">x_shape</span><span class="p">)</span>
+
+
+<div class="viewcode-block" id="KroghInterpolator">
+<a class="viewcode-back" href="../../../_autosummary/generated/scipy.interpolate.KroghInterpolator.html#scipy.interpolate.KroghInterpolator">[docs]</a>
+<span class="k">class</span> <span class="nc">KroghInterpolator</span><span class="p">(</span><span class="n">_Interpolator1DWithDerivatives</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Interpolating polynomial for a set of points.</span>
+
+<span class="sd">    The polynomial passes through all the pairs (xi,yi). One may</span>
+<span class="sd">    additionally specify a number of derivatives at each point xi;</span>
+<span class="sd">    this is done by repeating the value xi and specifying the</span>
+<span class="sd">    derivatives as successive yi values.</span>
+
+<span class="sd">    Allows evaluation of the polynomial and all its derivatives.</span>
+<span class="sd">    For reasons of numerical stability, this function does not compute</span>
+<span class="sd">    the coefficients of the polynomial, although they can be obtained</span>
+<span class="sd">    by evaluating all the derivatives.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    xi : array_like, length N</span>
+<span class="sd">        Known x-coordinates. Must be sorted in increasing order.</span>
+<span class="sd">    yi : array_like</span>
+<span class="sd">        Known y-coordinates. When an xi occurs two or more times in</span>
+<span class="sd">        a row, the corresponding yi&#39;s represent derivative values.</span>
+<span class="sd">    axis : int, optional</span>
+<span class="sd">        Axis in the yi array corresponding to the x-coordinate values.</span>
+
+<span class="sd">    Notes</span>
+<span class="sd">    -----</span>
+<span class="sd">    Be aware that the algorithms implemented here are not necessarily</span>
+<span class="sd">    the most numerically stable known. Moreover, even in a world of</span>
+<span class="sd">    exact computation, unless the x coordinates are chosen very</span>
+<span class="sd">    carefully - Chebyshev zeros (e.g., cos(i*pi/n)) are a good choice -</span>
+<span class="sd">    polynomial interpolation itself is a very ill-conditioned process</span>
+<span class="sd">    due to the Runge phenomenon. In general, even with well-chosen</span>
+<span class="sd">    x values, degrees higher than about thirty cause problems with</span>
+<span class="sd">    numerical instability in this code.</span>
+
+<span class="sd">    Based on [1]_.</span>
+
+<span class="sd">    References</span>
+<span class="sd">    ----------</span>
+<span class="sd">    .. [1] Krogh, &quot;Efficient Algorithms for Polynomial Interpolation</span>
+<span class="sd">        and Numerical Differentiation&quot;, 1970.</span>
+
+<span class="sd">    Examples</span>
+<span class="sd">    --------</span>
+<span class="sd">    To produce a polynomial that is zero at 0 and 1 and has</span>
+<span class="sd">    derivative 2 at 0, call</span>
+
+<span class="sd">    &gt;&gt;&gt; from scipy.interpolate import KroghInterpolator</span>
+<span class="sd">    &gt;&gt;&gt; KroghInterpolator([0,0,1],[0,2,0])</span>
+
+<span class="sd">    This constructs the quadratic 2*X**2-2*X. The derivative condition</span>
+<span class="sd">    is indicated by the repeated zero in the xi array; the corresponding</span>
+<span class="sd">    yi values are 0, the function value, and 2, the derivative value.</span>
+
+<span class="sd">    For another example, given xi, yi, and a derivative ypi for each</span>
+<span class="sd">    point, appropriate arrays can be constructed as:</span>
+
+<span class="sd">    &gt;&gt;&gt; import numpy as np</span>
+<span class="sd">    &gt;&gt;&gt; rng = np.random.default_rng()</span>
+<span class="sd">    &gt;&gt;&gt; xi = np.linspace(0, 1, 5)</span>
+<span class="sd">    &gt;&gt;&gt; yi, ypi = rng.random((2, 5))</span>
+<span class="sd">    &gt;&gt;&gt; xi_k, yi_k = np.repeat(xi, 2), np.ravel(np.dstack((yi,ypi)))</span>
+<span class="sd">    &gt;&gt;&gt; KroghInterpolator(xi_k, yi_k)</span>
+
+<span class="sd">    To produce a vector-valued polynomial, supply a higher-dimensional</span>
+<span class="sd">    array for yi:</span>
+
+<span class="sd">    &gt;&gt;&gt; KroghInterpolator([0,1],[[2,3],[4,5]])</span>
+
+<span class="sd">    This constructs a linear polynomial giving (2,3) at 0 and (4,5) at 1.</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+
+<div class="viewcode-block" id="KroghInterpolator.__init__">
+<a class="viewcode-back" href="../../../_autosummary/generated/scipy.interpolate.KroghInterpolator.html#scipy.interpolate.KroghInterpolator.__init__">[docs]</a>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">xi</span><span class="p">,</span> <span class="n">yi</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">):</span>
+        <span class="n">_Interpolator1DWithDerivatives</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">xi</span><span class="p">,</span> <span class="n">yi</span><span class="p">,</span> <span class="n">axis</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">xi</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">xi</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">yi</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_reshape_yi</span><span class="p">(</span><span class="n">yi</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">n</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">r</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">yi</span><span class="o">.</span><span class="n">shape</span>
+
+        <span class="k">if</span> <span class="p">(</span><span class="n">deg</span> <span class="o">:=</span> <span class="bp">self</span><span class="o">.</span><span class="n">xi</span><span class="o">.</span><span class="n">size</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">30</span><span class="p">:</span>
+            <span class="n">warnings</span><span class="o">.</span><span class="n">warn</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">deg</span><span class="si">}</span><span class="s2"> degrees provided, degrees higher than about&quot;</span>
+                          <span class="s2">&quot; thirty cause problems with numerical instability &quot;</span>
+                          <span class="s2">&quot;with &#39;KroghInterpolator&#39;&quot;</span><span class="p">,</span> <span class="n">stacklevel</span><span class="o">=</span><span class="mi">2</span><span class="p">)</span>
+
+        <span class="n">c</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="bp">self</span><span class="o">.</span><span class="n">n</span><span class="o">+</span><span class="mi">1</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">r</span><span class="p">),</span> <span class="n">dtype</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">dtype</span><span class="p">)</span>
+        <span class="n">c</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">yi</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+        <span class="n">Vk</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="bp">self</span><span class="o">.</span><span class="n">n</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">r</span><span class="p">),</span> <span class="n">dtype</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">dtype</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">k</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">n</span><span class="p">):</span>
+            <span class="n">s</span> <span class="o">=</span> <span class="mi">0</span>
+            <span class="k">while</span> <span class="n">s</span> <span class="o">&lt;=</span> <span class="n">k</span> <span class="ow">and</span> <span class="n">xi</span><span class="p">[</span><span class="n">k</span><span class="o">-</span><span class="n">s</span><span class="p">]</span> <span class="o">==</span> <span class="n">xi</span><span class="p">[</span><span class="n">k</span><span class="p">]:</span>
+                <span class="n">s</span> <span class="o">+=</span> <span class="mi">1</span>
+            <span class="n">s</span> <span class="o">-=</span> <span class="mi">1</span>
+            <span class="n">Vk</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">yi</span><span class="p">[</span><span class="n">k</span><span class="p">]</span><span class="o">/</span><span class="n">float_factorial</span><span class="p">(</span><span class="n">s</span><span class="p">)</span>
+            <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">k</span><span class="o">-</span><span class="n">s</span><span class="p">):</span>
+                <span class="k">if</span> <span class="n">xi</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">==</span> <span class="n">xi</span><span class="p">[</span><span class="n">k</span><span class="p">]:</span>
+                    <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Elements if `xi` can&#39;t be equal.&quot;</span><span class="p">)</span>
+                <span class="k">if</span> <span class="n">s</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+                    <span class="n">Vk</span><span class="p">[</span><span class="n">i</span><span class="o">+</span><span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span><span class="n">c</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="o">-</span><span class="n">Vk</span><span class="p">[</span><span class="n">i</span><span class="p">])</span><span class="o">/</span><span class="p">(</span><span class="n">xi</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="o">-</span><span class="n">xi</span><span class="p">[</span><span class="n">k</span><span class="p">])</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="n">Vk</span><span class="p">[</span><span class="n">i</span><span class="o">+</span><span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span><span class="n">Vk</span><span class="p">[</span><span class="n">i</span><span class="o">+</span><span class="mi">1</span><span class="p">]</span><span class="o">-</span><span class="n">Vk</span><span class="p">[</span><span class="n">i</span><span class="p">])</span><span class="o">/</span><span class="p">(</span><span class="n">xi</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="o">-</span><span class="n">xi</span><span class="p">[</span><span class="n">k</span><span class="p">])</span>
+            <span class="n">c</span><span class="p">[</span><span class="n">k</span><span class="p">]</span> <span class="o">=</span> <span class="n">Vk</span><span class="p">[</span><span class="n">k</span><span class="o">-</span><span class="n">s</span><span class="p">]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">c</span> <span class="o">=</span> <span class="n">c</span></div>
+
+
+    <span class="k">def</span> <span class="nf">_evaluate</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">):</span>
+        <span class="n">pi</span> <span class="o">=</span> <span class="mi">1</span>
+        <span class="n">p</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="nb">len</span><span class="p">(</span><span class="n">x</span><span class="p">),</span> <span class="bp">self</span><span class="o">.</span><span class="n">r</span><span class="p">),</span> <span class="n">dtype</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">dtype</span><span class="p">)</span>
+        <span class="n">p</span> <span class="o">+=</span> <span class="bp">self</span><span class="o">.</span><span class="n">c</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span><span class="n">np</span><span class="o">.</span><span class="n">newaxis</span><span class="p">,:]</span>
+        <span class="k">for</span> <span class="n">k</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">n</span><span class="p">):</span>
+            <span class="n">w</span> <span class="o">=</span> <span class="n">x</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">xi</span><span class="p">[</span><span class="n">k</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
+            <span class="n">pi</span> <span class="o">=</span> <span class="n">w</span><span class="o">*</span><span class="n">pi</span>
+            <span class="n">p</span> <span class="o">+=</span> <span class="n">pi</span><span class="p">[:,</span><span class="n">np</span><span class="o">.</span><span class="n">newaxis</span><span class="p">]</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">c</span><span class="p">[</span><span class="n">k</span><span class="p">]</span>
+        <span class="k">return</span> <span class="n">p</span>
+
+    <span class="k">def</span> <span class="nf">_evaluate_derivatives</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="n">der</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="n">n</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">n</span>
+        <span class="n">r</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">r</span>
+
+        <span class="k">if</span> <span class="n">der</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">der</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">n</span>
+        <span class="n">pi</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="n">n</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">x</span><span class="p">)))</span>
+        <span class="n">w</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="n">n</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">x</span><span class="p">)))</span>
+        <span class="n">pi</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="mi">1</span>
+        <span class="n">p</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="nb">len</span><span class="p">(</span><span class="n">x</span><span class="p">),</span> <span class="bp">self</span><span class="o">.</span><span class="n">r</span><span class="p">),</span> <span class="n">dtype</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">dtype</span><span class="p">)</span>
+        <span class="n">p</span> <span class="o">+=</span> <span class="bp">self</span><span class="o">.</span><span class="n">c</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">newaxis</span><span class="p">,</span> <span class="p">:]</span>
+
+        <span class="k">for</span> <span class="n">k</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="n">n</span><span class="p">):</span>
+            <span class="n">w</span><span class="p">[</span><span class="n">k</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="n">x</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">xi</span><span class="p">[</span><span class="n">k</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
+            <span class="n">pi</span><span class="p">[</span><span class="n">k</span><span class="p">]</span> <span class="o">=</span> <span class="n">w</span><span class="p">[</span><span class="n">k</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">*</span> <span class="n">pi</span><span class="p">[</span><span class="n">k</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
+            <span class="n">p</span> <span class="o">+=</span> <span class="n">pi</span><span class="p">[</span><span class="n">k</span><span class="p">,</span> <span class="p">:,</span> <span class="n">np</span><span class="o">.</span><span class="n">newaxis</span><span class="p">]</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">c</span><span class="p">[</span><span class="n">k</span><span class="p">]</span>
+
+        <span class="n">cn</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="nb">max</span><span class="p">(</span><span class="n">der</span><span class="p">,</span> <span class="n">n</span><span class="o">+</span><span class="mi">1</span><span class="p">),</span> <span class="nb">len</span><span class="p">(</span><span class="n">x</span><span class="p">),</span> <span class="n">r</span><span class="p">),</span> <span class="n">dtype</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">dtype</span><span class="p">)</span>
+        <span class="n">cn</span><span class="p">[:</span><span class="n">n</span><span class="o">+</span><span class="mi">1</span><span class="p">,</span> <span class="p">:,</span> <span class="p">:]</span> <span class="o">+=</span> <span class="bp">self</span><span class="o">.</span><span class="n">c</span><span class="p">[:</span><span class="n">n</span><span class="o">+</span><span class="mi">1</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">newaxis</span><span class="p">,</span> <span class="p">:]</span>
+        <span class="n">cn</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="n">p</span>
+        <span class="k">for</span> <span class="n">k</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="n">n</span><span class="p">):</span>
+            <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="n">n</span><span class="o">-</span><span class="n">k</span><span class="o">+</span><span class="mi">1</span><span class="p">):</span>
+                <span class="n">pi</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="n">w</span><span class="p">[</span><span class="n">k</span><span class="o">+</span><span class="n">i</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span><span class="o">*</span><span class="n">pi</span><span class="p">[</span><span class="n">i</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">+</span> <span class="n">pi</span><span class="p">[</span><span class="n">i</span><span class="p">]</span>
+                <span class="n">cn</span><span class="p">[</span><span class="n">k</span><span class="p">]</span> <span class="o">=</span> <span class="n">cn</span><span class="p">[</span><span class="n">k</span><span class="p">]</span> <span class="o">+</span> <span class="n">pi</span><span class="p">[</span><span class="n">i</span><span class="p">,</span> <span class="p">:,</span> <span class="n">np</span><span class="o">.</span><span class="n">newaxis</span><span class="p">]</span><span class="o">*</span><span class="n">cn</span><span class="p">[</span><span class="n">k</span><span class="o">+</span><span class="n">i</span><span class="p">]</span>
+            <span class="n">cn</span><span class="p">[</span><span class="n">k</span><span class="p">]</span> <span class="o">*=</span> <span class="n">float_factorial</span><span class="p">(</span><span class="n">k</span><span class="p">)</span>
+
+        <span class="n">cn</span><span class="p">[</span><span class="n">n</span><span class="p">,</span> <span class="p">:,</span> <span class="p">:]</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="k">return</span> <span class="n">cn</span><span class="p">[:</span><span class="n">der</span><span class="p">]</span></div>
+
+
+
+<div class="viewcode-block" id="krogh_interpolate">
+<a class="viewcode-back" href="../../../_autosummary/generated/scipy.interpolate.krogh_interpolate.html#scipy.interpolate.krogh_interpolate">[docs]</a>
+<span class="k">def</span> <span class="nf">krogh_interpolate</span><span class="p">(</span><span class="n">xi</span><span class="p">,</span> <span class="n">yi</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="n">der</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Convenience function for polynomial interpolation.</span>
+
+<span class="sd">    See `KroghInterpolator` for more details.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    xi : array_like</span>
+<span class="sd">        Known x-coordinates.</span>
+<span class="sd">    yi : array_like</span>
+<span class="sd">        Known y-coordinates, of shape ``(xi.size, R)``. Interpreted as</span>
+<span class="sd">        vectors of length R, or scalars if R=1.</span>
+<span class="sd">    x : array_like</span>
+<span class="sd">        Point or points at which to evaluate the derivatives.</span>
+<span class="sd">    der : int or list, optional</span>
+<span class="sd">        How many derivatives to extract; None for all potentially</span>
+<span class="sd">        nonzero derivatives (that is a number equal to the number</span>
+<span class="sd">        of points), or a list of derivatives to extract. This number</span>
+<span class="sd">        includes the function value as 0th derivative.</span>
+<span class="sd">    axis : int, optional</span>
+<span class="sd">        Axis in the yi array corresponding to the x-coordinate values.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    d : ndarray</span>
+<span class="sd">        If the interpolator&#39;s values are R-D then the</span>
+<span class="sd">        returned array will be the number of derivatives by N by R.</span>
+<span class="sd">        If `x` is a scalar, the middle dimension will be dropped; if</span>
+<span class="sd">        the `yi` are scalars then the last dimension will be dropped.</span>
+
+<span class="sd">    See Also</span>
+<span class="sd">    --------</span>
+<span class="sd">    KroghInterpolator : Krogh interpolator</span>
+
+<span class="sd">    Notes</span>
+<span class="sd">    -----</span>
+<span class="sd">    Construction of the interpolating polynomial is a relatively expensive</span>
+<span class="sd">    process. If you want to evaluate it repeatedly consider using the class</span>
+<span class="sd">    KroghInterpolator (which is what this function uses).</span>
+
+<span class="sd">    Examples</span>
+<span class="sd">    --------</span>
+<span class="sd">    We can interpolate 2D observed data using krogh interpolation:</span>
+
+<span class="sd">    &gt;&gt;&gt; import numpy as np</span>
+<span class="sd">    &gt;&gt;&gt; import matplotlib.pyplot as plt</span>
+<span class="sd">    &gt;&gt;&gt; from scipy.interpolate import krogh_interpolate</span>
+<span class="sd">    &gt;&gt;&gt; x_observed = np.linspace(0.0, 10.0, 11)</span>
+<span class="sd">    &gt;&gt;&gt; y_observed = np.sin(x_observed)</span>
+<span class="sd">    &gt;&gt;&gt; x = np.linspace(min(x_observed), max(x_observed), num=100)</span>
+<span class="sd">    &gt;&gt;&gt; y = krogh_interpolate(x_observed, y_observed, x)</span>
+<span class="sd">    &gt;&gt;&gt; plt.plot(x_observed, y_observed, &quot;o&quot;, label=&quot;observation&quot;)</span>
+<span class="sd">    &gt;&gt;&gt; plt.plot(x, y, label=&quot;krogh interpolation&quot;)</span>
+<span class="sd">    &gt;&gt;&gt; plt.legend()</span>
+<span class="sd">    &gt;&gt;&gt; plt.show()</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">P</span> <span class="o">=</span> <span class="n">KroghInterpolator</span><span class="p">(</span><span class="n">xi</span><span class="p">,</span> <span class="n">yi</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="n">axis</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">der</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">P</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
+    <span class="k">elif</span> <span class="n">_isscalar</span><span class="p">(</span><span class="n">der</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">P</span><span class="o">.</span><span class="n">derivative</span><span class="p">(</span><span class="n">x</span><span class="p">,</span><span class="n">der</span><span class="o">=</span><span class="n">der</span><span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">P</span><span class="o">.</span><span class="n">derivatives</span><span class="p">(</span><span class="n">x</span><span class="p">,</span><span class="n">der</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">amax</span><span class="p">(</span><span class="n">der</span><span class="p">)</span><span class="o">+</span><span class="mi">1</span><span class="p">)[</span><span class="n">der</span><span class="p">]</span></div>
+
+
+
+<div class="viewcode-block" id="approximate_taylor_polynomial">
+<a class="viewcode-back" href="../../../_autosummary/generated/scipy.interpolate.approximate_taylor_polynomial.html#scipy.interpolate.approximate_taylor_polynomial">[docs]</a>
+<span class="k">def</span> <span class="nf">approximate_taylor_polynomial</span><span class="p">(</span><span class="n">f</span><span class="p">,</span><span class="n">x</span><span class="p">,</span><span class="n">degree</span><span class="p">,</span><span class="n">scale</span><span class="p">,</span><span class="n">order</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Estimate the Taylor polynomial of f at x by polynomial fitting.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    f : callable</span>
+<span class="sd">        The function whose Taylor polynomial is sought. Should accept</span>
+<span class="sd">        a vector of `x` values.</span>
+<span class="sd">    x : scalar</span>
+<span class="sd">        The point at which the polynomial is to be evaluated.</span>
+<span class="sd">    degree : int</span>
+<span class="sd">        The degree of the Taylor polynomial</span>
+<span class="sd">    scale : scalar</span>
+<span class="sd">        The width of the interval to use to evaluate the Taylor polynomial.</span>
+<span class="sd">        Function values spread over a range this wide are used to fit the</span>
+<span class="sd">        polynomial. Must be chosen carefully.</span>
+<span class="sd">    order : int or None, optional</span>
+<span class="sd">        The order of the polynomial to be used in the fitting; `f` will be</span>
+<span class="sd">        evaluated ``order+1`` times. If None, use `degree`.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    p : poly1d instance</span>
+<span class="sd">        The Taylor polynomial (translated to the origin, so that</span>
+<span class="sd">        for example p(0)=f(x)).</span>
+
+<span class="sd">    Notes</span>
+<span class="sd">    -----</span>
+<span class="sd">    The appropriate choice of &quot;scale&quot; is a trade-off; too large and the</span>
+<span class="sd">    function differs from its Taylor polynomial too much to get a good</span>
+<span class="sd">    answer, too small and round-off errors overwhelm the higher-order terms.</span>
+<span class="sd">    The algorithm used becomes numerically unstable around order 30 even</span>
+<span class="sd">    under ideal circumstances.</span>
+
+<span class="sd">    Choosing order somewhat larger than degree may improve the higher-order</span>
+<span class="sd">    terms.</span>
+
+<span class="sd">    Examples</span>
+<span class="sd">    --------</span>
+<span class="sd">    We can calculate Taylor approximation polynomials of sin function with</span>
+<span class="sd">    various degrees:</span>
+
+<span class="sd">    &gt;&gt;&gt; import numpy as np</span>
+<span class="sd">    &gt;&gt;&gt; import matplotlib.pyplot as plt</span>
+<span class="sd">    &gt;&gt;&gt; from scipy.interpolate import approximate_taylor_polynomial</span>
+<span class="sd">    &gt;&gt;&gt; x = np.linspace(-10.0, 10.0, num=100)</span>
+<span class="sd">    &gt;&gt;&gt; plt.plot(x, np.sin(x), label=&quot;sin curve&quot;)</span>
+<span class="sd">    &gt;&gt;&gt; for degree in np.arange(1, 15, step=2):</span>
+<span class="sd">    ...     sin_taylor = approximate_taylor_polynomial(np.sin, 0, degree, 1,</span>
+<span class="sd">    ...                                                order=degree + 2)</span>
+<span class="sd">    ...     plt.plot(x, sin_taylor(x), label=f&quot;degree={degree}&quot;)</span>
+<span class="sd">    &gt;&gt;&gt; plt.legend(bbox_to_anchor=(1.05, 1), loc=&#39;upper left&#39;,</span>
+<span class="sd">    ...            borderaxespad=0.0, shadow=True)</span>
+<span class="sd">    &gt;&gt;&gt; plt.tight_layout()</span>
+<span class="sd">    &gt;&gt;&gt; plt.axis([-10, 10, -10, 10])</span>
+<span class="sd">    &gt;&gt;&gt; plt.show()</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="n">order</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">order</span> <span class="o">=</span> <span class="n">degree</span>
+
+    <span class="n">n</span> <span class="o">=</span> <span class="n">order</span><span class="o">+</span><span class="mi">1</span>
+    <span class="c1"># Choose n points that cluster near the endpoints of the interval in</span>
+    <span class="c1"># a way that avoids the Runge phenomenon. Ensure, by including the</span>
+    <span class="c1"># endpoint or not as appropriate, that one point always falls at x</span>
+    <span class="c1"># exactly.</span>
+    <span class="n">xs</span> <span class="o">=</span> <span class="n">scale</span><span class="o">*</span><span class="n">np</span><span class="o">.</span><span class="n">cos</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">linspace</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span><span class="n">np</span><span class="o">.</span><span class="n">pi</span><span class="p">,</span><span class="n">n</span><span class="p">,</span><span class="n">endpoint</span><span class="o">=</span><span class="n">n</span> <span class="o">%</span> <span class="mi">1</span><span class="p">))</span> <span class="o">+</span> <span class="n">x</span>
+
+    <span class="n">P</span> <span class="o">=</span> <span class="n">KroghInterpolator</span><span class="p">(</span><span class="n">xs</span><span class="p">,</span> <span class="n">f</span><span class="p">(</span><span class="n">xs</span><span class="p">))</span>
+    <span class="n">d</span> <span class="o">=</span> <span class="n">P</span><span class="o">.</span><span class="n">derivatives</span><span class="p">(</span><span class="n">x</span><span class="p">,</span><span class="n">der</span><span class="o">=</span><span class="n">degree</span><span class="o">+</span><span class="mi">1</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">poly1d</span><span class="p">((</span><span class="n">d</span><span class="o">/</span><span class="n">factorial</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="n">degree</span><span class="o">+</span><span class="mi">1</span><span class="p">)))[::</span><span class="o">-</span><span class="mi">1</span><span class="p">])</span></div>
+
+
+
+<div class="viewcode-block" id="BarycentricInterpolator">
+<a class="viewcode-back" href="../../../_autosummary/generated/scipy.interpolate.BarycentricInterpolator.html#scipy.interpolate.BarycentricInterpolator">[docs]</a>
+<span class="k">class</span> <span class="nc">BarycentricInterpolator</span><span class="p">(</span><span class="n">_Interpolator1D</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;The interpolating polynomial for a set of points</span>
+
+<span class="sd">    Constructs a polynomial that passes through a given set of points.</span>
+<span class="sd">    Allows evaluation of the polynomial, efficient changing of the y</span>
+<span class="sd">    values to be interpolated, and updating by adding more x values.</span>
+<span class="sd">    For reasons of numerical stability, this function does not compute</span>
+<span class="sd">    the coefficients of the polynomial.</span>
+
+<span class="sd">    The values yi need to be provided before the function is</span>
+<span class="sd">    evaluated, but none of the preprocessing depends on them, so rapid</span>
+<span class="sd">    updates are possible.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    xi : array_like</span>
+<span class="sd">        1-D array of x coordinates of the points the polynomial</span>
+<span class="sd">        should pass through</span>
+<span class="sd">    yi : array_like, optional</span>
+<span class="sd">        The y coordinates of the points the polynomial should pass through.</span>
+<span class="sd">        If None, the y values will be supplied later via the `set_y` method.</span>
+<span class="sd">    axis : int, optional</span>
+<span class="sd">        Axis in the yi array corresponding to the x-coordinate values.</span>
+
+<span class="sd">    Notes</span>
+<span class="sd">    -----</span>
+<span class="sd">    This class uses a &quot;barycentric interpolation&quot; method that treats</span>
+<span class="sd">    the problem as a special case of rational function interpolation.</span>
+<span class="sd">    This algorithm is quite stable, numerically, but even in a world of</span>
+<span class="sd">    exact computation, unless the x coordinates are chosen very</span>
+<span class="sd">    carefully - Chebyshev zeros (e.g., cos(i*pi/n)) are a good choice -</span>
+<span class="sd">    polynomial interpolation itself is a very ill-conditioned process</span>
+<span class="sd">    due to the Runge phenomenon.</span>
+
+<span class="sd">    Based on Berrut and Trefethen 2004, &quot;Barycentric Lagrange Interpolation&quot;.</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+
+<div class="viewcode-block" id="BarycentricInterpolator.__init__">
+<a class="viewcode-back" href="../../../_autosummary/generated/scipy.interpolate.BarycentricInterpolator.html#scipy.interpolate.BarycentricInterpolator.__init__">[docs]</a>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">xi</span><span class="p">,</span> <span class="n">yi</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">):</span>
+        <span class="n">_Interpolator1D</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">xi</span><span class="p">,</span> <span class="n">yi</span><span class="p">,</span> <span class="n">axis</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">xi</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asfarray</span><span class="p">(</span><span class="n">xi</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">set_yi</span><span class="p">(</span><span class="n">yi</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">n</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">xi</span><span class="p">)</span>
+
+        <span class="c1"># See page 510 of Berrut and Trefethen 2004 for an explanation of the</span>
+        <span class="c1"># capacity scaling and the suggestion of using a random permutation of</span>
+        <span class="c1"># the input factors.</span>
+        <span class="c1"># At the moment, the permutation is not performed for xi that are</span>
+        <span class="c1"># appended later through the add_xi interface. It&#39;s not clear to me how</span>
+        <span class="c1"># to implement that and it seems that most situations that require</span>
+        <span class="c1"># these numerical stability improvements will be able to provide all</span>
+        <span class="c1"># the points to the constructor.</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_inv_capacity</span> <span class="o">=</span> <span class="mf">4.0</span> <span class="o">/</span> <span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">max</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">xi</span><span class="p">)</span> <span class="o">-</span> <span class="n">np</span><span class="o">.</span><span class="n">min</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">xi</span><span class="p">))</span>
+        <span class="n">permute</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">permutation</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">n</span><span class="p">)</span>
+        <span class="n">inv_permute</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">n</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">int32</span><span class="p">)</span>
+        <span class="n">inv_permute</span><span class="p">[</span><span class="n">permute</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">n</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">wi</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">n</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">n</span><span class="p">):</span>
+            <span class="n">dist</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_inv_capacity</span> <span class="o">*</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">xi</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">xi</span><span class="p">[</span><span class="n">permute</span><span class="p">])</span>
+            <span class="n">dist</span><span class="p">[</span><span class="n">inv_permute</span><span class="p">[</span><span class="n">i</span><span class="p">]]</span> <span class="o">=</span> <span class="mf">1.0</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">wi</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="mf">1.0</span> <span class="o">/</span> <span class="n">np</span><span class="o">.</span><span class="n">prod</span><span class="p">(</span><span class="n">dist</span><span class="p">)</span></div>
+
+
+    <span class="k">def</span> <span class="nf">set_yi</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">yi</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Update the y values to be interpolated</span>
+
+<span class="sd">        The barycentric interpolation algorithm requires the calculation</span>
+<span class="sd">        of weights, but these depend only on the xi. The yi can be changed</span>
+<span class="sd">        at any time.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        yi : array_like</span>
+<span class="sd">            The y coordinates of the points the polynomial should pass through.</span>
+<span class="sd">            If None, the y values will be supplied later.</span>
+<span class="sd">        axis : int, optional</span>
+<span class="sd">            Axis in the yi array corresponding to the x-coordinate values.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="n">yi</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">yi</span> <span class="o">=</span> <span class="kc">None</span>
+            <span class="k">return</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_set_yi</span><span class="p">(</span><span class="n">yi</span><span class="p">,</span> <span class="n">xi</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">xi</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="n">axis</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">yi</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_reshape_yi</span><span class="p">(</span><span class="n">yi</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">n</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">r</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">yi</span><span class="o">.</span><span class="n">shape</span>
+
+    <span class="k">def</span> <span class="nf">add_xi</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">xi</span><span class="p">,</span> <span class="n">yi</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Add more x values to the set to be interpolated</span>
+
+<span class="sd">        The barycentric interpolation algorithm allows easy updating by</span>
+<span class="sd">        adding more points for the polynomial to pass through.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        xi : array_like</span>
+<span class="sd">            The x coordinates of the points that the polynomial should pass</span>
+<span class="sd">            through.</span>
+<span class="sd">        yi : array_like, optional</span>
+<span class="sd">            The y coordinates of the points the polynomial should pass through.</span>
+<span class="sd">            Should have shape ``(xi.size, R)``; if R &gt; 1 then the polynomial is</span>
+<span class="sd">            vector-valued.</span>
+<span class="sd">            If `yi` is not given, the y values will be supplied later. `yi`</span>
+<span class="sd">            should be given if and only if the interpolator has y values</span>
+<span class="sd">            specified.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="n">yi</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">yi</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;No previous yi value to update!&quot;</span><span class="p">)</span>
+            <span class="n">yi</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_reshape_yi</span><span class="p">(</span><span class="n">yi</span><span class="p">,</span> <span class="n">check</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">yi</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">vstack</span><span class="p">((</span><span class="bp">self</span><span class="o">.</span><span class="n">yi</span><span class="p">,</span><span class="n">yi</span><span class="p">))</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">yi</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;No update to yi provided!&quot;</span><span class="p">)</span>
+        <span class="n">old_n</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">n</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">xi</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">concatenate</span><span class="p">((</span><span class="bp">self</span><span class="o">.</span><span class="n">xi</span><span class="p">,</span><span class="n">xi</span><span class="p">))</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">n</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">xi</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">wi</span> <span class="o">**=</span> <span class="o">-</span><span class="mi">1</span>
+        <span class="n">old_wi</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">wi</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">wi</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">n</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">wi</span><span class="p">[:</span><span class="n">old_n</span><span class="p">]</span> <span class="o">=</span> <span class="n">old_wi</span>
+        <span class="k">for</span> <span class="n">j</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">old_n</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">n</span><span class="p">):</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">wi</span><span class="p">[:</span><span class="n">j</span><span class="p">]</span> <span class="o">*=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_inv_capacity</span> <span class="o">*</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">xi</span><span class="p">[</span><span class="n">j</span><span class="p">]</span><span class="o">-</span><span class="bp">self</span><span class="o">.</span><span class="n">xi</span><span class="p">[:</span><span class="n">j</span><span class="p">])</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">wi</span><span class="p">[</span><span class="n">j</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">multiply</span><span class="o">.</span><span class="n">reduce</span><span class="p">(</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_inv_capacity</span> <span class="o">*</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">xi</span><span class="p">[:</span><span class="n">j</span><span class="p">]</span><span class="o">-</span><span class="bp">self</span><span class="o">.</span><span class="n">xi</span><span class="p">[</span><span class="n">j</span><span class="p">])</span>
+            <span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">wi</span> <span class="o">**=</span> <span class="o">-</span><span class="mi">1</span>
+
+    <span class="k">def</span> <span class="fm">__call__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Evaluate the interpolating polynomial at the points x</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        x : array_like</span>
+<span class="sd">            Points to evaluate the interpolant at.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        y : array_like</span>
+<span class="sd">            Interpolated values. Shape is determined by replacing</span>
+<span class="sd">            the interpolation axis in the original array with the shape of x.</span>
+
+<span class="sd">        Notes</span>
+<span class="sd">        -----</span>
+<span class="sd">        Currently the code computes an outer product between x and the</span>
+<span class="sd">        weights, that is, it constructs an intermediate array of size</span>
+<span class="sd">        N by len(x), where N is the degree of the polynomial.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="n">_Interpolator1D</span><span class="o">.</span><span class="fm">__call__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">_evaluate</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">):</span>
+        <span class="k">if</span> <span class="n">x</span><span class="o">.</span><span class="n">size</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="n">p</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="mi">0</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">r</span><span class="p">),</span> <span class="n">dtype</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">dtype</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">c</span> <span class="o">=</span> <span class="n">x</span><span class="p">[</span><span class="o">...</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">newaxis</span><span class="p">]</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">xi</span>
+            <span class="n">z</span> <span class="o">=</span> <span class="n">c</span> <span class="o">==</span> <span class="mi">0</span>
+            <span class="n">c</span><span class="p">[</span><span class="n">z</span><span class="p">]</span> <span class="o">=</span> <span class="mi">1</span>
+            <span class="n">c</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">wi</span><span class="o">/</span><span class="n">c</span>
+            <span class="k">with</span> <span class="n">np</span><span class="o">.</span><span class="n">errstate</span><span class="p">(</span><span class="n">divide</span><span class="o">=</span><span class="s1">&#39;ignore&#39;</span><span class="p">):</span>
+                <span class="n">p</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">c</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">yi</span><span class="p">)</span> <span class="o">/</span> <span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">c</span><span class="p">,</span> <span class="n">axis</span><span class="o">=-</span><span class="mi">1</span><span class="p">)[</span><span class="o">...</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">newaxis</span><span class="p">]</span>
+            <span class="c1"># Now fix where x==some xi</span>
+            <span class="n">r</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">nonzero</span><span class="p">(</span><span class="n">z</span><span class="p">)</span>
+            <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">r</span><span class="p">)</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>  <span class="c1"># evaluation at a scalar</span>
+                <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">r</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>  <span class="c1"># equals one of the points</span>
+                    <span class="n">p</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">yi</span><span class="p">[</span><span class="n">r</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="mi">0</span><span class="p">]]</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">p</span><span class="p">[</span><span class="n">r</span><span class="p">[:</span><span class="o">-</span><span class="mi">1</span><span class="p">]]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">yi</span><span class="p">[</span><span class="n">r</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]]</span>
+        <span class="k">return</span> <span class="n">p</span></div>
+
+
+
+<div class="viewcode-block" id="barycentric_interpolate">
+<a class="viewcode-back" href="../../../_autosummary/generated/scipy.interpolate.barycentric_interpolate.html#scipy.interpolate.barycentric_interpolate">[docs]</a>
+<span class="k">def</span> <span class="nf">barycentric_interpolate</span><span class="p">(</span><span class="n">xi</span><span class="p">,</span> <span class="n">yi</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Convenience function for polynomial interpolation.</span>
+
+<span class="sd">    Constructs a polynomial that passes through a given set of points,</span>
+<span class="sd">    then evaluates the polynomial. For reasons of numerical stability,</span>
+<span class="sd">    this function does not compute the coefficients of the polynomial.</span>
+
+<span class="sd">    This function uses a &quot;barycentric interpolation&quot; method that treats</span>
+<span class="sd">    the problem as a special case of rational function interpolation.</span>
+<span class="sd">    This algorithm is quite stable, numerically, but even in a world of</span>
+<span class="sd">    exact computation, unless the `x` coordinates are chosen very</span>
+<span class="sd">    carefully - Chebyshev zeros (e.g., cos(i*pi/n)) are a good choice -</span>
+<span class="sd">    polynomial interpolation itself is a very ill-conditioned process</span>
+<span class="sd">    due to the Runge phenomenon.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    xi : array_like</span>
+<span class="sd">        1-D array of x coordinates of the points the polynomial should</span>
+<span class="sd">        pass through</span>
+<span class="sd">    yi : array_like</span>
+<span class="sd">        The y coordinates of the points the polynomial should pass through.</span>
+<span class="sd">    x : scalar or array_like</span>
+<span class="sd">        Points to evaluate the interpolator at.</span>
+<span class="sd">    axis : int, optional</span>
+<span class="sd">        Axis in the yi array corresponding to the x-coordinate values.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    y : scalar or array_like</span>
+<span class="sd">        Interpolated values. Shape is determined by replacing</span>
+<span class="sd">        the interpolation axis in the original array with the shape of x.</span>
+
+<span class="sd">    See Also</span>
+<span class="sd">    --------</span>
+<span class="sd">    BarycentricInterpolator : Bary centric interpolator</span>
+
+<span class="sd">    Notes</span>
+<span class="sd">    -----</span>
+<span class="sd">    Construction of the interpolation weights is a relatively slow process.</span>
+<span class="sd">    If you want to call this many times with the same xi (but possibly</span>
+<span class="sd">    varying yi or x) you should use the class `BarycentricInterpolator`.</span>
+<span class="sd">    This is what this function uses internally.</span>
+
+<span class="sd">    Examples</span>
+<span class="sd">    --------</span>
+<span class="sd">    We can interpolate 2D observed data using barycentric interpolation:</span>
+
+<span class="sd">    &gt;&gt;&gt; import numpy as np</span>
+<span class="sd">    &gt;&gt;&gt; import matplotlib.pyplot as plt</span>
+<span class="sd">    &gt;&gt;&gt; from scipy.interpolate import barycentric_interpolate</span>
+<span class="sd">    &gt;&gt;&gt; x_observed = np.linspace(0.0, 10.0, 11)</span>
+<span class="sd">    &gt;&gt;&gt; y_observed = np.sin(x_observed)</span>
+<span class="sd">    &gt;&gt;&gt; x = np.linspace(min(x_observed), max(x_observed), num=100)</span>
+<span class="sd">    &gt;&gt;&gt; y = barycentric_interpolate(x_observed, y_observed, x)</span>
+<span class="sd">    &gt;&gt;&gt; plt.plot(x_observed, y_observed, &quot;o&quot;, label=&quot;observation&quot;)</span>
+<span class="sd">    &gt;&gt;&gt; plt.plot(x, y, label=&quot;barycentric interpolation&quot;)</span>
+<span class="sd">    &gt;&gt;&gt; plt.legend()</span>
+<span class="sd">    &gt;&gt;&gt; plt.show()</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">return</span> <span class="n">BarycentricInterpolator</span><span class="p">(</span><span class="n">xi</span><span class="p">,</span> <span class="n">yi</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="n">axis</span><span class="p">)(</span><span class="n">x</span><span class="p">)</span></div>
+
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2023, Craig Yanitski.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

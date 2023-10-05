@@ -1,0 +1,366 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>kosmatau3d.models.constants.change &mdash; kosmatau3d 1.0.3 documentation</title>
+      <link rel="stylesheet" href="../../../../_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="../../../../_static/css/theme.css" type="text/css" />
+      <link rel="stylesheet" href="../../../../_static/readthedocs-custom.css" type="text/css" />
+  <!--[if lt IE 9]>
+    <script src="../../../../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script src="../../../../_static/documentation_options.js?v=baaebd52"></script>
+        <script src="../../../../_static/doctools.js?v=888ff710"></script>
+        <script src="../../../../_static/sphinx_highlight.js?v=dc90522c"></script>
+        <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+    <script src="../../../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../../../../index.html" class="icon icon-home">
+            kosmatau3d
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../../installation.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../properties.html">KOSMA-$\tau$ Properties</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../voxel.html">Voxels</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../model.html">3D Models</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../comparison.html">Comparison to Observations</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../development.html">Future Development</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../_autosummary/kosmatau3d.html">API Reference</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../acknowledgements.html">Acknowledgements</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../../index.html">kosmatau3d</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../../../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../../../index.html">Module code</a></li>
+          <li class="breadcrumb-item"><a href="../../models.html">kosmatau3d.models</a></li>
+      <li class="breadcrumb-item active">kosmatau3d.models.constants.change</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <h1>Source code for kosmatau3d.models.constants.change</h1><div class="highlight"><pre>
+<span></span><span class="kn">import</span> <span class="nn">os</span>
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<span class="kn">from</span> <span class="nn">copy</span> <span class="kn">import</span> <span class="n">copy</span>
+
+<span class="kn">from</span> <span class="nn">numba</span> <span class="kn">import</span> <span class="n">jit_module</span>
+<span class="kn">from</span> <span class="nn">numba.core.errors</span> <span class="kn">import</span> <span class="n">NumbaDeprecationWarning</span><span class="p">,</span> <span class="n">NumbaPendingDeprecationWarning</span>
+<span class="kn">import</span> <span class="nn">warnings</span>
+
+<span class="kn">from</span> <span class="nn">kosmatau3d.models</span> <span class="kn">import</span> <span class="n">constants</span>
+<span class="kn">from</span> <span class="nn">kosmatau3d.models</span> <span class="kn">import</span> <span class="n">species</span>
+
+<span class="n">warnings</span><span class="o">.</span><span class="n">simplefilter</span><span class="p">(</span><span class="s1">&#39;ignore&#39;</span><span class="p">,</span> <span class="n">category</span><span class="o">=</span><span class="n">NumbaDeprecationWarning</span><span class="p">)</span>
+<span class="n">warnings</span><span class="o">.</span><span class="n">simplefilter</span><span class="p">(</span><span class="s1">&#39;ignore&#39;</span><span class="p">,</span> <span class="n">category</span><span class="o">=</span><span class="n">NumbaPendingDeprecationWarning</span><span class="p">)</span>
+
+<span class="sd">&#39;&#39;&#39;</span>
+<span class="sd">This is a script to contain all of the methods needed to change the model parameters.</span>
+<span class="sd">&#39;&#39;&#39;</span>
+
+
+<div class="viewcode-block" id="change_velocity_number">
+<a class="viewcode-back" href="../../../../_autosummary/kosmatau3d.models.constants.change.change_velocity_number.html#kosmatau3d.models.constants.change.change_velocity_number">[docs]</a>
+<span class="k">def</span> <span class="nf">change_velocity_number</span><span class="p">(</span><span class="n">num</span><span class="p">):</span>
+    <span class="n">num</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">max</span><span class="p">((</span><span class="n">num</span><span class="p">,</span> <span class="mi">2</span><span class="p">))</span>
+    <span class="n">constants</span><span class="o">.</span><span class="n">velocity_number</span> <span class="o">=</span> <span class="n">copy</span><span class="p">(</span><span class="n">num</span><span class="p">)</span>
+    <span class="n">constants</span><span class="o">.</span><span class="n">velocity_range</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linspace</span><span class="p">(</span><span class="n">constants</span><span class="o">.</span><span class="n">velocity_bin</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span>
+                                           <span class="n">constants</span><span class="o">.</span><span class="n">velocity_bin</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">],</span>
+                                           <span class="n">num</span><span class="o">=</span><span class="n">constants</span><span class="o">.</span><span class="n">velocity_number</span><span class="p">)</span>
+    <span class="n">constants</span><span class="o">.</span><span class="n">velocity_step</span> <span class="o">=</span> <span class="n">constants</span><span class="o">.</span><span class="n">velocity_range</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">-</span> <span class="n">constants</span><span class="o">.</span><span class="n">velocity_range</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+    <span class="k">return</span></div>
+
+
+
+<div class="viewcode-block" id="change_velocity_range">
+<a class="viewcode-back" href="../../../../_autosummary/kosmatau3d.models.constants.change.change_velocity_range.html#kosmatau3d.models.constants.change.change_velocity_range">[docs]</a>
+<span class="k">def</span> <span class="nf">change_velocity_range</span><span class="p">(</span><span class="nb">range</span><span class="p">):</span>
+    <span class="n">constants</span><span class="o">.</span><span class="n">velocity_bin</span> <span class="o">=</span> <span class="n">copy</span><span class="p">(</span><span class="nb">range</span><span class="p">)</span>
+    <span class="n">constants</span><span class="o">.</span><span class="n">velocity_range</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linspace</span><span class="p">(</span><span class="n">constants</span><span class="o">.</span><span class="n">velocity_bin</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span>
+                                          <span class="n">constants</span><span class="o">.</span><span class="n">velocity_bin</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">],</span>
+                                          <span class="n">num</span><span class="o">=</span><span class="n">constants</span><span class="o">.</span><span class="n">velocity_number</span><span class="p">)</span>
+    <span class="n">constants</span><span class="o">.</span><span class="n">velocity_step</span> <span class="o">=</span> <span class="n">constants</span><span class="o">.</span><span class="n">velocity_range</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">-</span> <span class="n">constants</span><span class="o">.</span><span class="n">velocity_range</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+    <span class="k">return</span></div>
+
+
+
+<div class="viewcode-block" id="change_clump_mass_number">
+<a class="viewcode-back" href="../../../../_autosummary/kosmatau3d.models.constants.change.change_clump_mass_number.html#kosmatau3d.models.constants.change.change_clump_mass_number">[docs]</a>
+<span class="k">def</span> <span class="nf">change_clump_mass_number</span><span class="p">(</span><span class="n">num</span><span class="p">):</span>
+    <span class="c1"># This will affect all clump sets, so the `num` needs to be a list with length of the number of clump sets.</span>
+    <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">num</span><span class="p">,</span> <span class="nb">list</span><span class="p">)</span> <span class="ow">or</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">num</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">):</span>
+        <span class="n">constants</span><span class="o">.</span><span class="n">clump_mass_number</span> <span class="o">=</span> <span class="n">copy</span><span class="p">(</span><span class="n">num</span><span class="p">)</span>
+        <span class="n">constants</span><span class="o">.</span><span class="n">clump_log_mass</span> <span class="o">=</span> <span class="p">[[]</span> <span class="k">for</span> <span class="n">_</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">num</span><span class="p">))]</span>
+        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">num</span><span class="p">)):</span>
+            <span class="n">constants</span><span class="o">.</span><span class="n">clump_log_mass</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linspace</span><span class="p">(</span><span class="n">constants</span><span class="o">.</span><span class="n">clump_log_mass_range</span><span class="p">[</span><span class="n">i</span><span class="p">][</span><span class="mi">0</span><span class="p">],</span>
+                                                      <span class="n">constants</span><span class="o">.</span><span class="n">clump_log_mass_range</span><span class="p">[</span><span class="n">i</span><span class="p">][</span><span class="o">-</span><span class="mi">1</span><span class="p">],</span>
+                                                      <span class="n">num</span><span class="o">=</span><span class="n">constants</span><span class="o">.</span><span class="n">clump_mass_number</span><span class="p">[</span><span class="n">i</span><span class="p">])</span>
+            <span class="n">constants</span><span class="o">.</span><span class="n">clump_log_mass</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="o">.</span><span class="n">resize</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="n">constants</span><span class="o">.</span><span class="n">clump_mass_number</span><span class="p">[</span><span class="n">i</span><span class="p">])</span>
+    <span class="k">return</span></div>
+
+
+
+<div class="viewcode-block" id="change_clump_mass_range">
+<a class="viewcode-back" href="../../../../_autosummary/kosmatau3d.models.constants.change.change_clump_mass_range.html#kosmatau3d.models.constants.change.change_clump_mass_range">[docs]</a>
+<span class="k">def</span> <span class="nf">change_clump_mass_range</span><span class="p">(</span><span class="n">mass_range</span><span class="p">):</span>
+    <span class="c1"># This will affect all clump sets, so the `massRange` needs to be a list with length of the number of clump sets.</span>
+    <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">mass_range</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="nb">list</span><span class="p">)</span> <span class="ow">or</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">mass_range</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">):</span>
+        <span class="n">constants</span><span class="o">.</span><span class="n">clump_log_mass_range</span> <span class="o">=</span> <span class="n">copy</span><span class="p">(</span><span class="n">mass_range</span><span class="p">)</span>
+        <span class="n">constants</span><span class="o">.</span><span class="n">clump_log_mass</span> <span class="o">=</span> <span class="p">[[]</span> <span class="k">for</span> <span class="n">_</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">mass_range</span><span class="p">))]</span>
+        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">mass_range</span><span class="p">)):</span>
+            <span class="n">constants</span><span class="o">.</span><span class="n">clump_log_mass</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linspace</span><span class="p">(</span><span class="nb">min</span><span class="p">(</span><span class="n">constants</span><span class="o">.</span><span class="n">clump_log_mass_range</span><span class="p">[</span><span class="n">i</span><span class="p">]),</span>
+                                                      <span class="nb">max</span><span class="p">(</span><span class="n">constants</span><span class="o">.</span><span class="n">clump_log_mass_range</span><span class="p">[</span><span class="n">i</span><span class="p">]),</span>
+                                                      <span class="n">num</span><span class="o">=</span><span class="n">constants</span><span class="o">.</span><span class="n">clump_mass_number</span><span class="p">[</span><span class="n">i</span><span class="p">])</span>
+            <span class="n">constants</span><span class="o">.</span><span class="n">clump_log_mass</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="o">.</span><span class="n">resize</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="n">constants</span><span class="o">.</span><span class="n">clump_mass_number</span><span class="p">[</span><span class="n">i</span><span class="p">])</span>
+    <span class="k">return</span></div>
+
+
+
+<div class="viewcode-block" id="add_clumps">
+<a class="viewcode-back" href="../../../../_autosummary/kosmatau3d.models.constants.change.add_clumps.html#kosmatau3d.models.constants.change.add_clumps">[docs]</a>
+<span class="k">def</span> <span class="nf">add_clumps</span><span class="p">(</span><span class="n">mass_range</span><span class="o">=</span><span class="p">[],</span> <span class="n">num</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">n_max</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">reset</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+    <span class="c1"># Add another set of clumps to evaluate. Set the density kwarg if you do not want to use the voxel density.</span>
+    <span class="k">if</span> <span class="n">reset</span><span class="p">:</span>
+        <span class="n">constants</span><span class="o">.</span><span class="n">clump_log_mass_range</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="n">constants</span><span class="o">.</span><span class="n">clump_mass_number</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="n">constants</span><span class="o">.</span><span class="n">clump_max_indeces</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="n">constants</span><span class="o">.</span><span class="n">clump_n_max</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="n">constants</span><span class="o">.</span><span class="n">clump_log_mass</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">mass_range</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="nb">int</span><span class="p">)</span> <span class="ow">or</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">mass_range</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="nb">float</span><span class="p">):</span>
+        <span class="n">mass_range</span> <span class="o">=</span> <span class="p">[</span><span class="n">mass_range</span><span class="p">]</span>
+        <span class="n">num</span> <span class="o">=</span> <span class="p">[</span><span class="n">num</span><span class="p">]</span>
+        <span class="n">n_max</span> <span class="o">=</span> <span class="p">[</span><span class="n">n_max</span><span class="p">]</span>
+    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">num</span><span class="p">)):</span>
+        <span class="n">constants</span><span class="o">.</span><span class="n">clump_log_mass_range</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">mass_range</span><span class="p">[</span><span class="n">i</span><span class="p">])</span>
+        <span class="n">constants</span><span class="o">.</span><span class="n">clump_mass_number</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">num</span><span class="p">[</span><span class="n">i</span><span class="p">])</span>
+        <span class="n">constants</span><span class="o">.</span><span class="n">clump_max_indeces</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
+        <span class="n">constants</span><span class="o">.</span><span class="n">clump_n_max</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">n_max</span><span class="p">[</span><span class="n">i</span><span class="p">])</span>
+        <span class="n">constants</span><span class="o">.</span><span class="n">clump_log_mass</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">resize</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">linspace</span><span class="p">(</span><span class="nb">min</span><span class="p">(</span><span class="n">mass_range</span><span class="p">[</span><span class="n">i</span><span class="p">]),</span>
+                                                              <span class="nb">max</span><span class="p">(</span><span class="n">mass_range</span><span class="p">[</span><span class="n">i</span><span class="p">]),</span>
+                                                              <span class="n">num</span><span class="o">=</span><span class="n">num</span><span class="p">[</span><span class="n">i</span><span class="p">]),</span>
+                                                <span class="p">(</span><span class="mi">1</span><span class="p">,</span><span class="n">num</span><span class="p">[</span><span class="n">i</span><span class="p">])))</span>
+        <span class="n">constants</span><span class="o">.</span><span class="n">ensembles</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">num</span><span class="p">)</span>
+    <span class="k">return</span></div>
+
+
+
+<div class="viewcode-block" id="set_interclump_ensemble">
+<a class="viewcode-back" href="../../../../_autosummary/kosmatau3d.models.constants.change.set_interclump_ensemble.html#kosmatau3d.models.constants.change.set_interclump_ensemble">[docs]</a>
+<span class="k">def</span> <span class="nf">set_interclump_ensemble</span><span class="p">(</span><span class="n">idx</span><span class="p">):</span>
+    <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">idx</span><span class="p">,</span> <span class="nb">int</span><span class="p">):</span>
+        <span class="n">i_cl</span> <span class="o">=</span> <span class="p">[</span><span class="kc">False</span> <span class="k">for</span> <span class="n">_</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">constants</span><span class="o">.</span><span class="n">ensembles</span><span class="p">)]</span>
+        <span class="n">i_cl</span><span class="p">[</span><span class="n">idx</span><span class="p">]</span> <span class="o">=</span> <span class="kc">True</span>
+    <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">idx</span><span class="p">,</span> <span class="p">(</span><span class="nb">list</span><span class="p">,</span> <span class="nb">tuple</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">)):</span>
+        <span class="n">i_cl</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">idx</span><span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="s1">&#39;interclump_idx must be type int or type list.&#39;</span><span class="p">)</span>
+    <span class="n">constants</span><span class="o">.</span><span class="n">interclump_idx</span> <span class="o">=</span> <span class="n">i_cl</span>
+    <span class="k">return</span></div>
+
+
+
+<div class="viewcode-block" id="set_interclump_wnm">
+<a class="viewcode-back" href="../../../../_autosummary/kosmatau3d.models.constants.change.set_interclump_wnm.html#kosmatau3d.models.constants.change.set_interclump_wnm">[docs]</a>
+<span class="k">def</span> <span class="nf">set_interclump_wnm</span><span class="p">(</span><span class="n">idx</span><span class="p">):</span>
+    <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">idx</span><span class="p">,</span> <span class="nb">int</span><span class="p">):</span>
+        <span class="n">i_cl</span> <span class="o">=</span> <span class="p">[</span><span class="kc">False</span> <span class="k">for</span> <span class="n">_</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">constants</span><span class="o">.</span><span class="n">ensembles</span><span class="p">)]</span>
+        <span class="n">i_cl</span><span class="p">[</span><span class="n">idx</span><span class="p">]</span> <span class="o">=</span> <span class="kc">True</span>
+    <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">idx</span><span class="p">,</span> <span class="p">(</span><span class="nb">list</span><span class="p">,</span> <span class="nb">tuple</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">)):</span>
+        <span class="n">i_cl</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">idx</span><span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="s1">&#39;interclump_idx must be type int or type list.&#39;</span><span class="p">)</span>
+    <span class="n">constants</span><span class="o">.</span><span class="n">interclump_wnm_idx</span> <span class="o">=</span> <span class="n">i_cl</span>
+    <span class="k">return</span></div>
+
+
+
+<div class="viewcode-block" id="reset_clumps">
+<a class="viewcode-back" href="../../../../_autosummary/kosmatau3d.models.constants.change.reset_clumps.html#kosmatau3d.models.constants.change.reset_clumps">[docs]</a>
+<span class="k">def</span> <span class="nf">reset_clumps</span><span class="p">():</span>
+    <span class="c1"># This will restore the clump list to its default.</span>
+    <span class="n">constants</span><span class="o">.</span><span class="n">clump_mass_number</span> <span class="o">=</span> <span class="p">[</span><span class="mi">3</span><span class="p">,</span> <span class="mi">1</span><span class="p">]</span>
+    <span class="n">constants</span><span class="o">.</span><span class="n">clump_log_mass_range</span> <span class="o">=</span> <span class="p">[[</span><span class="mi">0</span><span class="p">,</span><span class="mi">2</span><span class="p">],</span> <span class="p">[</span><span class="o">-</span><span class="mi">2</span><span class="p">]]</span>
+    <span class="n">constants</span><span class="o">.</span><span class="n">clump_log_mass</span> <span class="o">=</span> <span class="p">[[],</span> <span class="p">[]]</span>
+    <span class="c1"># constants.clumpDensity = [None, 1911]</span>
+    <span class="c1"># constants.clumpFUV = [None, 10]</span>
+    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">2</span><span class="p">):</span>
+        <span class="n">constants</span><span class="o">.</span><span class="n">clump_log_mass</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linspace</span><span class="p">(</span><span class="n">constants</span><span class="o">.</span><span class="n">clump_log_mass_range</span><span class="p">[</span><span class="n">i</span><span class="p">][</span><span class="mi">0</span><span class="p">],</span>
+                                                  <span class="n">constants</span><span class="o">.</span><span class="n">clump_log_mass_range</span><span class="p">[</span><span class="n">i</span><span class="p">][</span><span class="o">-</span><span class="mi">1</span><span class="p">],</span>
+                                                  <span class="n">num</span><span class="o">=</span><span class="n">constants</span><span class="o">.</span><span class="n">clump_mass_number</span><span class="p">[</span><span class="n">i</span><span class="p">])</span>
+        <span class="n">constants</span><span class="o">.</span><span class="n">clump_log_mass</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="o">.</span><span class="n">resize</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span><span class="n">constants</span><span class="o">.</span><span class="n">clump_mass_number</span><span class="p">[</span><span class="n">i</span><span class="p">])</span>
+    <span class="k">return</span></div>
+
+
+
+<div class="viewcode-block" id="change_mass_function_parameters">
+<a class="viewcode-back" href="../../../../_autosummary/kosmatau3d.models.constants.change.change_mass_function_parameters.html#kosmatau3d.models.constants.change.change_mass_function_parameters">[docs]</a>
+<span class="k">def</span> <span class="nf">change_mass_function_parameters</span><span class="p">(</span><span class="n">alpha</span><span class="o">=</span><span class="mf">1.84</span><span class="p">,</span> <span class="n">gamma</span><span class="o">=</span><span class="mf">2.31</span><span class="p">):</span>
+    <span class="c1"># Use this to change the parameters of power-law distribution used</span>
+    <span class="c1">#  to calculate the clump properties. The default are those from</span>
+    <span class="c1">#  Heithausen et al. (1998).</span>
+    <span class="n">constants</span><span class="o">.</span><span class="n">alpha</span> <span class="o">=</span> <span class="n">alpha</span>
+    <span class="n">constants</span><span class="o">.</span><span class="n">gamma</span> <span class="o">=</span> <span class="n">gamma</span>
+    <span class="k">return</span></div>
+
+
+
+<div class="viewcode-block" id="change_directory">
+<a class="viewcode-back" href="../../../../_autosummary/kosmatau3d.models.constants.change.change_directory.html#kosmatau3d.models.constants.change.change_directory">[docs]</a>
+<span class="k">def</span> <span class="nf">change_directory</span><span class="p">(</span><span class="n">direc</span><span class="p">):</span>
+
+    <span class="n">constants</span><span class="o">.</span><span class="n">directory</span> <span class="o">=</span> <span class="n">direc</span>
+    <span class="k">if</span> <span class="n">constants</span><span class="o">.</span><span class="n">directory</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">!=</span> <span class="s1">&#39;/&#39;</span><span class="p">:</span>
+        <span class="n">constants</span><span class="o">.</span><span class="n">directory</span> <span class="o">=</span> <span class="n">constants</span><span class="o">.</span><span class="n">directory</span> <span class="o">+</span> <span class="s1">&#39;/&#39;</span>
+
+    <span class="n">directory</span> <span class="o">=</span> <span class="n">constants</span><span class="o">.</span><span class="n">HISTORYPATH</span> <span class="o">+</span> <span class="n">constants</span><span class="o">.</span><span class="n">directory</span> <span class="o">+</span> <span class="n">constants</span><span class="o">.</span><span class="n">history</span>
+
+    <span class="c1"># os.chmod(constants.HISTORYPATH, 0o777)</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="n">directory</span><span class="p">):</span>
+        <span class="n">os</span><span class="o">.</span><span class="n">makedirs</span><span class="p">(</span><span class="n">directory</span><span class="p">)</span>
+
+    <span class="k">return</span></div>
+
+
+
+<div class="viewcode-block" id="change_dust_wavelengths">
+<a class="viewcode-back" href="../../../../_autosummary/kosmatau3d.models.constants.change.change_dust_wavelengths.html#kosmatau3d.models.constants.change.change_dust_wavelengths">[docs]</a>
+<span class="k">def</span> <span class="nf">change_dust_wavelengths</span><span class="p">(</span><span class="n">limit</span><span class="o">=</span><span class="s1">&#39;all&#39;</span><span class="p">):</span>
+  
+    <span class="c1"># constants.dustWavelengths = limit</span>
+    <span class="n">constants</span><span class="o">.</span><span class="n">dust</span> <span class="o">=</span> <span class="n">limit</span>
+    
+    <span class="c1"># Only use the longest wavelength with roughly the same intensity for all the species transitions for a</span>
+    <span class="c1">#  reduced dust model.</span>
+    <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">limit</span><span class="p">,</span> <span class="nb">str</span><span class="p">):</span>
+        <span class="k">if</span> <span class="n">limit</span> <span class="o">==</span> <span class="s1">&#39;reduced&#39;</span><span class="p">:</span>
+            <span class="n">limit</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;3.1mm&#39;</span><span class="p">]</span>
+        <span class="k">elif</span> <span class="n">limit</span> <span class="ow">in</span> <span class="n">constants</span><span class="o">.</span><span class="n">dust_names</span><span class="p">:</span>
+            <span class="n">limit</span> <span class="o">=</span> <span class="p">[</span><span class="n">limit</span><span class="p">]</span>
+      
+    <span class="c1"># Check if individual wavelengths of the dust continuum are specified</span>
+    <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">limit</span><span class="p">,</span> <span class="nb">list</span><span class="p">):</span>
+        <span class="n">constants</span><span class="o">.</span><span class="n">dust_wavelengths</span> <span class="o">=</span> <span class="n">copy</span><span class="p">(</span><span class="n">limit</span><span class="p">)</span>
+        <span class="n">n_dust</span> <span class="o">=</span> <span class="p">[</span><span class="n">line</span> <span class="o">==</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">constants</span><span class="o">.</span><span class="n">dust_names</span><span class="p">)</span> <span class="k">for</span> <span class="n">line</span> <span class="ow">in</span> <span class="n">limit</span><span class="p">]</span>
+        <span class="n">constants</span><span class="o">.</span><span class="n">n_dust</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">any</span><span class="p">(</span><span class="n">n_dust</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span>
+    <span class="c1"># Use PAH to include the PAH features of the dust continuum</span>
+    <span class="k">elif</span> <span class="n">limit</span> <span class="o">==</span> <span class="s1">&#39;PAH&#39;</span><span class="p">:</span>
+        <span class="n">constants</span><span class="o">.</span><span class="n">n_dust</span> <span class="o">=</span> <span class="n">constants</span><span class="o">.</span><span class="n">wavelengths</span><span class="o">&gt;</span><span class="n">constants</span><span class="o">.</span><span class="n">limit_pah</span>
+        <span class="n">constants</span><span class="o">.</span><span class="n">dust_wavelengths</span> <span class="o">=</span> <span class="n">constants</span><span class="o">.</span><span class="n">dust_names</span><span class="p">[</span><span class="n">constants</span><span class="o">.</span><span class="n">n_dust</span><span class="p">]</span>
+    <span class="c1"># Use molecular to use just the section of the dust continuum relevant for the species transitions</span>
+    <span class="k">elif</span> <span class="n">limit</span> <span class="o">==</span> <span class="s1">&#39;molecular&#39;</span><span class="p">:</span>
+        <span class="n">constants</span><span class="o">.</span><span class="n">n_dust</span> <span class="o">=</span> <span class="n">constants</span><span class="o">.</span><span class="n">wavelengths</span><span class="o">&gt;</span><span class="n">constants</span><span class="o">.</span><span class="n">limit_molecular</span>
+        <span class="n">constants</span><span class="o">.</span><span class="n">dust_wavelengths</span> <span class="o">=</span> <span class="n">constants</span><span class="o">.</span><span class="n">dust_names</span><span class="p">[</span><span class="n">constants</span><span class="o">.</span><span class="n">n_dust</span><span class="p">]</span>
+    <span class="c1"># Otherwise include the entire dust continuum.</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">constants</span><span class="o">.</span><span class="n">n_dust</span> <span class="o">=</span> <span class="n">constants</span><span class="o">.</span><span class="n">wavelengths</span><span class="o">&gt;</span><span class="mi">0</span>
+        <span class="n">constants</span><span class="o">.</span><span class="n">dust_wavelengths</span> <span class="o">=</span> <span class="n">constants</span><span class="o">.</span><span class="n">dust_names</span><span class="p">[</span><span class="n">constants</span><span class="o">.</span><span class="n">n_dust</span><span class="p">]</span>
+      
+    <span class="k">return</span></div>
+
+
+
+<div class="viewcode-block" id="setup_species">
+<a class="viewcode-back" href="../../../../_autosummary/kosmatau3d.models.constants.change.setup_species.html#kosmatau3d.models.constants.change.setup_species">[docs]</a>
+<span class="k">def</span> <span class="nf">setup_species</span><span class="p">(</span><span class="n">species</span><span class="p">):</span>
+    <span class="n">constants</span><span class="o">.</span><span class="n">transitions</span> <span class="o">=</span> <span class="n">species</span>
+    <span class="n">constants</span><span class="o">.</span><span class="n">transition_number</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">species</span><span class="p">)</span>
+    <span class="k">return</span></div>
+
+
+
+<div class="viewcode-block" id="setup_interclump_species">
+<a class="viewcode-back" href="../../../../_autosummary/kosmatau3d.models.constants.change.setup_interclump_species.html#kosmatau3d.models.constants.change.setup_interclump_species">[docs]</a>
+<span class="k">def</span> <span class="nf">setup_interclump_species</span><span class="p">(</span><span class="n">species</span><span class="p">):</span>
+    <span class="n">constants</span><span class="o">.</span><span class="n">interclump_transitions</span> <span class="o">=</span> <span class="n">species</span>
+    <span class="n">constants</span><span class="o">.</span><span class="n">interclump_transition_number</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">species</span><span class="p">)</span>
+    <span class="k">return</span></div>
+
+
+
+<div class="viewcode-block" id="resort_wavelengths">
+<a class="viewcode-back" href="../../../../_autosummary/kosmatau3d.models.constants.change.resort_wavelengths.html#kosmatau3d.models.constants.change.resort_wavelengths">[docs]</a>
+<span class="k">def</span> <span class="nf">resort_wavelengths</span><span class="p">(</span><span class="n">interclump</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+    <span class="k">if</span> <span class="n">interclump</span><span class="p">:</span>
+        <span class="n">all_wavelengths</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">constants</span><span class="o">.</span><span class="n">wavelengths</span><span class="p">[</span><span class="n">constants</span><span class="o">.</span><span class="n">n_dust</span><span class="p">],</span> <span class="n">species</span><span class="o">.</span><span class="n">interclump_transition_wavelengths</span><span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">all_wavelengths</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">constants</span><span class="o">.</span><span class="n">wavelengths</span><span class="p">[</span><span class="n">constants</span><span class="o">.</span><span class="n">n_dust</span><span class="p">],</span> <span class="n">species</span><span class="o">.</span><span class="n">clump_transition_wavelengths</span><span class="p">)</span>
+    <span class="n">constants</span><span class="o">.</span><span class="n">sorted_indeces</span> <span class="o">=</span> <span class="n">all_wavelengths</span><span class="o">.</span><span class="n">argsort</span><span class="p">()</span>
+    <span class="n">constants</span><span class="o">.</span><span class="n">sorted_wavelengths</span> <span class="o">=</span> <span class="n">all_wavelengths</span><span class="p">[</span><span class="n">constants</span><span class="o">.</span><span class="n">sorted_indeces</span><span class="p">]</span>
+    <span class="k">return</span></div>
+
+
+
+<div class="viewcode-block" id="dust_wavelengths">
+<a class="viewcode-back" href="../../../../_autosummary/kosmatau3d.models.constants.change.dust_wavelengths.html#kosmatau3d.models.constants.change.dust_wavelengths">[docs]</a>
+<span class="k">def</span> <span class="nf">dust_wavelengths</span><span class="p">():</span>
+    <span class="k">return</span> <span class="n">constants</span><span class="o">.</span><span class="n">wavelengths</span><span class="p">[</span><span class="n">constants</span><span class="o">.</span><span class="n">n_dust</span><span class="p">]</span></div>
+
+
+<span class="c1"># jit_module(nopython=False)</span>
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2023, Craig Yanitski.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

@@ -1,0 +1,357 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" /><meta name="generator" content="Docutils 0.18.1: http://docutils.sourceforge.net/" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>scipy.interpolate.RBFInterpolator &mdash; kosmatau3d 1.0.3 documentation</title>
+      <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
+      <link rel="stylesheet" href="../../_static/readthedocs-custom.css" type="text/css" />
+  <!--[if lt IE 9]>
+    <script src="../../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script src="../../_static/documentation_options.js?v=baaebd52"></script>
+        <script src="../../_static/doctools.js?v=888ff710"></script>
+        <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
+        <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+        <script>window.MathJax = {"tex": {"inlineMath": [["$", "$"], ["\\(", "\\)"]], "processEscapes": true}, "options": {"ignoreHtmlClass": "tex2jax_ignore|mathjax_ignore|document", "processHtmlClass": "tex2jax_process|mathjax_process|math|output_area"}}</script>
+        <script defer="defer" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+    <script src="../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" />
+    <link rel="next" title="scipy.interpolate.Rbf" href="scipy.interpolate.Rbf.html" />
+    <link rel="prev" title="scipy.interpolate.CloughTocher2DInterpolator" href="scipy.interpolate.CloughTocher2DInterpolator.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../../index.html" class="icon icon-home">
+            kosmatau3d
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../../installation.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../properties.html">KOSMA-$\tau$ Properties</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../voxel.html">Voxels</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../model.html">3D Models</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../comparison.html">Comparison to Observations</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../development.html">Future Development</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="../kosmatau3d.html">API Reference</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="../kosmatau3d.comparison.html">kosmatau3d.comparison</a></li>
+<li class="toctree-l2 current"><a class="reference internal" href="../kosmatau3d.models.html">kosmatau3d.models</a><ul class="current">
+<li class="toctree-l3"><a class="reference internal" href="../kosmatau3d.models.dill_grid.html">kosmatau3d.models.dill_grid</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../kosmatau3d.models.help.html">kosmatau3d.models.help</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../kosmatau3d.models.Model.html">kosmatau3d.models.Model</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../kosmatau3d.models.Voxel.html">kosmatau3d.models.Voxel</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../kosmatau3d.models.VoxelGrid.html">kosmatau3d.models.VoxelGrid</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../kosmatau3d.models.combinations.html">kosmatau3d.models.combinations</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../kosmatau3d.models.constants.html">kosmatau3d.models.constants</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../kosmatau3d.models.ensemble.html">kosmatau3d.models.ensemble</a></li>
+<li class="toctree-l3 current"><a class="reference internal" href="../kosmatau3d.models.interpolations.html">kosmatau3d.models.interpolations</a><ul class="current">
+<li class="toctree-l4"><a class="reference internal" href="../kosmatau3d.models.interpolations.interpolate_clump_column_density.html">kosmatau3d.models.interpolations.interpolate_clump_column_density</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../kosmatau3d.models.interpolations.interpolate_clump_dust_intensity.html">kosmatau3d.models.interpolations.interpolate_clump_dust_intensity</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../kosmatau3d.models.interpolations.interpolate_clump_dust_tau.html">kosmatau3d.models.interpolations.interpolate_clump_dust_tau</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../kosmatau3d.models.interpolations.interpolate_clump_h2_column_density.html">kosmatau3d.models.interpolations.interpolate_clump_h2_column_density</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../kosmatau3d.models.interpolations.interpolate_clump_hi_column_density.html">kosmatau3d.models.interpolations.interpolate_clump_hi_column_density</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../kosmatau3d.models.interpolations.interpolate_clump_species_intensity.html">kosmatau3d.models.interpolations.interpolate_clump_species_intensity</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../kosmatau3d.models.interpolations.interpolate_clump_species_tau.html">kosmatau3d.models.interpolations.interpolate_clump_species_tau</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../kosmatau3d.models.interpolations.interpolate_clump_taufuv.html">kosmatau3d.models.interpolations.interpolate_clump_taufuv</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../kosmatau3d.models.interpolations.interpolate_clump_td.html">kosmatau3d.models.interpolations.interpolate_clump_td</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../kosmatau3d.models.interpolations.interpolate_clump_tg.html">kosmatau3d.models.interpolations.interpolate_clump_tg</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../kosmatau3d.models.interpolations.interpolate_fuv.html">kosmatau3d.models.interpolations.interpolate_fuv</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../kosmatau3d.models.interpolations.interpolate_galaxy_rotation.html">kosmatau3d.models.interpolations.interpolate_galaxy_rotation</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../kosmatau3d.models.interpolations.interpolate_h2_mass.html">kosmatau3d.models.interpolations.interpolate_h2_mass</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../kosmatau3d.models.interpolations.interpolate_h2_voxel_filling_factor.html">kosmatau3d.models.interpolations.interpolate_h2_voxel_filling_factor</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../kosmatau3d.models.interpolations.interpolate_hi_mass.html">kosmatau3d.models.interpolations.interpolate_hi_mass</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../kosmatau3d.models.interpolations.interpolate_hi_voxel_filling_factor.html">kosmatau3d.models.interpolations.interpolate_hi_voxel_filling_factor</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../kosmatau3d.models.interpolations.interpolate_interclump_column_density.html">kosmatau3d.models.interpolations.interpolate_interclump_column_density</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../kosmatau3d.models.interpolations.interpolate_interclump_dust_intensity.html">kosmatau3d.models.interpolations.interpolate_interclump_dust_intensity</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../kosmatau3d.models.interpolations.interpolate_interclump_dust_tau.html">kosmatau3d.models.interpolations.interpolate_interclump_dust_tau</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../kosmatau3d.models.interpolations.interpolate_interclump_h2_column_density.html">kosmatau3d.models.interpolations.interpolate_interclump_h2_column_density</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../kosmatau3d.models.interpolations.interpolate_interclump_hi_column_density.html">kosmatau3d.models.interpolations.interpolate_interclump_hi_column_density</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../kosmatau3d.models.interpolations.interpolate_interclump_species_intensity.html">kosmatau3d.models.interpolations.interpolate_interclump_species_intensity</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../kosmatau3d.models.interpolations.interpolate_interclump_species_tau.html">kosmatau3d.models.interpolations.interpolate_interclump_species_tau</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../kosmatau3d.models.interpolations.interpolate_interclump_taufuv.html">kosmatau3d.models.interpolations.interpolate_interclump_taufuv</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../kosmatau3d.models.interpolations.interpolate_interclump_td.html">kosmatau3d.models.interpolations.interpolate_interclump_td</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../kosmatau3d.models.interpolations.interpolate_interclump_tg.html">kosmatau3d.models.interpolations.interpolate_interclump_tg</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../kosmatau3d.models.interpolations.interpolate_number_density.html">kosmatau3d.models.interpolations.interpolate_number_density</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../kosmatau3d.models.interpolations.interpolate_velocity_dispersion.html">kosmatau3d.models.interpolations.interpolate_velocity_dispersion</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../kosmatau3d.models.interpolations.reset.html">kosmatau3d.models.interpolations.reset</a></li>
+<li class="toctree-l4 current"><a class="reference internal" href="../kosmatau3d.models.interpolations.interpolate.html">kosmatau3d.models.interpolations.interpolate</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="../kosmatau3d.models.masspoints.html">kosmatau3d.models.masspoints</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../kosmatau3d.models.models.html">kosmatau3d.models.models</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../kosmatau3d.models.observations.html">kosmatau3d.models.observations</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../kosmatau3d.models.plotting.html">kosmatau3d.models.plotting</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../kosmatau3d.models.radiativeTransfer.html">kosmatau3d.models.radiativeTransfer</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../kosmatau3d.models.shape.html">kosmatau3d.models.shape</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../kosmatau3d.models.species.html">kosmatau3d.models.species</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="../kosmatau3d.properties.html">kosmatau3d.properties</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../../acknowledgements.html">Acknowledgements</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../index.html">kosmatau3d</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../kosmatau3d.html">kosmatau3d</a></li>
+          <li class="breadcrumb-item"><a href="../kosmatau3d.models.html">kosmatau3d.models</a></li>
+          <li class="breadcrumb-item"><a href="../kosmatau3d.models.interpolations.html">kosmatau3d.models.interpolations</a></li>
+          <li class="breadcrumb-item"><a href="../kosmatau3d.models.interpolations.interpolate.html">kosmatau3d.models.interpolations.interpolate</a></li>
+          <li class="breadcrumb-item"><a href="../kosmatau3d.models.interpolations.interpolate.interpolate.html">kosmatau3d.models.interpolations.interpolate.interpolate</a></li>
+      <li class="breadcrumb-item active">scipy.interpolate.RBFInterpolator</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="scipy-interpolate-rbfinterpolator">
+<h1>scipy.interpolate.RBFInterpolator<a class="headerlink" href="#scipy-interpolate-rbfinterpolator" title="Link to this heading">¶</a></h1>
+<dl class="py class">
+<dt class="sig sig-object py" id="scipy.interpolate.RBFInterpolator">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">RBFInterpolator</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">y</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">d</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">neighbors</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">smoothing</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">kernel</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'thin_plate_spline'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">epsilon</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">degree</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/scipy/interpolate/_rbfinterp.html#RBFInterpolator"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#scipy.interpolate.RBFInterpolator" title="Link to this definition">¶</a></dt>
+<dd><p>Radial basis function (RBF) interpolation in N dimensions.</p>
+<section id="parameters">
+<h2>Parameters<a class="headerlink" href="#parameters" title="Link to this heading">¶</a></h2>
+<dl>
+<dt>y<span class="classifier">(P, N) array_like</span></dt><dd><p>Data point coordinates.</p>
+</dd>
+<dt>d<span class="classifier">(P, …) array_like</span></dt><dd><p>Data values at <cite>y</cite>.</p>
+</dd>
+<dt>neighbors<span class="classifier">int, optional</span></dt><dd><p>If specified, the value of the interpolant at each evaluation point
+will be computed using only this many nearest data points. All the data
+points are used by default.</p>
+</dd>
+<dt>smoothing<span class="classifier">float or (P,) array_like, optional</span></dt><dd><p>Smoothing parameter. The interpolant perfectly fits the data when this
+is set to 0. For large values, the interpolant approaches a least
+squares fit of a polynomial with the specified degree. Default is 0.</p>
+</dd>
+<dt>kernel<span class="classifier">str, optional</span></dt><dd><p>Type of RBF. This should be one of</p>
+<blockquote>
+<div><ul class="simple">
+<li><p>‘linear’               : <code class="docutils literal notranslate"><span class="pre">-r</span></code></p></li>
+<li><p>‘thin_plate_spline’    : <code class="docutils literal notranslate"><span class="pre">r**2</span> <span class="pre">*</span> <span class="pre">log(r)</span></code></p></li>
+<li><p>‘cubic’                : <code class="docutils literal notranslate"><span class="pre">r**3</span></code></p></li>
+<li><p>‘quintic’              : <code class="docutils literal notranslate"><span class="pre">-r**5</span></code></p></li>
+<li><p>‘multiquadric’         : <code class="docutils literal notranslate"><span class="pre">-sqrt(1</span> <span class="pre">+</span> <span class="pre">r**2)</span></code></p></li>
+<li><p>‘inverse_multiquadric’ : <code class="docutils literal notranslate"><span class="pre">1/sqrt(1</span> <span class="pre">+</span> <span class="pre">r**2)</span></code></p></li>
+<li><p>‘inverse_quadratic’    : <code class="docutils literal notranslate"><span class="pre">1/(1</span> <span class="pre">+</span> <span class="pre">r**2)</span></code></p></li>
+<li><p>‘gaussian’             : <code class="docutils literal notranslate"><span class="pre">exp(-r**2)</span></code></p></li>
+</ul>
+</div></blockquote>
+<p>Default is ‘thin_plate_spline’.</p>
+</dd>
+<dt>epsilon<span class="classifier">float, optional</span></dt><dd><p>Shape parameter that scales the input to the RBF. If <cite>kernel</cite> is
+‘linear’, ‘thin_plate_spline’, ‘cubic’, or ‘quintic’, this defaults to
+1 and can be ignored because it has the same effect as scaling the
+smoothing parameter. Otherwise, this must be specified.</p>
+</dd>
+<dt>degree<span class="classifier">int, optional</span></dt><dd><p>Degree of the added polynomial. For some RBFs the interpolant may not
+be well-posed if the polynomial degree is too small. Those RBFs and
+their corresponding minimum degrees are</p>
+<blockquote>
+<div><ul class="simple">
+<li><p>‘multiquadric’      : 0</p></li>
+<li><p>‘linear’            : 0</p></li>
+<li><p>‘thin_plate_spline’ : 1</p></li>
+<li><p>‘cubic’             : 1</p></li>
+<li><p>‘quintic’           : 2</p></li>
+</ul>
+</div></blockquote>
+<p>The default value is the minimum degree for <cite>kernel</cite> or 0 if there is
+no minimum degree. Set this to -1 for no added polynomial.</p>
+</dd>
+</dl>
+</section>
+<section id="notes">
+<h2>Notes<a class="headerlink" href="#notes" title="Link to this heading">¶</a></h2>
+<p>An RBF is a scalar valued function in N-dimensional space whose value at
+<span class="math notranslate nohighlight">\(x\)</span> can be expressed in terms of <span class="math notranslate nohighlight">\(r=||x - c||\)</span>, where <span class="math notranslate nohighlight">\(c\)</span>
+is the center of the RBF.</p>
+<p>An RBF interpolant for the vector of data values <span class="math notranslate nohighlight">\(d\)</span>, which are from
+locations <span class="math notranslate nohighlight">\(y\)</span>, is a linear combination of RBFs centered at <span class="math notranslate nohighlight">\(y\)</span>
+plus a polynomial with a specified degree. The RBF interpolant is written
+as</p>
+<div class="math notranslate nohighlight">
+\[f(x) = K(x, y) a + P(x) b,\]</div>
+<p>where <span class="math notranslate nohighlight">\(K(x, y)\)</span> is a matrix of RBFs with centers at <span class="math notranslate nohighlight">\(y\)</span>
+evaluated at the points <span class="math notranslate nohighlight">\(x\)</span>, and <span class="math notranslate nohighlight">\(P(x)\)</span> is a matrix of
+monomials, which span polynomials with the specified degree, evaluated at
+<span class="math notranslate nohighlight">\(x\)</span>. The coefficients <span class="math notranslate nohighlight">\(a\)</span> and <span class="math notranslate nohighlight">\(b\)</span> are the solution to the
+linear equations</p>
+<div class="math notranslate nohighlight">
+\[(K(y, y) + \lambda I) a + P(y) b = d\]</div>
+<p>and</p>
+<div class="math notranslate nohighlight">
+\[P(y)^T a = 0,\]</div>
+<p>where <span class="math notranslate nohighlight">\(\lambda\)</span> is a non-negative smoothing parameter that controls
+how well we want to fit the data. The data are fit exactly when the
+smoothing parameter is 0.</p>
+<p>The above system is uniquely solvable if the following requirements are
+met:</p>
+<blockquote>
+<div><ul class="simple">
+<li><p><span class="math notranslate nohighlight">\(P(y)\)</span> must have full column rank. <span class="math notranslate nohighlight">\(P(y)\)</span> always has full
+column rank when <cite>degree</cite> is -1 or 0. When <cite>degree</cite> is 1,
+<span class="math notranslate nohighlight">\(P(y)\)</span> has full column rank if the data point locations are not
+all collinear (N=2), coplanar (N=3), etc.</p></li>
+<li><p>If <cite>kernel</cite> is ‘multiquadric’, ‘linear’, ‘thin_plate_spline’,
+‘cubic’, or ‘quintic’, then <cite>degree</cite> must not be lower than the
+minimum value listed above.</p></li>
+<li><p>If <cite>smoothing</cite> is 0, then each data point location must be distinct.</p></li>
+</ul>
+</div></blockquote>
+<p>When using an RBF that is not scale invariant (‘multiquadric’,
+‘inverse_multiquadric’, ‘inverse_quadratic’, or ‘gaussian’), an appropriate
+shape parameter must be chosen (e.g., through cross validation). Smaller
+values for the shape parameter correspond to wider RBFs. The problem can
+become ill-conditioned or singular when the shape parameter is too small.</p>
+<p>The memory required to solve for the RBF interpolation coefficients
+increases quadratically with the number of data points, which can become
+impractical when interpolating more than about a thousand data points.
+To overcome memory limitations for large interpolation problems, the
+<cite>neighbors</cite> argument can be specified to compute an RBF interpolant for
+each evaluation point using only the nearest data points.</p>
+<div class="versionadded">
+<p><span class="versionmodified added">New in version 1.7.0.</span></p>
+</div>
+</section>
+<section id="see-also">
+<h2>See Also<a class="headerlink" href="#see-also" title="Link to this heading">¶</a></h2>
+<p>NearestNDInterpolator
+LinearNDInterpolator
+CloughTocher2DInterpolator</p>
+</section>
+<section id="references">
+<h2>References<a class="headerlink" href="#references" title="Link to this heading">¶</a></h2>
+<aside class="footnote-list brackets">
+<aside class="footnote brackets" id="id1" role="note">
+<span class="label"><span class="fn-bracket">[</span>1<span class="fn-bracket">]</span></span>
+<p>Fasshauer, G., 2007. Meshfree Approximation Methods with Matlab.
+World Scientific Publishing Co.</p>
+</aside>
+<aside class="footnote brackets" id="id2" role="note">
+<span class="label"><span class="fn-bracket">[</span>2<span class="fn-bracket">]</span></span>
+<p><a class="reference external" href="http://amadeus.math.iit.edu/~fass/603_ch3.pdf">http://amadeus.math.iit.edu/~fass/603_ch3.pdf</a></p>
+</aside>
+<aside class="footnote brackets" id="id3" role="note">
+<span class="label"><span class="fn-bracket">[</span>3<span class="fn-bracket">]</span></span>
+<p>Wahba, G., 1990. Spline Models for Observational Data. SIAM.</p>
+</aside>
+<aside class="footnote brackets" id="id4" role="note">
+<span class="label"><span class="fn-bracket">[</span>4<span class="fn-bracket">]</span></span>
+<p><a class="reference external" href="http://pages.stat.wisc.edu/~wahba/stat860public/lect/lect8/lect8.pdf">http://pages.stat.wisc.edu/~wahba/stat860public/lect/lect8/lect8.pdf</a></p>
+</aside>
+</aside>
+</section>
+<section id="examples">
+<h2>Examples<a class="headerlink" href="#examples" title="Link to this heading">¶</a></h2>
+<p>Demonstrate interpolating scattered data to a grid in 2-D.</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span> <span class="nn">matplotlib.pyplot</span> <span class="k">as</span> <span class="nn">plt</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">scipy.interpolate</span> <span class="kn">import</span> <span class="n">RBFInterpolator</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">scipy.stats.qmc</span> <span class="kn">import</span> <span class="n">Halton</span>
+</pre></div>
+</div>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">rng</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">default_rng</span><span class="p">()</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">xobs</span> <span class="o">=</span> <span class="mi">2</span><span class="o">*</span><span class="n">Halton</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span> <span class="n">seed</span><span class="o">=</span><span class="n">rng</span><span class="p">)</span><span class="o">.</span><span class="n">random</span><span class="p">(</span><span class="mi">100</span><span class="p">)</span> <span class="o">-</span> <span class="mi">1</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">yobs</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">xobs</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span><span class="o">*</span><span class="n">np</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span><span class="o">-</span><span class="mi">6</span><span class="o">*</span><span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">xobs</span><span class="o">**</span><span class="mi">2</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">))</span>
+</pre></div>
+</div>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">xgrid</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">mgrid</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">:</span><span class="mi">1</span><span class="p">:</span><span class="mi">50</span><span class="n">j</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">:</span><span class="mi">1</span><span class="p">:</span><span class="mi">50</span><span class="n">j</span><span class="p">]</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">xflat</span> <span class="o">=</span> <span class="n">xgrid</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">)</span><span class="o">.</span><span class="n">T</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">yflat</span> <span class="o">=</span> <span class="n">RBFInterpolator</span><span class="p">(</span><span class="n">xobs</span><span class="p">,</span> <span class="n">yobs</span><span class="p">)(</span><span class="n">xflat</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">ygrid</span> <span class="o">=</span> <span class="n">yflat</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="mi">50</span><span class="p">,</span> <span class="mi">50</span><span class="p">)</span>
+</pre></div>
+</div>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">fig</span><span class="p">,</span> <span class="n">ax</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">subplots</span><span class="p">()</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">ax</span><span class="o">.</span><span class="n">pcolormesh</span><span class="p">(</span><span class="o">*</span><span class="n">xgrid</span><span class="p">,</span> <span class="n">ygrid</span><span class="p">,</span> <span class="n">vmin</span><span class="o">=-</span><span class="mf">0.25</span><span class="p">,</span> <span class="n">vmax</span><span class="o">=</span><span class="mf">0.25</span><span class="p">,</span> <span class="n">shading</span><span class="o">=</span><span class="s1">&#39;gouraud&#39;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">p</span> <span class="o">=</span> <span class="n">ax</span><span class="o">.</span><span class="n">scatter</span><span class="p">(</span><span class="o">*</span><span class="n">xobs</span><span class="o">.</span><span class="n">T</span><span class="p">,</span> <span class="n">c</span><span class="o">=</span><span class="n">yobs</span><span class="p">,</span> <span class="n">s</span><span class="o">=</span><span class="mi">50</span><span class="p">,</span> <span class="n">ec</span><span class="o">=</span><span class="s1">&#39;k&#39;</span><span class="p">,</span> <span class="n">vmin</span><span class="o">=-</span><span class="mf">0.25</span><span class="p">,</span> <span class="n">vmax</span><span class="o">=</span><span class="mf">0.25</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">fig</span><span class="o">.</span><span class="n">colorbar</span><span class="p">(</span><span class="n">p</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">plt</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
+</pre></div>
+</div>
+<dl class="py method">
+<dt class="sig sig-object py" id="scipy.interpolate.RBFInterpolator.__init__">
+<span class="sig-name descname"><span class="pre">__init__</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">y</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">d</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">neighbors</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">smoothing</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">kernel</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'thin_plate_spline'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">epsilon</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">degree</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/scipy/interpolate/_rbfinterp.html#RBFInterpolator.__init__"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#scipy.interpolate.RBFInterpolator.__init__" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<p class="rubric">Methods</p>
+<table class="autosummary longtable docutils align-default">
+<tbody>
+<tr class="row-odd"><td><p><a class="reference internal" href="#scipy.interpolate.RBFInterpolator.__init__" title="scipy.interpolate.RBFInterpolator.__init__"><code class="xref py py-obj docutils literal notranslate"><span class="pre">__init__</span></code></a>(y, d[, neighbors, smoothing, ...])</p></td>
+<td><p></p></td>
+</tr>
+</tbody>
+</table>
+</section>
+</dd></dl>
+
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="scipy.interpolate.CloughTocher2DInterpolator.html" class="btn btn-neutral float-left" title="scipy.interpolate.CloughTocher2DInterpolator" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="scipy.interpolate.Rbf.html" class="btn btn-neutral float-right" title="scipy.interpolate.Rbf" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2023, Craig Yanitski.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

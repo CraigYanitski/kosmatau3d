@@ -1,0 +1,410 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" /><meta name="generator" content="Docutils 0.18.1: http://docutils.sourceforge.net/" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>scipy.interpolate.CubicSpline &mdash; kosmatau3d 1.0.3 documentation</title>
+      <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
+      <link rel="stylesheet" href="../../_static/readthedocs-custom.css" type="text/css" />
+  <!--[if lt IE 9]>
+    <script src="../../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script src="../../_static/documentation_options.js?v=baaebd52"></script>
+        <script src="../../_static/doctools.js?v=888ff710"></script>
+        <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
+        <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+    <script src="../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" />
+    <link rel="next" title="scipy.interpolate.PPoly" href="scipy.interpolate.PPoly.html" />
+    <link rel="prev" title="scipy.interpolate.Akima1DInterpolator" href="scipy.interpolate.Akima1DInterpolator.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../../index.html" class="icon icon-home">
+            kosmatau3d
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../../installation.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../properties.html">KOSMA-$\tau$ Properties</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../voxel.html">Voxels</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../model.html">3D Models</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../comparison.html">Comparison to Observations</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../development.html">Future Development</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="../kosmatau3d.html">API Reference</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="../kosmatau3d.comparison.html">kosmatau3d.comparison</a></li>
+<li class="toctree-l2 current"><a class="reference internal" href="../kosmatau3d.models.html">kosmatau3d.models</a><ul class="current">
+<li class="toctree-l3"><a class="reference internal" href="../kosmatau3d.models.dill_grid.html">kosmatau3d.models.dill_grid</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../kosmatau3d.models.help.html">kosmatau3d.models.help</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../kosmatau3d.models.Model.html">kosmatau3d.models.Model</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../kosmatau3d.models.Voxel.html">kosmatau3d.models.Voxel</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../kosmatau3d.models.VoxelGrid.html">kosmatau3d.models.VoxelGrid</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../kosmatau3d.models.combinations.html">kosmatau3d.models.combinations</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../kosmatau3d.models.constants.html">kosmatau3d.models.constants</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../kosmatau3d.models.ensemble.html">kosmatau3d.models.ensemble</a></li>
+<li class="toctree-l3 current"><a class="reference internal" href="../kosmatau3d.models.interpolations.html">kosmatau3d.models.interpolations</a><ul class="current">
+<li class="toctree-l4"><a class="reference internal" href="../kosmatau3d.models.interpolations.interpolate_clump_column_density.html">kosmatau3d.models.interpolations.interpolate_clump_column_density</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../kosmatau3d.models.interpolations.interpolate_clump_dust_intensity.html">kosmatau3d.models.interpolations.interpolate_clump_dust_intensity</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../kosmatau3d.models.interpolations.interpolate_clump_dust_tau.html">kosmatau3d.models.interpolations.interpolate_clump_dust_tau</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../kosmatau3d.models.interpolations.interpolate_clump_h2_column_density.html">kosmatau3d.models.interpolations.interpolate_clump_h2_column_density</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../kosmatau3d.models.interpolations.interpolate_clump_hi_column_density.html">kosmatau3d.models.interpolations.interpolate_clump_hi_column_density</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../kosmatau3d.models.interpolations.interpolate_clump_species_intensity.html">kosmatau3d.models.interpolations.interpolate_clump_species_intensity</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../kosmatau3d.models.interpolations.interpolate_clump_species_tau.html">kosmatau3d.models.interpolations.interpolate_clump_species_tau</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../kosmatau3d.models.interpolations.interpolate_clump_taufuv.html">kosmatau3d.models.interpolations.interpolate_clump_taufuv</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../kosmatau3d.models.interpolations.interpolate_clump_td.html">kosmatau3d.models.interpolations.interpolate_clump_td</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../kosmatau3d.models.interpolations.interpolate_clump_tg.html">kosmatau3d.models.interpolations.interpolate_clump_tg</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../kosmatau3d.models.interpolations.interpolate_fuv.html">kosmatau3d.models.interpolations.interpolate_fuv</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../kosmatau3d.models.interpolations.interpolate_galaxy_rotation.html">kosmatau3d.models.interpolations.interpolate_galaxy_rotation</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../kosmatau3d.models.interpolations.interpolate_h2_mass.html">kosmatau3d.models.interpolations.interpolate_h2_mass</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../kosmatau3d.models.interpolations.interpolate_h2_voxel_filling_factor.html">kosmatau3d.models.interpolations.interpolate_h2_voxel_filling_factor</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../kosmatau3d.models.interpolations.interpolate_hi_mass.html">kosmatau3d.models.interpolations.interpolate_hi_mass</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../kosmatau3d.models.interpolations.interpolate_hi_voxel_filling_factor.html">kosmatau3d.models.interpolations.interpolate_hi_voxel_filling_factor</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../kosmatau3d.models.interpolations.interpolate_interclump_column_density.html">kosmatau3d.models.interpolations.interpolate_interclump_column_density</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../kosmatau3d.models.interpolations.interpolate_interclump_dust_intensity.html">kosmatau3d.models.interpolations.interpolate_interclump_dust_intensity</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../kosmatau3d.models.interpolations.interpolate_interclump_dust_tau.html">kosmatau3d.models.interpolations.interpolate_interclump_dust_tau</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../kosmatau3d.models.interpolations.interpolate_interclump_h2_column_density.html">kosmatau3d.models.interpolations.interpolate_interclump_h2_column_density</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../kosmatau3d.models.interpolations.interpolate_interclump_hi_column_density.html">kosmatau3d.models.interpolations.interpolate_interclump_hi_column_density</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../kosmatau3d.models.interpolations.interpolate_interclump_species_intensity.html">kosmatau3d.models.interpolations.interpolate_interclump_species_intensity</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../kosmatau3d.models.interpolations.interpolate_interclump_species_tau.html">kosmatau3d.models.interpolations.interpolate_interclump_species_tau</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../kosmatau3d.models.interpolations.interpolate_interclump_taufuv.html">kosmatau3d.models.interpolations.interpolate_interclump_taufuv</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../kosmatau3d.models.interpolations.interpolate_interclump_td.html">kosmatau3d.models.interpolations.interpolate_interclump_td</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../kosmatau3d.models.interpolations.interpolate_interclump_tg.html">kosmatau3d.models.interpolations.interpolate_interclump_tg</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../kosmatau3d.models.interpolations.interpolate_number_density.html">kosmatau3d.models.interpolations.interpolate_number_density</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../kosmatau3d.models.interpolations.interpolate_velocity_dispersion.html">kosmatau3d.models.interpolations.interpolate_velocity_dispersion</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../kosmatau3d.models.interpolations.reset.html">kosmatau3d.models.interpolations.reset</a></li>
+<li class="toctree-l4 current"><a class="reference internal" href="../kosmatau3d.models.interpolations.interpolate.html">kosmatau3d.models.interpolations.interpolate</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="../kosmatau3d.models.masspoints.html">kosmatau3d.models.masspoints</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../kosmatau3d.models.models.html">kosmatau3d.models.models</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../kosmatau3d.models.observations.html">kosmatau3d.models.observations</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../kosmatau3d.models.plotting.html">kosmatau3d.models.plotting</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../kosmatau3d.models.radiativeTransfer.html">kosmatau3d.models.radiativeTransfer</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../kosmatau3d.models.shape.html">kosmatau3d.models.shape</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../kosmatau3d.models.species.html">kosmatau3d.models.species</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="../kosmatau3d.properties.html">kosmatau3d.properties</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../../acknowledgements.html">Acknowledgements</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../index.html">kosmatau3d</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../kosmatau3d.html">kosmatau3d</a></li>
+          <li class="breadcrumb-item"><a href="../kosmatau3d.models.html">kosmatau3d.models</a></li>
+          <li class="breadcrumb-item"><a href="../kosmatau3d.models.interpolations.html">kosmatau3d.models.interpolations</a></li>
+          <li class="breadcrumb-item"><a href="../kosmatau3d.models.interpolations.interpolate.html">kosmatau3d.models.interpolations.interpolate</a></li>
+          <li class="breadcrumb-item"><a href="../kosmatau3d.models.interpolations.interpolate.interpolate.html">kosmatau3d.models.interpolations.interpolate.interpolate</a></li>
+      <li class="breadcrumb-item active">scipy.interpolate.CubicSpline</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="scipy-interpolate-cubicspline">
+<h1>scipy.interpolate.CubicSpline<a class="headerlink" href="#scipy-interpolate-cubicspline" title="Link to this heading">¶</a></h1>
+<dl class="py class">
+<dt class="sig sig-object py" id="scipy.interpolate.CubicSpline">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">CubicSpline</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">y</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">axis</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">bc_type</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'not-a-knot'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">extrapolate</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/scipy/interpolate/_cubic.html#CubicSpline"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#scipy.interpolate.CubicSpline" title="Link to this definition">¶</a></dt>
+<dd><p>Cubic spline data interpolator.</p>
+<p>Interpolate data with a piecewise cubic polynomial which is twice
+continuously differentiable <a class="footnote-reference brackets" href="#id3" id="id1" role="doc-noteref"><span class="fn-bracket">[</span>1<span class="fn-bracket">]</span></a>. The result is represented as a <cite>PPoly</cite>
+instance with breakpoints matching the given data.</p>
+<section id="parameters">
+<h2>Parameters<a class="headerlink" href="#parameters" title="Link to this heading">¶</a></h2>
+<dl>
+<dt>x<span class="classifier">array_like, shape (n,)</span></dt><dd><p>1-D array containing values of the independent variable.
+Values must be real, finite and in strictly increasing order.</p>
+</dd>
+<dt>y<span class="classifier">array_like</span></dt><dd><p>Array containing values of the dependent variable. It can have
+arbitrary number of dimensions, but the length along <code class="docutils literal notranslate"><span class="pre">axis</span></code>
+(see below) must match the length of <code class="docutils literal notranslate"><span class="pre">x</span></code>. Values must be finite.</p>
+</dd>
+<dt>axis<span class="classifier">int, optional</span></dt><dd><p>Axis along which <cite>y</cite> is assumed to be varying. Meaning that for
+<code class="docutils literal notranslate"><span class="pre">x[i]</span></code> the corresponding values are <code class="docutils literal notranslate"><span class="pre">np.take(y,</span> <span class="pre">i,</span> <span class="pre">axis=axis)</span></code>.
+Default is 0.</p>
+</dd>
+<dt>bc_type<span class="classifier">string or 2-tuple, optional</span></dt><dd><p>Boundary condition type. Two additional equations, given by the
+boundary conditions, are required to determine all coefficients of
+polynomials on each segment <a class="footnote-reference brackets" href="#id4" id="id2" role="doc-noteref"><span class="fn-bracket">[</span>2<span class="fn-bracket">]</span></a>.</p>
+<p>If <cite>bc_type</cite> is a string, then the specified condition will be applied
+at both ends of a spline. Available conditions are:</p>
+<ul class="simple">
+<li><p>‘not-a-knot’ (default): The first and second segment at a curve end
+are the same polynomial. It is a good default when there is no
+information on boundary conditions.</p></li>
+<li><p>‘periodic’: The interpolated functions is assumed to be periodic
+of period <code class="docutils literal notranslate"><span class="pre">x[-1]</span> <span class="pre">-</span> <span class="pre">x[0]</span></code>. The first and last value of <cite>y</cite> must be
+identical: <code class="docutils literal notranslate"><span class="pre">y[0]</span> <span class="pre">==</span> <span class="pre">y[-1]</span></code>. This boundary condition will result in
+<code class="docutils literal notranslate"><span class="pre">y'[0]</span> <span class="pre">==</span> <span class="pre">y'[-1]</span></code> and <code class="docutils literal notranslate"><span class="pre">y''[0]</span> <span class="pre">==</span> <span class="pre">y''[-1]</span></code>.</p></li>
+<li><p>‘clamped’: The first derivative at curves ends are zero. Assuming
+a 1D <cite>y</cite>, <code class="docutils literal notranslate"><span class="pre">bc_type=((1,</span> <span class="pre">0.0),</span> <span class="pre">(1,</span> <span class="pre">0.0))</span></code> is the same condition.</p></li>
+<li><p>‘natural’: The second derivative at curve ends are zero. Assuming
+a 1D <cite>y</cite>, <code class="docutils literal notranslate"><span class="pre">bc_type=((2,</span> <span class="pre">0.0),</span> <span class="pre">(2,</span> <span class="pre">0.0))</span></code> is the same condition.</p></li>
+</ul>
+<p>If <cite>bc_type</cite> is a 2-tuple, the first and the second value will be
+applied at the curve start and end respectively. The tuple values can
+be one of the previously mentioned strings (except ‘periodic’) or a
+tuple <cite>(order, deriv_values)</cite> allowing to specify arbitrary
+derivatives at curve ends:</p>
+<ul class="simple">
+<li><p><cite>order</cite>: the derivative order, 1 or 2.</p></li>
+<li><p><cite>deriv_value</cite>: array_like containing derivative values, shape must
+be the same as <cite>y</cite>, excluding <code class="docutils literal notranslate"><span class="pre">axis</span></code> dimension. For example, if
+<cite>y</cite> is 1-D, then <cite>deriv_value</cite> must be a scalar. If <cite>y</cite> is 3-D with
+the shape (n0, n1, n2) and axis=2, then <cite>deriv_value</cite> must be 2-D
+and have the shape (n0, n1).</p></li>
+</ul>
+</dd>
+<dt>extrapolate<span class="classifier">{bool, ‘periodic’, None}, optional</span></dt><dd><p>If bool, determines whether to extrapolate to out-of-bounds points
+based on first and last intervals, or to return NaNs. If ‘periodic’,
+periodic extrapolation is used. If None (default), <code class="docutils literal notranslate"><span class="pre">extrapolate</span></code> is
+set to ‘periodic’ for <code class="docutils literal notranslate"><span class="pre">bc_type='periodic'</span></code> and to True otherwise.</p>
+</dd>
+</dl>
+</section>
+<section id="attributes">
+<h2>Attributes<a class="headerlink" href="#attributes" title="Link to this heading">¶</a></h2>
+<dl class="simple">
+<dt>x<span class="classifier">ndarray, shape (n,)</span></dt><dd><p>Breakpoints. The same <code class="docutils literal notranslate"><span class="pre">x</span></code> which was passed to the constructor.</p>
+</dd>
+<dt>c<span class="classifier">ndarray, shape (4, n-1, …)</span></dt><dd><p>Coefficients of the polynomials on each segment. The trailing
+dimensions match the dimensions of <cite>y</cite>, excluding <code class="docutils literal notranslate"><span class="pre">axis</span></code>.
+For example, if <cite>y</cite> is 1-d, then <code class="docutils literal notranslate"><span class="pre">c[k,</span> <span class="pre">i]</span></code> is a coefficient for
+<code class="docutils literal notranslate"><span class="pre">(x-x[i])**(3-k)</span></code> on the segment between <code class="docutils literal notranslate"><span class="pre">x[i]</span></code> and <code class="docutils literal notranslate"><span class="pre">x[i+1]</span></code>.</p>
+</dd>
+<dt>axis<span class="classifier">int</span></dt><dd><p>Interpolation axis. The same axis which was passed to the
+constructor.</p>
+</dd>
+</dl>
+</section>
+<section id="methods">
+<h2>Methods<a class="headerlink" href="#methods" title="Link to this heading">¶</a></h2>
+<p>__call__
+derivative
+antiderivative
+integrate
+roots</p>
+</section>
+<section id="see-also">
+<h2>See Also<a class="headerlink" href="#see-also" title="Link to this heading">¶</a></h2>
+<p>Akima1DInterpolator : Akima 1D interpolator.
+PchipInterpolator : PCHIP 1-D monotonic cubic interpolator.
+PPoly : Piecewise polynomial in terms of coefficients and breakpoints.</p>
+</section>
+<section id="notes">
+<h2>Notes<a class="headerlink" href="#notes" title="Link to this heading">¶</a></h2>
+<p>Parameters <cite>bc_type</cite> and <code class="docutils literal notranslate"><span class="pre">extrapolate</span></code> work independently, i.e. the
+former controls only construction of a spline, and the latter only
+evaluation.</p>
+<p>When a boundary condition is ‘not-a-knot’ and n = 2, it is replaced by
+a condition that the first derivative is equal to the linear interpolant
+slope. When both boundary conditions are ‘not-a-knot’ and n = 3, the
+solution is sought as a parabola passing through given points.</p>
+<p>When ‘not-a-knot’ boundary conditions is applied to both ends, the
+resulting spline will be the same as returned by <cite>splrep</cite> (with <code class="docutils literal notranslate"><span class="pre">s=0</span></code>)
+and <cite>InterpolatedUnivariateSpline</cite>, but these two methods use a
+representation in B-spline basis.</p>
+<div class="versionadded">
+<p><span class="versionmodified added">New in version 0.18.0.</span></p>
+</div>
+</section>
+<section id="examples">
+<h2>Examples<a class="headerlink" href="#examples" title="Link to this heading">¶</a></h2>
+<p>In this example the cubic spline is used to interpolate a sampled sinusoid.
+You can see that the spline continuity property holds for the first and
+second derivatives and violates only for the third derivative.</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">scipy.interpolate</span> <span class="kn">import</span> <span class="n">CubicSpline</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span> <span class="nn">matplotlib.pyplot</span> <span class="k">as</span> <span class="nn">plt</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">x</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="mi">10</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">y</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sin</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">cs</span> <span class="o">=</span> <span class="n">CubicSpline</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">xs</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="o">-</span><span class="mf">0.5</span><span class="p">,</span> <span class="mf">9.6</span><span class="p">,</span> <span class="mf">0.1</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">fig</span><span class="p">,</span> <span class="n">ax</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">subplots</span><span class="p">(</span><span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mf">6.5</span><span class="p">,</span> <span class="mi">4</span><span class="p">))</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">ax</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="s1">&#39;o&#39;</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="s1">&#39;data&#39;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">ax</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">xs</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">sin</span><span class="p">(</span><span class="n">xs</span><span class="p">),</span> <span class="n">label</span><span class="o">=</span><span class="s1">&#39;true&#39;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">ax</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">xs</span><span class="p">,</span> <span class="n">cs</span><span class="p">(</span><span class="n">xs</span><span class="p">),</span> <span class="n">label</span><span class="o">=</span><span class="s2">&quot;S&quot;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">ax</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">xs</span><span class="p">,</span> <span class="n">cs</span><span class="p">(</span><span class="n">xs</span><span class="p">,</span> <span class="mi">1</span><span class="p">),</span> <span class="n">label</span><span class="o">=</span><span class="s2">&quot;S&#39;&quot;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">ax</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">xs</span><span class="p">,</span> <span class="n">cs</span><span class="p">(</span><span class="n">xs</span><span class="p">,</span> <span class="mi">2</span><span class="p">),</span> <span class="n">label</span><span class="o">=</span><span class="s2">&quot;S&#39;&#39;&quot;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">ax</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">xs</span><span class="p">,</span> <span class="n">cs</span><span class="p">(</span><span class="n">xs</span><span class="p">,</span> <span class="mi">3</span><span class="p">),</span> <span class="n">label</span><span class="o">=</span><span class="s2">&quot;S&#39;&#39;&#39;&quot;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">ax</span><span class="o">.</span><span class="n">set_xlim</span><span class="p">(</span><span class="o">-</span><span class="mf">0.5</span><span class="p">,</span> <span class="mf">9.5</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">ax</span><span class="o">.</span><span class="n">legend</span><span class="p">(</span><span class="n">loc</span><span class="o">=</span><span class="s1">&#39;lower left&#39;</span><span class="p">,</span> <span class="n">ncol</span><span class="o">=</span><span class="mi">2</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">plt</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
+</pre></div>
+</div>
+<p>In the second example, the unit circle is interpolated with a spline. A
+periodic boundary condition is used. You can see that the first derivative
+values, ds/dx=0, ds/dy=1 at the periodic point (1, 0) are correctly
+computed. Note that a circle cannot be exactly represented by a cubic
+spline. To increase precision, more breakpoints would be required.</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">theta</span> <span class="o">=</span> <span class="mi">2</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">pi</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">linspace</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">5</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">y</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">c_</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">cos</span><span class="p">(</span><span class="n">theta</span><span class="p">),</span> <span class="n">np</span><span class="o">.</span><span class="n">sin</span><span class="p">(</span><span class="n">theta</span><span class="p">)]</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">cs</span> <span class="o">=</span> <span class="n">CubicSpline</span><span class="p">(</span><span class="n">theta</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">bc_type</span><span class="o">=</span><span class="s1">&#39;periodic&#39;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="nb">print</span><span class="p">(</span><span class="s2">&quot;ds/dx=</span><span class="si">{:.1f}</span><span class="s2"> ds/dy=</span><span class="si">{:.1f}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">cs</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">)[</span><span class="mi">0</span><span class="p">],</span> <span class="n">cs</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">)[</span><span class="mi">1</span><span class="p">]))</span>
+<span class="go">ds/dx=0.0 ds/dy=1.0</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">xs</span> <span class="o">=</span> <span class="mi">2</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">pi</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">linspace</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">100</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">fig</span><span class="p">,</span> <span class="n">ax</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">subplots</span><span class="p">(</span><span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mf">6.5</span><span class="p">,</span> <span class="mi">4</span><span class="p">))</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">ax</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">y</span><span class="p">[:,</span> <span class="mi">0</span><span class="p">],</span> <span class="n">y</span><span class="p">[:,</span> <span class="mi">1</span><span class="p">],</span> <span class="s1">&#39;o&#39;</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="s1">&#39;data&#39;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">ax</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">cos</span><span class="p">(</span><span class="n">xs</span><span class="p">),</span> <span class="n">np</span><span class="o">.</span><span class="n">sin</span><span class="p">(</span><span class="n">xs</span><span class="p">),</span> <span class="n">label</span><span class="o">=</span><span class="s1">&#39;true&#39;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">ax</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">cs</span><span class="p">(</span><span class="n">xs</span><span class="p">)[:,</span> <span class="mi">0</span><span class="p">],</span> <span class="n">cs</span><span class="p">(</span><span class="n">xs</span><span class="p">)[:,</span> <span class="mi">1</span><span class="p">],</span> <span class="n">label</span><span class="o">=</span><span class="s1">&#39;spline&#39;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">ax</span><span class="o">.</span><span class="n">axes</span><span class="o">.</span><span class="n">set_aspect</span><span class="p">(</span><span class="s1">&#39;equal&#39;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">ax</span><span class="o">.</span><span class="n">legend</span><span class="p">(</span><span class="n">loc</span><span class="o">=</span><span class="s1">&#39;center&#39;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">plt</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
+</pre></div>
+</div>
+<p>The third example is the interpolation of a polynomial y = x**3 on the
+interval 0 &lt;= x&lt;= 1. A cubic spline can represent this function exactly.
+To achieve that we need to specify values and first derivatives at
+endpoints of the interval. Note that y’ = 3 * x**2 and thus y’(0) = 0 and
+y’(1) = 3.</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">cs</span> <span class="o">=</span> <span class="n">CubicSpline</span><span class="p">([</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">],</span> <span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">],</span> <span class="n">bc_type</span><span class="o">=</span><span class="p">((</span><span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">),</span> <span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">3</span><span class="p">)))</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">x</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linspace</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">np</span><span class="o">.</span><span class="n">allclose</span><span class="p">(</span><span class="n">x</span><span class="o">**</span><span class="mi">3</span><span class="p">,</span> <span class="n">cs</span><span class="p">(</span><span class="n">x</span><span class="p">))</span>
+<span class="go">True</span>
+</pre></div>
+</div>
+</section>
+<section id="references">
+<h2>References<a class="headerlink" href="#references" title="Link to this heading">¶</a></h2>
+<aside class="footnote-list brackets">
+<aside class="footnote brackets" id="id3" role="note">
+<span class="label"><span class="fn-bracket">[</span><a role="doc-backlink" href="#id1">1</a><span class="fn-bracket">]</span></span>
+<p><a class="reference external" href="https://en.wikiversity.org/wiki/Cubic_Spline_Interpolation">Cubic Spline Interpolation</a>
+on Wikiversity.</p>
+</aside>
+<aside class="footnote brackets" id="id4" role="note">
+<span class="label"><span class="fn-bracket">[</span><a role="doc-backlink" href="#id2">2</a><span class="fn-bracket">]</span></span>
+<p>Carl de Boor, “A Practical Guide to Splines”, Springer-Verlag, 1978.</p>
+</aside>
+</aside>
+<dl class="py method">
+<dt class="sig sig-object py" id="scipy.interpolate.CubicSpline.__init__">
+<span class="sig-name descname"><span class="pre">__init__</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">y</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">axis</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">bc_type</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'not-a-knot'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">extrapolate</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/scipy/interpolate/_cubic.html#CubicSpline.__init__"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#scipy.interpolate.CubicSpline.__init__" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<p class="rubric">Methods</p>
+<table class="autosummary longtable docutils align-default">
+<tbody>
+<tr class="row-odd"><td><p><a class="reference internal" href="#scipy.interpolate.CubicSpline.__init__" title="scipy.interpolate.CubicSpline.__init__"><code class="xref py py-obj docutils literal notranslate"><span class="pre">__init__</span></code></a>(x, y[, axis, bc_type, extrapolate])</p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">antiderivative</span></code>([nu])</p></td>
+<td><p>Construct a new piecewise polynomial representing the antiderivative.</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">construct_fast</span></code>(c, x[, extrapolate, axis])</p></td>
+<td><p>Construct the piecewise polynomial without making checks.</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">derivative</span></code>([nu])</p></td>
+<td><p>Construct a new piecewise polynomial representing the derivative.</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">extend</span></code>(c, x)</p></td>
+<td><p>Add additional breakpoints and coefficients to the polynomial.</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">from_bernstein_basis</span></code>(bp[, extrapolate])</p></td>
+<td><p>Construct a piecewise polynomial in the power basis from a polynomial in Bernstein basis.</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">from_spline</span></code>(tck[, extrapolate])</p></td>
+<td><p>Construct a piecewise polynomial from a spline</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">integrate</span></code>(a, b[, extrapolate])</p></td>
+<td><p>Compute a definite integral over a piecewise polynomial.</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">roots</span></code>([discontinuity, extrapolate])</p></td>
+<td><p>Find real roots of the piecewise polynomial.</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">solve</span></code>([y, discontinuity, extrapolate])</p></td>
+<td><p>Find real solutions of the equation <code class="docutils literal notranslate"><span class="pre">pp(x)</span> <span class="pre">==</span> <span class="pre">y</span></code>.</p></td>
+</tr>
+</tbody>
+</table>
+<p class="rubric">Attributes</p>
+<table class="autosummary longtable docutils align-default">
+<tbody>
+<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">c</span></code></p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">x</span></code></p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">extrapolate</span></code></p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">axis</span></code></p></td>
+<td><p></p></td>
+</tr>
+</tbody>
+</table>
+</section>
+</dd></dl>
+
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="scipy.interpolate.Akima1DInterpolator.html" class="btn btn-neutral float-left" title="scipy.interpolate.Akima1DInterpolator" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="scipy.interpolate.PPoly.html" class="btn btn-neutral float-right" title="scipy.interpolate.PPoly" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2023, Craig Yanitski.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

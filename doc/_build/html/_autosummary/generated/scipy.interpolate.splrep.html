@@ -1,0 +1,317 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" /><meta name="generator" content="Docutils 0.18.1: http://docutils.sourceforge.net/" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>scipy.interpolate.splrep &mdash; kosmatau3d 1.0.3 documentation</title>
+      <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
+      <link rel="stylesheet" href="../../_static/readthedocs-custom.css" type="text/css" />
+  <!--[if lt IE 9]>
+    <script src="../../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script src="../../_static/documentation_options.js?v=baaebd52"></script>
+        <script src="../../_static/doctools.js?v=888ff710"></script>
+        <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
+        <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+    <script src="../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" />
+    <link rel="next" title="scipy.interpolate.splprep" href="scipy.interpolate.splprep.html" />
+    <link rel="prev" title="scipy.interpolate.make_smoothing_spline" href="scipy.interpolate.make_smoothing_spline.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../../index.html" class="icon icon-home">
+            kosmatau3d
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../../installation.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../properties.html">KOSMA-$\tau$ Properties</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../voxel.html">Voxels</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../model.html">3D Models</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../comparison.html">Comparison to Observations</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../development.html">Future Development</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="../kosmatau3d.html">API Reference</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="../kosmatau3d.comparison.html">kosmatau3d.comparison</a></li>
+<li class="toctree-l2 current"><a class="reference internal" href="../kosmatau3d.models.html">kosmatau3d.models</a><ul class="current">
+<li class="toctree-l3"><a class="reference internal" href="../kosmatau3d.models.dill_grid.html">kosmatau3d.models.dill_grid</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../kosmatau3d.models.help.html">kosmatau3d.models.help</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../kosmatau3d.models.Model.html">kosmatau3d.models.Model</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../kosmatau3d.models.Voxel.html">kosmatau3d.models.Voxel</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../kosmatau3d.models.VoxelGrid.html">kosmatau3d.models.VoxelGrid</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../kosmatau3d.models.combinations.html">kosmatau3d.models.combinations</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../kosmatau3d.models.constants.html">kosmatau3d.models.constants</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../kosmatau3d.models.ensemble.html">kosmatau3d.models.ensemble</a></li>
+<li class="toctree-l3 current"><a class="reference internal" href="../kosmatau3d.models.interpolations.html">kosmatau3d.models.interpolations</a><ul class="current">
+<li class="toctree-l4"><a class="reference internal" href="../kosmatau3d.models.interpolations.interpolate_clump_column_density.html">kosmatau3d.models.interpolations.interpolate_clump_column_density</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../kosmatau3d.models.interpolations.interpolate_clump_dust_intensity.html">kosmatau3d.models.interpolations.interpolate_clump_dust_intensity</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../kosmatau3d.models.interpolations.interpolate_clump_dust_tau.html">kosmatau3d.models.interpolations.interpolate_clump_dust_tau</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../kosmatau3d.models.interpolations.interpolate_clump_h2_column_density.html">kosmatau3d.models.interpolations.interpolate_clump_h2_column_density</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../kosmatau3d.models.interpolations.interpolate_clump_hi_column_density.html">kosmatau3d.models.interpolations.interpolate_clump_hi_column_density</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../kosmatau3d.models.interpolations.interpolate_clump_species_intensity.html">kosmatau3d.models.interpolations.interpolate_clump_species_intensity</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../kosmatau3d.models.interpolations.interpolate_clump_species_tau.html">kosmatau3d.models.interpolations.interpolate_clump_species_tau</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../kosmatau3d.models.interpolations.interpolate_clump_taufuv.html">kosmatau3d.models.interpolations.interpolate_clump_taufuv</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../kosmatau3d.models.interpolations.interpolate_clump_td.html">kosmatau3d.models.interpolations.interpolate_clump_td</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../kosmatau3d.models.interpolations.interpolate_clump_tg.html">kosmatau3d.models.interpolations.interpolate_clump_tg</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../kosmatau3d.models.interpolations.interpolate_fuv.html">kosmatau3d.models.interpolations.interpolate_fuv</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../kosmatau3d.models.interpolations.interpolate_galaxy_rotation.html">kosmatau3d.models.interpolations.interpolate_galaxy_rotation</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../kosmatau3d.models.interpolations.interpolate_h2_mass.html">kosmatau3d.models.interpolations.interpolate_h2_mass</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../kosmatau3d.models.interpolations.interpolate_h2_voxel_filling_factor.html">kosmatau3d.models.interpolations.interpolate_h2_voxel_filling_factor</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../kosmatau3d.models.interpolations.interpolate_hi_mass.html">kosmatau3d.models.interpolations.interpolate_hi_mass</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../kosmatau3d.models.interpolations.interpolate_hi_voxel_filling_factor.html">kosmatau3d.models.interpolations.interpolate_hi_voxel_filling_factor</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../kosmatau3d.models.interpolations.interpolate_interclump_column_density.html">kosmatau3d.models.interpolations.interpolate_interclump_column_density</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../kosmatau3d.models.interpolations.interpolate_interclump_dust_intensity.html">kosmatau3d.models.interpolations.interpolate_interclump_dust_intensity</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../kosmatau3d.models.interpolations.interpolate_interclump_dust_tau.html">kosmatau3d.models.interpolations.interpolate_interclump_dust_tau</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../kosmatau3d.models.interpolations.interpolate_interclump_h2_column_density.html">kosmatau3d.models.interpolations.interpolate_interclump_h2_column_density</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../kosmatau3d.models.interpolations.interpolate_interclump_hi_column_density.html">kosmatau3d.models.interpolations.interpolate_interclump_hi_column_density</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../kosmatau3d.models.interpolations.interpolate_interclump_species_intensity.html">kosmatau3d.models.interpolations.interpolate_interclump_species_intensity</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../kosmatau3d.models.interpolations.interpolate_interclump_species_tau.html">kosmatau3d.models.interpolations.interpolate_interclump_species_tau</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../kosmatau3d.models.interpolations.interpolate_interclump_taufuv.html">kosmatau3d.models.interpolations.interpolate_interclump_taufuv</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../kosmatau3d.models.interpolations.interpolate_interclump_td.html">kosmatau3d.models.interpolations.interpolate_interclump_td</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../kosmatau3d.models.interpolations.interpolate_interclump_tg.html">kosmatau3d.models.interpolations.interpolate_interclump_tg</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../kosmatau3d.models.interpolations.interpolate_number_density.html">kosmatau3d.models.interpolations.interpolate_number_density</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../kosmatau3d.models.interpolations.interpolate_velocity_dispersion.html">kosmatau3d.models.interpolations.interpolate_velocity_dispersion</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../kosmatau3d.models.interpolations.reset.html">kosmatau3d.models.interpolations.reset</a></li>
+<li class="toctree-l4 current"><a class="reference internal" href="../kosmatau3d.models.interpolations.interpolate.html">kosmatau3d.models.interpolations.interpolate</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="../kosmatau3d.models.masspoints.html">kosmatau3d.models.masspoints</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../kosmatau3d.models.models.html">kosmatau3d.models.models</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../kosmatau3d.models.observations.html">kosmatau3d.models.observations</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../kosmatau3d.models.plotting.html">kosmatau3d.models.plotting</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../kosmatau3d.models.radiativeTransfer.html">kosmatau3d.models.radiativeTransfer</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../kosmatau3d.models.shape.html">kosmatau3d.models.shape</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../kosmatau3d.models.species.html">kosmatau3d.models.species</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="../kosmatau3d.properties.html">kosmatau3d.properties</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../../acknowledgements.html">Acknowledgements</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../index.html">kosmatau3d</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../kosmatau3d.html">kosmatau3d</a></li>
+          <li class="breadcrumb-item"><a href="../kosmatau3d.models.html">kosmatau3d.models</a></li>
+          <li class="breadcrumb-item"><a href="../kosmatau3d.models.interpolations.html">kosmatau3d.models.interpolations</a></li>
+          <li class="breadcrumb-item"><a href="../kosmatau3d.models.interpolations.interpolate.html">kosmatau3d.models.interpolations.interpolate</a></li>
+          <li class="breadcrumb-item"><a href="../kosmatau3d.models.interpolations.interpolate.interpolate.html">kosmatau3d.models.interpolations.interpolate.interpolate</a></li>
+      <li class="breadcrumb-item active">scipy.interpolate.splrep</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="scipy-interpolate-splrep">
+<h1>scipy.interpolate.splrep<a class="headerlink" href="#scipy-interpolate-splrep" title="Link to this heading">¶</a></h1>
+<dl class="py function">
+<dt class="sig sig-object py" id="scipy.interpolate.splrep">
+<span class="sig-name descname"><span class="pre">splrep</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">y</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">w</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">xb</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">xe</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">k</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">3</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">task</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">s</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">t</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">full_output</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">per</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">quiet</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/scipy/interpolate/_fitpack_py.html#splrep"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#scipy.interpolate.splrep" title="Link to this definition">¶</a></dt>
+<dd><p>Find the B-spline representation of a 1-D curve.</p>
+<p>Given the set of data points <code class="docutils literal notranslate"><span class="pre">(x[i],</span> <span class="pre">y[i])</span></code> determine a smooth spline
+approximation of degree k on the interval <code class="docutils literal notranslate"><span class="pre">xb</span> <span class="pre">&lt;=</span> <span class="pre">x</span> <span class="pre">&lt;=</span> <span class="pre">xe</span></code>.</p>
+<section id="parameters">
+<h2>Parameters<a class="headerlink" href="#parameters" title="Link to this heading">¶</a></h2>
+<dl>
+<dt>x, y<span class="classifier">array_like</span></dt><dd><p>The data points defining a curve y = f(x).</p>
+</dd>
+<dt>w<span class="classifier">array_like, optional</span></dt><dd><p>Strictly positive rank-1 array of weights the same length as x and y.
+The weights are used in computing the weighted least-squares spline
+fit. If the errors in the y values have standard-deviation given by the
+vector d, then w should be 1/d. Default is ones(len(x)).</p>
+</dd>
+<dt>xb, xe<span class="classifier">float, optional</span></dt><dd><p>The interval to fit.  If None, these default to x[0] and x[-1]
+respectively.</p>
+</dd>
+<dt>k<span class="classifier">int, optional</span></dt><dd><p>The degree of the spline fit. It is recommended to use cubic splines.
+Even values of k should be avoided especially with small s values.
+1 &lt;= k &lt;= 5</p>
+</dd>
+<dt>task<span class="classifier">{1, 0, -1}, optional</span></dt><dd><p>If task==0 find t and c for a given smoothing factor, s.</p>
+<p>If task==1 find t and c for another value of the smoothing factor, s.
+There must have been a previous call with task=0 or task=1 for the same
+set of data (t will be stored an used internally)</p>
+<p>If task=-1 find the weighted least square spline for a given set of
+knots, t. These should be interior knots as knots on the ends will be
+added automatically.</p>
+</dd>
+<dt>s<span class="classifier">float, optional</span></dt><dd><p>A smoothing condition. The amount of smoothness is determined by
+satisfying the conditions: sum((w * (y - g))**2,axis=0) &lt;= s where g(x)
+is the smoothed interpolation of (x,y). The user can use s to control
+the tradeoff between closeness and smoothness of fit. Larger s means
+more smoothing while smaller values of s indicate less smoothing.
+Recommended values of s depend on the weights, w. If the weights
+represent the inverse of the standard-deviation of y, then a good s
+value should be found in the range (m-sqrt(2*m),m+sqrt(2*m)) where m is
+the number of datapoints in x, y, and w. default : s=m-sqrt(2*m) if
+weights are supplied. s = 0.0 (interpolating) if no weights are
+supplied.</p>
+</dd>
+<dt>t<span class="classifier">array_like, optional</span></dt><dd><p>The knots needed for task=-1. If given then task is automatically set
+to -1.</p>
+</dd>
+<dt>full_output<span class="classifier">bool, optional</span></dt><dd><p>If non-zero, then return optional outputs.</p>
+</dd>
+<dt>per<span class="classifier">bool, optional</span></dt><dd><p>If non-zero, data points are considered periodic with period x[m-1] -
+x[0] and a smooth periodic spline approximation is returned. Values of
+y[m-1] and w[m-1] are not used.</p>
+</dd>
+<dt>quiet<span class="classifier">bool, optional</span></dt><dd><p>Non-zero to suppress messages.</p>
+</dd>
+</dl>
+</section>
+<section id="returns">
+<h2>Returns<a class="headerlink" href="#returns" title="Link to this heading">¶</a></h2>
+<dl class="simple">
+<dt>tck<span class="classifier">tuple</span></dt><dd><p>A tuple (t,c,k) containing the vector of knots, the B-spline
+coefficients, and the degree of the spline.</p>
+</dd>
+<dt>fp<span class="classifier">array, optional</span></dt><dd><p>The weighted sum of squared residuals of the spline approximation.</p>
+</dd>
+<dt>ier<span class="classifier">int, optional</span></dt><dd><p>An integer flag about splrep success. Success is indicated if ier&lt;=0.
+If ier in [1,2,3] an error occurred but was not raised. Otherwise an
+error is raised.</p>
+</dd>
+<dt>msg<span class="classifier">str, optional</span></dt><dd><p>A message corresponding to the integer flag, ier.</p>
+</dd>
+</dl>
+</section>
+<section id="see-also">
+<h2>See Also<a class="headerlink" href="#see-also" title="Link to this heading">¶</a></h2>
+<p>UnivariateSpline, BivariateSpline
+splprep, splev, sproot, spalde, splint
+bisplrep, bisplev
+BSpline
+make_interp_spline</p>
+</section>
+<section id="notes">
+<h2>Notes<a class="headerlink" href="#notes" title="Link to this heading">¶</a></h2>
+<p>See <cite>splev</cite> for evaluation of the spline and its derivatives. Uses the
+FORTRAN routine <code class="docutils literal notranslate"><span class="pre">curfit</span></code> from FITPACK.</p>
+<p>The user is responsible for assuring that the values of <cite>x</cite> are unique.
+Otherwise, <cite>splrep</cite> will not return sensible results.</p>
+<p>If provided, knots <cite>t</cite> must satisfy the Schoenberg-Whitney conditions,
+i.e., there must be a subset of data points <code class="docutils literal notranslate"><span class="pre">x[j]</span></code> such that
+<code class="docutils literal notranslate"><span class="pre">t[j]</span> <span class="pre">&lt;</span> <span class="pre">x[j]</span> <span class="pre">&lt;</span> <span class="pre">t[j+k+1]</span></code>, for <code class="docutils literal notranslate"><span class="pre">j=0,</span> <span class="pre">1,...,n-k-2</span></code>.</p>
+<p>This routine zero-pads the coefficients array <code class="docutils literal notranslate"><span class="pre">c</span></code> to have the same length
+as the array of knots <code class="docutils literal notranslate"><span class="pre">t</span></code> (the trailing <code class="docutils literal notranslate"><span class="pre">k</span> <span class="pre">+</span> <span class="pre">1</span></code> coefficients are ignored
+by the evaluation routines, <cite>splev</cite> and <cite>BSpline</cite>.) This is in contrast with
+<cite>splprep</cite>, which does not zero-pad the coefficients.</p>
+</section>
+<section id="references">
+<h2>References<a class="headerlink" href="#references" title="Link to this heading">¶</a></h2>
+<p>Based on algorithms described in <a class="footnote-reference brackets" href="#id5" id="id1" role="doc-noteref"><span class="fn-bracket">[</span>1<span class="fn-bracket">]</span></a>, <a class="footnote-reference brackets" href="#id6" id="id2" role="doc-noteref"><span class="fn-bracket">[</span>2<span class="fn-bracket">]</span></a>, <a class="footnote-reference brackets" href="#id7" id="id3" role="doc-noteref"><span class="fn-bracket">[</span>3<span class="fn-bracket">]</span></a>, and <a class="footnote-reference brackets" href="#id8" id="id4" role="doc-noteref"><span class="fn-bracket">[</span>4<span class="fn-bracket">]</span></a>:</p>
+<aside class="footnote-list brackets">
+<aside class="footnote brackets" id="id5" role="note">
+<span class="label"><span class="fn-bracket">[</span><a role="doc-backlink" href="#id1">1</a><span class="fn-bracket">]</span></span>
+<p>P. Dierckx, “An algorithm for smoothing, differentiation and
+integration of experimental data using spline functions”,
+J.Comp.Appl.Maths 1 (1975) 165-184.</p>
+</aside>
+<aside class="footnote brackets" id="id6" role="note">
+<span class="label"><span class="fn-bracket">[</span><a role="doc-backlink" href="#id2">2</a><span class="fn-bracket">]</span></span>
+<p>P. Dierckx, “A fast algorithm for smoothing data on a rectangular
+grid while using spline functions”, SIAM J.Numer.Anal. 19 (1982)
+1286-1304.</p>
+</aside>
+<aside class="footnote brackets" id="id7" role="note">
+<span class="label"><span class="fn-bracket">[</span><a role="doc-backlink" href="#id3">3</a><span class="fn-bracket">]</span></span>
+<p>P. Dierckx, “An improved algorithm for curve fitting with spline
+functions”, report tw54, Dept. Computer Science,K.U. Leuven, 1981.</p>
+</aside>
+<aside class="footnote brackets" id="id8" role="note">
+<span class="label"><span class="fn-bracket">[</span><a role="doc-backlink" href="#id4">4</a><span class="fn-bracket">]</span></span>
+<p>P. Dierckx, “Curve and surface fitting with splines”, Monographs on
+Numerical Analysis, Oxford University Press, 1993.</p>
+</aside>
+</aside>
+</section>
+<section id="examples">
+<h2>Examples<a class="headerlink" href="#examples" title="Link to this heading">¶</a></h2>
+<p>You can interpolate 1-D points with a B-spline curve.
+Further examples are given in
+<span class="xref std std-ref">in the tutorial</span>.</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span> <span class="nn">matplotlib.pyplot</span> <span class="k">as</span> <span class="nn">plt</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">scipy.interpolate</span> <span class="kn">import</span> <span class="n">splev</span><span class="p">,</span> <span class="n">splrep</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">x</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linspace</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">10</span><span class="p">,</span> <span class="mi">10</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">y</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sin</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">spl</span> <span class="o">=</span> <span class="n">splrep</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">x2</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linspace</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">10</span><span class="p">,</span> <span class="mi">200</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">y2</span> <span class="o">=</span> <span class="n">splev</span><span class="p">(</span><span class="n">x2</span><span class="p">,</span> <span class="n">spl</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">plt</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="s1">&#39;o&#39;</span><span class="p">,</span> <span class="n">x2</span><span class="p">,</span> <span class="n">y2</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">plt</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
+</pre></div>
+</div>
+</section>
+</dd></dl>
+
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="scipy.interpolate.make_smoothing_spline.html" class="btn btn-neutral float-left" title="scipy.interpolate.make_smoothing_spline" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="scipy.interpolate.splprep.html" class="btn btn-neutral float-right" title="scipy.interpolate.splprep" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2023, Craig Yanitski.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

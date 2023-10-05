@@ -1,0 +1,234 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" /><meta name="generator" content="Docutils 0.18.1: http://docutils.sourceforge.net/" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>scipy.interpolate.splder &mdash; kosmatau3d 1.0.3 documentation</title>
+      <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
+      <link rel="stylesheet" href="../../_static/readthedocs-custom.css" type="text/css" />
+  <!--[if lt IE 9]>
+    <script src="../../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script src="../../_static/documentation_options.js?v=baaebd52"></script>
+        <script src="../../_static/doctools.js?v=888ff710"></script>
+        <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
+        <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+        <script>window.MathJax = {"tex": {"inlineMath": [["$", "$"], ["\\(", "\\)"]], "processEscapes": true}, "options": {"ignoreHtmlClass": "tex2jax_ignore|mathjax_ignore|document", "processHtmlClass": "tex2jax_process|mathjax_process|math|output_area"}}</script>
+        <script defer="defer" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+    <script src="../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" />
+    <link rel="next" title="scipy.interpolate.splantider" href="scipy.interpolate.splantider.html" />
+    <link rel="prev" title="scipy.interpolate.spalde" href="scipy.interpolate.spalde.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../../index.html" class="icon icon-home">
+            kosmatau3d
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../../installation.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../properties.html">KOSMA-$\tau$ Properties</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../voxel.html">Voxels</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../model.html">3D Models</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../comparison.html">Comparison to Observations</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../development.html">Future Development</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="../kosmatau3d.html">API Reference</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="../kosmatau3d.comparison.html">kosmatau3d.comparison</a></li>
+<li class="toctree-l2 current"><a class="reference internal" href="../kosmatau3d.models.html">kosmatau3d.models</a><ul class="current">
+<li class="toctree-l3"><a class="reference internal" href="../kosmatau3d.models.dill_grid.html">kosmatau3d.models.dill_grid</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../kosmatau3d.models.help.html">kosmatau3d.models.help</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../kosmatau3d.models.Model.html">kosmatau3d.models.Model</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../kosmatau3d.models.Voxel.html">kosmatau3d.models.Voxel</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../kosmatau3d.models.VoxelGrid.html">kosmatau3d.models.VoxelGrid</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../kosmatau3d.models.combinations.html">kosmatau3d.models.combinations</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../kosmatau3d.models.constants.html">kosmatau3d.models.constants</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../kosmatau3d.models.ensemble.html">kosmatau3d.models.ensemble</a></li>
+<li class="toctree-l3 current"><a class="reference internal" href="../kosmatau3d.models.interpolations.html">kosmatau3d.models.interpolations</a><ul class="current">
+<li class="toctree-l4"><a class="reference internal" href="../kosmatau3d.models.interpolations.interpolate_clump_column_density.html">kosmatau3d.models.interpolations.interpolate_clump_column_density</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../kosmatau3d.models.interpolations.interpolate_clump_dust_intensity.html">kosmatau3d.models.interpolations.interpolate_clump_dust_intensity</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../kosmatau3d.models.interpolations.interpolate_clump_dust_tau.html">kosmatau3d.models.interpolations.interpolate_clump_dust_tau</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../kosmatau3d.models.interpolations.interpolate_clump_h2_column_density.html">kosmatau3d.models.interpolations.interpolate_clump_h2_column_density</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../kosmatau3d.models.interpolations.interpolate_clump_hi_column_density.html">kosmatau3d.models.interpolations.interpolate_clump_hi_column_density</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../kosmatau3d.models.interpolations.interpolate_clump_species_intensity.html">kosmatau3d.models.interpolations.interpolate_clump_species_intensity</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../kosmatau3d.models.interpolations.interpolate_clump_species_tau.html">kosmatau3d.models.interpolations.interpolate_clump_species_tau</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../kosmatau3d.models.interpolations.interpolate_clump_taufuv.html">kosmatau3d.models.interpolations.interpolate_clump_taufuv</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../kosmatau3d.models.interpolations.interpolate_clump_td.html">kosmatau3d.models.interpolations.interpolate_clump_td</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../kosmatau3d.models.interpolations.interpolate_clump_tg.html">kosmatau3d.models.interpolations.interpolate_clump_tg</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../kosmatau3d.models.interpolations.interpolate_fuv.html">kosmatau3d.models.interpolations.interpolate_fuv</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../kosmatau3d.models.interpolations.interpolate_galaxy_rotation.html">kosmatau3d.models.interpolations.interpolate_galaxy_rotation</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../kosmatau3d.models.interpolations.interpolate_h2_mass.html">kosmatau3d.models.interpolations.interpolate_h2_mass</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../kosmatau3d.models.interpolations.interpolate_h2_voxel_filling_factor.html">kosmatau3d.models.interpolations.interpolate_h2_voxel_filling_factor</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../kosmatau3d.models.interpolations.interpolate_hi_mass.html">kosmatau3d.models.interpolations.interpolate_hi_mass</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../kosmatau3d.models.interpolations.interpolate_hi_voxel_filling_factor.html">kosmatau3d.models.interpolations.interpolate_hi_voxel_filling_factor</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../kosmatau3d.models.interpolations.interpolate_interclump_column_density.html">kosmatau3d.models.interpolations.interpolate_interclump_column_density</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../kosmatau3d.models.interpolations.interpolate_interclump_dust_intensity.html">kosmatau3d.models.interpolations.interpolate_interclump_dust_intensity</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../kosmatau3d.models.interpolations.interpolate_interclump_dust_tau.html">kosmatau3d.models.interpolations.interpolate_interclump_dust_tau</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../kosmatau3d.models.interpolations.interpolate_interclump_h2_column_density.html">kosmatau3d.models.interpolations.interpolate_interclump_h2_column_density</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../kosmatau3d.models.interpolations.interpolate_interclump_hi_column_density.html">kosmatau3d.models.interpolations.interpolate_interclump_hi_column_density</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../kosmatau3d.models.interpolations.interpolate_interclump_species_intensity.html">kosmatau3d.models.interpolations.interpolate_interclump_species_intensity</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../kosmatau3d.models.interpolations.interpolate_interclump_species_tau.html">kosmatau3d.models.interpolations.interpolate_interclump_species_tau</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../kosmatau3d.models.interpolations.interpolate_interclump_taufuv.html">kosmatau3d.models.interpolations.interpolate_interclump_taufuv</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../kosmatau3d.models.interpolations.interpolate_interclump_td.html">kosmatau3d.models.interpolations.interpolate_interclump_td</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../kosmatau3d.models.interpolations.interpolate_interclump_tg.html">kosmatau3d.models.interpolations.interpolate_interclump_tg</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../kosmatau3d.models.interpolations.interpolate_number_density.html">kosmatau3d.models.interpolations.interpolate_number_density</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../kosmatau3d.models.interpolations.interpolate_velocity_dispersion.html">kosmatau3d.models.interpolations.interpolate_velocity_dispersion</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../kosmatau3d.models.interpolations.reset.html">kosmatau3d.models.interpolations.reset</a></li>
+<li class="toctree-l4 current"><a class="reference internal" href="../kosmatau3d.models.interpolations.interpolate.html">kosmatau3d.models.interpolations.interpolate</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="../kosmatau3d.models.masspoints.html">kosmatau3d.models.masspoints</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../kosmatau3d.models.models.html">kosmatau3d.models.models</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../kosmatau3d.models.observations.html">kosmatau3d.models.observations</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../kosmatau3d.models.plotting.html">kosmatau3d.models.plotting</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../kosmatau3d.models.radiativeTransfer.html">kosmatau3d.models.radiativeTransfer</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../kosmatau3d.models.shape.html">kosmatau3d.models.shape</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../kosmatau3d.models.species.html">kosmatau3d.models.species</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="../kosmatau3d.properties.html">kosmatau3d.properties</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../../acknowledgements.html">Acknowledgements</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../index.html">kosmatau3d</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../kosmatau3d.html">kosmatau3d</a></li>
+          <li class="breadcrumb-item"><a href="../kosmatau3d.models.html">kosmatau3d.models</a></li>
+          <li class="breadcrumb-item"><a href="../kosmatau3d.models.interpolations.html">kosmatau3d.models.interpolations</a></li>
+          <li class="breadcrumb-item"><a href="../kosmatau3d.models.interpolations.interpolate.html">kosmatau3d.models.interpolations.interpolate</a></li>
+          <li class="breadcrumb-item"><a href="../kosmatau3d.models.interpolations.interpolate.interpolate.html">kosmatau3d.models.interpolations.interpolate.interpolate</a></li>
+      <li class="breadcrumb-item active">scipy.interpolate.splder</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="scipy-interpolate-splder">
+<h1>scipy.interpolate.splder<a class="headerlink" href="#scipy-interpolate-splder" title="Link to this heading">¶</a></h1>
+<dl class="py function">
+<dt class="sig sig-object py" id="scipy.interpolate.splder">
+<span class="sig-name descname"><span class="pre">splder</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">tck</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">n</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/scipy/interpolate/_fitpack_py.html#splder"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#scipy.interpolate.splder" title="Link to this definition">¶</a></dt>
+<dd><p>Compute the spline representation of the derivative of a given spline</p>
+<section id="parameters">
+<h2>Parameters<a class="headerlink" href="#parameters" title="Link to this heading">¶</a></h2>
+<dl class="simple">
+<dt>tck<span class="classifier">BSpline instance or a tuple of (t, c, k)</span></dt><dd><p>Spline whose derivative to compute</p>
+</dd>
+<dt>n<span class="classifier">int, optional</span></dt><dd><p>Order of derivative to evaluate. Default: 1</p>
+</dd>
+</dl>
+</section>
+<section id="returns">
+<h2>Returns<a class="headerlink" href="#returns" title="Link to this heading">¶</a></h2>
+<dl class="simple">
+<dt><cite>BSpline</cite> instance or tuple</dt><dd><p>Spline of order k2=k-n representing the derivative
+of the input spline.
+A tuple is returned iff the input argument <cite>tck</cite> is a tuple, otherwise
+a BSpline object is constructed and returned.</p>
+</dd>
+</dl>
+</section>
+<section id="notes">
+<h2>Notes<a class="headerlink" href="#notes" title="Link to this heading">¶</a></h2>
+<div class="versionadded">
+<p><span class="versionmodified added">New in version 0.13.0.</span></p>
+</div>
+</section>
+<section id="see-also">
+<h2>See Also<a class="headerlink" href="#see-also" title="Link to this heading">¶</a></h2>
+<p>splantider, splev, spalde
+BSpline</p>
+</section>
+<section id="examples">
+<h2>Examples<a class="headerlink" href="#examples" title="Link to this heading">¶</a></h2>
+<p>This can be used for finding maxima of a curve:</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">scipy.interpolate</span> <span class="kn">import</span> <span class="n">splrep</span><span class="p">,</span> <span class="n">splder</span><span class="p">,</span> <span class="n">sproot</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">x</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linspace</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">10</span><span class="p">,</span> <span class="mi">70</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">y</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sin</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">spl</span> <span class="o">=</span> <span class="n">splrep</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">k</span><span class="o">=</span><span class="mi">4</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>Now, differentiate the spline and find the zeros of the
+derivative. (NB: <cite>sproot</cite> only works for order 3 splines, so we
+fit an order 4 spline):</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">dspl</span> <span class="o">=</span> <span class="n">splder</span><span class="p">(</span><span class="n">spl</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">sproot</span><span class="p">(</span><span class="n">dspl</span><span class="p">)</span> <span class="o">/</span> <span class="n">np</span><span class="o">.</span><span class="n">pi</span>
+<span class="go">array([ 0.50000001,  1.5       ,  2.49999998])</span>
+</pre></div>
+</div>
+<p>This agrees well with roots <span class="math notranslate nohighlight">\(\pi/2 + n\pi\)</span> of
+<span class="math notranslate nohighlight">\(\cos(x) = \sin'(x)\)</span>.</p>
+</section>
+</dd></dl>
+
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="scipy.interpolate.spalde.html" class="btn btn-neutral float-left" title="scipy.interpolate.spalde" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="scipy.interpolate.splantider.html" class="btn btn-neutral float-right" title="scipy.interpolate.splantider" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2023, Craig Yanitski.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

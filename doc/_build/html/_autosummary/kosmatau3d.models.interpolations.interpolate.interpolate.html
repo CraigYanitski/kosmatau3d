@@ -1,0 +1,451 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" /><meta name="generator" content="Docutils 0.18.1: http://docutils.sourceforge.net/" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>kosmatau3d.models.interpolations.interpolate.interpolate &mdash; kosmatau3d 1.0.3 documentation</title>
+      <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
+      <link rel="stylesheet" href="../_static/readthedocs-custom.css" type="text/css" />
+  <!--[if lt IE 9]>
+    <script src="../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script src="../_static/documentation_options.js?v=baaebd52"></script>
+        <script src="../_static/doctools.js?v=888ff710"></script>
+        <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
+        <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+    <script src="../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="scipy.interpolate.interp1d" href="generated/scipy.interpolate.interp1d.html" />
+    <link rel="prev" title="kosmatau3d.models.interpolations.interpolate" href="kosmatau3d.models.interpolations.interpolate.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../index.html" class="icon icon-home">
+            kosmatau3d
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../installation.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../properties.html">KOSMA-$\tau$ Properties</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../voxel.html">Voxels</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../model.html">3D Models</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../comparison.html">Comparison to Observations</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../development.html">Future Development</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="kosmatau3d.html">API Reference</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="kosmatau3d.comparison.html">kosmatau3d.comparison</a></li>
+<li class="toctree-l2 current"><a class="reference internal" href="kosmatau3d.models.html">kosmatau3d.models</a><ul class="current">
+<li class="toctree-l3"><a class="reference internal" href="kosmatau3d.models.dill_grid.html">kosmatau3d.models.dill_grid</a></li>
+<li class="toctree-l3"><a class="reference internal" href="kosmatau3d.models.help.html">kosmatau3d.models.help</a></li>
+<li class="toctree-l3"><a class="reference internal" href="kosmatau3d.models.Model.html">kosmatau3d.models.Model</a></li>
+<li class="toctree-l3"><a class="reference internal" href="kosmatau3d.models.Voxel.html">kosmatau3d.models.Voxel</a></li>
+<li class="toctree-l3"><a class="reference internal" href="kosmatau3d.models.VoxelGrid.html">kosmatau3d.models.VoxelGrid</a></li>
+<li class="toctree-l3"><a class="reference internal" href="kosmatau3d.models.combinations.html">kosmatau3d.models.combinations</a></li>
+<li class="toctree-l3"><a class="reference internal" href="kosmatau3d.models.constants.html">kosmatau3d.models.constants</a></li>
+<li class="toctree-l3"><a class="reference internal" href="kosmatau3d.models.ensemble.html">kosmatau3d.models.ensemble</a></li>
+<li class="toctree-l3 current"><a class="reference internal" href="kosmatau3d.models.interpolations.html">kosmatau3d.models.interpolations</a><ul class="current">
+<li class="toctree-l4"><a class="reference internal" href="kosmatau3d.models.interpolations.interpolate_clump_column_density.html">kosmatau3d.models.interpolations.interpolate_clump_column_density</a></li>
+<li class="toctree-l4"><a class="reference internal" href="kosmatau3d.models.interpolations.interpolate_clump_dust_intensity.html">kosmatau3d.models.interpolations.interpolate_clump_dust_intensity</a></li>
+<li class="toctree-l4"><a class="reference internal" href="kosmatau3d.models.interpolations.interpolate_clump_dust_tau.html">kosmatau3d.models.interpolations.interpolate_clump_dust_tau</a></li>
+<li class="toctree-l4"><a class="reference internal" href="kosmatau3d.models.interpolations.interpolate_clump_h2_column_density.html">kosmatau3d.models.interpolations.interpolate_clump_h2_column_density</a></li>
+<li class="toctree-l4"><a class="reference internal" href="kosmatau3d.models.interpolations.interpolate_clump_hi_column_density.html">kosmatau3d.models.interpolations.interpolate_clump_hi_column_density</a></li>
+<li class="toctree-l4"><a class="reference internal" href="kosmatau3d.models.interpolations.interpolate_clump_species_intensity.html">kosmatau3d.models.interpolations.interpolate_clump_species_intensity</a></li>
+<li class="toctree-l4"><a class="reference internal" href="kosmatau3d.models.interpolations.interpolate_clump_species_tau.html">kosmatau3d.models.interpolations.interpolate_clump_species_tau</a></li>
+<li class="toctree-l4"><a class="reference internal" href="kosmatau3d.models.interpolations.interpolate_clump_taufuv.html">kosmatau3d.models.interpolations.interpolate_clump_taufuv</a></li>
+<li class="toctree-l4"><a class="reference internal" href="kosmatau3d.models.interpolations.interpolate_clump_td.html">kosmatau3d.models.interpolations.interpolate_clump_td</a></li>
+<li class="toctree-l4"><a class="reference internal" href="kosmatau3d.models.interpolations.interpolate_clump_tg.html">kosmatau3d.models.interpolations.interpolate_clump_tg</a></li>
+<li class="toctree-l4"><a class="reference internal" href="kosmatau3d.models.interpolations.interpolate_fuv.html">kosmatau3d.models.interpolations.interpolate_fuv</a></li>
+<li class="toctree-l4"><a class="reference internal" href="kosmatau3d.models.interpolations.interpolate_galaxy_rotation.html">kosmatau3d.models.interpolations.interpolate_galaxy_rotation</a></li>
+<li class="toctree-l4"><a class="reference internal" href="kosmatau3d.models.interpolations.interpolate_h2_mass.html">kosmatau3d.models.interpolations.interpolate_h2_mass</a></li>
+<li class="toctree-l4"><a class="reference internal" href="kosmatau3d.models.interpolations.interpolate_h2_voxel_filling_factor.html">kosmatau3d.models.interpolations.interpolate_h2_voxel_filling_factor</a></li>
+<li class="toctree-l4"><a class="reference internal" href="kosmatau3d.models.interpolations.interpolate_hi_mass.html">kosmatau3d.models.interpolations.interpolate_hi_mass</a></li>
+<li class="toctree-l4"><a class="reference internal" href="kosmatau3d.models.interpolations.interpolate_hi_voxel_filling_factor.html">kosmatau3d.models.interpolations.interpolate_hi_voxel_filling_factor</a></li>
+<li class="toctree-l4"><a class="reference internal" href="kosmatau3d.models.interpolations.interpolate_interclump_column_density.html">kosmatau3d.models.interpolations.interpolate_interclump_column_density</a></li>
+<li class="toctree-l4"><a class="reference internal" href="kosmatau3d.models.interpolations.interpolate_interclump_dust_intensity.html">kosmatau3d.models.interpolations.interpolate_interclump_dust_intensity</a></li>
+<li class="toctree-l4"><a class="reference internal" href="kosmatau3d.models.interpolations.interpolate_interclump_dust_tau.html">kosmatau3d.models.interpolations.interpolate_interclump_dust_tau</a></li>
+<li class="toctree-l4"><a class="reference internal" href="kosmatau3d.models.interpolations.interpolate_interclump_h2_column_density.html">kosmatau3d.models.interpolations.interpolate_interclump_h2_column_density</a></li>
+<li class="toctree-l4"><a class="reference internal" href="kosmatau3d.models.interpolations.interpolate_interclump_hi_column_density.html">kosmatau3d.models.interpolations.interpolate_interclump_hi_column_density</a></li>
+<li class="toctree-l4"><a class="reference internal" href="kosmatau3d.models.interpolations.interpolate_interclump_species_intensity.html">kosmatau3d.models.interpolations.interpolate_interclump_species_intensity</a></li>
+<li class="toctree-l4"><a class="reference internal" href="kosmatau3d.models.interpolations.interpolate_interclump_species_tau.html">kosmatau3d.models.interpolations.interpolate_interclump_species_tau</a></li>
+<li class="toctree-l4"><a class="reference internal" href="kosmatau3d.models.interpolations.interpolate_interclump_taufuv.html">kosmatau3d.models.interpolations.interpolate_interclump_taufuv</a></li>
+<li class="toctree-l4"><a class="reference internal" href="kosmatau3d.models.interpolations.interpolate_interclump_td.html">kosmatau3d.models.interpolations.interpolate_interclump_td</a></li>
+<li class="toctree-l4"><a class="reference internal" href="kosmatau3d.models.interpolations.interpolate_interclump_tg.html">kosmatau3d.models.interpolations.interpolate_interclump_tg</a></li>
+<li class="toctree-l4"><a class="reference internal" href="kosmatau3d.models.interpolations.interpolate_number_density.html">kosmatau3d.models.interpolations.interpolate_number_density</a></li>
+<li class="toctree-l4"><a class="reference internal" href="kosmatau3d.models.interpolations.interpolate_velocity_dispersion.html">kosmatau3d.models.interpolations.interpolate_velocity_dispersion</a></li>
+<li class="toctree-l4"><a class="reference internal" href="kosmatau3d.models.interpolations.reset.html">kosmatau3d.models.interpolations.reset</a></li>
+<li class="toctree-l4 current"><a class="reference internal" href="kosmatau3d.models.interpolations.interpolate.html">kosmatau3d.models.interpolations.interpolate</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="kosmatau3d.models.masspoints.html">kosmatau3d.models.masspoints</a></li>
+<li class="toctree-l3"><a class="reference internal" href="kosmatau3d.models.models.html">kosmatau3d.models.models</a></li>
+<li class="toctree-l3"><a class="reference internal" href="kosmatau3d.models.observations.html">kosmatau3d.models.observations</a></li>
+<li class="toctree-l3"><a class="reference internal" href="kosmatau3d.models.plotting.html">kosmatau3d.models.plotting</a></li>
+<li class="toctree-l3"><a class="reference internal" href="kosmatau3d.models.radiativeTransfer.html">kosmatau3d.models.radiativeTransfer</a></li>
+<li class="toctree-l3"><a class="reference internal" href="kosmatau3d.models.shape.html">kosmatau3d.models.shape</a></li>
+<li class="toctree-l3"><a class="reference internal" href="kosmatau3d.models.species.html">kosmatau3d.models.species</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="kosmatau3d.properties.html">kosmatau3d.properties</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../acknowledgements.html">Acknowledgements</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">kosmatau3d</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="kosmatau3d.html">kosmatau3d</a></li>
+          <li class="breadcrumb-item"><a href="kosmatau3d.models.html">kosmatau3d.models</a></li>
+          <li class="breadcrumb-item"><a href="kosmatau3d.models.interpolations.html">kosmatau3d.models.interpolations</a></li>
+          <li class="breadcrumb-item"><a href="kosmatau3d.models.interpolations.interpolate.html">kosmatau3d.models.interpolations.interpolate</a></li>
+      <li class="breadcrumb-item active">kosmatau3d.models.interpolations.interpolate.interpolate</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="module-kosmatau3d.models.interpolations.interpolate.interpolate">
+<span id="kosmatau3d-models-interpolations-interpolate-interpolate"></span><h1>kosmatau3d.models.interpolations.interpolate.interpolate<a class="headerlink" href="#module-kosmatau3d.models.interpolations.interpolate.interpolate" title="Link to this heading">¶</a></h1>
+<section id="interpolation-scipy-interpolate">
+<h2>Interpolation (<code class="xref py py-mod docutils literal notranslate"><span class="pre">scipy.interpolate</span></code>)<a class="headerlink" href="#interpolation-scipy-interpolate" title="Link to this heading">¶</a></h2>
+<p>Sub-package for objects used in interpolation.</p>
+<p>As listed below, this sub-package contains spline functions and classes,
+1-D and multidimensional (univariate and multivariate)
+interpolation classes, Lagrange and Taylor polynomial interpolators, and
+wrappers for <a class="reference external" href="http://www.netlib.org/dierckx/">FITPACK</a>
+and DFITPACK functions.</p>
+<section id="univariate-interpolation">
+<h3>Univariate interpolation<a class="headerlink" href="#univariate-interpolation" title="Link to this heading">¶</a></h3>
+<table class="autosummary longtable docutils align-default">
+<tbody>
+<tr class="row-odd"><td><p><a class="reference internal" href="generated/scipy.interpolate.interp1d.html#scipy.interpolate.interp1d" title="scipy.interpolate.interp1d"><code class="xref py py-obj docutils literal notranslate"><span class="pre">interp1d</span></code></a>(x, y[, kind, axis, copy, ...])</p></td>
+<td><p>Interpolate a 1-D function.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="generated/scipy.interpolate.BarycentricInterpolator.html#scipy.interpolate.BarycentricInterpolator" title="scipy.interpolate.BarycentricInterpolator"><code class="xref py py-obj docutils literal notranslate"><span class="pre">BarycentricInterpolator</span></code></a>(xi[, yi, axis])</p></td>
+<td><p>The interpolating polynomial for a set of points</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="generated/scipy.interpolate.KroghInterpolator.html#scipy.interpolate.KroghInterpolator" title="scipy.interpolate.KroghInterpolator"><code class="xref py py-obj docutils literal notranslate"><span class="pre">KroghInterpolator</span></code></a>(xi, yi[, axis])</p></td>
+<td><p>Interpolating polynomial for a set of points.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="generated/scipy.interpolate.barycentric_interpolate.html#scipy.interpolate.barycentric_interpolate" title="scipy.interpolate.barycentric_interpolate"><code class="xref py py-obj docutils literal notranslate"><span class="pre">barycentric_interpolate</span></code></a>(xi, yi, x[, axis])</p></td>
+<td><p>Convenience function for polynomial interpolation.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="generated/scipy.interpolate.krogh_interpolate.html#scipy.interpolate.krogh_interpolate" title="scipy.interpolate.krogh_interpolate"><code class="xref py py-obj docutils literal notranslate"><span class="pre">krogh_interpolate</span></code></a>(xi, yi, x[, der, axis])</p></td>
+<td><p>Convenience function for polynomial interpolation.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="generated/scipy.interpolate.pchip_interpolate.html#scipy.interpolate.pchip_interpolate" title="scipy.interpolate.pchip_interpolate"><code class="xref py py-obj docutils literal notranslate"><span class="pre">pchip_interpolate</span></code></a>(xi, yi, x[, der, axis])</p></td>
+<td><p>Convenience function for pchip interpolation.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="generated/scipy.interpolate.CubicHermiteSpline.html#scipy.interpolate.CubicHermiteSpline" title="scipy.interpolate.CubicHermiteSpline"><code class="xref py py-obj docutils literal notranslate"><span class="pre">CubicHermiteSpline</span></code></a>(x, y, dydx[, axis, ...])</p></td>
+<td><p>Piecewise-cubic interpolator matching values and first derivatives.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="generated/scipy.interpolate.PchipInterpolator.html#scipy.interpolate.PchipInterpolator" title="scipy.interpolate.PchipInterpolator"><code class="xref py py-obj docutils literal notranslate"><span class="pre">PchipInterpolator</span></code></a>(x, y[, axis, extrapolate])</p></td>
+<td><p>PCHIP 1-D monotonic cubic interpolation.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="generated/scipy.interpolate.Akima1DInterpolator.html#scipy.interpolate.Akima1DInterpolator" title="scipy.interpolate.Akima1DInterpolator"><code class="xref py py-obj docutils literal notranslate"><span class="pre">Akima1DInterpolator</span></code></a>(x, y[, axis])</p></td>
+<td><p>Akima interpolator</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="generated/scipy.interpolate.CubicSpline.html#scipy.interpolate.CubicSpline" title="scipy.interpolate.CubicSpline"><code class="xref py py-obj docutils literal notranslate"><span class="pre">CubicSpline</span></code></a>(x, y[, axis, bc_type, extrapolate])</p></td>
+<td><p>Cubic spline data interpolator.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="generated/scipy.interpolate.PPoly.html#scipy.interpolate.PPoly" title="scipy.interpolate.PPoly"><code class="xref py py-obj docutils literal notranslate"><span class="pre">PPoly</span></code></a>(c, x[, extrapolate, axis])</p></td>
+<td><p>Piecewise polynomial in terms of coefficients and breakpoints</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="generated/scipy.interpolate.BPoly.html#scipy.interpolate.BPoly" title="scipy.interpolate.BPoly"><code class="xref py py-obj docutils literal notranslate"><span class="pre">BPoly</span></code></a>(c, x[, extrapolate, axis])</p></td>
+<td><p>Piecewise polynomial in terms of coefficients and breakpoints.</p></td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="multivariate-interpolation">
+<h3>Multivariate interpolation<a class="headerlink" href="#multivariate-interpolation" title="Link to this heading">¶</a></h3>
+<p>Unstructured data:</p>
+<table class="autosummary longtable docutils align-default">
+<tbody>
+<tr class="row-odd"><td><p><a class="reference internal" href="generated/scipy.interpolate.griddata.html#scipy.interpolate.griddata" title="scipy.interpolate.griddata"><code class="xref py py-obj docutils literal notranslate"><span class="pre">griddata</span></code></a>(points, values, xi[, method, ...])</p></td>
+<td><p>Interpolate unstructured D-D data.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="generated/scipy.interpolate.LinearNDInterpolator.html#scipy.interpolate.LinearNDInterpolator" title="scipy.interpolate.LinearNDInterpolator"><code class="xref py py-obj docutils literal notranslate"><span class="pre">LinearNDInterpolator</span></code></a>(points, values[, ...])</p></td>
+<td><p>Piecewise linear interpolant in N &gt; 1 dimensions.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="generated/scipy.interpolate.NearestNDInterpolator.html#scipy.interpolate.NearestNDInterpolator" title="scipy.interpolate.NearestNDInterpolator"><code class="xref py py-obj docutils literal notranslate"><span class="pre">NearestNDInterpolator</span></code></a>(x, y[, rescale, ...])</p></td>
+<td><p>NearestNDInterpolator(x, y).</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="generated/scipy.interpolate.CloughTocher2DInterpolator.html#scipy.interpolate.CloughTocher2DInterpolator" title="scipy.interpolate.CloughTocher2DInterpolator"><code class="xref py py-obj docutils literal notranslate"><span class="pre">CloughTocher2DInterpolator</span></code></a>(points, values[, ...])</p></td>
+<td><p>CloughTocher2DInterpolator(points, values, tol=1e-6).</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="generated/scipy.interpolate.RBFInterpolator.html#scipy.interpolate.RBFInterpolator" title="scipy.interpolate.RBFInterpolator"><code class="xref py py-obj docutils literal notranslate"><span class="pre">RBFInterpolator</span></code></a>(y, d[, neighbors, ...])</p></td>
+<td><p>Radial basis function (RBF) interpolation in N dimensions.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="generated/scipy.interpolate.Rbf.html#scipy.interpolate.Rbf" title="scipy.interpolate.Rbf"><code class="xref py py-obj docutils literal notranslate"><span class="pre">Rbf</span></code></a>(*args, **kwargs)</p></td>
+<td><p>A class for radial basis function interpolation of functions from N-D scattered data to an M-D domain.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="generated/scipy.interpolate.interp2d.html#scipy.interpolate.interp2d" title="scipy.interpolate.interp2d"><code class="xref py py-obj docutils literal notranslate"><span class="pre">interp2d</span></code></a>(**kwds)</p></td>
+<td><p>interp2d(x, y, z, kind='linear', copy=True, bounds_error=False,</p></td>
+</tr>
+</tbody>
+</table>
+<p>For data on a grid:</p>
+<table class="autosummary longtable docutils align-default">
+<tbody>
+<tr class="row-odd"><td><p><a class="reference internal" href="generated/scipy.interpolate.interpn.html#scipy.interpolate.interpn" title="scipy.interpolate.interpn"><code class="xref py py-obj docutils literal notranslate"><span class="pre">interpn</span></code></a>(points, values, xi[, method, ...])</p></td>
+<td><p>Multidimensional interpolation on regular or rectilinear grids.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="generated/scipy.interpolate.RegularGridInterpolator.html#scipy.interpolate.RegularGridInterpolator" title="scipy.interpolate.RegularGridInterpolator"><code class="xref py py-obj docutils literal notranslate"><span class="pre">RegularGridInterpolator</span></code></a>(points, values[, ...])</p></td>
+<td><p>Interpolation on a regular or rectilinear grid in arbitrary dimensions.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="generated/scipy.interpolate.RectBivariateSpline.html#scipy.interpolate.RectBivariateSpline" title="scipy.interpolate.RectBivariateSpline"><code class="xref py py-obj docutils literal notranslate"><span class="pre">RectBivariateSpline</span></code></a>(x, y, z[, bbox, kx, ky, s])</p></td>
+<td><p>Bivariate spline approximation over a rectangular mesh.</p></td>
+</tr>
+</tbody>
+</table>
+<div class="admonition seealso">
+<p class="admonition-title">See also</p>
+<p><cite>scipy.ndimage.map_coordinates</cite></p>
+</div>
+<p>Tensor product polynomials:</p>
+<table class="autosummary longtable docutils align-default">
+<tbody>
+<tr class="row-odd"><td><p><a class="reference internal" href="generated/scipy.interpolate.NdPPoly.html#scipy.interpolate.NdPPoly" title="scipy.interpolate.NdPPoly"><code class="xref py py-obj docutils literal notranslate"><span class="pre">NdPPoly</span></code></a>(c, x[, extrapolate])</p></td>
+<td><p>Piecewise tensor product polynomial</p></td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="d-splines">
+<h3>1-D Splines<a class="headerlink" href="#d-splines" title="Link to this heading">¶</a></h3>
+<table class="autosummary longtable docutils align-default">
+<tbody>
+<tr class="row-odd"><td><p><a class="reference internal" href="generated/scipy.interpolate.BSpline.html#scipy.interpolate.BSpline" title="scipy.interpolate.BSpline"><code class="xref py py-obj docutils literal notranslate"><span class="pre">BSpline</span></code></a>(t, c, k[, extrapolate, axis])</p></td>
+<td><p>Univariate spline in the B-spline basis.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="generated/scipy.interpolate.make_interp_spline.html#scipy.interpolate.make_interp_spline" title="scipy.interpolate.make_interp_spline"><code class="xref py py-obj docutils literal notranslate"><span class="pre">make_interp_spline</span></code></a>(x, y[, k, t, bc_type, ...])</p></td>
+<td><p>Compute the (coefficients of) interpolating B-spline.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="generated/scipy.interpolate.make_lsq_spline.html#scipy.interpolate.make_lsq_spline" title="scipy.interpolate.make_lsq_spline"><code class="xref py py-obj docutils literal notranslate"><span class="pre">make_lsq_spline</span></code></a>(x, y, t[, k, w, axis, ...])</p></td>
+<td><p>Compute the (coefficients of) an LSQ (Least SQuared) based fitting B-spline.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="generated/scipy.interpolate.make_smoothing_spline.html#scipy.interpolate.make_smoothing_spline" title="scipy.interpolate.make_smoothing_spline"><code class="xref py py-obj docutils literal notranslate"><span class="pre">make_smoothing_spline</span></code></a>(x, y[, w, lam])</p></td>
+<td><p>Compute the (coefficients of) smoothing cubic spline function using <code class="docutils literal notranslate"><span class="pre">lam</span></code> to control the tradeoff between the amount of smoothness of the curve and its proximity to the data.</p></td>
+</tr>
+</tbody>
+</table>
+<p>Functional interface to FITPACK routines:</p>
+<table class="autosummary longtable docutils align-default">
+<tbody>
+<tr class="row-odd"><td><p><a class="reference internal" href="generated/scipy.interpolate.splrep.html#scipy.interpolate.splrep" title="scipy.interpolate.splrep"><code class="xref py py-obj docutils literal notranslate"><span class="pre">splrep</span></code></a>(x, y[, w, xb, xe, k, task, s, t, ...])</p></td>
+<td><p>Find the B-spline representation of a 1-D curve.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="generated/scipy.interpolate.splprep.html#scipy.interpolate.splprep" title="scipy.interpolate.splprep"><code class="xref py py-obj docutils literal notranslate"><span class="pre">splprep</span></code></a>(x[, w, u, ub, ue, k, task, s, t, ...])</p></td>
+<td><p>Find the B-spline representation of an N-D curve.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="generated/scipy.interpolate.splev.html#scipy.interpolate.splev" title="scipy.interpolate.splev"><code class="xref py py-obj docutils literal notranslate"><span class="pre">splev</span></code></a>(x, tck[, der, ext])</p></td>
+<td><p>Evaluate a B-spline or its derivatives.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="generated/scipy.interpolate.splint.html#scipy.interpolate.splint" title="scipy.interpolate.splint"><code class="xref py py-obj docutils literal notranslate"><span class="pre">splint</span></code></a>(a, b, tck[, full_output])</p></td>
+<td><p>Evaluate the definite integral of a B-spline between two given points.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="generated/scipy.interpolate.sproot.html#scipy.interpolate.sproot" title="scipy.interpolate.sproot"><code class="xref py py-obj docutils literal notranslate"><span class="pre">sproot</span></code></a>(tck[, mest])</p></td>
+<td><p>Find the roots of a cubic B-spline.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="generated/scipy.interpolate.spalde.html#scipy.interpolate.spalde" title="scipy.interpolate.spalde"><code class="xref py py-obj docutils literal notranslate"><span class="pre">spalde</span></code></a>(x, tck)</p></td>
+<td><p>Evaluate all derivatives of a B-spline.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="generated/scipy.interpolate.splder.html#scipy.interpolate.splder" title="scipy.interpolate.splder"><code class="xref py py-obj docutils literal notranslate"><span class="pre">splder</span></code></a>(tck[, n])</p></td>
+<td><p>Compute the spline representation of the derivative of a given spline</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="generated/scipy.interpolate.splantider.html#scipy.interpolate.splantider" title="scipy.interpolate.splantider"><code class="xref py py-obj docutils literal notranslate"><span class="pre">splantider</span></code></a>(tck[, n])</p></td>
+<td><p>Compute the spline for the antiderivative (integral) of a given spline.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="generated/scipy.interpolate.insert.html#scipy.interpolate.insert" title="scipy.interpolate.insert"><code class="xref py py-obj docutils literal notranslate"><span class="pre">insert</span></code></a>(x, tck[, m, per])</p></td>
+<td><p>Insert knots into a B-spline.</p></td>
+</tr>
+</tbody>
+</table>
+<p>Object-oriented FITPACK interface:</p>
+<table class="autosummary longtable docutils align-default">
+<tbody>
+<tr class="row-odd"><td><p><a class="reference internal" href="generated/scipy.interpolate.UnivariateSpline.html#scipy.interpolate.UnivariateSpline" title="scipy.interpolate.UnivariateSpline"><code class="xref py py-obj docutils literal notranslate"><span class="pre">UnivariateSpline</span></code></a>(x, y[, w, bbox, k, s, ext, ...])</p></td>
+<td><p>1-D smoothing spline fit to a given set of data points.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="generated/scipy.interpolate.InterpolatedUnivariateSpline.html#scipy.interpolate.InterpolatedUnivariateSpline" title="scipy.interpolate.InterpolatedUnivariateSpline"><code class="xref py py-obj docutils literal notranslate"><span class="pre">InterpolatedUnivariateSpline</span></code></a>(x, y[, w, ...])</p></td>
+<td><p>1-D interpolating spline for a given set of data points.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="generated/scipy.interpolate.LSQUnivariateSpline.html#scipy.interpolate.LSQUnivariateSpline" title="scipy.interpolate.LSQUnivariateSpline"><code class="xref py py-obj docutils literal notranslate"><span class="pre">LSQUnivariateSpline</span></code></a>(x, y, t[, w, bbox, k, ...])</p></td>
+<td><p>1-D spline with explicit internal knots.</p></td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="id1">
+<h3>2-D Splines<a class="headerlink" href="#id1" title="Link to this heading">¶</a></h3>
+<p>For data on a grid:</p>
+<table class="autosummary longtable docutils align-default">
+<tbody>
+<tr class="row-odd"><td><p><a class="reference internal" href="generated/scipy.interpolate.RectBivariateSpline.html#scipy.interpolate.RectBivariateSpline" title="scipy.interpolate.RectBivariateSpline"><code class="xref py py-obj docutils literal notranslate"><span class="pre">RectBivariateSpline</span></code></a>(x, y, z[, bbox, kx, ky, s])</p></td>
+<td><p>Bivariate spline approximation over a rectangular mesh.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="generated/scipy.interpolate.RectSphereBivariateSpline.html#scipy.interpolate.RectSphereBivariateSpline" title="scipy.interpolate.RectSphereBivariateSpline"><code class="xref py py-obj docutils literal notranslate"><span class="pre">RectSphereBivariateSpline</span></code></a>(u, v, r[, s, ...])</p></td>
+<td><p>Bivariate spline approximation over a rectangular mesh on a sphere.</p></td>
+</tr>
+</tbody>
+</table>
+<p>For unstructured data:</p>
+<table class="autosummary longtable docutils align-default">
+<tbody>
+<tr class="row-odd"><td><p><a class="reference internal" href="generated/scipy.interpolate.BivariateSpline.html#scipy.interpolate.BivariateSpline" title="scipy.interpolate.BivariateSpline"><code class="xref py py-obj docutils literal notranslate"><span class="pre">BivariateSpline</span></code></a>()</p></td>
+<td><p>Base class for bivariate splines.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="generated/scipy.interpolate.SmoothBivariateSpline.html#scipy.interpolate.SmoothBivariateSpline" title="scipy.interpolate.SmoothBivariateSpline"><code class="xref py py-obj docutils literal notranslate"><span class="pre">SmoothBivariateSpline</span></code></a>(x, y, z[, w, bbox, ...])</p></td>
+<td><p>Smooth bivariate spline approximation.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="generated/scipy.interpolate.SmoothSphereBivariateSpline.html#scipy.interpolate.SmoothSphereBivariateSpline" title="scipy.interpolate.SmoothSphereBivariateSpline"><code class="xref py py-obj docutils literal notranslate"><span class="pre">SmoothSphereBivariateSpline</span></code></a>(theta, phi, r[, ...])</p></td>
+<td><p>Smooth bivariate spline approximation in spherical coordinates.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="generated/scipy.interpolate.LSQBivariateSpline.html#scipy.interpolate.LSQBivariateSpline" title="scipy.interpolate.LSQBivariateSpline"><code class="xref py py-obj docutils literal notranslate"><span class="pre">LSQBivariateSpline</span></code></a>(x, y, z, tx, ty[, w, ...])</p></td>
+<td><p>Weighted least-squares bivariate spline approximation.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="generated/scipy.interpolate.LSQSphereBivariateSpline.html#scipy.interpolate.LSQSphereBivariateSpline" title="scipy.interpolate.LSQSphereBivariateSpline"><code class="xref py py-obj docutils literal notranslate"><span class="pre">LSQSphereBivariateSpline</span></code></a>(theta, phi, r, tt, tp)</p></td>
+<td><p>Weighted least-squares bivariate spline approximation in spherical coordinates.</p></td>
+</tr>
+</tbody>
+</table>
+<p>Low-level interface to FITPACK functions:</p>
+<table class="autosummary longtable docutils align-default">
+<tbody>
+<tr class="row-odd"><td><p><a class="reference internal" href="generated/scipy.interpolate.bisplrep.html#scipy.interpolate.bisplrep" title="scipy.interpolate.bisplrep"><code class="xref py py-obj docutils literal notranslate"><span class="pre">bisplrep</span></code></a>(x, y, z[, w, xb, xe, yb, ye, kx, ...])</p></td>
+<td><p>Find a bivariate B-spline representation of a surface.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="generated/scipy.interpolate.bisplev.html#scipy.interpolate.bisplev" title="scipy.interpolate.bisplev"><code class="xref py py-obj docutils literal notranslate"><span class="pre">bisplev</span></code></a>(x, y, tck[, dx, dy])</p></td>
+<td><p>Evaluate a bivariate B-spline and its derivatives.</p></td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="additional-tools">
+<h3>Additional tools<a class="headerlink" href="#additional-tools" title="Link to this heading">¶</a></h3>
+<table class="autosummary longtable docutils align-default">
+<tbody>
+<tr class="row-odd"><td><p><a class="reference internal" href="generated/scipy.interpolate.lagrange.html#scipy.interpolate.lagrange" title="scipy.interpolate.lagrange"><code class="xref py py-obj docutils literal notranslate"><span class="pre">lagrange</span></code></a>(x, w)</p></td>
+<td><p>Return a Lagrange interpolating polynomial.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="generated/scipy.interpolate.approximate_taylor_polynomial.html#scipy.interpolate.approximate_taylor_polynomial" title="scipy.interpolate.approximate_taylor_polynomial"><code class="xref py py-obj docutils literal notranslate"><span class="pre">approximate_taylor_polynomial</span></code></a>(f, x, degree, ...)</p></td>
+<td><p>Estimate the Taylor polynomial of f at x by polynomial fitting.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="generated/scipy.interpolate.pade.html#scipy.interpolate.pade" title="scipy.interpolate.pade"><code class="xref py py-obj docutils literal notranslate"><span class="pre">pade</span></code></a>(an, m[, n])</p></td>
+<td><p>Return Pade approximation to a polynomial as the ratio of two polynomials.</p></td>
+</tr>
+</tbody>
+</table>
+<div class="admonition seealso">
+<p class="admonition-title">See also</p>
+<p><cite>scipy.ndimage.map_coordinates</cite>,
+<cite>scipy.ndimage.spline_filter</cite>,
+<cite>scipy.signal.resample</cite>,
+<cite>scipy.signal.bspline</cite>,
+<cite>scipy.signal.gauss_spline</cite>,
+<cite>scipy.signal.qspline1d</cite>,
+<cite>scipy.signal.cspline1d</cite>,
+<cite>scipy.signal.qspline1d_eval</cite>,
+<cite>scipy.signal.cspline1d_eval</cite>,
+<cite>scipy.signal.qspline2d</cite>,
+<cite>scipy.signal.cspline2d</cite>.</p>
+</div>
+<p><code class="docutils literal notranslate"><span class="pre">pchip</span></code> is an alias of <cite>PchipInterpolator</cite> for backward compatibility
+(should not be used in new code).</p>
+</section>
+</section>
+<table class="autosummary longtable docutils align-default">
+<tbody>
+<tr class="row-odd"><td><p><a class="reference internal" href="kosmatau3d.models.interpolations.interpolate.interpolate.dfitpack.html#module-kosmatau3d.models.interpolations.interpolate.interpolate.dfitpack" title="kosmatau3d.models.interpolations.interpolate.interpolate.dfitpack"><code class="xref py py-obj docutils literal notranslate"><span class="pre">kosmatau3d.models.interpolations.interpolate.interpolate.dfitpack</span></code></a></p></td>
+<td><p>This module 'dfitpack' is auto-generated with f2py (version:2). Functions:   ier = fpchec(x,t,k)   y = splev(t,c,k,x,e=0)   y = splder(t,c,k,x,nu=1,e=0)   splint,wrk = splint(t,c,k,a,b)   zero,m,ier = sproot(t,c,mest=3*(n-7))   d,ier = spalde(t,c,k1,x)   n,c,fp,ier = curfit(iopt,x,y,w,t,wrk,iwrk,xb=x[0],xe=x[m-1],k=3,s=0.0)   n,c,fp,ier = percur(iopt,x,y,w,t,wrk,iwrk,k=3,s=0.0)   n,c,fp,ier = parcur(iopt,ipar,idim,u,x,w,ub,ue,t,wrk,iwrk,k=3.0,s=0.0)   x,y,w,xb,xe,k,s,n,t,c,fp,fpint,nrdata,ier = fpcurf0(x,y,k,w=1.0,xb=x[0],xe=x[m-1],s=m,nest=(s==0.0?m+k+1:MAX(m/2,2*k1)))   x,y,w,xb,xe,k,s,n,t,c,fp,fpint,nrdata,ier = fpcurf1(x,y,w,xb,xe,k,s,n,t,c,fp,fpint,nrdata,ier,overwrite_x=1,overwrite_y=1,overwrite_w=1,overwrite_t=1,overwrite_c=1,overwrite_fpint=1,overwrite_nrdata=1)   x,y,w,xb,xe,k,s,n,t,c,fp,fpint,nrdata,ier = fpcurfm1(x,y,k,t,w=1.0,xb=x[0],xe=x[m-1],overwrite_t=1)   z,ier = bispev(tx,ty,c,kx,ky,x,y)   z,ier = parder(tx,ty,c,kx,ky,nux,nuy,x,y)   newc,ier = pardtc(tx,ty,c,kx,ky,nux,nuy)   z,ier = bispeu(tx,ty,c,kx,ky,x,y)   z,ier = pardeu(tx,ty,c,kx,ky,nux,nuy,x,y)   nx,tx,ny,ty,c,fp,wrk1,ier = surfit_smth(x,y,z,w=1.0,xb=dmin(x,m),xe=dmax(x,m),yb=dmin(y,m),ye=dmax(y,m),kx=3,ky=3,s=m,nxest=imax(kx+1+sqrt(m/2),2*(kx+1)),nyest=imax(ky+1+sqrt(m/2),2*(ky+1)),eps=1e-16,lwrk2=calc_surfit_lwrk2(m,kx,ky,nxest,nyest))   tx,ty,c,fp,ier = surfit_lsq(x,y,z,nx,tx,ny,ty,w=1.0,xb=calc_b(x,m,tx,nx),xe=calc_e(x,m,tx,nx),yb=calc_b(y,m,ty,ny),ye=calc_e(y,m,ty,ny),kx=3,ky=3,eps=1e-16,lwrk2=calc_surfit_lwrk2(m,kx,ky,nxest,nyest),overwrite_tx=1,overwrite_ty=1)   nt,tt,np,tp,c,fp,ier = spherfit_smth(teta,phi,r,w=1.0,s=m,eps=1e-16)   tt,tp,c,fp,ier = spherfit_lsq(teta,phi,r,tt,tp,w=1.0,eps=1e-16,overwrite_tt=1,overwrite_tp=1)   nx,tx,ny,ty,c,fp,ier = regrid_smth(x,y,z,xb=dmin(x,mx),xe=dmax(x,mx),yb=dmin(y,my),ye=dmax(y,my),kx=3,ky=3,s=0.0)   nu,tu,nv,tv,c,fp,ier = regrid_smth_spher(iopt,ider,u,v,r,r0=,r1=,s=0.0)   dblint = dblint(tx,ty,c,kx,ky,xb,xe,yb,ye) COMMON blocks:   /types/ intvar .</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="kosmatau3d.models.interpolations.interpolate.interpolate.fitpack.html#module-kosmatau3d.models.interpolations.interpolate.interpolate.fitpack" title="kosmatau3d.models.interpolations.interpolate.interpolate.fitpack"><code class="xref py py-obj docutils literal notranslate"><span class="pre">kosmatau3d.models.interpolations.interpolate.interpolate.fitpack</span></code></a></p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="kosmatau3d.models.interpolations.interpolate.interpolate.fitpack2.html#module-kosmatau3d.models.interpolations.interpolate.interpolate.fitpack2" title="kosmatau3d.models.interpolations.interpolate.interpolate.fitpack2"><code class="xref py py-obj docutils literal notranslate"><span class="pre">kosmatau3d.models.interpolations.interpolate.interpolate.fitpack2</span></code></a></p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="kosmatau3d.models.interpolations.interpolate.interpolate.interpnd.html#module-kosmatau3d.models.interpolations.interpolate.interpolate.interpnd" title="kosmatau3d.models.interpolations.interpolate.interpolate.interpnd"><code class="xref py py-obj docutils literal notranslate"><span class="pre">kosmatau3d.models.interpolations.interpolate.interpolate.interpnd</span></code></a></p></td>
+<td><p>Simple N-D interpolation</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="kosmatau3d.models.interpolations.interpolate.interpolate.interpolate.html#module-kosmatau3d.models.interpolations.interpolate.interpolate.interpolate" title="kosmatau3d.models.interpolations.interpolate.interpolate.interpolate"><code class="xref py py-obj docutils literal notranslate"><span class="pre">kosmatau3d.models.interpolations.interpolate.interpolate.interpolate</span></code></a></p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="kosmatau3d.models.interpolations.interpolate.interpolate.ndgriddata.html#module-kosmatau3d.models.interpolations.interpolate.interpolate.ndgriddata" title="kosmatau3d.models.interpolations.interpolate.interpolate.ndgriddata"><code class="xref py py-obj docutils literal notranslate"><span class="pre">kosmatau3d.models.interpolations.interpolate.interpolate.ndgriddata</span></code></a></p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="kosmatau3d.models.interpolations.interpolate.interpolate.polyint.html#module-kosmatau3d.models.interpolations.interpolate.interpolate.polyint" title="kosmatau3d.models.interpolations.interpolate.interpolate.polyint"><code class="xref py py-obj docutils literal notranslate"><span class="pre">kosmatau3d.models.interpolations.interpolate.interpolate.polyint</span></code></a></p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="kosmatau3d.models.interpolations.interpolate.interpolate.rbf.html#module-kosmatau3d.models.interpolations.interpolate.interpolate.rbf" title="kosmatau3d.models.interpolations.interpolate.interpolate.rbf"><code class="xref py py-obj docutils literal notranslate"><span class="pre">kosmatau3d.models.interpolations.interpolate.interpolate.rbf</span></code></a></p></td>
+<td><p></p></td>
+</tr>
+</tbody>
+</table>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="kosmatau3d.models.interpolations.interpolate.html" class="btn btn-neutral float-left" title="kosmatau3d.models.interpolations.interpolate" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="generated/scipy.interpolate.interp1d.html" class="btn btn-neutral float-right" title="scipy.interpolate.interp1d" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2023, Craig Yanitski.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

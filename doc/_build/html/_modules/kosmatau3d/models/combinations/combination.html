@@ -1,0 +1,293 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>kosmatau3d.models.combinations.combination &mdash; kosmatau3d 1.0.3 documentation</title>
+      <link rel="stylesheet" href="../../../../_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="../../../../_static/css/theme.css" type="text/css" />
+      <link rel="stylesheet" href="../../../../_static/readthedocs-custom.css" type="text/css" />
+  <!--[if lt IE 9]>
+    <script src="../../../../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script src="../../../../_static/documentation_options.js?v=baaebd52"></script>
+        <script src="../../../../_static/doctools.js?v=888ff710"></script>
+        <script src="../../../../_static/sphinx_highlight.js?v=dc90522c"></script>
+        <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+    <script src="../../../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../../../../index.html" class="icon icon-home">
+            kosmatau3d
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../../installation.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../properties.html">KOSMA-$\tau$ Properties</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../voxel.html">Voxels</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../model.html">3D Models</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../comparison.html">Comparison to Observations</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../development.html">Future Development</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../_autosummary/kosmatau3d.html">API Reference</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../acknowledgements.html">Acknowledgements</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../../index.html">kosmatau3d</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../../../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../../../index.html">Module code</a></li>
+          <li class="breadcrumb-item"><a href="../../models.html">kosmatau3d.models</a></li>
+      <li class="breadcrumb-item active">kosmatau3d.models.combinations.combination</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <h1>Source code for kosmatau3d.models.combinations.combination</h1><div class="highlight"><pre>
+<span></span><span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<span class="kn">from</span> <span class="nn">copy</span> <span class="kn">import</span> <span class="n">copy</span>
+<span class="c1">#from numba import jit_module</span>
+<span class="c1">#import importlib as il</span>
+
+<span class="kn">from</span> <span class="nn">kosmatau3d.models</span> <span class="kn">import</span> <span class="n">combinations</span>
+<span class="kn">from</span> <span class="nn">kosmatau3d.models</span> <span class="kn">import</span> <span class="n">constants</span>
+<span class="kn">from</span> <span class="nn">kosmatau3d.models</span> <span class="kn">import</span> <span class="n">masspoints</span>
+
+<span class="sd">&#39;&#39;&#39;</span>
+<span class="sd">This is a class to handle a combination of fractal masses in an ensemble.</span>
+<span class="sd">It will have its associated probability, which will scale its intrinsic</span>
+<span class="sd">intensity and optical depth. It returns a tuple of the combination&#39;s</span>
+<span class="sd">probability, intensity, optical depth, and FUV field.</span>
+<span class="sd">&#39;&#39;&#39;</span>
+
+
+<div class="viewcode-block" id="initialise">
+<a class="viewcode-back" href="../../../../_autosummary/kosmatau3d.models.combinations.combination.initialise.html#kosmatau3d.models.combinations.combination.initialise">[docs]</a>
+<span class="k">def</span> <span class="nf">initialise</span><span class="p">(</span><span class="n">clump_combination</span><span class="o">=</span><span class="p">[],</span> <span class="n">total_combination</span><span class="o">=</span><span class="p">[]):</span>
+    <span class="n">combinations</span><span class="o">.</span><span class="n">clump_combination</span> <span class="o">=</span> <span class="n">clump_combination</span>
+    <span class="n">combinations</span><span class="o">.</span><span class="n">clump_max_combination</span> <span class="o">=</span> <span class="n">total_combination</span>
+    <span class="k">return</span></div>
+
+
+
+<div class="viewcode-block" id="set_clump_combination">
+<a class="viewcode-back" href="../../../../_autosummary/kosmatau3d.models.combinations.combination.set_clump_combination.html#kosmatau3d.models.combinations.combination.set_clump_combination">[docs]</a>
+<span class="k">def</span> <span class="nf">set_clump_combination</span><span class="p">(</span><span class="n">clump_combination</span><span class="o">=</span><span class="p">[]):</span>
+    <span class="n">combinations</span><span class="o">.</span><span class="n">clump_combination</span> <span class="o">=</span> <span class="n">clump_combination</span>
+    <span class="k">return</span></div>
+
+
+
+<div class="viewcode-block" id="get_fuv_extinction">
+<a class="viewcode-back" href="../../../../_autosummary/kosmatau3d.models.combinations.combination.get_fuv_extinction.html#kosmatau3d.models.combinations.combination.get_fuv_extinction">[docs]</a>
+<span class="k">def</span> <span class="nf">get_fuv_extinction</span><span class="p">(</span><span class="n">verbose</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+    <span class="c1"># The input is the density in the voxel. The probability should be included outside of this module.</span>
+    <span class="c1">#  (velocity-independent)</span>
+    <span class="n">afuv</span> <span class="o">=</span> <span class="n">masspoints</span><span class="o">.</span><span class="n">get_taufuv</span><span class="p">()</span>
+    <span class="k">for</span> <span class="n">ens</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">afuv</span><span class="p">)):</span>
+        <span class="n">afuv</span><span class="p">[</span><span class="n">ens</span><span class="p">]</span> <span class="o">=</span> <span class="n">afuv</span><span class="p">[</span><span class="n">ens</span><span class="p">]</span> <span class="o">*</span> <span class="n">combinations</span><span class="o">.</span><span class="n">clump_max_combination</span><span class="p">[</span><span class="n">ens</span><span class="p">]</span>
+    <span class="k">return</span> <span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span><span class="o">-</span><span class="n">afuv</span><span class="p">[</span><span class="n">ens</span><span class="p">]</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="mi">1</span><span class="p">))</span> <span class="k">for</span> <span class="n">ens</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">afuv</span><span class="p">))]</span></div>
+
+
+
+<div class="viewcode-block" id="calculate_emission">
+<a class="viewcode-back" href="../../../../_autosummary/kosmatau3d.models.combinations.combination.calculate_emission.html#kosmatau3d.models.combinations.combination.calculate_emission">[docs]</a>
+<span class="k">def</span> <span class="nf">calculate_emission</span><span class="p">(</span><span class="n">test_calc</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">test_opacity</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">test_fv</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">f_v</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> 
+                       <span class="n">suggested_calc</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">probability</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">old_dust</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">debug</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">test</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&#39;&#39;&#39;</span>
+<span class="sd">    This retrieves the emission from the masspoints, with dimensions (masspoints,species,velocity,velocity). It</span>
+<span class="sd">    sums over the masspoint dimension. The probability will remain dormant until it is further-developed.</span>
+<span class="sd">    &#39;&#39;&#39;</span>
+    <span class="n">species_intensity_list</span> <span class="o">=</span> <span class="p">[[]</span> <span class="k">for</span> <span class="n">_</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">constants</span><span class="o">.</span><span class="n">clump_mass_number</span><span class="p">))]</span>
+    <span class="n">species_opticaldepth_list</span> <span class="o">=</span> <span class="p">[[]</span> <span class="k">for</span> <span class="n">_</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">constants</span><span class="o">.</span><span class="n">clump_mass_number</span><span class="p">))]</span>
+    <span class="n">dust_intensity_list</span> <span class="o">=</span> <span class="p">[[]</span> <span class="k">for</span> <span class="n">_</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">constants</span><span class="o">.</span><span class="n">clump_mass_number</span><span class="p">))]</span>
+    <span class="n">dust_opticaldepth_list</span> <span class="o">=</span> <span class="p">[[]</span> <span class="k">for</span> <span class="n">_</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">constants</span><span class="o">.</span><span class="n">clump_mass_number</span><span class="p">))]</span>
+    <span class="n">hi_tb_list</span> <span class="o">=</span> <span class="p">[[]</span> <span class="k">for</span> <span class="n">_</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">constants</span><span class="o">.</span><span class="n">clump_mass_number</span><span class="p">))]</span>
+    <span class="n">hi_tau_list</span> <span class="o">=</span> <span class="p">[[]</span> <span class="k">for</span> <span class="n">_</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">constants</span><span class="o">.</span><span class="n">clump_mass_number</span><span class="p">))]</span>
+  
+    <span class="k">for</span> <span class="n">ens</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">constants</span><span class="o">.</span><span class="n">clump_mass_number</span><span class="p">)):</span>
+
+        <span class="k">if</span> <span class="n">test_fv</span><span class="p">:</span>
+            <span class="n">f_ds</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">maximum</span><span class="p">(</span><span class="n">f_v</span><span class="p">[</span><span class="n">ens</span><span class="p">],</span> <span class="mi">1</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">f_ds</span> <span class="o">=</span> <span class="mi">1</span>
+
+        <span class="c1"># The intensity and optical depth are arranged as the dust followed by the chemical transitions</span>
+        <span class="n">i_dust</span> <span class="o">=</span> <span class="n">constants</span><span class="o">.</span><span class="n">wavelengths</span><span class="p">[</span><span class="n">constants</span><span class="o">.</span><span class="n">n_dust</span><span class="p">]</span><span class="o">.</span><span class="n">size</span>
+
+        <span class="k">for</span> <span class="n">c</span> <span class="ow">in</span> <span class="n">combinations</span><span class="o">.</span><span class="n">clump_combination</span><span class="p">[</span><span class="n">ens</span><span class="p">]:</span>
+            <span class="k">if</span> <span class="n">suggested_calc</span><span class="p">:</span>
+                <span class="n">intensity</span> <span class="o">=</span> <span class="p">(</span><span class="n">c</span> <span class="o">*</span> <span class="p">(</span><span class="n">masspoints</span><span class="o">.</span><span class="n">clump_species_intensity</span><span class="p">[</span><span class="n">ens</span><span class="p">]</span>
+                                  <span class="o">*</span><span class="p">(</span><span class="n">masspoints</span><span class="o">.</span><span class="n">clump_species_optical_depth</span><span class="p">[</span><span class="n">ens</span><span class="p">])</span>
+                                  <span class="o">/</span><span class="p">(</span><span class="mi">1</span><span class="o">-</span><span class="n">np</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span><span class="o">-</span><span class="n">masspoints</span><span class="o">.</span><span class="n">clump_species_optical_depth</span><span class="p">[</span><span class="n">ens</span><span class="p">]))</span>
+                                  <span class="p">)</span><span class="o">.</span><span class="n">T</span>
+                             <span class="p">)</span><span class="o">.</span><span class="n">T</span><span class="c1"># / (4/3*masspoints.clump_radius[ens].T)</span>
+                            <span class="c1">#/constants.voxel_size/f_ds*(4/3*masspoints.clump_radius[ens].T)</span>
+                <span class="n">hi_tb_list</span><span class="p">[</span><span class="n">ens</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">((</span><span class="n">c</span> <span class="o">*</span> <span class="p">(</span><span class="n">masspoints</span><span class="o">.</span><span class="n">clump_hi_tb</span><span class="p">[</span><span class="n">ens</span><span class="p">]</span><span class="o">*</span><span class="p">(</span><span class="n">masspoints</span><span class="o">.</span><span class="n">clump_hi_tau</span><span class="p">[</span><span class="n">ens</span><span class="p">])</span>
+                                        <span class="o">/</span> <span class="p">(</span><span class="mi">1</span><span class="o">-</span><span class="n">np</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span><span class="o">-</span><span class="n">masspoints</span><span class="o">.</span><span class="n">clump_hi_tau</span><span class="p">[</span><span class="n">ens</span><span class="p">])))</span><span class="o">.</span><span class="n">T</span><span class="p">)</span><span class="o">.</span><span class="n">T</span><span class="p">)</span>
+                <span class="n">i_nan</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">isnan</span><span class="p">(</span><span class="n">intensity</span><span class="p">)</span> <span class="o">|</span> <span class="n">np</span><span class="o">.</span><span class="n">isinf</span><span class="p">(</span><span class="n">intensity</span><span class="p">)</span>
+                <span class="n">intensity</span><span class="p">[</span><span class="n">i_nan</span><span class="p">]</span> <span class="o">=</span> <span class="p">((</span><span class="n">c</span> <span class="o">*</span> <span class="p">(</span><span class="n">masspoints</span><span class="o">.</span><span class="n">clump_species_intensity</span><span class="p">[</span><span class="n">ens</span><span class="p">]</span>
+                                          <span class="p">)</span><span class="o">.</span><span class="n">T</span><span class="p">)</span><span class="o">.</span><span class="n">T</span><span class="p">)[</span><span class="n">i_nan</span><span class="p">]</span>
+                                   <span class="c1">#/ (4/3*masspoints.clump_radius[ens].T)</span>
+                                   <span class="c1">#/constants.voxel_size/f_ds*(4/3*masspoints.clumpRadius[ens].T)</span>
+                <span class="n">species_intensity_list</span><span class="p">[</span><span class="n">ens</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">copy</span><span class="p">(</span><span class="n">intensity</span><span class="p">))</span>
+                <span class="c1"># intensitylist[ens].append((c * (masspoints.clumpIntensity[ens]*(masspoints.clumpOpticalDepth[ens])</span>
+                <span class="c1">#                                 /(1-np.exp(-masspoints.clumpOpticalDepth[ens]))</span>
+                <span class="c1">#                                 /(4/3*masspoints.clumpRadius[ens].T)).T).T)</span>
+            <span class="k">elif</span> <span class="n">test_calc</span><span class="p">:</span>
+                <span class="n">intensity</span> <span class="o">=</span> <span class="p">(</span><span class="n">c</span> <span class="o">*</span> <span class="p">(</span><span class="n">masspoints</span><span class="o">.</span><span class="n">clump_species_intensity</span><span class="p">[</span><span class="n">ens</span><span class="p">]</span><span class="o">*</span><span class="n">masspoints</span><span class="o">.</span><span class="n">clump_species_optical_depth</span><span class="p">[</span><span class="n">ens</span><span class="p">]</span>
+                                  <span class="o">/</span><span class="p">(</span><span class="mi">1</span><span class="o">-</span><span class="n">np</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span><span class="o">-</span><span class="n">masspoints</span><span class="o">.</span><span class="n">clump_species_optical_depth</span><span class="p">[</span><span class="n">ens</span><span class="p">]))</span>
+                                  <span class="o">/</span><span class="n">constants</span><span class="o">.</span><span class="n">voxel_size</span><span class="o">/</span><span class="n">f_ds</span><span class="p">)</span><span class="o">.</span><span class="n">T</span><span class="p">)</span><span class="o">.</span><span class="n">T</span>
+                <span class="n">i_nan</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">isnan</span><span class="p">(</span><span class="n">intensity</span><span class="p">)</span> <span class="o">|</span> <span class="n">np</span><span class="o">.</span><span class="n">isinf</span><span class="p">(</span><span class="n">intensity</span><span class="p">)</span>
+                <span class="n">intensity</span><span class="p">[</span><span class="n">i_nan</span><span class="p">]</span> <span class="o">=</span> <span class="p">((</span><span class="n">c</span> <span class="o">*</span> <span class="n">masspoints</span><span class="o">.</span><span class="n">clump_species_intensity</span><span class="p">[</span><span class="n">ens</span><span class="p">]</span><span class="o">.</span><span class="n">T</span><span class="p">)</span><span class="o">.</span><span class="n">T</span><span class="p">)[</span><span class="n">i_nan</span><span class="p">]</span>
+                <span class="n">species_intensity_list</span><span class="p">[</span><span class="n">ens</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">copy</span><span class="p">(</span><span class="n">intensity</span><span class="p">))</span>
+                <span class="c1"># intensitylist[ens].append((c * (masspoints.clumpIntensity[ens]*(masspoints.clumpOpticalDepth[ens])</span>
+                <span class="c1">#                                 /(1-np.exp(-masspoints.clumpOpticalDepth[ens]))</span>
+                <span class="c1">#                                 /constants.voxel_size/f_ds).T).T)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">species_intensity_list</span><span class="p">[</span><span class="n">ens</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">((</span><span class="n">c</span><span class="o">*</span><span class="n">masspoints</span><span class="o">.</span><span class="n">clump_species_intensity</span><span class="p">[</span><span class="n">ens</span><span class="p">]</span><span class="o">.</span><span class="n">T</span><span class="p">)</span><span class="o">.</span><span class="n">T</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">suggested_calc</span><span class="p">:</span>
+                <span class="n">species_opticaldepth_list</span><span class="p">[</span><span class="n">ens</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">((</span><span class="n">c</span> <span class="o">*</span> <span class="p">(</span><span class="n">masspoints</span><span class="o">.</span><span class="n">clump_species_optical_depth</span><span class="p">[</span><span class="n">ens</span><span class="p">])</span><span class="o">.</span><span class="n">T</span><span class="p">)</span><span class="o">.</span><span class="n">T</span><span class="p">)</span>
+                <span class="n">hi_tau_list</span><span class="p">[</span><span class="n">ens</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">((</span><span class="n">c</span><span class="o">*</span><span class="p">(</span><span class="n">masspoints</span><span class="o">.</span><span class="n">clump_hi_tau</span><span class="p">[</span><span class="n">ens</span><span class="p">])</span><span class="o">.</span><span class="n">T</span><span class="p">)</span><span class="o">.</span><span class="n">T</span><span class="p">)</span>
+
+            <span class="k">elif</span> <span class="n">test_opacity</span><span class="p">:</span>
+                <span class="n">species_opticaldepth_list</span><span class="p">[</span><span class="n">ens</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">((</span><span class="n">c</span> <span class="o">*</span> <span class="p">(</span><span class="n">masspoints</span><span class="o">.</span><span class="n">clump_species_optical_depth</span><span class="p">[</span><span class="n">ens</span><span class="p">]</span>
+                                                            <span class="o">/</span><span class="n">constants</span><span class="o">.</span><span class="n">voxel_size</span><span class="o">/</span><span class="n">f_ds</span><span class="p">)</span><span class="o">.</span><span class="n">T</span><span class="p">)</span><span class="o">.</span><span class="n">T</span><span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">species_opticaldepth_list</span><span class="p">[</span><span class="n">ens</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">((</span><span class="n">c</span><span class="o">*</span><span class="n">masspoints</span><span class="o">.</span><span class="n">clump_species_optical_depth</span><span class="p">[</span><span class="n">ens</span><span class="p">]</span><span class="o">.</span><span class="n">T</span><span class="p">)</span><span class="o">.</span><span class="n">T</span><span class="p">)</span>
+        <span class="n">combinations</span><span class="o">.</span><span class="n">clump_species_intensity</span><span class="p">[</span><span class="n">ens</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">species_intensity_list</span><span class="p">[</span><span class="n">ens</span><span class="p">])</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
+        <span class="n">combinations</span><span class="o">.</span><span class="n">clump_species_optical_depth</span><span class="p">[</span><span class="n">ens</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">species_opticaldepth_list</span><span class="p">[</span><span class="n">ens</span><span class="p">])</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
+        <span class="n">combinations</span><span class="o">.</span><span class="n">clump_hi_tb</span><span class="p">[</span><span class="n">ens</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">hi_tb_list</span><span class="p">[</span><span class="n">ens</span><span class="p">])</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
+        <span class="n">combinations</span><span class="o">.</span><span class="n">clump_hi_tau</span><span class="p">[</span><span class="n">ens</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">hi_tau_list</span><span class="p">[</span><span class="n">ens</span><span class="p">])</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">constants</span><span class="o">.</span><span class="n">dust</span> <span class="o">!=</span> <span class="s1">&#39;&#39;</span> <span class="ow">and</span> <span class="n">constants</span><span class="o">.</span><span class="n">dust</span> <span class="o">!=</span> <span class="kc">None</span> <span class="ow">and</span> <span class="n">constants</span><span class="o">.</span><span class="n">dust</span> <span class="o">!=</span> <span class="s1">&#39;none&#39;</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">old_dust</span><span class="p">:</span>
+                <span class="n">CLcombinations</span> <span class="o">=</span> <span class="n">copy</span><span class="p">(</span><span class="n">combinations</span><span class="o">.</span><span class="n">clump_combination</span><span class="p">[</span><span class="n">ens</span><span class="p">])</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">CLcombinations</span> <span class="o">=</span> <span class="n">copy</span><span class="p">(</span><span class="n">combinations</span><span class="o">.</span><span class="n">clump_max_combination</span><span class="p">[</span><span class="n">ens</span><span class="p">])</span>
+            <span class="k">for</span> <span class="n">c</span> <span class="ow">in</span> <span class="n">CLcombinations</span><span class="p">:</span>
+                <span class="k">if</span> <span class="n">suggested_calc</span><span class="p">:</span>
+                    <span class="n">intensity</span> <span class="o">=</span> <span class="p">(</span><span class="n">c</span> <span class="o">*</span> <span class="p">(</span><span class="n">masspoints</span><span class="o">.</span><span class="n">clump_dust_intensity</span><span class="p">[</span><span class="n">ens</span><span class="p">]</span>
+                                      <span class="o">*</span><span class="p">(</span><span class="n">masspoints</span><span class="o">.</span><span class="n">clump_dust_optical_depth</span><span class="p">[</span><span class="n">ens</span><span class="p">])</span>
+                                      <span class="o">/</span><span class="p">(</span><span class="mi">1</span><span class="o">-</span><span class="n">np</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span><span class="o">-</span><span class="n">masspoints</span><span class="o">.</span><span class="n">clump_dust_optical_depth</span><span class="p">[</span><span class="n">ens</span><span class="p">]))</span>
+                                      <span class="p">)</span><span class="o">.</span><span class="n">T</span><span class="p">)</span><span class="o">.</span><span class="n">T</span><span class="c1"># / (4/3*masspoints.clump_radius[ens].T)</span>
+                                <span class="c1">#/constants.voxel_size/f_ds*(4/3*masspoints.clumpRadius[ens].T)</span>
+                    <span class="n">i_nan</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">isnan</span><span class="p">(</span><span class="n">intensity</span><span class="p">)</span> <span class="o">|</span> <span class="n">np</span><span class="o">.</span><span class="n">isinf</span><span class="p">(</span><span class="n">intensity</span><span class="p">)</span>
+                    <span class="n">intensity</span><span class="p">[</span><span class="n">i_nan</span><span class="p">]</span> <span class="o">=</span> <span class="p">((</span><span class="n">c</span> <span class="o">*</span> <span class="p">(</span><span class="n">masspoints</span><span class="o">.</span><span class="n">clump_dust_intensity</span><span class="p">[</span><span class="n">ens</span><span class="p">]</span>
+                                              <span class="p">)</span><span class="o">.</span><span class="n">T</span><span class="p">)</span><span class="o">.</span><span class="n">T</span><span class="p">)[</span><span class="n">i_nan</span><span class="p">]</span>
+                                       <span class="c1">#/ (4/3*masspoints.clump_radius[ens].T)</span>
+                                       <span class="c1">#/constants.voxel_size/f_ds*(4/3*masspoints.clumpRadius[ens].T)</span>
+                    <span class="n">dust_intensity_list</span><span class="p">[</span><span class="n">ens</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">copy</span><span class="p">(</span><span class="n">intensity</span><span class="p">))</span>
+                <span class="k">elif</span> <span class="n">test_calc</span><span class="p">:</span>
+                    <span class="n">intensity</span> <span class="o">=</span> <span class="p">(</span><span class="n">c</span> <span class="o">*</span> <span class="p">(</span><span class="n">masspoints</span><span class="o">.</span><span class="n">clump_dust_intensity</span><span class="p">[</span><span class="n">ens</span><span class="p">]</span><span class="o">*</span><span class="n">masspoints</span><span class="o">.</span><span class="n">clump_dust_optical_depth</span><span class="p">[</span><span class="n">ens</span><span class="p">]</span>
+                                      <span class="o">/</span><span class="p">(</span><span class="mi">1</span><span class="o">-</span><span class="n">np</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span><span class="o">-</span><span class="n">masspoints</span><span class="o">.</span><span class="n">clump_dust_optical_depth</span><span class="p">[</span><span class="n">ens</span><span class="p">]))</span>
+                                      <span class="o">/</span><span class="n">constants</span><span class="o">.</span><span class="n">voxel_size</span><span class="o">/</span><span class="n">f_ds</span><span class="p">)</span><span class="o">.</span><span class="n">T</span><span class="p">)</span><span class="o">.</span><span class="n">T</span>
+                    <span class="n">i_nan</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">isnan</span><span class="p">(</span><span class="n">intensity</span><span class="p">)</span> <span class="o">|</span> <span class="n">np</span><span class="o">.</span><span class="n">isinf</span><span class="p">(</span><span class="n">intensity</span><span class="p">)</span>
+                    <span class="n">intensity</span><span class="p">[</span><span class="n">i_nan</span><span class="p">]</span> <span class="o">=</span> <span class="p">((</span><span class="n">c</span> <span class="o">*</span> <span class="n">masspoints</span><span class="o">.</span><span class="n">clump_dust_intensity</span><span class="p">[</span><span class="n">ens</span><span class="p">]</span><span class="o">.</span><span class="n">T</span><span class="p">)</span><span class="o">.</span><span class="n">T</span><span class="p">)[</span><span class="n">i_nan</span><span class="p">]</span>
+                    <span class="n">dust_intensity_list</span><span class="p">[</span><span class="n">ens</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">copy</span><span class="p">(</span><span class="n">intensity</span><span class="p">))</span>
+                    <span class="c1"># intensitylist[ens].append((c * (masspoints.clumpIntensity[ens]*(masspoints.clumpOpticalDepth[ens])</span>
+                    <span class="c1">#                                 /(1-np.exp(-masspoints.clumpOpticalDepth[ens]))</span>
+                    <span class="c1">#                                 /constants.voxel_size/f_ds).T).T)</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="n">dust_intensity_list</span><span class="p">[</span><span class="n">ens</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">((</span><span class="n">c</span><span class="o">*</span><span class="n">masspoints</span><span class="o">.</span><span class="n">clump_dust_intensity</span><span class="p">[</span><span class="n">ens</span><span class="p">]</span><span class="o">.</span><span class="n">T</span><span class="p">)</span><span class="o">.</span><span class="n">T</span><span class="p">)</span>
+                <span class="k">if</span> <span class="n">suggested_calc</span><span class="p">:</span>
+                    <span class="n">dust_opticaldepth_list</span><span class="p">[</span><span class="n">ens</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">((</span><span class="n">c</span> <span class="o">*</span> 
+                        <span class="p">(</span><span class="n">masspoints</span><span class="o">.</span><span class="n">clump_dust_optical_depth</span><span class="p">[</span><span class="n">ens</span><span class="p">])</span><span class="o">.</span><span class="n">T</span><span class="p">)</span><span class="o">.</span><span class="n">T</span><span class="p">)</span>
+                        <span class="c1">#/(4/3*masspoints.clumpRadius[ens].T)</span>
+                <span class="k">elif</span> <span class="n">test_opacity</span><span class="p">:</span>
+                    <span class="n">dust_opticaldepth_list</span><span class="p">[</span><span class="n">ens</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">((</span><span class="n">c</span> <span class="o">*</span> <span class="p">(</span><span class="n">masspoints</span><span class="o">.</span><span class="n">clump_dust_optical_depth</span><span class="p">[</span><span class="n">ens</span><span class="p">]</span>
+                                                       <span class="o">/</span><span class="n">constants</span><span class="o">.</span><span class="n">voxel_size</span><span class="o">/</span><span class="n">f_ds</span><span class="p">)</span><span class="o">.</span><span class="n">T</span><span class="p">)</span><span class="o">.</span><span class="n">T</span><span class="p">)</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="n">dust_opticaldepth_list</span><span class="p">[</span><span class="n">ens</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">((</span><span class="n">c</span><span class="o">*</span><span class="n">masspoints</span><span class="o">.</span><span class="n">clump_dust_optical_depth</span><span class="p">[</span><span class="n">ens</span><span class="p">]</span><span class="o">.</span><span class="n">T</span><span class="p">)</span><span class="o">.</span><span class="n">T</span><span class="p">)</span>
+            <span class="n">combinations</span><span class="o">.</span><span class="n">clump_dust_intensity</span><span class="p">[</span><span class="n">ens</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">dust_intensity_list</span><span class="p">[</span><span class="n">ens</span><span class="p">])</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
+            <span class="n">combinations</span><span class="o">.</span><span class="n">clump_dust_optical_depth</span><span class="p">[</span><span class="n">ens</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">dust_opticaldepth_list</span><span class="p">[</span><span class="n">ens</span><span class="p">])</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
+        
+  
+    <span class="k">return</span></div>
+
+
+
+<div class="viewcode-block" id="reinitialise">
+<a class="viewcode-back" href="../../../../_autosummary/kosmatau3d.models.combinations.combination.reinitialise.html#kosmatau3d.models.combinations.combination.reinitialise">[docs]</a>
+<span class="k">def</span> <span class="nf">reinitialise</span><span class="p">():</span>
+    <span class="c1"># Reinitialise all temporary variables to the correct number of clump sets.</span>
+  
+    <span class="n">combinations</span><span class="o">.</span><span class="n">clump_combination</span> <span class="o">=</span> <span class="p">[[]</span> <span class="k">for</span> <span class="n">_</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">constants</span><span class="o">.</span><span class="n">clump_mass_number</span><span class="p">))]</span>
+    <span class="n">combinations</span><span class="o">.</span><span class="n">clump_max_combination</span> <span class="o">=</span> <span class="p">[[]</span> <span class="k">for</span> <span class="n">_</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">constants</span><span class="o">.</span><span class="n">clump_mass_number</span><span class="p">))]</span>
+  
+    <span class="n">combinations</span><span class="o">.</span><span class="n">clump_species_intensity</span> <span class="o">=</span> <span class="p">[[]</span> <span class="k">for</span> <span class="n">_</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">constants</span><span class="o">.</span><span class="n">clump_mass_number</span><span class="p">))]</span>
+    <span class="n">combinations</span><span class="o">.</span><span class="n">clump_species_optical_depth</span> <span class="o">=</span> <span class="p">[[]</span> <span class="k">for</span> <span class="n">_</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">constants</span><span class="o">.</span><span class="n">clump_mass_number</span><span class="p">))]</span>
+    <span class="n">combinations</span><span class="o">.</span><span class="n">clump_dust_intensity</span> <span class="o">=</span> <span class="p">[[]</span> <span class="k">for</span> <span class="n">_</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">constants</span><span class="o">.</span><span class="n">clump_mass_number</span><span class="p">))]</span>
+    <span class="n">combinations</span><span class="o">.</span><span class="n">clump_dust_optical_depth</span> <span class="o">=</span> <span class="p">[[]</span> <span class="k">for</span> <span class="n">_</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">constants</span><span class="o">.</span><span class="n">clump_mass_number</span><span class="p">))]</span>
+
+    <span class="n">combinations</span><span class="o">.</span><span class="n">clump_hi_tb</span> <span class="o">=</span> <span class="p">[[]</span> <span class="k">for</span> <span class="n">_</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">constants</span><span class="o">.</span><span class="n">clump_mass_number</span><span class="p">))]</span>
+    <span class="n">combinations</span><span class="o">.</span><span class="n">clump_hi_tau</span> <span class="o">=</span> <span class="p">[[]</span> <span class="k">for</span> <span class="n">_</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">constants</span><span class="o">.</span><span class="n">clump_mass_number</span><span class="p">))]</span>
+  
+    <span class="k">return</span></div>
+
+
+
+<span class="c1"># jit_module(nopython=False)</span>
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2023, Craig Yanitski.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

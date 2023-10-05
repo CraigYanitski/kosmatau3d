@@ -1,0 +1,747 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>kosmatau3d.models.interpolations &mdash; kosmatau3d 1.0.3 documentation</title>
+      <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="../../../_static/css/theme.css" type="text/css" />
+      <link rel="stylesheet" href="../../../_static/readthedocs-custom.css" type="text/css" />
+  <!--[if lt IE 9]>
+    <script src="../../../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script src="../../../_static/documentation_options.js?v=baaebd52"></script>
+        <script src="../../../_static/doctools.js?v=888ff710"></script>
+        <script src="../../../_static/sphinx_highlight.js?v=dc90522c"></script>
+        <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+    <script src="../../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../../../index.html" class="icon icon-home">
+            kosmatau3d
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../installation.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../properties.html">KOSMA-$\tau$ Properties</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../voxel.html">Voxels</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../model.html">3D Models</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../comparison.html">Comparison to Observations</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../development.html">Future Development</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../_autosummary/kosmatau3d.html">API Reference</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../acknowledgements.html">Acknowledgements</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../index.html">kosmatau3d</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../../index.html">Module code</a></li>
+          <li class="breadcrumb-item"><a href="../models.html">kosmatau3d.models</a></li>
+      <li class="breadcrumb-item active">kosmatau3d.models.interpolations</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <h1>Source code for kosmatau3d.models.interpolations</h1><div class="highlight"><pre>
+<span></span><span class="kn">import</span> <span class="nn">sys</span>
+<span class="kn">import</span> <span class="nn">warnings</span>
+
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<span class="kn">from</span> <span class="nn">numba</span> <span class="kn">import</span> <span class="n">jit_module</span>
+<span class="kn">from</span> <span class="nn">numba.core.errors</span> <span class="kn">import</span> <span class="n">NumbaDeprecationWarning</span><span class="p">,</span> <span class="n">NumbaPendingDeprecationWarning</span>
+
+<span class="kn">from</span> <span class="nn">kosmatau3d.models</span> <span class="kn">import</span> <span class="n">constants</span>
+<span class="kn">from</span> <span class="nn">.interpolate</span> <span class="kn">import</span> <span class="o">*</span>
+
+<span class="sd">&#39;&#39;&#39;</span>
+<span class="sd">This is a module that can be used for the interpolation of the input data.</span>
+<span class="sd">It will contain functions to interpolate the intensity or optical depth</span>
+<span class="sd">for any species, given an index.</span>
+
+<span class="sd">The method of interpolation is passed as an argument when initialising</span>
+<span class="sd">this class. The acceptabled values are &#39;linear&#39;, &#39;cubic&#39;, and &#39;radial&#39;.</span>
+<span class="sd">The default method is &#39;linear&#39;. For the large intensity and optical depth</span>
+<span class="sd">grids, &#39;cubic&#39; and &#39;radial&#39; are the same.</span>
+<span class="sd">&#39;&#39;&#39;</span>
+
+<span class="n">warnings</span><span class="o">.</span><span class="n">simplefilter</span><span class="p">(</span><span class="s1">&#39;ignore&#39;</span><span class="p">,</span> <span class="n">category</span><span class="o">=</span><span class="n">NumbaDeprecationWarning</span><span class="p">)</span>
+<span class="n">warnings</span><span class="o">.</span><span class="n">simplefilter</span><span class="p">(</span><span class="s1">&#39;ignore&#39;</span><span class="p">,</span> <span class="n">category</span><span class="o">=</span><span class="n">NumbaPendingDeprecationWarning</span><span class="p">)</span>
+
+
+<span class="n">initialised</span> <span class="o">=</span> <span class="kc">False</span>
+<span class="n">clump_species_intensity_interpolation</span> <span class="o">=</span> <span class="kc">None</span>
+<span class="n">interclump_species_intensity_interpolation</span> <span class="o">=</span> <span class="kc">None</span>
+<span class="n">clump_species_tau_interpolation</span> <span class="o">=</span> <span class="kc">None</span>
+<span class="n">interclump_species_tau_interpolation</span> <span class="o">=</span> <span class="kc">None</span>
+<span class="n">clump_dust_intensity_interpolation</span> <span class="o">=</span> <span class="kc">None</span>
+<span class="n">interclump_dust_intensity_interpolation</span> <span class="o">=</span> <span class="kc">None</span>
+<span class="n">clump_dust_tau_interpolation</span> <span class="o">=</span> <span class="kc">None</span>
+<span class="n">interclump_dust_tau_interpolation</span> <span class="o">=</span> <span class="kc">None</span>
+<span class="n">clump_column_density_interpolation</span> <span class="o">=</span> <span class="kc">None</span>
+<span class="n">interclump_column_density_interpolation</span> <span class="o">=</span> <span class="kc">None</span>
+<span class="n">galaxy_rotation_interpolation</span> <span class="o">=</span> <span class="kc">None</span>
+<span class="n">velocity_dispersion_interpolation</span> <span class="o">=</span> <span class="kc">None</span>
+<span class="n">number_density_interpolation</span> <span class="o">=</span> <span class="kc">None</span>
+<span class="n">h2_scale_height</span> <span class="o">=</span> <span class="kc">None</span>
+<span class="n">h2_mass_full</span> <span class="o">=</span> <span class="kc">None</span>
+<span class="n">h2_mass_interpolation</span> <span class="o">=</span> <span class="kc">None</span>
+<span class="n">clump_h2_column_density_interpolation</span> <span class="o">=</span> <span class="kc">None</span>
+<span class="n">interclump_h2_column_density_interpolation</span> <span class="o">=</span> <span class="kc">None</span>
+<span class="n">hi_scale_height</span> <span class="o">=</span> <span class="kc">None</span>
+<span class="n">hi_mass_full</span> <span class="o">=</span> <span class="kc">None</span>
+<span class="n">hi_mass_interpolation</span> <span class="o">=</span> <span class="kc">None</span>
+<span class="n">clump_hi_column_density_interpolation</span> <span class="o">=</span> <span class="kc">None</span>
+<span class="n">interclump_hi_column_density_interpolation</span> <span class="o">=</span> <span class="kc">None</span>
+<span class="n">clump_taufuv_interpolation</span> <span class="o">=</span> <span class="kc">None</span>
+<span class="n">interclump_taufuv_interpolation</span> <span class="o">=</span> <span class="kc">None</span>
+<span class="n">clump_tg_interpolation</span> <span class="o">=</span> <span class="kc">None</span>
+<span class="n">interclump_tg_interpolation</span> <span class="o">=</span> <span class="kc">None</span>
+<span class="n">clump_td_interpolation</span> <span class="o">=</span> <span class="kc">None</span>
+<span class="n">interclump_td_interpolation</span> <span class="o">=</span> <span class="kc">None</span>
+<span class="n">fuv_interpolation</span> <span class="o">=</span> <span class="kc">None</span>
+<span class="n">e_tilde_real</span> <span class="o">=</span> <span class="kc">None</span>
+<span class="n">e_tilde_imaginary</span> <span class="o">=</span> <span class="kc">None</span>
+
+
+<div class="viewcode-block" id="reset">
+<a class="viewcode-back" href="../../../_autosummary/kosmatau3d.models.interpolations.reset.html#kosmatau3d.models.interpolations.reset">[docs]</a>
+<span class="k">def</span> <span class="nf">reset</span><span class="p">():</span>
+    <span class="n">species_intensity_interpolation</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="n">species_tau_interpolation</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="n">dust_intensity_interpolation</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="n">dust_tau_interpolation</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="n">galaxy_rotation_interpolation</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="n">velocity_dispersion_interpolation</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="n">number_density_interpolation</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="n">h2_mass_interpolation</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="n">hi_mass_interpolation</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="n">h2_column_density_interpolation</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="n">hi_column_density_interpolation</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="n">taufuv_interpolation</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="n">tg_interpolation</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="n">td_interpolation</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="n">fuv_interpolation</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="n">e_tilde_real</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="n">e_tilde_imaginary</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="n">initialised</span> <span class="o">=</span> <span class="kc">False</span>
+    <span class="k">return</span></div>
+
+
+
+<div class="viewcode-block" id="interpolate_clump_species_intensity">
+<a class="viewcode-back" href="../../../_autosummary/kosmatau3d.models.interpolations.interpolate_clump_species_intensity.html#kosmatau3d.models.interpolations.interpolate_clump_species_intensity">[docs]</a>
+<span class="k">def</span> <span class="nf">interpolate_clump_species_intensity</span><span class="p">(</span><span class="n">points</span><span class="p">,</span> <span class="n">verbose</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&#39;&#39;&#39;</span>
+<span class="sd">    This is converted from brightness temperature to Jansky units.</span>
+<span class="sd">    &#39;&#39;&#39;</span>
+    <span class="c1"># Fully &#39;encode&#39; the interpolation points to the fortran standard</span>
+    <span class="k">if</span> <span class="n">constants</span><span class="o">.</span><span class="n">log_encoded</span><span class="p">:</span>
+        <span class="n">points</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">points</span><span class="p">)</span><span class="o">*</span><span class="mi">10</span>
+    <span class="n">verbose</span> <span class="o">=</span> <span class="n">verbose</span> <span class="ow">or</span> <span class="n">verbose</span>
+    <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">species</span><span class="o">.</span><span class="n">clump_transitions</span><span class="p">):</span>
+        <span class="n">intensity</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">species</span><span class="o">.</span><span class="n">clump_transitions</span><span class="p">))</span>
+        <span class="n">intensity_xi</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">index</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">species</span><span class="o">.</span><span class="n">clump_transition_indeces</span><span class="p">):</span>
+            <span class="k">if</span> <span class="n">constants</span><span class="o">.</span><span class="n">log_encoded</span><span class="p">:</span>
+                <span class="k">if</span> <span class="n">constants</span><span class="o">.</span><span class="n">interpolation</span> <span class="o">==</span> <span class="s1">&#39;linear&#39;</span><span class="p">:</span>
+                    <span class="n">intensity</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span><span class="mi">10</span><span class="o">**</span><span class="p">(</span><span class="n">clump_species_intensity_interpolation</span><span class="p">[</span><span class="n">i</span><span class="p">](</span><span class="n">points</span><span class="p">)</span><span class="o">/</span><span class="mi">10</span><span class="p">))</span>
+                <span class="k">elif</span> <span class="n">constants</span><span class="o">.</span><span class="n">interpolation</span> <span class="o">==</span> <span class="s1">&#39;radial&#39;</span> <span class="ow">or</span> <span class="n">constants</span><span class="o">.</span><span class="n">interpolation</span> <span class="o">==</span> <span class="s1">&#39;cubic&#39;</span><span class="p">:</span>
+                    <span class="n">intensity</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span><span class="mi">10</span><span class="o">**</span><span class="p">(</span><span class="n">clump_species_intensity_interpolation</span><span class="p">[</span><span class="n">i</span><span class="p">](</span><span class="n">points</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">points</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="n">points</span><span class="p">[</span><span class="mi">2</span><span class="p">],</span> <span class="n">points</span><span class="p">[</span><span class="mi">3</span><span class="p">])</span><span class="o">/</span><span class="mi">10</span><span class="p">))</span>
+            
+            <span class="k">else</span><span class="p">:</span>
+                <span class="k">if</span> <span class="n">constants</span><span class="o">.</span><span class="n">interpolation</span> <span class="o">==</span> <span class="s1">&#39;linear&#39;</span><span class="p">:</span>
+                    <span class="n">intensity</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span><span class="mi">10</span><span class="o">**</span><span class="n">clump_species_intensity_interpolation</span><span class="p">[</span><span class="n">i</span><span class="p">](</span><span class="n">points</span><span class="p">))</span>
+                <span class="k">elif</span> <span class="n">constants</span><span class="o">.</span><span class="n">interpolation</span> <span class="o">==</span> <span class="s1">&#39;radial&#39;</span> <span class="ow">or</span> <span class="n">constants</span><span class="o">.</span><span class="n">interpolation</span> <span class="o">==</span> <span class="s1">&#39;cubic&#39;</span><span class="p">:</span>
+                    <span class="n">intensity</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span><span class="mi">10</span><span class="o">**</span><span class="n">clump_species_intensity_interpolation</span><span class="p">[</span><span class="n">i</span><span class="p">](</span><span class="n">points</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">points</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="n">points</span><span class="p">[</span><span class="mi">2</span><span class="p">],</span> <span class="n">points</span><span class="p">[</span><span class="mi">3</span><span class="p">]))</span>
+            <span class="c1"># if (np.isnan(intensity[i]) or intensity[i]==0):</span>
+            <span class="c1">#   intensity[i] = 10**-100</span>
+            <span class="c1"># intensity[i] *= 2*constants.kB/4/np.pi/species.moleculeWavelengths[i]**2/10**-26</span>
+        <span class="k">if</span> <span class="n">verbose</span><span class="p">:</span>
+            <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;Calculated the intensity for </span><span class="si">{}</span><span class="s1"> species.&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">species</span><span class="o">.</span><span class="n">clump_transitions</span><span class="p">)))</span>
+        <span class="k">return</span> <span class="n">intensity</span>
+    <span class="k">else</span><span class="p">:</span> <span class="k">return</span></div>
+
+    <span class="c1"># else:</span>
+    <span class="c1">#   if verbose:</span>
+    <span class="c1">#     print(&#39;There are no species of this type adding to the intensity.&#39;)</span>
+    <span class="c1">#   intensity = 0</span>
+
+
+<div class="viewcode-block" id="interpolate_interclump_species_intensity">
+<a class="viewcode-back" href="../../../_autosummary/kosmatau3d.models.interpolations.interpolate_interclump_species_intensity.html#kosmatau3d.models.interpolations.interpolate_interclump_species_intensity">[docs]</a>
+<span class="k">def</span> <span class="nf">interpolate_interclump_species_intensity</span><span class="p">(</span><span class="n">points</span><span class="p">,</span> <span class="n">verbose</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&#39;&#39;&#39;</span>
+<span class="sd">    This is converted from brightness temperature to Jansky units.</span>
+<span class="sd">    &#39;&#39;&#39;</span>
+    <span class="c1"># Fully &#39;encode&#39; the interpolation points to the fortran standard</span>
+    <span class="k">if</span> <span class="n">constants</span><span class="o">.</span><span class="n">log_encoded</span><span class="p">:</span>
+        <span class="n">points</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">points</span><span class="p">)</span><span class="o">*</span><span class="mi">10</span>
+    <span class="n">verbose</span> <span class="o">=</span> <span class="n">verbose</span> <span class="ow">or</span> <span class="n">verbose</span>
+    <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">species</span><span class="o">.</span><span class="n">interclump_transitions</span><span class="p">):</span>
+        <span class="n">intensity</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">species</span><span class="o">.</span><span class="n">interclump_transitions</span><span class="p">))</span>
+        <span class="n">intensity_xi</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">index</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">species</span><span class="o">.</span><span class="n">interclump_transition_indeces</span><span class="p">):</span>
+            <span class="k">if</span> <span class="n">constants</span><span class="o">.</span><span class="n">log_encoded</span><span class="p">:</span>
+                <span class="k">if</span> <span class="n">constants</span><span class="o">.</span><span class="n">interpolation</span> <span class="o">==</span> <span class="s1">&#39;linear&#39;</span><span class="p">:</span>
+                    <span class="n">intensity</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span><span class="mi">10</span><span class="o">**</span><span class="p">(</span><span class="n">interclump_species_intensity_interpolation</span><span class="p">[</span><span class="n">i</span><span class="p">](</span><span class="n">points</span><span class="p">)</span><span class="o">/</span><span class="mi">10</span><span class="p">))</span>
+                <span class="k">elif</span> <span class="n">constants</span><span class="o">.</span><span class="n">interpolation</span> <span class="o">==</span> <span class="s1">&#39;radial&#39;</span> <span class="ow">or</span> <span class="n">constants</span><span class="o">.</span><span class="n">interpolation</span> <span class="o">==</span> <span class="s1">&#39;cubic&#39;</span><span class="p">:</span>
+                    <span class="n">intensity</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span><span class="mi">10</span><span class="o">**</span><span class="p">(</span><span class="n">interclump_species_intensity_interpolation</span><span class="p">[</span><span class="n">i</span><span class="p">](</span><span class="n">points</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">points</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="n">points</span><span class="p">[</span><span class="mi">2</span><span class="p">],</span> <span class="n">points</span><span class="p">[</span><span class="mi">3</span><span class="p">])</span><span class="o">/</span><span class="mi">10</span><span class="p">))</span>
+            
+            <span class="k">else</span><span class="p">:</span>
+                <span class="k">if</span> <span class="n">constants</span><span class="o">.</span><span class="n">interpolation</span> <span class="o">==</span> <span class="s1">&#39;linear&#39;</span><span class="p">:</span>
+                    <span class="n">intensity</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span><span class="mi">10</span><span class="o">**</span><span class="n">interclump_species_intensity_interpolation</span><span class="p">[</span><span class="n">i</span><span class="p">](</span><span class="n">points</span><span class="p">))</span>
+                <span class="k">elif</span> <span class="n">constants</span><span class="o">.</span><span class="n">interpolation</span> <span class="o">==</span> <span class="s1">&#39;radial&#39;</span> <span class="ow">or</span> <span class="n">constants</span><span class="o">.</span><span class="n">interpolation</span> <span class="o">==</span> <span class="s1">&#39;cubic&#39;</span><span class="p">:</span>
+                    <span class="n">intensity</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span><span class="mi">10</span><span class="o">**</span><span class="n">interclump_species_intensity_interpolation</span><span class="p">[</span><span class="n">i</span><span class="p">](</span><span class="n">points</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">points</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="n">points</span><span class="p">[</span><span class="mi">2</span><span class="p">],</span> <span class="n">points</span><span class="p">[</span><span class="mi">3</span><span class="p">]))</span>
+            <span class="c1"># if (np.isnan(intensity[i]) or intensity[i]==0):</span>
+            <span class="c1">#   intensity[i] = 10**-100</span>
+            <span class="c1"># intensity[i] *= 2*constants.kB/4/np.pi/species.moleculeWavelengths[i]**2/10**-26</span>
+        <span class="k">if</span> <span class="n">verbose</span><span class="p">:</span>
+            <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;Calculated the intensity for </span><span class="si">{}</span><span class="s1"> species.&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">species</span><span class="o">.</span><span class="n">interclump_transitions</span><span class="p">)))</span>
+        <span class="k">return</span> <span class="n">intensity</span>
+    <span class="k">else</span><span class="p">:</span> <span class="k">return</span></div>
+
+    <span class="c1"># else:</span>
+    <span class="c1">#   if verbose:</span>
+    <span class="c1">#     print(&#39;There are no species of this type adding to the intensity.&#39;)</span>
+    <span class="c1">#   intensity = 0</span>
+
+
+<div class="viewcode-block" id="interpolate_clump_species_tau">
+<a class="viewcode-back" href="../../../_autosummary/kosmatau3d.models.interpolations.interpolate_clump_species_tau.html#kosmatau3d.models.interpolations.interpolate_clump_species_tau">[docs]</a>
+<span class="k">def</span> <span class="nf">interpolate_clump_species_tau</span><span class="p">(</span><span class="n">points</span><span class="p">,</span> <span class="n">verbose</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+    <span class="c1"># Fully &#39;encode&#39; the interpolation points to the fortran standard</span>
+    <span class="k">if</span> <span class="n">constants</span><span class="o">.</span><span class="n">log_encoded</span><span class="p">:</span>
+        <span class="n">points</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">points</span><span class="p">)</span><span class="o">*</span><span class="mi">10</span>
+    <span class="n">verbose</span> <span class="o">=</span> <span class="n">verbose</span> <span class="ow">or</span> <span class="n">verbose</span>
+    <span class="c1"># points = np.log10(points)</span>
+    <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">species</span><span class="o">.</span><span class="n">clump_transitions</span><span class="p">):</span>
+        <span class="n">tau</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">species</span><span class="o">.</span><span class="n">clump_transitions</span><span class="p">))</span>
+        <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">index</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">species</span><span class="o">.</span><span class="n">clump_transition_indeces</span><span class="p">):</span>
+            <span class="k">if</span> <span class="n">constants</span><span class="o">.</span><span class="n">log_encoded</span><span class="p">:</span>
+                <span class="k">if</span> <span class="n">constants</span><span class="o">.</span><span class="n">interpolation</span> <span class="o">==</span> <span class="s1">&#39;linear&#39;</span><span class="p">:</span>
+                    <span class="n">tau</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span><span class="mi">10</span><span class="o">**</span><span class="p">(</span><span class="n">clump_species_tau_interpolation</span><span class="p">[</span><span class="n">i</span><span class="p">](</span><span class="n">points</span><span class="p">)</span><span class="o">/</span><span class="mi">10</span><span class="p">))</span>
+                <span class="k">elif</span> <span class="n">constants</span><span class="o">.</span><span class="n">interpolation</span> <span class="o">==</span> <span class="s1">&#39;radial&#39;</span> <span class="ow">or</span> <span class="n">constants</span><span class="o">.</span><span class="n">interpolation</span> <span class="o">==</span> <span class="s1">&#39;cubic&#39;</span><span class="p">:</span>
+                    <span class="n">tau</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span><span class="mi">10</span><span class="o">**</span><span class="p">(</span><span class="n">clump_species_tau_interpolation</span><span class="p">[</span><span class="n">i</span><span class="p">](</span><span class="n">points</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">points</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="n">points</span><span class="p">[</span><span class="mi">2</span><span class="p">],</span> <span class="n">points</span><span class="p">[</span><span class="mi">3</span><span class="p">])</span><span class="o">/</span><span class="mi">10</span><span class="p">))</span>
+            
+            <span class="k">else</span><span class="p">:</span>
+                <span class="k">if</span> <span class="n">constants</span><span class="o">.</span><span class="n">interpolation</span> <span class="o">==</span> <span class="s1">&#39;linear&#39;</span><span class="p">:</span>
+                    <span class="n">tau</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span><span class="mi">10</span><span class="o">**</span><span class="n">clump_species_tau_interpolation</span><span class="p">[</span><span class="n">i</span><span class="p">](</span><span class="n">points</span><span class="p">))</span>
+                <span class="k">elif</span> <span class="n">constants</span><span class="o">.</span><span class="n">interpolation</span> <span class="o">==</span> <span class="s1">&#39;radial&#39;</span> <span class="ow">or</span> <span class="n">constants</span><span class="o">.</span><span class="n">interpolation</span> <span class="o">==</span> <span class="s1">&#39;cubic&#39;</span><span class="p">:</span>
+                    <span class="n">tau</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span><span class="mi">10</span><span class="o">**</span><span class="n">clump_species_tau_interpolation</span><span class="p">[</span><span class="n">i</span><span class="p">](</span><span class="n">points</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">points</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="n">points</span><span class="p">[</span><span class="mi">2</span><span class="p">],</span> <span class="n">points</span><span class="p">[</span><span class="mi">3</span><span class="p">]))</span>
+            <span class="c1"># if np.isnan(tau[i]): tau[i] = 10**-100</span>
+            <span class="k">if</span> <span class="p">(</span><span class="n">tau</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">&lt;=</span> <span class="mi">0</span><span class="p">):</span>
+                <span class="c1"># temp = tau[-1]</span>
+                <span class="c1"># tau[i] = 10**-100</span>
+                <span class="nb">input</span><span class="p">(</span><span class="s1">&#39;</span><span class="se">\n</span><span class="s1">&lt;&lt;ERROR&gt;&gt; Negative opacity </span><span class="si">{}</span><span class="s1"> found.</span><span class="se">\n</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">temp</span><span class="p">))</span>
+        <span class="k">if</span> <span class="n">verbose</span><span class="p">:</span>
+            <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;Calculated the optical depth for </span><span class="si">{}</span><span class="s1"> species.&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">species</span><span class="o">.</span><span class="n">clump_transitions</span><span class="p">)))</span>
+        <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">tau</span><span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+      <span class="k">return</span></div>
+
+    <span class="c1"># else:</span>
+    <span class="c1">#   if verbose:</span>
+    <span class="c1">#     print(&#39;There are no species adding to the optical depth.&#39;)</span>
+    <span class="c1">#   tau = 0</span>
+
+
+<div class="viewcode-block" id="interpolate_interclump_species_tau">
+<a class="viewcode-back" href="../../../_autosummary/kosmatau3d.models.interpolations.interpolate_interclump_species_tau.html#kosmatau3d.models.interpolations.interpolate_interclump_species_tau">[docs]</a>
+<span class="k">def</span> <span class="nf">interpolate_interclump_species_tau</span><span class="p">(</span><span class="n">points</span><span class="p">,</span> <span class="n">verbose</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+    <span class="c1"># Fully &#39;encode&#39; the interpolation points to the fortran standard</span>
+    <span class="k">if</span> <span class="n">constants</span><span class="o">.</span><span class="n">log_encoded</span><span class="p">:</span>
+        <span class="n">points</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">points</span><span class="p">)</span><span class="o">*</span><span class="mi">10</span>
+    <span class="n">verbose</span> <span class="o">=</span> <span class="n">verbose</span> <span class="ow">or</span> <span class="n">verbose</span>
+    <span class="c1"># points = np.log10(points)</span>
+    <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">species</span><span class="o">.</span><span class="n">interclump_transitions</span><span class="p">):</span>
+        <span class="n">tau</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">species</span><span class="o">.</span><span class="n">interclump_transitions</span><span class="p">))</span>
+        <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">index</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">species</span><span class="o">.</span><span class="n">interclump_transition_indeces</span><span class="p">):</span>
+            <span class="k">if</span> <span class="n">constants</span><span class="o">.</span><span class="n">log_encoded</span><span class="p">:</span>
+                <span class="k">if</span> <span class="n">constants</span><span class="o">.</span><span class="n">interpolation</span> <span class="o">==</span> <span class="s1">&#39;linear&#39;</span><span class="p">:</span>
+                    <span class="n">tau</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span><span class="mi">10</span><span class="o">**</span><span class="p">(</span><span class="n">interclump_species_tau_interpolation</span><span class="p">[</span><span class="n">i</span><span class="p">](</span><span class="n">points</span><span class="p">)</span><span class="o">/</span><span class="mi">10</span><span class="p">))</span>
+                <span class="k">elif</span> <span class="n">constants</span><span class="o">.</span><span class="n">interpolation</span> <span class="o">==</span> <span class="s1">&#39;radial&#39;</span> <span class="ow">or</span> <span class="n">constants</span><span class="o">.</span><span class="n">interpolation</span> <span class="o">==</span> <span class="s1">&#39;cubic&#39;</span><span class="p">:</span>
+                    <span class="n">tau</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span><span class="mi">10</span><span class="o">**</span><span class="p">(</span><span class="n">interclump_species_tau_interpolation</span><span class="p">[</span><span class="n">i</span><span class="p">](</span><span class="n">points</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">points</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="n">points</span><span class="p">[</span><span class="mi">2</span><span class="p">],</span> <span class="n">points</span><span class="p">[</span><span class="mi">3</span><span class="p">])</span><span class="o">/</span><span class="mi">10</span><span class="p">))</span>
+            
+            <span class="k">else</span><span class="p">:</span>
+                <span class="k">if</span> <span class="n">constants</span><span class="o">.</span><span class="n">interpolation</span> <span class="o">==</span> <span class="s1">&#39;linear&#39;</span><span class="p">:</span>
+                    <span class="n">tau</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span><span class="mi">10</span><span class="o">**</span><span class="n">interclump_species_tau_interpolation</span><span class="p">[</span><span class="n">i</span><span class="p">](</span><span class="n">points</span><span class="p">))</span>
+                <span class="k">elif</span> <span class="n">constants</span><span class="o">.</span><span class="n">interpolation</span> <span class="o">==</span> <span class="s1">&#39;radial&#39;</span> <span class="ow">or</span> <span class="n">constants</span><span class="o">.</span><span class="n">interpolation</span> <span class="o">==</span> <span class="s1">&#39;cubic&#39;</span><span class="p">:</span>
+                    <span class="n">tau</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span><span class="mi">10</span><span class="o">**</span><span class="n">interclump_species_tau_interpolation</span><span class="p">[</span><span class="n">i</span><span class="p">](</span><span class="n">points</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> 
+                        <span class="n">points</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="n">points</span><span class="p">[</span><span class="mi">2</span><span class="p">],</span> <span class="n">points</span><span class="p">[</span><span class="mi">3</span><span class="p">]))</span>
+            <span class="c1"># if np.isnan(tau[i]): tau[i] = 10**-100</span>
+            <span class="k">if</span> <span class="p">(</span><span class="n">tau</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">&lt;=</span> <span class="mi">0</span><span class="p">):</span>
+                <span class="c1"># temp = tau[-1]</span>
+                <span class="c1"># tau[i] = 10**-100</span>
+                <span class="nb">input</span><span class="p">(</span><span class="s1">&#39;</span><span class="se">\n</span><span class="s1">&lt;&lt;ERROR&gt;&gt; Negative opacity </span><span class="si">{}</span><span class="s1"> found.</span><span class="se">\n</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">temp</span><span class="p">))</span>
+        <span class="k">if</span> <span class="n">verbose</span><span class="p">:</span>
+            <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;Calculated the optical depth for </span><span class="si">{}</span><span class="s1"> species.&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
+                <span class="nb">len</span><span class="p">(</span><span class="n">species</span><span class="o">.</span><span class="n">interclump_transitions</span><span class="p">)))</span>
+        <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">tau</span><span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+      <span class="k">return</span></div>
+
+    <span class="c1"># else:</span>
+    <span class="c1">#   if verbose:</span>
+    <span class="c1">#     print(&#39;There are no species adding to the optical depth.&#39;)</span>
+    <span class="c1">#   tau = 0</span>
+
+
+<div class="viewcode-block" id="interpolate_clump_dust_intensity">
+<a class="viewcode-back" href="../../../_autosummary/kosmatau3d.models.interpolations.interpolate_clump_dust_intensity.html#kosmatau3d.models.interpolations.interpolate_clump_dust_intensity">[docs]</a>
+<span class="k">def</span> <span class="nf">interpolate_clump_dust_intensity</span><span class="p">(</span><span class="n">points</span><span class="p">,</span> <span class="n">verbose</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&#39;&#39;&#39;</span>
+<span class="sd">    This will calculate the intensity in Jansky units.</span>
+<span class="sd">    &#39;&#39;&#39;</span>
+    <span class="c1"># Fully &#39;encode&#39; the interpolation points to the fortran standard</span>
+    <span class="k">if</span> <span class="n">constants</span><span class="o">.</span><span class="n">log_encoded</span><span class="p">:</span>
+        <span class="n">points</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">points</span><span class="p">)</span><span class="o">*</span><span class="mi">10</span>
+  
+        <span class="k">if</span> <span class="n">constants</span><span class="o">.</span><span class="n">interpolation</span> <span class="o">==</span> <span class="s1">&#39;linear&#39;</span><span class="p">:</span>
+            <span class="n">intensity</span> <span class="o">=</span> <span class="p">[]</span>
+            <span class="k">for</span> <span class="n">dust</span> <span class="ow">in</span> <span class="n">clump_dust_intensity_interpolation</span><span class="p">:</span>
+                <span class="n">intensity</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="mi">10</span><span class="o">**</span><span class="p">(</span><span class="n">dust</span><span class="p">(</span><span class="n">points</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span><span class="o">/</span><span class="mi">10</span><span class="p">))</span>
+        
+        <span class="k">elif</span> <span class="n">constants</span><span class="o">.</span><span class="n">interpolation</span> <span class="o">==</span> <span class="s1">&#39;radial&#39;</span> <span class="ow">or</span> <span class="n">constants</span><span class="o">.</span><span class="n">interpolation</span> <span class="o">==</span> <span class="s1">&#39;cubic&#39;</span><span class="p">:</span>
+            <span class="n">intensity</span> <span class="o">=</span> <span class="p">(</span><span class="mi">10</span><span class="o">**</span><span class="p">(</span><span class="n">clump_dust_intensity_interpolation</span><span class="p">(</span><span class="n">points</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">points</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="n">points</span><span class="p">[</span><span class="mi">2</span><span class="p">],</span> <span class="n">points</span><span class="p">[</span><span class="mi">3</span><span class="p">])</span><span class="o">/</span><span class="mi">10</span><span class="p">))</span>
+    
+    <span class="k">else</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">constants</span><span class="o">.</span><span class="n">interpolation</span> <span class="o">==</span> <span class="s1">&#39;linear&#39;</span><span class="p">:</span>
+            <span class="n">intensity</span> <span class="o">=</span> <span class="p">[]</span>
+            <span class="k">for</span> <span class="n">dust</span> <span class="ow">in</span> <span class="n">clump_dust_intensity_interpolation</span><span class="p">:</span>
+                <span class="n">intensity</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="mi">10</span><span class="o">**</span><span class="p">(</span><span class="n">dust</span><span class="p">(</span><span class="n">points</span><span class="p">)[</span><span class="mi">0</span><span class="p">]))</span>
+    
+        <span class="k">elif</span> <span class="n">constants</span><span class="o">.</span><span class="n">interpolation</span> <span class="o">==</span> <span class="s1">&#39;radial&#39;</span> <span class="ow">or</span> <span class="n">constants</span><span class="o">.</span><span class="n">interpolation</span> <span class="o">==</span> <span class="s1">&#39;cubic&#39;</span><span class="p">:</span>
+            <span class="n">intensity</span> <span class="o">=</span> <span class="p">(</span><span class="mi">10</span><span class="o">**</span><span class="n">clump_dust_intensity_interpolation</span><span class="p">(</span><span class="n">points</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">points</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="n">points</span><span class="p">[</span><span class="mi">2</span><span class="p">],</span> <span class="n">points</span><span class="p">[</span><span class="mi">3</span><span class="p">]))</span>
+    
+    <span class="c1"># Convert specific flux Jansky units to brightness temperature Kelvin units</span>
+    <span class="n">intensity</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">intensity</span><span class="p">)</span> <span class="o">*</span> <span class="mi">10</span><span class="o">**-</span><span class="mi">26</span> <span class="o">*</span> <span class="n">constants</span><span class="o">.</span><span class="n">wavelengths</span><span class="p">[</span><span class="n">constants</span><span class="o">.</span><span class="n">n_dust</span><span class="p">]</span><span class="o">**</span><span class="mi">2</span><span class="o">/</span><span class="mi">2</span><span class="o">/</span><span class="n">constants</span><span class="o">.</span><span class="n">kB</span>
+  
+    <span class="k">return</span> <span class="n">intensity</span></div>
+
+
+
+<div class="viewcode-block" id="interpolate_interclump_dust_intensity">
+<a class="viewcode-back" href="../../../_autosummary/kosmatau3d.models.interpolations.interpolate_interclump_dust_intensity.html#kosmatau3d.models.interpolations.interpolate_interclump_dust_intensity">[docs]</a>
+<span class="k">def</span> <span class="nf">interpolate_interclump_dust_intensity</span><span class="p">(</span><span class="n">points</span><span class="p">,</span> <span class="n">verbose</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&#39;&#39;&#39;</span>
+<span class="sd">    This will calculate the intensity in Jansky units.</span>
+<span class="sd">    &#39;&#39;&#39;</span>
+    <span class="c1"># Fully &#39;encode&#39; the interpolation points to the fortran standard</span>
+    <span class="k">if</span> <span class="n">constants</span><span class="o">.</span><span class="n">log_encoded</span><span class="p">:</span>
+        <span class="n">points</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">points</span><span class="p">)</span><span class="o">*</span><span class="mi">10</span>
+  
+        <span class="k">if</span> <span class="n">constants</span><span class="o">.</span><span class="n">interpolation</span> <span class="o">==</span> <span class="s1">&#39;linear&#39;</span><span class="p">:</span>
+            <span class="n">intensity</span> <span class="o">=</span> <span class="p">[]</span>
+            <span class="k">for</span> <span class="n">dust</span> <span class="ow">in</span> <span class="n">interclump_dust_intensity_interpolation</span><span class="p">:</span>
+                <span class="n">intensity</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="mi">10</span><span class="o">**</span><span class="p">(</span><span class="n">dust</span><span class="p">(</span><span class="n">points</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span><span class="o">/</span><span class="mi">10</span><span class="p">))</span>
+        
+        <span class="k">elif</span> <span class="n">constants</span><span class="o">.</span><span class="n">interpolation</span> <span class="o">==</span> <span class="s1">&#39;radial&#39;</span> <span class="ow">or</span> <span class="n">constants</span><span class="o">.</span><span class="n">interpolation</span> <span class="o">==</span> <span class="s1">&#39;cubic&#39;</span><span class="p">:</span>
+            <span class="n">intensity</span> <span class="o">=</span> <span class="p">(</span><span class="mi">10</span><span class="o">**</span><span class="p">(</span><span class="n">interclump_dust_intensity_interpolation</span><span class="p">(</span><span class="n">points</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">points</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="n">points</span><span class="p">[</span><span class="mi">2</span><span class="p">],</span> <span class="n">points</span><span class="p">[</span><span class="mi">3</span><span class="p">])</span><span class="o">/</span><span class="mi">10</span><span class="p">))</span>
+    
+    <span class="k">else</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">constants</span><span class="o">.</span><span class="n">interpolation</span> <span class="o">==</span> <span class="s1">&#39;linear&#39;</span><span class="p">:</span>
+            <span class="n">intensity</span> <span class="o">=</span> <span class="p">[]</span>
+            <span class="k">for</span> <span class="n">dust</span> <span class="ow">in</span> <span class="n">interclump_dust_intensity_interpolation</span><span class="p">:</span>
+                <span class="n">intensity</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="mi">10</span><span class="o">**</span><span class="p">(</span><span class="n">dust</span><span class="p">(</span><span class="n">points</span><span class="p">)[</span><span class="mi">0</span><span class="p">]))</span>
+    
+        <span class="k">elif</span> <span class="n">constants</span><span class="o">.</span><span class="n">interpolation</span> <span class="o">==</span> <span class="s1">&#39;radial&#39;</span> <span class="ow">or</span> <span class="n">constants</span><span class="o">.</span><span class="n">interpolation</span> <span class="o">==</span> <span class="s1">&#39;cubic&#39;</span><span class="p">:</span>
+            <span class="n">intensity</span> <span class="o">=</span> <span class="p">(</span><span class="mi">10</span><span class="o">**</span><span class="n">interclump_dust_intensity_interpolation</span><span class="p">(</span><span class="n">points</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">points</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="n">points</span><span class="p">[</span><span class="mi">2</span><span class="p">],</span> <span class="n">points</span><span class="p">[</span><span class="mi">3</span><span class="p">]))</span>
+    
+    <span class="c1"># Convert specific flux Jansky units to brightness temperature Kelvin units</span>
+    <span class="n">intensity</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">intensity</span><span class="p">)</span> <span class="o">*</span> <span class="mi">10</span><span class="o">**-</span><span class="mi">26</span> <span class="o">*</span> <span class="n">constants</span><span class="o">.</span><span class="n">wavelengths</span><span class="p">[</span><span class="n">constants</span><span class="o">.</span><span class="n">n_dust</span><span class="p">]</span><span class="o">**</span><span class="mi">2</span><span class="o">/</span><span class="mi">2</span><span class="o">/</span><span class="n">constants</span><span class="o">.</span><span class="n">kB</span>
+  
+    <span class="k">return</span> <span class="n">intensity</span></div>
+
+
+
+<div class="viewcode-block" id="interpolate_clump_dust_tau">
+<a class="viewcode-back" href="../../../_autosummary/kosmatau3d.models.interpolations.interpolate_clump_dust_tau.html#kosmatau3d.models.interpolations.interpolate_clump_dust_tau">[docs]</a>
+<span class="k">def</span> <span class="nf">interpolate_clump_dust_tau</span><span class="p">(</span><span class="n">points</span><span class="p">,</span> <span class="n">verbose</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+    <span class="c1"># Fully &#39;encode&#39; the interpolation points to the fortran standard</span>
+    <span class="k">if</span> <span class="n">constants</span><span class="o">.</span><span class="n">log_encoded</span><span class="p">:</span>
+        <span class="n">points</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">points</span><span class="p">)</span><span class="o">*</span><span class="mi">10</span>
+        
+        <span class="k">if</span> <span class="n">constants</span><span class="o">.</span><span class="n">interpolation</span> <span class="o">==</span> <span class="s1">&#39;linear&#39;</span><span class="p">:</span>
+            <span class="n">tau</span> <span class="o">=</span> <span class="p">[]</span>
+            <span class="k">for</span> <span class="n">dust</span> <span class="ow">in</span> <span class="n">clump_dust_tau_interpolation</span><span class="p">:</span>
+                <span class="n">tau</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="mi">10</span><span class="o">**</span><span class="p">(</span><span class="n">dust</span><span class="p">(</span><span class="n">points</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span><span class="o">/</span><span class="mi">10</span><span class="p">))</span>
+  
+        <span class="k">elif</span> <span class="n">constants</span><span class="o">.</span><span class="n">interpolation</span> <span class="o">==</span> <span class="s1">&#39;radial&#39;</span> <span class="ow">or</span> <span class="n">constants</span><span class="o">.</span><span class="n">interpolation</span> <span class="o">==</span> <span class="s1">&#39;cubic&#39;</span><span class="p">:</span>
+            <span class="n">tau</span> <span class="o">=</span> <span class="p">(</span><span class="mi">10</span><span class="o">**</span><span class="p">(</span><span class="n">clump_dust_tau_interpolation</span><span class="p">(</span><span class="n">points</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">points</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="n">points</span><span class="p">[</span><span class="mi">2</span><span class="p">],</span> <span class="n">points</span><span class="p">[</span><span class="mi">3</span><span class="p">])</span><span class="o">/</span><span class="mi">10</span><span class="p">))</span>
+    
+    <span class="k">else</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">constants</span><span class="o">.</span><span class="n">interpolation</span> <span class="o">==</span> <span class="s1">&#39;linear&#39;</span><span class="p">:</span>
+            <span class="n">tau</span> <span class="o">=</span> <span class="p">[]</span>
+            <span class="k">for</span> <span class="n">dust</span> <span class="ow">in</span> <span class="n">clump_dust_tau_interpolation</span><span class="p">:</span>
+                <span class="n">tau</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="mi">10</span><span class="o">**</span><span class="p">(</span><span class="n">dust</span><span class="p">(</span><span class="n">points</span><span class="p">)[</span><span class="mi">0</span><span class="p">]))</span>
+    
+        <span class="k">elif</span> <span class="n">constants</span><span class="o">.</span><span class="n">interpolation</span> <span class="o">==</span> <span class="s1">&#39;radial&#39;</span> <span class="ow">or</span> <span class="n">constants</span><span class="o">.</span><span class="n">interpolation</span> <span class="o">==</span> <span class="s1">&#39;cubic&#39;</span><span class="p">:</span>
+            <span class="n">tau</span> <span class="o">=</span> <span class="p">(</span><span class="mi">10</span><span class="o">**</span><span class="n">clump_dust_tau_interpolation</span><span class="p">(</span><span class="n">points</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">points</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="n">points</span><span class="p">[</span><span class="mi">2</span><span class="p">],</span> <span class="n">points</span><span class="p">[</span><span class="mi">3</span><span class="p">]))</span>
+    <span class="c1"># if np.isnan(tau[-1]): tau[-1] = 10**-100</span>
+    <span class="c1"># elif tau[-1]&lt;=0:</span>
+    <span class="c1">#   temp = tau[-1]</span>
+    <span class="c1">#   tau[-1] = 10**-100</span>
+    <span class="c1">#   input(&#39;\n&lt;&lt;ERROR&gt;&gt; Negative opacity {} found.\n&#39;.format(temp))</span>
+    <span class="n">tau</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">tau</span><span class="p">)</span>
+  
+    <span class="k">if</span> <span class="n">verbose</span><span class="p">:</span>
+      <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;Calculated the optical depth for </span><span class="si">{}</span><span class="s1"> species.&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">speciesNumber</span><span class="p">)))</span>
+    <span class="k">return</span> <span class="n">tau</span></div>
+
+
+
+<div class="viewcode-block" id="interpolate_interclump_dust_tau">
+<a class="viewcode-back" href="../../../_autosummary/kosmatau3d.models.interpolations.interpolate_interclump_dust_tau.html#kosmatau3d.models.interpolations.interpolate_interclump_dust_tau">[docs]</a>
+<span class="k">def</span> <span class="nf">interpolate_interclump_dust_tau</span><span class="p">(</span><span class="n">points</span><span class="p">,</span> <span class="n">verbose</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+    <span class="c1"># Fully &#39;encode&#39; the interpolation points to the fortran standard</span>
+    <span class="k">if</span> <span class="n">constants</span><span class="o">.</span><span class="n">log_encoded</span><span class="p">:</span>
+        <span class="n">points</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">points</span><span class="p">)</span><span class="o">*</span><span class="mi">10</span>
+        
+        <span class="k">if</span> <span class="n">constants</span><span class="o">.</span><span class="n">interpolation</span> <span class="o">==</span> <span class="s1">&#39;linear&#39;</span><span class="p">:</span>
+            <span class="n">tau</span> <span class="o">=</span> <span class="p">[]</span>
+            <span class="k">for</span> <span class="n">dust</span> <span class="ow">in</span> <span class="n">interclump_dust_tau_interpolation</span><span class="p">:</span>
+                <span class="n">tau</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="mi">10</span><span class="o">**</span><span class="p">(</span><span class="n">dust</span><span class="p">(</span><span class="n">points</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span><span class="o">/</span><span class="mi">10</span><span class="p">))</span>
+  
+        <span class="k">elif</span> <span class="n">constants</span><span class="o">.</span><span class="n">interpolation</span> <span class="o">==</span> <span class="s1">&#39;radial&#39;</span> <span class="ow">or</span> <span class="n">constants</span><span class="o">.</span><span class="n">interpolation</span> <span class="o">==</span> <span class="s1">&#39;cubic&#39;</span><span class="p">:</span>
+            <span class="n">tau</span> <span class="o">=</span> <span class="p">(</span><span class="mi">10</span><span class="o">**</span><span class="p">(</span><span class="n">interclump_dust_tau_interpolation</span><span class="p">(</span><span class="n">points</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">points</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="n">points</span><span class="p">[</span><span class="mi">2</span><span class="p">],</span> <span class="n">points</span><span class="p">[</span><span class="mi">3</span><span class="p">])</span><span class="o">/</span><span class="mi">10</span><span class="p">))</span>
+    
+    <span class="k">else</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">constants</span><span class="o">.</span><span class="n">interpolation</span> <span class="o">==</span> <span class="s1">&#39;linear&#39;</span><span class="p">:</span>
+            <span class="n">tau</span> <span class="o">=</span> <span class="p">[]</span>
+            <span class="k">for</span> <span class="n">dust</span> <span class="ow">in</span> <span class="n">interclump_dust_tau_interpolation</span><span class="p">:</span>
+                <span class="n">tau</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="mi">10</span><span class="o">**</span><span class="p">(</span><span class="n">dust</span><span class="p">(</span><span class="n">points</span><span class="p">)[</span><span class="mi">0</span><span class="p">]))</span>
+    
+        <span class="k">elif</span> <span class="n">constants</span><span class="o">.</span><span class="n">interpolation</span> <span class="o">==</span> <span class="s1">&#39;radial&#39;</span> <span class="ow">or</span> <span class="n">constants</span><span class="o">.</span><span class="n">interpolation</span> <span class="o">==</span> <span class="s1">&#39;cubic&#39;</span><span class="p">:</span>
+            <span class="n">tau</span> <span class="o">=</span> <span class="p">(</span><span class="mi">10</span><span class="o">**</span><span class="n">interclump_dust_tau_interpolation</span><span class="p">(</span><span class="n">points</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">points</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="n">points</span><span class="p">[</span><span class="mi">2</span><span class="p">],</span> <span class="n">points</span><span class="p">[</span><span class="mi">3</span><span class="p">]))</span>
+    <span class="c1"># if np.isnan(tau[-1]): tau[-1] = 10**-100</span>
+    <span class="c1"># elif tau[-1]&lt;=0:</span>
+    <span class="c1">#   temp = tau[-1]</span>
+    <span class="c1">#   tau[-1] = 10**-100</span>
+    <span class="c1">#   input(&#39;\n&lt;&lt;ERROR&gt;&gt; Negative opacity {} found.\n&#39;.format(temp))</span>
+    <span class="n">tau</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">tau</span><span class="p">)</span>
+  
+    <span class="k">if</span> <span class="n">verbose</span><span class="p">:</span>
+      <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;Calculated the optical depth for </span><span class="si">{}</span><span class="s1"> species.&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">speciesNumber</span><span class="p">)))</span>
+    <span class="k">return</span> <span class="n">tau</span></div>
+
+
+
+<div class="viewcode-block" id="interpolate_clump_column_density">
+<a class="viewcode-back" href="../../../_autosummary/kosmatau3d.models.interpolations.interpolate_clump_column_density.html#kosmatau3d.models.interpolations.interpolate_clump_column_density">[docs]</a>
+<span class="k">def</span> <span class="nf">interpolate_clump_column_density</span><span class="p">(</span><span class="n">points</span><span class="p">,</span> <span class="n">sp</span><span class="p">):</span>
+    <span class="n">idx</span> <span class="o">=</span> <span class="n">constants</span><span class="o">.</span><span class="n">abundances</span><span class="o">.</span><span class="n">index</span><span class="p">(</span><span class="n">sp</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">constants</span><span class="o">.</span><span class="n">interpolation</span> <span class="o">==</span> <span class="s1">&#39;linear&#39;</span><span class="p">:</span>
+        <span class="k">return</span> <span class="mi">10</span><span class="o">**</span><span class="n">clump_column_density_interpolation</span><span class="p">[</span><span class="n">idx</span><span class="p">](</span><span class="n">points</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
+    <span class="k">elif</span> <span class="n">constants</span><span class="o">.</span><span class="n">interpolation</span> <span class="o">==</span> <span class="s1">&#39;radial&#39;</span> <span class="ow">or</span> <span class="n">constants</span><span class="o">.</span><span class="n">interpolation</span> <span class="o">==</span> <span class="s1">&#39;cubic&#39;</span><span class="p">:</span>
+        <span class="k">return</span> <span class="mi">10</span><span class="o">**</span><span class="n">clump_column_density_interpolation</span><span class="p">[</span><span class="n">idx</span><span class="p">](</span><span class="n">points</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">points</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="n">points</span><span class="p">[</span><span class="mi">2</span><span class="p">])</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">sys</span><span class="o">.</span><span class="n">exit</span><span class="p">(</span><span class="s1">&#39;&lt;&lt;ERROR&gt;&gt;: There is no such method as &#39;</span> <span class="o">+</span> 
+                 <span class="s1">&#39;</span><span class="si">{}</span><span class="s1"> to interpolate the &#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">constants</span><span class="o">.</span><span class="n">interpolation</span><span class="p">)</span> <span class="o">+</span>
+                 <span class="s1">&#39;column density from the KOSMA-tau grid.</span><span class="se">\n\n</span><span class="s1">Exitting...</span><span class="se">\n\n</span><span class="s1">&#39;</span><span class="p">)</span></div>
+
+
+
+<div class="viewcode-block" id="interpolate_interclump_column_density">
+<a class="viewcode-back" href="../../../_autosummary/kosmatau3d.models.interpolations.interpolate_interclump_column_density.html#kosmatau3d.models.interpolations.interpolate_interclump_column_density">[docs]</a>
+<span class="k">def</span> <span class="nf">interpolate_interclump_column_density</span><span class="p">(</span><span class="n">points</span><span class="p">,</span> <span class="n">sp</span><span class="p">):</span>
+    <span class="n">idx</span> <span class="o">=</span> <span class="n">constants</span><span class="o">.</span><span class="n">abundances</span><span class="o">.</span><span class="n">index</span><span class="p">(</span><span class="n">sp</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">constants</span><span class="o">.</span><span class="n">interpolation</span> <span class="o">==</span> <span class="s1">&#39;linear&#39;</span><span class="p">:</span>
+        <span class="k">return</span> <span class="mi">10</span><span class="o">**</span><span class="n">interclump_column_density_interpolation</span><span class="p">[</span><span class="n">idx</span><span class="p">](</span><span class="n">points</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
+    <span class="k">elif</span> <span class="n">constants</span><span class="o">.</span><span class="n">interpolation</span> <span class="o">==</span> <span class="s1">&#39;radial&#39;</span> <span class="ow">or</span> <span class="n">constants</span><span class="o">.</span><span class="n">interpolation</span> <span class="o">==</span> <span class="s1">&#39;cubic&#39;</span><span class="p">:</span>
+        <span class="k">return</span> <span class="mi">10</span><span class="o">**</span><span class="n">interclump_column_density_interpolation</span><span class="p">[</span><span class="n">idx</span><span class="p">](</span><span class="n">points</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">points</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="n">points</span><span class="p">[</span><span class="mi">2</span><span class="p">])</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">sys</span><span class="o">.</span><span class="n">exit</span><span class="p">(</span><span class="s1">&#39;&lt;&lt;ERROR&gt;&gt;: There is no such method as &#39;</span> <span class="o">+</span> 
+                 <span class="s1">&#39;</span><span class="si">{}</span><span class="s1"> to interpolate the &#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">constants</span><span class="o">.</span><span class="n">interpolation</span><span class="p">)</span> <span class="o">+</span>
+                 <span class="s1">&#39;column density from the KOSMA-tau grid.</span><span class="se">\n\n</span><span class="s1">Exitting...</span><span class="se">\n\n</span><span class="s1">&#39;</span><span class="p">)</span></div>
+
+
+
+<div class="viewcode-block" id="interpolate_clump_hi_column_density">
+<a class="viewcode-back" href="../../../_autosummary/kosmatau3d.models.interpolations.interpolate_clump_hi_column_density.html#kosmatau3d.models.interpolations.interpolate_clump_hi_column_density">[docs]</a>
+<span class="k">def</span> <span class="nf">interpolate_clump_hi_column_density</span><span class="p">(</span><span class="n">points</span><span class="p">):</span>
+    <span class="k">if</span> <span class="n">constants</span><span class="o">.</span><span class="n">interpolation</span> <span class="o">==</span> <span class="s1">&#39;linear&#39;</span><span class="p">:</span>
+        <span class="k">return</span> <span class="mi">10</span><span class="o">**</span><span class="n">clump_hi_column_density_interpolation</span><span class="p">(</span><span class="n">points</span><span class="p">)</span>
+    <span class="k">elif</span> <span class="n">constants</span><span class="o">.</span><span class="n">interpolation</span> <span class="o">==</span> <span class="s1">&#39;radial&#39;</span> <span class="ow">or</span> <span class="n">constants</span><span class="o">.</span><span class="n">interpolation</span> <span class="o">==</span> <span class="s1">&#39;cubic&#39;</span><span class="p">:</span>
+        <span class="k">return</span> <span class="mi">10</span><span class="o">**</span><span class="n">clump_hi_column_density_interpolation</span><span class="p">(</span><span class="n">points</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">points</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="n">points</span><span class="p">[</span><span class="mi">2</span><span class="p">])</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">sys</span><span class="o">.</span><span class="n">exit</span><span class="p">(</span><span class="s1">&#39;&lt;&lt;ERROR&gt;&gt;: There is no such method as &#39;</span> <span class="o">+</span> 
+                 <span class="s1">&#39;</span><span class="si">{}</span><span class="s1"> to interpolate the &#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">constants</span><span class="o">.</span><span class="n">interpolation</span><span class="p">)</span> <span class="o">+</span>
+                 <span class="s1">&#39;column density from the KOSMA-tau grid.</span><span class="se">\n\n</span><span class="s1">Exitting...</span><span class="se">\n\n</span><span class="s1">&#39;</span><span class="p">)</span></div>
+
+
+
+<div class="viewcode-block" id="interpolate_interclump_hi_column_density">
+<a class="viewcode-back" href="../../../_autosummary/kosmatau3d.models.interpolations.interpolate_interclump_hi_column_density.html#kosmatau3d.models.interpolations.interpolate_interclump_hi_column_density">[docs]</a>
+<span class="k">def</span> <span class="nf">interpolate_interclump_hi_column_density</span><span class="p">(</span><span class="n">points</span><span class="p">):</span>
+    <span class="k">if</span> <span class="n">constants</span><span class="o">.</span><span class="n">interpolation</span> <span class="o">==</span> <span class="s1">&#39;linear&#39;</span><span class="p">:</span>
+        <span class="k">return</span> <span class="mi">10</span><span class="o">**</span><span class="n">interclump_hi_column_density_interpolation</span><span class="p">(</span><span class="n">points</span><span class="p">)</span>
+    <span class="k">elif</span> <span class="n">constants</span><span class="o">.</span><span class="n">interpolation</span> <span class="o">==</span> <span class="s1">&#39;radial&#39;</span> <span class="ow">or</span> <span class="n">constants</span><span class="o">.</span><span class="n">interpolation</span> <span class="o">==</span> <span class="s1">&#39;cubic&#39;</span><span class="p">:</span>
+        <span class="k">return</span> <span class="mi">10</span><span class="o">**</span><span class="n">interclump_hi_column_density_interpolation</span><span class="p">(</span><span class="n">points</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">points</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="n">points</span><span class="p">[</span><span class="mi">2</span><span class="p">])</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">sys</span><span class="o">.</span><span class="n">exit</span><span class="p">(</span><span class="s1">&#39;&lt;&lt;ERROR&gt;&gt;: There is no such method as &#39;</span> <span class="o">+</span> 
+                 <span class="s1">&#39;</span><span class="si">{}</span><span class="s1"> to interpolate the &#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">constants</span><span class="o">.</span><span class="n">interpolation</span><span class="p">)</span> <span class="o">+</span>
+                 <span class="s1">&#39;column density from the KOSMA-tau grid.</span><span class="se">\n\n</span><span class="s1">Exitting...</span><span class="se">\n\n</span><span class="s1">&#39;</span><span class="p">)</span></div>
+
+
+
+<div class="viewcode-block" id="interpolate_clump_h2_column_density">
+<a class="viewcode-back" href="../../../_autosummary/kosmatau3d.models.interpolations.interpolate_clump_h2_column_density.html#kosmatau3d.models.interpolations.interpolate_clump_h2_column_density">[docs]</a>
+<span class="k">def</span> <span class="nf">interpolate_clump_h2_column_density</span><span class="p">(</span><span class="n">points</span><span class="p">):</span>
+    <span class="k">if</span> <span class="n">constants</span><span class="o">.</span><span class="n">interpolation</span> <span class="o">==</span> <span class="s1">&#39;linear&#39;</span><span class="p">:</span>
+        <span class="k">return</span> <span class="mi">10</span><span class="o">**</span><span class="n">clump_h2_column_density_interpolation</span><span class="p">(</span><span class="n">points</span><span class="p">)</span>
+    <span class="k">elif</span> <span class="n">constants</span><span class="o">.</span><span class="n">interpolation</span> <span class="o">==</span> <span class="s1">&#39;radial&#39;</span> <span class="ow">or</span> <span class="n">constants</span><span class="o">.</span><span class="n">interpolation</span> <span class="o">==</span> <span class="s1">&#39;cubic&#39;</span><span class="p">:</span>
+        <span class="k">return</span> <span class="mi">10</span><span class="o">**</span><span class="n">clump_h2_column_density_interpolation</span><span class="p">(</span><span class="n">points</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">points</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="n">points</span><span class="p">[</span><span class="mi">2</span><span class="p">])</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">sys</span><span class="o">.</span><span class="n">exit</span><span class="p">(</span><span class="s1">&#39;&lt;&lt;ERROR&gt;&gt;: There is no such method as &#39;</span> <span class="o">+</span> 
+                 <span class="s1">&#39;</span><span class="si">{}</span><span class="s1"> to interpolate the &#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">constants</span><span class="o">.</span><span class="n">interpolation</span><span class="p">)</span> <span class="o">+</span>
+                 <span class="s1">&#39;column density from the KOSMA-tau grid.</span><span class="se">\n\n</span><span class="s1">Exitting...</span><span class="se">\n\n</span><span class="s1">&#39;</span><span class="p">)</span></div>
+
+
+
+<div class="viewcode-block" id="interpolate_interclump_h2_column_density">
+<a class="viewcode-back" href="../../../_autosummary/kosmatau3d.models.interpolations.interpolate_interclump_h2_column_density.html#kosmatau3d.models.interpolations.interpolate_interclump_h2_column_density">[docs]</a>
+<span class="k">def</span> <span class="nf">interpolate_interclump_h2_column_density</span><span class="p">(</span><span class="n">points</span><span class="p">):</span>
+    <span class="k">if</span> <span class="n">constants</span><span class="o">.</span><span class="n">interpolation</span> <span class="o">==</span> <span class="s1">&#39;linear&#39;</span><span class="p">:</span>
+        <span class="k">return</span> <span class="mi">10</span><span class="o">**</span><span class="n">interclump_h2_column_density_interpolation</span><span class="p">(</span><span class="n">points</span><span class="p">)</span>
+    <span class="k">elif</span> <span class="n">constants</span><span class="o">.</span><span class="n">interpolation</span> <span class="o">==</span> <span class="s1">&#39;radial&#39;</span> <span class="ow">or</span> <span class="n">constants</span><span class="o">.</span><span class="n">interpolation</span> <span class="o">==</span> <span class="s1">&#39;cubic&#39;</span><span class="p">:</span>
+        <span class="k">return</span> <span class="mi">10</span><span class="o">**</span><span class="n">interclump_h2_column_density_interpolation</span><span class="p">(</span><span class="n">points</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">points</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="n">points</span><span class="p">[</span><span class="mi">2</span><span class="p">])</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">sys</span><span class="o">.</span><span class="n">exit</span><span class="p">(</span><span class="s1">&#39;&lt;&lt;ERROR&gt;&gt;: There is no such method as &#39;</span> <span class="o">+</span> 
+                 <span class="s1">&#39;</span><span class="si">{}</span><span class="s1"> to interpolate the &#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">constants</span><span class="o">.</span><span class="n">interpolation</span><span class="p">)</span> <span class="o">+</span>
+                 <span class="s1">&#39;column density from the KOSMA-tau grid.</span><span class="se">\n\n</span><span class="s1">Exitting...</span><span class="se">\n\n</span><span class="s1">&#39;</span><span class="p">)</span></div>
+
+
+
+<div class="viewcode-block" id="interpolate_clump_tg">
+<a class="viewcode-back" href="../../../_autosummary/kosmatau3d.models.interpolations.interpolate_clump_tg.html#kosmatau3d.models.interpolations.interpolate_clump_tg">[docs]</a>
+<span class="k">def</span> <span class="nf">interpolate_clump_tg</span><span class="p">(</span><span class="n">points</span><span class="p">):</span>
+    <span class="k">if</span> <span class="n">constants</span><span class="o">.</span><span class="n">interpolation</span> <span class="o">==</span> <span class="s1">&#39;linear&#39;</span><span class="p">:</span>
+        <span class="k">return</span> <span class="mi">10</span><span class="o">**</span><span class="n">clump_tg_interpolation</span><span class="p">(</span><span class="n">points</span><span class="p">)</span>
+    <span class="k">elif</span> <span class="n">constants</span><span class="o">.</span><span class="n">interpolation</span> <span class="o">==</span> <span class="s1">&#39;radial&#39;</span> <span class="ow">or</span> <span class="n">constants</span><span class="o">.</span><span class="n">interpolation</span> <span class="o">==</span> <span class="s1">&#39;cubic&#39;</span><span class="p">:</span>
+        <span class="k">return</span> <span class="mi">10</span><span class="o">**</span><span class="n">clump_tg_interpolation</span><span class="p">(</span><span class="n">points</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">points</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="n">points</span><span class="p">[</span><span class="mi">2</span><span class="p">])</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">sys</span><span class="o">.</span><span class="n">exit</span><span class="p">(</span><span class="s1">&#39;&lt;&lt;ERROR&gt;&gt;: There is no such method as &#39;</span> <span class="o">+</span> 
+                 <span class="s1">&#39;</span><span class="si">{}</span><span class="s1"> to interpolate the &#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">constants</span><span class="o">.</span><span class="n">interpolation</span><span class="p">)</span> <span class="o">+</span>
+                 <span class="s1">&#39;temperature from the KOSMA-tau grid.</span><span class="se">\n\n</span><span class="s1">Exitting...</span><span class="se">\n\n</span><span class="s1">&#39;</span><span class="p">)</span></div>
+
+
+
+<div class="viewcode-block" id="interpolate_interclump_tg">
+<a class="viewcode-back" href="../../../_autosummary/kosmatau3d.models.interpolations.interpolate_interclump_tg.html#kosmatau3d.models.interpolations.interpolate_interclump_tg">[docs]</a>
+<span class="k">def</span> <span class="nf">interpolate_interclump_tg</span><span class="p">(</span><span class="n">points</span><span class="p">):</span>
+    <span class="k">if</span> <span class="n">constants</span><span class="o">.</span><span class="n">interpolation</span> <span class="o">==</span> <span class="s1">&#39;linear&#39;</span><span class="p">:</span>
+        <span class="k">return</span> <span class="mi">10</span><span class="o">**</span><span class="n">interclump_tg_interpolation</span><span class="p">(</span><span class="n">points</span><span class="p">)</span>
+    <span class="k">elif</span> <span class="n">constants</span><span class="o">.</span><span class="n">interpolation</span> <span class="o">==</span> <span class="s1">&#39;radial&#39;</span> <span class="ow">or</span> <span class="n">constants</span><span class="o">.</span><span class="n">interpolation</span> <span class="o">==</span> <span class="s1">&#39;cubic&#39;</span><span class="p">:</span>
+        <span class="k">return</span> <span class="mi">10</span><span class="o">**</span><span class="n">interclump_tg_interpolation</span><span class="p">(</span><span class="n">points</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">points</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="n">points</span><span class="p">[</span><span class="mi">2</span><span class="p">])</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">sys</span><span class="o">.</span><span class="n">exit</span><span class="p">(</span><span class="s1">&#39;&lt;&lt;ERROR&gt;&gt;: There is no such method as &#39;</span> <span class="o">+</span> 
+                 <span class="s1">&#39;</span><span class="si">{}</span><span class="s1"> to interpolate the &#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">constants</span><span class="o">.</span><span class="n">interpolation</span><span class="p">)</span> <span class="o">+</span>
+                 <span class="s1">&#39;temperature from the KOSMA-tau grid.</span><span class="se">\n\n</span><span class="s1">Exitting...</span><span class="se">\n\n</span><span class="s1">&#39;</span><span class="p">)</span></div>
+
+
+
+<div class="viewcode-block" id="interpolate_clump_td">
+<a class="viewcode-back" href="../../../_autosummary/kosmatau3d.models.interpolations.interpolate_clump_td.html#kosmatau3d.models.interpolations.interpolate_clump_td">[docs]</a>
+<span class="k">def</span> <span class="nf">interpolate_clump_td</span><span class="p">(</span><span class="n">points</span><span class="p">):</span>
+    <span class="k">if</span> <span class="n">constants</span><span class="o">.</span><span class="n">interpolation</span> <span class="o">==</span> <span class="s1">&#39;linear&#39;</span><span class="p">:</span>
+        <span class="k">return</span> <span class="mi">10</span><span class="o">**</span><span class="n">clump_td_interpolation</span><span class="p">(</span><span class="n">points</span><span class="p">)</span>
+    <span class="k">elif</span> <span class="n">constants</span><span class="o">.</span><span class="n">interpolation</span> <span class="o">==</span> <span class="s1">&#39;radial&#39;</span> <span class="ow">or</span> <span class="n">constants</span><span class="o">.</span><span class="n">interpolation</span> <span class="o">==</span> <span class="s1">&#39;cubic&#39;</span><span class="p">:</span>
+        <span class="k">return</span> <span class="mi">10</span><span class="o">**</span><span class="n">clump_td_interpolation</span><span class="p">(</span><span class="n">points</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">points</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="n">points</span><span class="p">[</span><span class="mi">2</span><span class="p">])</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">sys</span><span class="o">.</span><span class="n">exit</span><span class="p">(</span><span class="s1">&#39;&lt;&lt;ERROR&gt;&gt;: There is no such method as &#39;</span> <span class="o">+</span> 
+                 <span class="s1">&#39;</span><span class="si">{}</span><span class="s1"> to interpolate the &#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">constants</span><span class="o">.</span><span class="n">interpolation</span><span class="p">)</span> <span class="o">+</span>
+                 <span class="s1">&#39;temperature from the KOSMA-tau grid.</span><span class="se">\n\n</span><span class="s1">Exitting...</span><span class="se">\n\n</span><span class="s1">&#39;</span><span class="p">)</span></div>
+
+
+
+<div class="viewcode-block" id="interpolate_interclump_td">
+<a class="viewcode-back" href="../../../_autosummary/kosmatau3d.models.interpolations.interpolate_interclump_td.html#kosmatau3d.models.interpolations.interpolate_interclump_td">[docs]</a>
+<span class="k">def</span> <span class="nf">interpolate_interclump_td</span><span class="p">(</span><span class="n">points</span><span class="p">):</span>
+    <span class="k">if</span> <span class="n">constants</span><span class="o">.</span><span class="n">interpolation</span> <span class="o">==</span> <span class="s1">&#39;linear&#39;</span><span class="p">:</span>
+        <span class="k">return</span> <span class="mi">10</span><span class="o">**</span><span class="n">interclump_td_interpolation</span><span class="p">(</span><span class="n">points</span><span class="p">)</span>
+    <span class="k">elif</span> <span class="n">constants</span><span class="o">.</span><span class="n">interpolation</span> <span class="o">==</span> <span class="s1">&#39;radial&#39;</span> <span class="ow">or</span> <span class="n">constants</span><span class="o">.</span><span class="n">interpolation</span> <span class="o">==</span> <span class="s1">&#39;cubic&#39;</span><span class="p">:</span>
+        <span class="k">return</span> <span class="mi">10</span><span class="o">**</span><span class="n">interclump_td_interpolation</span><span class="p">(</span><span class="n">points</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">points</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="n">points</span><span class="p">[</span><span class="mi">2</span><span class="p">])</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">sys</span><span class="o">.</span><span class="n">exit</span><span class="p">(</span><span class="s1">&#39;&lt;&lt;ERROR&gt;&gt;: There is no such method as &#39;</span> <span class="o">+</span> 
+                 <span class="s1">&#39;</span><span class="si">{}</span><span class="s1"> to interpolate the &#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">constants</span><span class="o">.</span><span class="n">interpolation</span><span class="p">)</span> <span class="o">+</span>
+                 <span class="s1">&#39;temperature from the KOSMA-tau grid.</span><span class="se">\n\n</span><span class="s1">Exitting...</span><span class="se">\n\n</span><span class="s1">&#39;</span><span class="p">)</span></div>
+
+
+
+<div class="viewcode-block" id="interpolate_galaxy_rotation">
+<a class="viewcode-back" href="../../../_autosummary/kosmatau3d.models.interpolations.interpolate_galaxy_rotation.html#kosmatau3d.models.interpolations.interpolate_galaxy_rotation">[docs]</a>
+<span class="k">def</span> <span class="nf">interpolate_galaxy_rotation</span><span class="p">(</span><span class="n">radius</span><span class="p">):</span>
+    <span class="k">return</span> <span class="n">galaxy_rotation_interpolation</span><span class="p">(</span><span class="n">radius</span><span class="p">)</span></div>
+
+
+
+<div class="viewcode-block" id="interpolate_velocity_dispersion">
+<a class="viewcode-back" href="../../../_autosummary/kosmatau3d.models.interpolations.interpolate_velocity_dispersion.html#kosmatau3d.models.interpolations.interpolate_velocity_dispersion">[docs]</a>
+<span class="k">def</span> <span class="nf">interpolate_velocity_dispersion</span><span class="p">(</span><span class="n">radius</span><span class="p">):</span>
+    <span class="k">return</span> <span class="n">velocity_dispersion_interpolation</span><span class="p">(</span><span class="n">radius</span><span class="p">)</span></div>
+
+
+
+<div class="viewcode-block" id="interpolate_number_density">
+<a class="viewcode-back" href="../../../_autosummary/kosmatau3d.models.interpolations.interpolate_number_density.html#kosmatau3d.models.interpolations.interpolate_number_density">[docs]</a>
+<span class="k">def</span> <span class="nf">interpolate_number_density</span><span class="p">(</span><span class="n">radius</span><span class="p">):</span>
+    <span class="n">density</span> <span class="o">=</span> <span class="n">number_density_interpolation</span><span class="p">(</span><span class="n">radius</span><span class="p">)</span>
+    <span class="k">if</span> <span class="p">(</span><span class="n">density</span> <span class="o">&lt;</span> <span class="mi">0</span><span class="p">)</span><span class="o">.</span><span class="n">any</span><span class="p">():</span>
+        <span class="nb">input</span><span class="p">(</span><span class="s1">&#39;&lt;&lt;ERROR&gt;&gt; density </span><span class="si">{}</span><span class="s1"> at radius </span><span class="si">{}</span><span class="s1"> pc!&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">density</span><span class="p">,</span> <span class="n">radius</span><span class="p">))</span>
+        <span class="n">sys</span><span class="o">.</span><span class="n">exit</span><span class="p">()</span>
+    <span class="k">return</span> <span class="n">density</span></div>
+
+
+
+<div class="viewcode-block" id="interpolate_h2_voxel_filling_factor">
+<a class="viewcode-back" href="../../../_autosummary/kosmatau3d.models.interpolations.interpolate_h2_voxel_filling_factor.html#kosmatau3d.models.interpolations.interpolate_h2_voxel_filling_factor">[docs]</a>
+<span class="k">def</span> <span class="nf">interpolate_h2_voxel_filling_factor</span><span class="p">(</span><span class="n">radius</span><span class="p">,</span> <span class="n">height</span><span class="p">):</span>
+    <span class="c1"># Calculate voxel-filling factor</span>
+    <span class="n">h</span> <span class="o">=</span> <span class="n">h2_scale_height</span><span class="p">(</span><span class="n">radius</span><span class="p">)</span><span class="o">.</span><span class="n">mean</span><span class="p">()</span>
+    <span class="n">h_min</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">max</span><span class="p">((</span><span class="o">-</span><span class="n">h</span><span class="p">,</span> <span class="n">height</span><span class="o">-</span><span class="n">constants</span><span class="o">.</span><span class="n">voxel_size</span><span class="o">/</span><span class="mi">2</span><span class="p">))</span>
+    <span class="n">h_max</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">min</span><span class="p">((</span><span class="n">h</span><span class="p">,</span> <span class="n">height</span><span class="o">+</span><span class="n">constants</span><span class="o">.</span><span class="n">voxel_size</span><span class="o">/</span><span class="mi">2</span><span class="p">))</span>
+    <span class="n">f_vox</span> <span class="o">=</span> <span class="p">(</span><span class="n">h_max</span><span class="o">-</span><span class="n">h_min</span><span class="p">)</span><span class="o">/</span><span class="n">constants</span><span class="o">.</span><span class="n">voxel_size</span>
+    <span class="k">return</span> <span class="n">f_vox</span></div>
+
+
+
+<div class="viewcode-block" id="interpolate_h2_mass">
+<a class="viewcode-back" href="../../../_autosummary/kosmatau3d.models.interpolations.interpolate_h2_mass.html#kosmatau3d.models.interpolations.interpolate_h2_mass">[docs]</a>
+<span class="k">def</span> <span class="nf">interpolate_h2_mass</span><span class="p">(</span><span class="n">radius</span><span class="p">,</span> <span class="n">height</span><span class="p">):</span>
+    <span class="c1"># Calculate mass</span>
+    <span class="n">mass</span> <span class="o">=</span> <span class="n">h2_mass_interpolation</span><span class="p">(</span><span class="n">radius</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="n">height</span><span class="p">))</span>
+    <span class="k">if</span> <span class="p">(</span><span class="n">mass</span> <span class="o">&lt;</span> <span class="mi">0</span><span class="p">)</span><span class="o">.</span><span class="n">any</span><span class="p">():</span>
+        <span class="nb">input</span><span class="p">(</span><span class="s1">&#39;&lt;&lt;ERROR&gt;&gt; clump mass </span><span class="si">{}</span><span class="s1"> at radius </span><span class="si">{}</span><span class="s1"> pc!&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">mass</span><span class="p">,</span> <span class="n">radius</span><span class="p">))</span>
+        <span class="n">sys</span><span class="o">.</span><span class="n">exit</span><span class="p">()</span>
+    <span class="k">return</span> <span class="n">mass</span></div>
+
+
+
+<div class="viewcode-block" id="interpolate_hi_voxel_filling_factor">
+<a class="viewcode-back" href="../../../_autosummary/kosmatau3d.models.interpolations.interpolate_hi_voxel_filling_factor.html#kosmatau3d.models.interpolations.interpolate_hi_voxel_filling_factor">[docs]</a>
+<span class="k">def</span> <span class="nf">interpolate_hi_voxel_filling_factor</span><span class="p">(</span><span class="n">radius</span><span class="p">,</span> <span class="n">height</span><span class="p">):</span>
+    <span class="c1"># Calculate voxel-filling factor</span>
+    <span class="n">h</span> <span class="o">=</span> <span class="n">hi_scale_height</span><span class="p">(</span><span class="n">radius</span><span class="p">)</span><span class="o">.</span><span class="n">mean</span><span class="p">()</span>
+    <span class="n">h_min</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">max</span><span class="p">((</span><span class="o">-</span><span class="n">h</span><span class="p">,</span> <span class="n">height</span><span class="o">-</span><span class="n">constants</span><span class="o">.</span><span class="n">voxel_size</span><span class="o">/</span><span class="mi">2</span><span class="p">))</span>
+    <span class="n">h_max</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">min</span><span class="p">((</span><span class="n">h</span><span class="p">,</span> <span class="n">height</span><span class="o">+</span><span class="n">constants</span><span class="o">.</span><span class="n">voxel_size</span><span class="o">/</span><span class="mi">2</span><span class="p">))</span>
+    <span class="n">f_vox</span> <span class="o">=</span> <span class="p">(</span><span class="n">h_max</span><span class="o">-</span><span class="n">h_min</span><span class="p">)</span><span class="o">/</span><span class="n">constants</span><span class="o">.</span><span class="n">voxel_size</span>
+    <span class="k">return</span> <span class="n">f_vox</span></div>
+
+
+
+<div class="viewcode-block" id="interpolate_hi_mass">
+<a class="viewcode-back" href="../../../_autosummary/kosmatau3d.models.interpolations.interpolate_hi_mass.html#kosmatau3d.models.interpolations.interpolate_hi_mass">[docs]</a>
+<span class="k">def</span> <span class="nf">interpolate_hi_mass</span><span class="p">(</span><span class="n">radius</span><span class="p">,</span> <span class="n">height</span><span class="p">):</span>
+    <span class="c1"># Calculate mass</span>
+    <span class="n">mass</span> <span class="o">=</span> <span class="n">hi_mass_interpolation</span><span class="p">(</span><span class="n">radius</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="n">height</span><span class="p">))</span>
+    <span class="k">if</span> <span class="p">(</span><span class="n">mass</span> <span class="o">&lt;</span> <span class="mi">0</span><span class="p">)</span><span class="o">.</span><span class="n">any</span><span class="p">():</span>
+        <span class="nb">input</span><span class="p">(</span><span class="s1">&#39;&lt;&lt;ERROR&gt;&gt; interclump mass </span><span class="si">{}</span><span class="s1"> at radius </span><span class="si">{}</span><span class="s1"> pc!&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">mass</span><span class="p">,</span> <span class="n">radius</span><span class="p">))</span>
+        <span class="n">sys</span><span class="o">.</span><span class="n">exit</span><span class="p">()</span>
+    <span class="k">return</span> <span class="n">mass</span></div>
+
+
+
+<div class="viewcode-block" id="interpolate_clump_taufuv">
+<a class="viewcode-back" href="../../../_autosummary/kosmatau3d.models.interpolations.interpolate_clump_taufuv.html#kosmatau3d.models.interpolations.interpolate_clump_taufuv">[docs]</a>
+<span class="k">def</span> <span class="nf">interpolate_clump_taufuv</span><span class="p">(</span><span class="n">density</span><span class="p">,</span> <span class="n">mass</span><span class="p">):</span>
+    <span class="k">return</span> <span class="mi">10</span><span class="o">**</span><span class="n">clump_taufuv_interpolation</span><span class="p">(</span><span class="n">density</span><span class="p">,</span> <span class="n">mass</span><span class="p">)</span></div>
+
+
+
+<div class="viewcode-block" id="interpolate_interclump_taufuv">
+<a class="viewcode-back" href="../../../_autosummary/kosmatau3d.models.interpolations.interpolate_interclump_taufuv.html#kosmatau3d.models.interpolations.interpolate_interclump_taufuv">[docs]</a>
+<span class="k">def</span> <span class="nf">interpolate_interclump_taufuv</span><span class="p">(</span><span class="n">density</span><span class="p">,</span> <span class="n">mass</span><span class="p">):</span>
+    <span class="k">return</span> <span class="mi">10</span><span class="o">**</span><span class="n">interclump_taufuv_interpolation</span><span class="p">(</span><span class="n">density</span><span class="p">,</span> <span class="n">mass</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span></div>
+
+
+
+<div class="viewcode-block" id="interpolate_fuv">
+<a class="viewcode-back" href="../../../_autosummary/kosmatau3d.models.interpolations.interpolate_fuv.html#kosmatau3d.models.interpolations.interpolate_fuv">[docs]</a>
+<span class="k">def</span> <span class="nf">interpolate_fuv</span><span class="p">(</span><span class="n">radius</span><span class="p">,</span> <span class="n">height</span><span class="p">):</span>
+    <span class="n">fuv_temp</span> <span class="o">=</span> <span class="n">fuv_interpolation</span><span class="p">(</span><span class="n">radius</span><span class="p">,</span> <span class="nb">abs</span><span class="p">(</span><span class="n">height</span><span class="p">))</span>
+    <span class="c1"># if np.mean(radius) &lt; 4500:</span>
+    <span class="c1">#     fuv_temp *= constants.fuv_scale_gc</span>
+    <span class="k">return</span> <span class="n">fuv_temp</span></div>
+
+
+
+<span class="k">def</span> <span class="fm">__str__</span><span class="p">():</span>
+    <span class="k">return</span> <span class="s1">&#39;Available Interpolations:</span><span class="se">\n</span><span class="s1"> &#39;</span> \
+           <span class="s1">&#39;-H2 intensity</span><span class="se">\n</span><span class="s1"> &#39;</span> \
+           <span class="s1">&#39;-H2 optical depth</span><span class="se">\n</span><span class="s1"> &#39;</span> \
+           <span class="s1">&#39;-H2 mass (galactic)</span><span class="se">\n</span><span class="s1"> &#39;</span> \
+           <span class="s1">&#39;-H2 density (galactic)</span><span class="se">\n</span><span class="s1"> &#39;</span> \
+           <span class="s1">&#39;-HI intensity</span><span class="se">\n</span><span class="s1"> &#39;</span> \
+           <span class="s1">&#39;-HI optical depth</span><span class="se">\n</span><span class="s1"> &#39;</span> \
+           <span class="s1">&#39;-HI mass (galactic)</span><span class="se">\n</span><span class="s1"> &#39;</span> \
+           <span class="s1">&#39;-HI density (galactic)</span><span class="se">\n</span><span class="s1"> &#39;</span> \
+           <span class="s1">&#39;-Voxel rotation (galactic)</span><span class="se">\n</span><span class="s1"> &#39;</span> \
+           <span class="s1">&#39;-FUV extinction</span><span class="se">\n</span><span class="s1"> &#39;</span> \
+           <span class="s1">&#39;-FUV radiation (galactic)&#39;</span>
+
+
+<span class="c1"># jit_module(nopython=False)</span>
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2023, Craig Yanitski.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

@@ -1,0 +1,513 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>kosmatau3d.models.observations.methods &mdash; kosmatau3d 1.0.3 documentation</title>
+      <link rel="stylesheet" href="../../../../_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="../../../../_static/css/theme.css" type="text/css" />
+      <link rel="stylesheet" href="../../../../_static/readthedocs-custom.css" type="text/css" />
+  <!--[if lt IE 9]>
+    <script src="../../../../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script src="../../../../_static/documentation_options.js?v=baaebd52"></script>
+        <script src="../../../../_static/doctools.js?v=888ff710"></script>
+        <script src="../../../../_static/sphinx_highlight.js?v=dc90522c"></script>
+        <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+    <script src="../../../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../../../../index.html" class="icon icon-home">
+            kosmatau3d
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../../installation.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../properties.html">KOSMA-$\tau$ Properties</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../voxel.html">Voxels</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../model.html">3D Models</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../comparison.html">Comparison to Observations</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../development.html">Future Development</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../_autosummary/kosmatau3d.html">API Reference</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../acknowledgements.html">Acknowledgements</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../../index.html">kosmatau3d</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../../../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../../../index.html">Module code</a></li>
+          <li class="breadcrumb-item"><a href="../../models.html">kosmatau3d.models</a></li>
+      <li class="breadcrumb-item active">kosmatau3d.models.observations.methods</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <h1>Source code for kosmatau3d.models.observations.methods</h1><div class="highlight"><pre>
+<span></span><span class="kn">import</span> <span class="nn">warnings</span>
+
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<span class="kn">import</span> <span class="nn">pandas</span> <span class="k">as</span> <span class="nn">pd</span>
+
+<span class="kn">from</span> <span class="nn">numba</span> <span class="kn">import</span> <span class="n">jit_module</span>
+<span class="kn">from</span> <span class="nn">numba.core.errors</span> <span class="kn">import</span> <span class="n">NumbaDeprecationWarning</span><span class="p">,</span> <span class="n">NumbaPendingDeprecationWarning</span>
+
+<span class="kn">from</span> <span class="nn">kosmatau3d.models</span> <span class="kn">import</span> <span class="n">constants</span>
+<span class="kn">from</span> <span class="nn">kosmatau3d.models</span> <span class="kn">import</span> <span class="n">observations</span>
+
+
+<span class="n">warnings</span><span class="o">.</span><span class="n">simplefilter</span><span class="p">(</span><span class="s1">&#39;ignore&#39;</span><span class="p">,</span> <span class="n">category</span><span class="o">=</span><span class="n">NumbaDeprecationWarning</span><span class="p">)</span>
+<span class="n">warnings</span><span class="o">.</span><span class="n">simplefilter</span><span class="p">(</span><span class="s1">&#39;ignore&#39;</span><span class="p">,</span> <span class="n">category</span><span class="o">=</span><span class="n">NumbaPendingDeprecationWarning</span><span class="p">)</span>
+
+
+<div class="viewcode-block" id="initialise_grid">
+<a class="viewcode-back" href="../../../../_autosummary/kosmatau3d.models.observations.methods.initialise_grid.html#kosmatau3d.models.observations.methods.initialise_grid">[docs]</a>
+<span class="k">def</span> <span class="nf">initialise_grid</span><span class="p">(</span><span class="n">clump_tau_grid_file</span><span class="o">=</span><span class="s1">&#39;clump_tau_LineCenter.dat&#39;</span><span class="p">,</span> 
+                    <span class="n">interclump_tau_grid_file</span><span class="o">=</span><span class="s1">&#39;interclumpTauLineCenter.dat&#39;</span><span class="p">,</span> 
+                    <span class="n">interclump_dust_tau_grid_file</span><span class="o">=</span><span class="s1">&#39;interclumpDustTau.dat&#39;</span><span class="p">,</span> 
+                    <span class="n">clump_tb_grid_file</span><span class="o">=</span><span class="s1">&#39;clump_Tmb_LineCenter.dat&#39;</span><span class="p">,</span> 
+                    <span class="n">interclump_tb_grid_file</span><span class="o">=</span><span class="s1">&#39;interclumpTmbLineCenter.dat&#39;</span><span class="p">,</span>
+                    <span class="n">interclump_dust_tb_grid_file</span><span class="o">=</span><span class="s1">&#39;interclumpDustTmb.dat&#39;</span><span class="p">,</span>
+                    <span class="n">clump_taufuv_grid_file</span><span class="o">=</span><span class="s1">&#39;RhoMassAFUV.dat&#39;</span><span class="p">,</span>
+                    <span class="n">interclump_taufuv_grid_file</span><span class="o">=</span><span class="s1">&#39;interclumpTauFUV.dat&#39;</span><span class="p">,</span>
+                    <span class="n">clump_column_density_file</span><span class="o">=</span><span class="s1">&#39;clumpMeanCols.dat&#39;</span><span class="p">,</span>
+                    <span class="n">interclump_column_density_file</span><span class="o">=</span><span class="s1">&#39;interclumpMeanCols.dat&#39;</span><span class="p">,</span>
+                    <span class="n">clump_temperature_file</span><span class="o">=</span><span class="s1">&#39;clumpTemperatures_filled.dat&#39;</span><span class="p">,</span>
+                    <span class="n">interclump_temperature_file</span><span class="o">=</span><span class="s1">&#39;interclumpTemperatures_filled.dat&#39;</span><span class="p">):</span>
+    <span class="c1"># Grid</span>
+    <span class="n">clump_tau_centerline</span><span class="p">(</span><span class="n">clump_tau_grid_file</span><span class="p">)</span>
+    <span class="n">interclump_tau_centerline</span><span class="p">(</span><span class="n">interclump_tau_grid_file</span><span class="p">)</span>
+    <span class="n">interclump_dust_tau</span><span class="p">(</span><span class="n">interclump_dust_tau_grid_file</span><span class="p">)</span>
+    <span class="n">clump_tb_centerline</span><span class="p">(</span><span class="n">clump_tb_grid_file</span><span class="p">)</span>
+    <span class="n">interclump_tb_centerline</span><span class="p">(</span><span class="n">interclump_tb_grid_file</span><span class="p">)</span>
+    <span class="n">interclump_dust_tb</span><span class="p">(</span><span class="n">interclump_dust_tb_grid_file</span><span class="p">)</span>
+    <span class="n">clump_taufuv</span><span class="p">(</span><span class="n">clump_taufuv_grid_file</span><span class="p">)</span>
+    <span class="n">interclump_taufuv</span><span class="p">(</span><span class="n">interclump_taufuv_grid_file</span><span class="p">)</span>
+    <span class="n">clump_column_density</span><span class="p">(</span><span class="n">clump_column_density_file</span><span class="p">)</span>
+    <span class="n">interclump_column_density</span><span class="p">(</span><span class="n">interclump_column_density_file</span><span class="p">)</span>
+    <span class="n">clump_temperature</span><span class="p">(</span><span class="n">clump_temperature_file</span><span class="p">)</span>
+    <span class="n">interclump_temperature</span><span class="p">(</span><span class="n">interclump_temperature_file</span><span class="p">)</span>
+    <span class="n">species_data</span><span class="p">()</span>
+
+    <span class="n">observations</span><span class="o">.</span><span class="n">grid_initialised</span> <span class="o">=</span> <span class="kc">True</span>
+    
+    <span class="k">return</span></div>
+
+
+
+<div class="viewcode-block" id="initialise_input">
+<a class="viewcode-back" href="../../../../_autosummary/kosmatau3d.models.observations.methods.initialise_input.html#kosmatau3d.models.observations.methods.initialise_input">[docs]</a>
+<span class="k">def</span> <span class="nf">initialise_input</span><span class="p">(</span><span class="n">h2_surface_density_file</span><span class="o">=</span><span class="s1">&#39;h2_surface-density.dat&#39;</span><span class="p">,</span> 
+                     <span class="n">hi_surface_density_file</span><span class="o">=</span><span class="s1">&#39;hi_surface-density.dat&#39;</span><span class="p">,</span> 
+                     <span class="n">h2_scale_height_file</span><span class="o">=</span><span class="s1">&#39;h2_scale-height.dat&#39;</span><span class="p">,</span> 
+                     <span class="n">hi_scale_height_file</span><span class="o">=</span><span class="s1">&#39;hi_scale-height.dat&#39;</span><span class="p">,</span> 
+                     <span class="n">h_number_density_file</span><span class="o">=</span><span class="s1">&#39;h_number-density.dat&#39;</span><span class="p">,</span> 
+                     <span class="n">fuv_file</span><span class="o">=</span><span class="s1">&#39;galactic_FUV_complete.dat&#39;</span><span class="p">,</span> 
+                     <span class="n">velocity_file</span><span class="o">=</span><span class="s1">&#39;rot_milki2018_14.dat&#39;</span><span class="p">):</span>
+    <span class="c1"># Model</span>
+    <span class="n">h2_surface_mass_profile</span><span class="p">(</span><span class="n">h2_surface_density_file</span><span class="p">)</span>
+    <span class="n">hi_surface_mass_profile</span><span class="p">(</span><span class="n">hi_surface_density_file</span><span class="p">)</span>
+    <span class="n">h2_scale_height_profile</span><span class="p">(</span><span class="n">h2_scale_height_file</span><span class="p">)</span>
+    <span class="n">hi_scale_height_profile</span><span class="p">(</span><span class="n">hi_scale_height_file</span><span class="p">)</span>
+    <span class="n">number_density_profile</span><span class="p">(</span><span class="n">h_number_density_file</span><span class="p">)</span>
+    <span class="n">fuv_profile</span><span class="p">(</span><span class="n">fuv_file</span><span class="p">)</span>
+    <span class="n">galaxy_rotation_profile</span><span class="p">(</span><span class="n">velocity_file</span><span class="p">)</span>
+
+    <span class="n">observations</span><span class="o">.</span><span class="n">model_initialised</span> <span class="o">=</span> <span class="kc">True</span>
+
+    <span class="k">return</span></div>
+
+
+
+<span class="c1"># G R I D</span>
+
+
+<div class="viewcode-block" id="clump_tb_centerline">
+<a class="viewcode-back" href="../../../../_autosummary/kosmatau3d.models.observations.methods.clump_tb_centerline.html#kosmatau3d.models.observations.methods.clump_tb_centerline">[docs]</a>
+<span class="k">def</span> <span class="nf">clump_tb_centerline</span><span class="p">(</span><span class="n">file</span><span class="o">=</span><span class="s1">&#39;clump_Tmb_LineCenter.dat&#39;</span><span class="p">):</span>
+    <span class="c1"># Open file for KOSMA-tau simulations of line intensities</span>
+    <span class="c1"># FORMAT: chi, n, M, UV, intensity[molecules then dust]</span>
+    <span class="n">header</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">constants</span><span class="o">.</span><span class="n">GRIDPATH</span><span class="o">+</span><span class="n">file</span><span class="p">)</span> <span class="k">as</span> <span class="n">tb</span><span class="p">:</span>
+        <span class="n">header</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">tb</span><span class="o">.</span><span class="n">readline</span><span class="p">())</span>
+        <span class="n">header</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">tb</span><span class="o">.</span><span class="n">readline</span><span class="p">())</span>
+    <span class="n">molecules</span> <span class="o">=</span> <span class="n">header</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s1">&#39;: &#39;</span><span class="p">)[</span><span class="mi">1</span><span class="p">]</span>
+    <span class="n">species</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="k">for</span> <span class="n">molecule</span> <span class="ow">in</span> <span class="n">molecules</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s1">&#39;, &#39;</span><span class="p">):</span>
+        <span class="k">for</span> <span class="n">transition</span> <span class="ow">in</span> <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="nb">int</span><span class="p">(</span><span class="n">molecule</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s1">&#39; &#39;</span><span class="p">)[</span><span class="mi">1</span><span class="p">])</span><span class="o">+</span><span class="mi">1</span><span class="p">):</span>
+            <span class="n">species</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s1">&#39;</span><span class="si">{}</span><span class="s1"> </span><span class="si">{}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">molecule</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s1">&#39; &#39;</span><span class="p">)[</span><span class="mi">0</span><span class="p">],</span> <span class="n">transition</span><span class="p">))</span>
+    <span class="n">constants</span><span class="o">.</span><span class="n">setup_species</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">species</span><span class="p">))</span>
+    <span class="n">tb</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">genfromtxt</span><span class="p">(</span><span class="n">constants</span><span class="o">.</span><span class="n">GRIDPATH</span><span class="o">+</span><span class="n">file</span><span class="p">)</span>
+    <span class="n">observations</span><span class="o">.</span><span class="n">clump_tb_centerline</span> <span class="o">=</span> <span class="p">(</span><span class="n">tb</span><span class="p">[:,</span> <span class="p">:</span><span class="mi">4</span><span class="p">],</span> <span class="n">tb</span><span class="p">[:,</span> <span class="mi">4</span><span class="p">:])</span>
+    <span class="k">return</span></div>
+
+
+
+<div class="viewcode-block" id="interclump_tb_centerline">
+<a class="viewcode-back" href="../../../../_autosummary/kosmatau3d.models.observations.methods.interclump_tb_centerline.html#kosmatau3d.models.observations.methods.interclump_tb_centerline">[docs]</a>
+<span class="k">def</span> <span class="nf">interclump_tb_centerline</span><span class="p">(</span><span class="n">file</span><span class="o">=</span><span class="s1">&#39;interclumpTmbLineCenter.dat&#39;</span><span class="p">):</span>
+    <span class="c1"># Open file for KOSMA-tau simulations of line intensities</span>
+    <span class="c1"># FORMAT: n, M, UV, intensity[molecules]</span>
+    <span class="n">header</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">constants</span><span class="o">.</span><span class="n">GRIDPATH</span><span class="o">+</span><span class="n">file</span><span class="p">)</span> <span class="k">as</span> <span class="n">tb</span><span class="p">:</span>
+        <span class="n">header</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">tb</span><span class="o">.</span><span class="n">readline</span><span class="p">())</span>
+        <span class="n">header</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">tb</span><span class="o">.</span><span class="n">readline</span><span class="p">())</span>
+    <span class="n">molecules</span> <span class="o">=</span> <span class="n">header</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s1">&#39;: &#39;</span><span class="p">)[</span><span class="mi">1</span><span class="p">]</span>
+    <span class="n">species</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="k">for</span> <span class="n">molecule</span> <span class="ow">in</span> <span class="n">molecules</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s1">&#39;, &#39;</span><span class="p">):</span>
+        <span class="k">for</span> <span class="n">transition</span> <span class="ow">in</span> <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="nb">int</span><span class="p">(</span><span class="n">molecule</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s1">&#39; &#39;</span><span class="p">)[</span><span class="mi">1</span><span class="p">])</span><span class="o">+</span><span class="mi">1</span><span class="p">):</span>
+            <span class="n">species</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s1">&#39;</span><span class="si">{}</span><span class="s1"> </span><span class="si">{}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">molecule</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s1">&#39; &#39;</span><span class="p">)[</span><span class="mi">0</span><span class="p">],</span> <span class="n">transition</span><span class="p">))</span>
+    <span class="n">constants</span><span class="o">.</span><span class="n">setup_interclump_species</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">species</span><span class="p">))</span>
+    <span class="n">tb</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">genfromtxt</span><span class="p">(</span><span class="n">constants</span><span class="o">.</span><span class="n">GRIDPATH</span><span class="o">+</span><span class="n">file</span><span class="p">)</span>
+    <span class="n">observations</span><span class="o">.</span><span class="n">interclump_tb_centerline</span> <span class="o">=</span> <span class="p">(</span><span class="n">tb</span><span class="p">[:,</span> <span class="p">:</span><span class="mi">3</span><span class="p">],</span> <span class="n">tb</span><span class="p">[:,</span> <span class="mi">3</span><span class="p">:])</span>
+    <span class="k">return</span></div>
+
+
+
+<div class="viewcode-block" id="interclump_dust_tb">
+<a class="viewcode-back" href="../../../../_autosummary/kosmatau3d.models.observations.methods.interclump_dust_tb.html#kosmatau3d.models.observations.methods.interclump_dust_tb">[docs]</a>
+<span class="k">def</span> <span class="nf">interclump_dust_tb</span><span class="p">(</span><span class="n">file</span><span class="o">=</span><span class="s1">&#39;interclumpDustTmb.dat&#39;</span><span class="p">):</span>
+    <span class="c1"># Open file for KOSMA-tau simulations of line intensities</span>
+    <span class="c1"># FORMAT: n, M, UV, intensity[dust]</span>
+    <span class="n">tb</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">read_csv</span><span class="p">(</span><span class="n">constants</span><span class="o">.</span><span class="n">GRIDPATH</span><span class="o">+</span><span class="n">file</span><span class="p">,</span> <span class="n">sep</span><span class="o">=</span><span class="s1">&#39;\s+&#39;</span><span class="p">)</span>
+    <span class="n">observations</span><span class="o">.</span><span class="n">interclump_dust_tb_centerline</span> <span class="o">=</span> <span class="p">(</span><span class="n">tb</span><span class="o">.</span><span class="n">loc</span><span class="p">[:,</span> <span class="p">[</span><span class="s1">&#39;n&#39;</span><span class="p">,</span> <span class="s1">&#39;M&#39;</span><span class="p">,</span> <span class="s1">&#39;chi&#39;</span><span class="p">]]</span><span class="o">.</span><span class="n">to_numpy</span><span class="p">(),</span> <span class="n">tb</span><span class="o">.</span><span class="n">loc</span><span class="p">[:,</span> <span class="s1">&#39;3.1mm&#39;</span><span class="p">:]</span><span class="o">.</span><span class="n">to_numpy</span><span class="p">())</span>
+    <span class="k">return</span></div>
+
+
+
+<div class="viewcode-block" id="clump_tau_centerline">
+<a class="viewcode-back" href="../../../../_autosummary/kosmatau3d.models.observations.methods.clump_tau_centerline.html#kosmatau3d.models.observations.methods.clump_tau_centerline">[docs]</a>
+<span class="k">def</span> <span class="nf">clump_tau_centerline</span><span class="p">(</span><span class="n">file</span><span class="o">=</span><span class="s1">&#39;clump_tau_LineCenter.dat&#39;</span><span class="p">):</span>
+    <span class="c1"># Open file for KOSMA-tau simulations of optical depths</span>
+    <span class="c1"># FORMAT: chi, n, M, UV, tau[molecules then dust]</span>
+    <span class="n">tau</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">genfromtxt</span><span class="p">(</span><span class="n">constants</span><span class="o">.</span><span class="n">GRIDPATH</span><span class="o">+</span><span class="n">file</span><span class="p">)</span>
+    <span class="n">observations</span><span class="o">.</span><span class="n">clump_tau_centerline</span> <span class="o">=</span> <span class="p">(</span><span class="n">tau</span><span class="p">[:,</span> <span class="p">:</span><span class="mi">4</span><span class="p">],</span> <span class="n">tau</span><span class="p">[:,</span> <span class="mi">4</span><span class="p">:])</span>
+    <span class="k">return</span></div>
+
+
+
+<div class="viewcode-block" id="interclump_tau_centerline">
+<a class="viewcode-back" href="../../../../_autosummary/kosmatau3d.models.observations.methods.interclump_tau_centerline.html#kosmatau3d.models.observations.methods.interclump_tau_centerline">[docs]</a>
+<span class="k">def</span> <span class="nf">interclump_tau_centerline</span><span class="p">(</span><span class="n">file</span><span class="o">=</span><span class="s1">&#39;interclumpTauLineCenter.dat&#39;</span><span class="p">):</span>
+    <span class="c1"># Open file for KOSMA-tau simulations of optical depths</span>
+    <span class="c1"># FORMAT: n, M, UV, tau[molecules]</span>
+    <span class="n">tau</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">genfromtxt</span><span class="p">(</span><span class="n">constants</span><span class="o">.</span><span class="n">GRIDPATH</span><span class="o">+</span><span class="n">file</span><span class="p">)</span>
+    <span class="n">observations</span><span class="o">.</span><span class="n">interclump_tau_centerline</span> <span class="o">=</span> <span class="p">(</span><span class="n">tau</span><span class="p">[:,</span> <span class="p">:</span><span class="mi">3</span><span class="p">],</span> <span class="n">tau</span><span class="p">[:,</span> <span class="mi">3</span><span class="p">:])</span>
+    <span class="k">return</span></div>
+
+
+
+<div class="viewcode-block" id="interclump_dust_tau">
+<a class="viewcode-back" href="../../../../_autosummary/kosmatau3d.models.observations.methods.interclump_dust_tau.html#kosmatau3d.models.observations.methods.interclump_dust_tau">[docs]</a>
+<span class="k">def</span> <span class="nf">interclump_dust_tau</span><span class="p">(</span><span class="n">file</span><span class="o">=</span><span class="s1">&#39;interclumpDustTau.dat&#39;</span><span class="p">):</span>
+    <span class="c1"># Open file for KOSMA-tau simulations of optical depths</span>
+    <span class="c1"># FORMAT: n, M, UV, tau[dust]</span>
+    <span class="n">tau</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">read_csv</span><span class="p">(</span><span class="n">constants</span><span class="o">.</span><span class="n">GRIDPATH</span><span class="o">+</span><span class="n">file</span><span class="p">,</span> <span class="n">sep</span><span class="o">=</span><span class="s1">&#39;\s+&#39;</span><span class="p">)</span>
+    <span class="n">observations</span><span class="o">.</span><span class="n">interclump_dust_tau_centerline</span> <span class="o">=</span> <span class="p">(</span><span class="n">tau</span><span class="o">.</span><span class="n">loc</span><span class="p">[:,</span> <span class="p">[</span><span class="s1">&#39;n&#39;</span><span class="p">,</span> <span class="s1">&#39;M&#39;</span><span class="p">,</span> <span class="s1">&#39;chi&#39;</span><span class="p">]]</span><span class="o">.</span><span class="n">to_numpy</span><span class="p">(),</span> <span class="n">tau</span><span class="o">.</span><span class="n">loc</span><span class="p">[:,</span> <span class="s1">&#39;3.1mm&#39;</span><span class="p">:]</span><span class="o">.</span><span class="n">to_numpy</span><span class="p">())</span>
+    <span class="k">return</span></div>
+
+
+
+<div class="viewcode-block" id="clump_taufuv">
+<a class="viewcode-back" href="../../../../_autosummary/kosmatau3d.models.observations.methods.clump_taufuv.html#kosmatau3d.models.observations.methods.clump_taufuv">[docs]</a>
+<span class="k">def</span> <span class="nf">clump_taufuv</span><span class="p">(</span><span class="n">file</span><span class="o">=</span><span class="s1">&#39;RhoMassAFUV.dat&#39;</span><span class="p">):</span>
+    <span class="n">taufuv</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">read_csv</span><span class="p">(</span><span class="n">constants</span><span class="o">.</span><span class="n">GRIDPATH</span><span class="o">+</span><span class="n">file</span><span class="p">,</span> <span class="n">sep</span><span class="o">=</span><span class="s1">&#39;\s+&#39;</span><span class="p">)</span>
+    <span class="n">observations</span><span class="o">.</span><span class="n">clump_taufuv</span> <span class="o">=</span> <span class="p">(</span><span class="n">taufuv</span><span class="o">.</span><span class="n">loc</span><span class="p">[:,</span> <span class="p">[</span><span class="s1">&#39;n&#39;</span><span class="p">,</span> <span class="s1">&#39;M&#39;</span><span class="p">]]</span><span class="o">.</span><span class="n">to_numpy</span><span class="p">(),</span> <span class="n">taufuv</span><span class="o">.</span><span class="n">loc</span><span class="p">[:,</span> <span class="s1">&#39;tauFUV&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">to_numpy</span><span class="p">())</span>
+    <span class="k">return</span></div>
+
+
+
+<div class="viewcode-block" id="interclump_taufuv">
+<a class="viewcode-back" href="../../../../_autosummary/kosmatau3d.models.observations.methods.interclump_taufuv.html#kosmatau3d.models.observations.methods.interclump_taufuv">[docs]</a>
+<span class="k">def</span> <span class="nf">interclump_taufuv</span><span class="p">(</span><span class="n">file</span><span class="o">=</span><span class="s1">&#39;interclumpTauFUV.dat&#39;</span><span class="p">):</span>
+    <span class="n">taufuv</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">read_csv</span><span class="p">(</span><span class="n">constants</span><span class="o">.</span><span class="n">GRIDPATH</span><span class="o">+</span><span class="n">file</span><span class="p">,</span> <span class="n">sep</span><span class="o">=</span><span class="s1">&#39;\s+&#39;</span><span class="p">)</span>
+    <span class="n">observations</span><span class="o">.</span><span class="n">interclump_taufuv</span> <span class="o">=</span> <span class="p">(</span><span class="n">taufuv</span><span class="o">.</span><span class="n">loc</span><span class="p">[:,</span> <span class="p">[</span><span class="s1">&#39;n&#39;</span><span class="p">,</span> <span class="s1">&#39;M&#39;</span><span class="p">,</span> <span class="s1">&#39;chi&#39;</span><span class="p">]]</span><span class="o">.</span><span class="n">to_numpy</span><span class="p">(),</span> <span class="n">taufuv</span><span class="o">.</span><span class="n">loc</span><span class="p">[:,</span> <span class="s1">&#39;tauFUV&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">to_numpy</span><span class="p">())</span>
+    <span class="k">return</span></div>
+
+
+
+<div class="viewcode-block" id="clump_column_density">
+<a class="viewcode-back" href="../../../../_autosummary/kosmatau3d.models.observations.methods.clump_column_density.html#kosmatau3d.models.observations.methods.clump_column_density">[docs]</a>
+<span class="k">def</span> <span class="nf">clump_column_density</span><span class="p">(</span><span class="n">file</span><span class="o">=</span><span class="s1">&#39;clumpMeanCols.dat&#39;</span><span class="p">):</span>
+    <span class="c1"># Open file containing the column densities</span>
+    <span class="n">N</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">read_csv</span><span class="p">(</span><span class="n">constants</span><span class="o">.</span><span class="n">GRIDPATH</span> <span class="o">+</span> <span class="n">file</span><span class="p">,</span> <span class="n">sep</span><span class="o">=</span><span class="s1">&#39;\s+&#39;</span><span class="p">)</span>
+    <span class="n">observations</span><span class="o">.</span><span class="n">clump_column_density</span> <span class="o">=</span> <span class="p">(</span><span class="n">N</span><span class="o">.</span><span class="n">loc</span><span class="p">[:,</span> <span class="p">[</span><span class="s1">&#39;n&#39;</span><span class="p">,</span> <span class="s1">&#39;M&#39;</span><span class="p">,</span> <span class="s1">&#39;chi&#39;</span><span class="p">]],</span> <span class="n">N</span><span class="o">.</span><span class="n">loc</span><span class="p">[:,</span> <span class="s1">&#39;ELECTR&#39;</span><span class="p">:])</span>
+    <span class="k">return</span></div>
+
+
+
+<div class="viewcode-block" id="interclump_column_density">
+<a class="viewcode-back" href="../../../../_autosummary/kosmatau3d.models.observations.methods.interclump_column_density.html#kosmatau3d.models.observations.methods.interclump_column_density">[docs]</a>
+<span class="k">def</span> <span class="nf">interclump_column_density</span><span class="p">(</span><span class="n">file</span><span class="o">=</span><span class="s1">&#39;interclumpMeanCols.dat&#39;</span><span class="p">):</span>
+    <span class="c1"># Open file containing the column densities</span>
+    <span class="n">N</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">read_csv</span><span class="p">(</span><span class="n">constants</span><span class="o">.</span><span class="n">GRIDPATH</span> <span class="o">+</span> <span class="n">file</span><span class="p">,</span> <span class="n">sep</span><span class="o">=</span><span class="s1">&#39;\s+&#39;</span><span class="p">)</span>
+    <span class="n">observations</span><span class="o">.</span><span class="n">interclump_column_density</span> <span class="o">=</span> <span class="p">(</span><span class="n">N</span><span class="o">.</span><span class="n">loc</span><span class="p">[:,</span> <span class="p">[</span><span class="s1">&#39;n&#39;</span><span class="p">,</span> <span class="s1">&#39;M&#39;</span><span class="p">,</span> <span class="s1">&#39;chi&#39;</span><span class="p">]],</span> <span class="n">N</span><span class="o">.</span><span class="n">loc</span><span class="p">[:,</span> <span class="s1">&#39;ELECTR&#39;</span><span class="p">:])</span>
+    <span class="k">return</span></div>
+
+
+
+<div class="viewcode-block" id="clump_temperature">
+<a class="viewcode-back" href="../../../../_autosummary/kosmatau3d.models.observations.methods.clump_temperature.html#kosmatau3d.models.observations.methods.clump_temperature">[docs]</a>
+<span class="k">def</span> <span class="nf">clump_temperature</span><span class="p">(</span><span class="n">file</span><span class="o">=</span><span class="s1">&#39;clumpTemperatures.dat&#39;</span><span class="p">):</span>
+    <span class="c1"># Open file containing the column densities</span>
+    <span class="n">N</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">read_csv</span><span class="p">(</span><span class="n">constants</span><span class="o">.</span><span class="n">GRIDPATH</span> <span class="o">+</span> <span class="n">file</span><span class="p">,</span> <span class="n">sep</span><span class="o">=</span><span class="s1">&#39;\s+&#39;</span><span class="p">)</span>
+    <span class="n">observations</span><span class="o">.</span><span class="n">clump_temperature</span> <span class="o">=</span> <span class="p">(</span><span class="n">N</span><span class="o">.</span><span class="n">loc</span><span class="p">[:,</span> <span class="p">[</span><span class="s1">&#39;n&#39;</span><span class="p">,</span> <span class="s1">&#39;M&#39;</span><span class="p">,</span> <span class="s1">&#39;chi&#39;</span><span class="p">]],</span> <span class="n">N</span><span class="o">.</span><span class="n">loc</span><span class="p">[:,</span> <span class="p">(</span><span class="s1">&#39;Tg&#39;</span><span class="p">,</span> <span class="s1">&#39;Td&#39;</span><span class="p">)])</span>
+    <span class="k">return</span></div>
+
+
+
+<div class="viewcode-block" id="interclump_temperature">
+<a class="viewcode-back" href="../../../../_autosummary/kosmatau3d.models.observations.methods.interclump_temperature.html#kosmatau3d.models.observations.methods.interclump_temperature">[docs]</a>
+<span class="k">def</span> <span class="nf">interclump_temperature</span><span class="p">(</span><span class="n">file</span><span class="o">=</span><span class="s1">&#39;interclumpTemperatures.dat&#39;</span><span class="p">):</span>
+    <span class="c1"># Open file containing the column densities</span>
+    <span class="n">N</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">read_csv</span><span class="p">(</span><span class="n">constants</span><span class="o">.</span><span class="n">GRIDPATH</span> <span class="o">+</span> <span class="n">file</span><span class="p">,</span> <span class="n">sep</span><span class="o">=</span><span class="s1">&#39;\s+&#39;</span><span class="p">)</span>
+    <span class="n">observations</span><span class="o">.</span><span class="n">interclump_temperature</span> <span class="o">=</span> <span class="p">(</span><span class="n">N</span><span class="o">.</span><span class="n">loc</span><span class="p">[:,</span> <span class="p">[</span><span class="s1">&#39;n&#39;</span><span class="p">,</span> <span class="s1">&#39;M&#39;</span><span class="p">,</span> <span class="s1">&#39;chi&#39;</span><span class="p">]],</span> <span class="n">N</span><span class="o">.</span><span class="n">loc</span><span class="p">[:,</span> <span class="p">(</span><span class="s1">&#39;Tg&#39;</span><span class="p">,</span> <span class="s1">&#39;Td&#39;</span><span class="p">)])</span>
+    <span class="k">return</span></div>
+
+
+
+<div class="viewcode-block" id="species_data">
+<a class="viewcode-back" href="../../../../_autosummary/kosmatau3d.models.observations.methods.species_data.html#kosmatau3d.models.observations.methods.species_data">[docs]</a>
+<span class="k">def</span> <span class="nf">species_data</span><span class="p">(</span><span class="n">file</span><span class="o">=</span><span class="s1">&#39;frequencies.dat&#39;</span><span class="p">):</span>
+    <span class="c1"># Open file containing the transition frequencies of various elements</span>
+    <span class="n">frequencies</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">genfromtxt</span><span class="p">(</span><span class="n">constants</span><span class="o">.</span><span class="n">GRIDPATH</span><span class="o">+</span><span class="n">file</span><span class="p">,</span> <span class="n">names</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;number&#39;</span><span class="p">,</span> <span class="s1">&#39;species&#39;</span><span class="p">,</span> <span class="s1">&#39;transition&#39;</span><span class="p">,</span> <span class="s1">&#39;frequency&#39;</span><span class="p">],</span>
+                                <span class="n">dtype</span><span class="o">=</span><span class="s2">&quot;i8,U8,i8,f8&quot;</span><span class="p">,</span> <span class="n">delimiter</span><span class="o">=</span><span class="s1">&#39;,&#39;</span><span class="p">)</span>
+    <span class="n">observations</span><span class="o">.</span><span class="n">species_data</span> <span class="o">=</span> <span class="p">(</span><span class="n">frequencies</span><span class="p">[</span><span class="s1">&#39;number&#39;</span><span class="p">],</span> <span class="n">frequencies</span><span class="p">[</span><span class="s1">&#39;species&#39;</span><span class="p">],</span>
+                                 <span class="n">frequencies</span><span class="p">[</span><span class="s1">&#39;transition&#39;</span><span class="p">],</span> <span class="n">frequencies</span><span class="p">[</span><span class="s1">&#39;frequency&#39;</span><span class="p">])</span>
+    <span class="k">return</span></div>
+
+
+
+<div class="viewcode-block" id="init_rad_transfer">
+<a class="viewcode-back" href="../../../../_autosummary/kosmatau3d.models.observations.methods.init_rad_transfer.html#kosmatau3d.models.observations.methods.init_rad_transfer">[docs]</a>
+<span class="k">def</span> <span class="nf">init_rad_transfer</span><span class="p">():</span>
+    <span class="n">e_tilde_real</span><span class="p">()</span>
+    <span class="n">e_tilde_imaginary</span><span class="p">()</span>
+    <span class="k">return</span></div>
+
+
+
+<div class="viewcode-block" id="e_tilde_real">
+<a class="viewcode-back" href="../../../../_autosummary/kosmatau3d.models.observations.methods.e_tilde_real.html#kosmatau3d.models.observations.methods.e_tilde_real">[docs]</a>
+<span class="k">def</span> <span class="nf">e_tilde_real</span><span class="p">(</span><span class="n">file</span><span class="o">=</span><span class="s1">&#39;Ereal.dat&#39;</span><span class="p">):</span>
+    <span class="n">eReal</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">genfromtxt</span><span class="p">(</span><span class="n">constants</span><span class="o">.</span><span class="n">GRIDPATH</span><span class="o">+</span><span class="n">file</span><span class="p">,</span> <span class="n">names</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;x&#39;</span><span class="p">,</span> <span class="s1">&#39;Ereal&#39;</span><span class="p">])</span>
+    <span class="n">observations</span><span class="o">.</span><span class="n">e_tilde_real</span> <span class="o">=</span> <span class="p">(</span><span class="n">eReal</span><span class="p">[</span><span class="s1">&#39;x&#39;</span><span class="p">],</span> <span class="n">eReal</span><span class="p">[</span><span class="s1">&#39;Ereal&#39;</span><span class="p">])</span>
+    <span class="k">return</span></div>
+
+
+
+<div class="viewcode-block" id="e_tilde_imaginary">
+<a class="viewcode-back" href="../../../../_autosummary/kosmatau3d.models.observations.methods.e_tilde_imaginary.html#kosmatau3d.models.observations.methods.e_tilde_imaginary">[docs]</a>
+<span class="k">def</span> <span class="nf">e_tilde_imaginary</span><span class="p">(</span><span class="n">file</span><span class="o">=</span><span class="s1">&#39;Eimag.dat&#39;</span><span class="p">):</span>
+    <span class="n">eImaginary</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">genfromtxt</span><span class="p">(</span><span class="n">constants</span><span class="o">.</span><span class="n">GRIDPATH</span><span class="o">+</span><span class="n">file</span><span class="p">,</span> <span class="n">names</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;x&#39;</span><span class="p">,</span> <span class="s1">&#39;Eimaginary&#39;</span><span class="p">])</span>
+    <span class="n">observations</span><span class="o">.</span><span class="n">e_tilde_imaginary</span> <span class="o">=</span> <span class="p">(</span><span class="n">eImaginary</span><span class="p">[</span><span class="s1">&#39;x&#39;</span><span class="p">],</span> <span class="n">eImaginary</span><span class="p">[</span><span class="s1">&#39;Eimaginary&#39;</span><span class="p">])</span>
+    <span class="k">return</span></div>
+
+
+
+<span class="c1"># M O D E L</span>
+
+
+<div class="viewcode-block" id="h2_surface_mass_profile">
+<a class="viewcode-back" href="../../../../_autosummary/kosmatau3d.models.observations.methods.h2_surface_mass_profile.html#kosmatau3d.models.observations.methods.h2_surface_mass_profile">[docs]</a>
+<span class="k">def</span> <span class="nf">h2_surface_mass_profile</span><span class="p">(</span><span class="n">file</span><span class="o">=</span><span class="s1">&#39;h2_surface-density.dat&#39;</span><span class="p">):</span>
+    <span class="c1"># Open file for the mass profile (clump) of the object (Msol/pc**2)</span>
+    <span class="k">if</span> <span class="n">constants</span><span class="o">.</span><span class="n">directory</span> <span class="o">!=</span> <span class="s1">&#39;&#39;</span><span class="p">:</span>
+        <span class="n">sigma_h2</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">read_csv</span><span class="p">(</span><span class="n">constants</span><span class="o">.</span><span class="n">INPUTPATH</span><span class="o">+</span><span class="n">constants</span><span class="o">.</span><span class="n">directory</span><span class="o">+</span><span class="n">file</span><span class="p">,</span> 
+                               <span class="n">delim_whitespace</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">skiprows</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+        <span class="c1"># if constants.voxel_size &gt; 2*constants.scale_height_h2:</span>
+        <span class="c1">#     r = np.hstack((clumpMass[&#39;r&#39;] * 1000, clumpMass[&#39;r&#39;] * 1000))</span>
+        <span class="c1">#     z = np.hstack((np.zeros_like(clumpMass[&#39;r&#39;] * 1000, dtype=float), </span>
+        <span class="c1">#                    np.full_like(clumpMass[&#39;r&#39;] * 1000, constants.voxel_size, dtype=float)))</span>
+        <span class="c1">#     m = np.hstack((clumpMass[&#39;n_h2&#39;]*2*constants.scale_height_h2,</span>
+        <span class="c1">#                    clumpMass[&#39;n_h2&#39;]*0))</span>
+        <span class="c1"># else:</span>
+        <span class="c1">#     n_vox = int(np.ceil((constants.scale_height_h2-constants.voxel_size/2) </span>
+        <span class="c1">#                         / constants.voxel_size))</span>
+        <span class="c1">#     r = np.hstack(list(clumpMass[&#39;r&#39;]*1000 for _ in range(n_vox+1)))</span>
+        <span class="c1">#     z = np.hstack(list(np.full_like(clumpMass[&#39;r&#39;], _*constants.voxel_size, dtype=float) </span>
+        <span class="c1">#                        for _ in range(n_vox+1)))</span>
+        <span class="c1">#     m = np.hstack(list(clumpMass[&#39;n_h2&#39;]*constants.voxel_size if </span>
+        <span class="c1">#                        (_+0.5)*constants.voxel_size&lt;constants.scale_height_h2 </span>
+        <span class="c1">#                        else 0 if (_-0.5)*constants.voxel_size&gt;constants.scale_height_h2 else </span>
+        <span class="c1">#                        clumpMass[&#39;n_h2&#39;]*(constants.scale_height_h2%constants.voxel_size) </span>
+        <span class="c1">#                        for _ in range(n_vox+1)))</span>
+        <span class="n">observations</span><span class="o">.</span><span class="n">h2_surface_mass_profile</span> <span class="o">=</span> <span class="p">(</span><span class="n">sigma_h2</span><span class="p">[</span><span class="s1">&#39;r&#39;</span><span class="p">]</span><span class="o">*</span><span class="mi">1000</span><span class="p">,</span> <span class="n">sigma_h2</span><span class="p">[</span><span class="s1">&#39;Sigma_h2&#39;</span><span class="p">])</span>
+        <span class="c1"># observations.h2_surface_mass_profile = pd.DataFrame(data={&#39;R&#39;:r, &#39;Z&#39;:z, </span>
+        <span class="c1">#                                                     &#39;M_h2&#39;:m*constants.voxel_size**2})</span>
+        <span class="c1">#observations.clumpMassProfile = (clumpMass[&#39;radius&#39;]*1000, clumpMass[&#39;h2_mass_density&#39;] *</span>
+        <span class="c1">#                                 constants.voxel_size**2*constants.scale_height)</span>
+    <span class="k">return</span></div>
+
+
+
+<div class="viewcode-block" id="hi_surface_mass_profile">
+<a class="viewcode-back" href="../../../../_autosummary/kosmatau3d.models.observations.methods.hi_surface_mass_profile.html#kosmatau3d.models.observations.methods.hi_surface_mass_profile">[docs]</a>
+<span class="k">def</span> <span class="nf">hi_surface_mass_profile</span><span class="p">(</span><span class="n">file</span><span class="o">=</span><span class="s1">&#39;hi_surface-density.dat&#39;</span><span class="p">):</span>
+    <span class="c1"># Open file for the mass profile (interclump) of the object (Msol/pc**2)</span>
+    <span class="k">if</span> <span class="n">constants</span><span class="o">.</span><span class="n">directory</span> <span class="o">!=</span> <span class="s1">&#39;&#39;</span><span class="p">:</span>
+        <span class="n">sigma_hi</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">read_csv</span><span class="p">(</span><span class="n">constants</span><span class="o">.</span><span class="n">INPUTPATH</span><span class="o">+</span><span class="n">constants</span><span class="o">.</span><span class="n">directory</span><span class="o">+</span><span class="n">file</span><span class="p">,</span> 
+                               <span class="n">delim_whitespace</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">skiprows</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+        <span class="c1"># if constants.voxel_size &gt; 2*constants.scale_height_hi:</span>
+        <span class="c1">#     r = np.hstack((interclumpMass[&#39;r&#39;] * 1000, interclumpMass[&#39;r&#39;] * 1000))</span>
+        <span class="c1">#     z = np.hstack((np.zeros_like(interclumpMass[&#39;r&#39;] * 1000, dtype=float), </span>
+        <span class="c1">#                    np.full_like(interclumpMass[&#39;r&#39;] * 1000, constants.voxel_size, dtype=float)))</span>
+        <span class="c1">#     m = np.hstack((interclumpMass[&#39;n_hi&#39;]*2*constants.scale_height_hi,</span>
+        <span class="c1">#                    interclumpMass[&#39;n_hi&#39;]*0))</span>
+        <span class="c1"># else:</span>
+        <span class="c1">#     n_vox = int(np.ceil((constants.scale_height_hi-constants.voxel_size/2) </span>
+        <span class="c1">#                         / constants.voxel_size))</span>
+        <span class="c1">#     r = np.hstack(list(interclumpMass[&#39;r&#39;]*1000 for _ in range(n_vox+1)))</span>
+        <span class="c1">#     z = np.hstack(list(np.full_like(interclumpMass[&#39;r&#39;], _*constants.voxel_size, dtype=float) </span>
+        <span class="c1">#                        for _ in range(n_vox+1)))</span>
+        <span class="c1">#     m = np.hstack(list(interclumpMass[&#39;n_hi&#39;]*constants.voxel_size if </span>
+        <span class="c1">#                        (_+0.5)*constants.voxel_size&lt;constants.scale_height_hi </span>
+        <span class="c1">#                        else 0 if (_-0.5)*constants.voxel_size&gt;constants.scale_height_hi else </span>
+        <span class="c1">#                        interclumpMass[&#39;n_hi&#39;]*(constants.scale_height_hi%constants.voxel_size) </span>
+        <span class="c1">#                        for _ in range(n_vox+1)))</span>
+        <span class="n">observations</span><span class="o">.</span><span class="n">hi_surface_mass_profile</span> <span class="o">=</span> <span class="p">(</span><span class="n">sigma_hi</span><span class="p">[</span><span class="s1">&#39;r&#39;</span><span class="p">]</span><span class="o">*</span><span class="mi">1000</span><span class="p">,</span> <span class="n">sigma_hi</span><span class="p">[</span><span class="s1">&#39;Sigma_hi&#39;</span><span class="p">])</span>
+        <span class="c1"># observations.hi_surface_mass_profile = pd.DataFrame(data={&#39;R&#39;:r, &#39;Z&#39;:z, </span>
+        <span class="c1">#                                                           &#39;M_hi&#39;:m*constants.voxel_size**2})</span>
+        <span class="c1">#observations.interclumpMassProfile = (interclumpMass[&#39;radius&#39;]*1000, </span>
+        <span class="c1">#                                      interclumpMass[&#39;hi_mass_density&#39;] *</span>
+        <span class="c1">#                                      constants.voxel_size**2*constants.scale_height)</span>
+    <span class="k">return</span></div>
+
+
+
+<div class="viewcode-block" id="h2_scale_height_profile">
+<a class="viewcode-back" href="../../../../_autosummary/kosmatau3d.models.observations.methods.h2_scale_height_profile.html#kosmatau3d.models.observations.methods.h2_scale_height_profile">[docs]</a>
+<span class="k">def</span> <span class="nf">h2_scale_height_profile</span><span class="p">(</span><span class="n">file</span><span class="o">=</span><span class="s1">&#39;h2_scale-height.dat&#39;</span><span class="p">):</span>
+    <span class="c1"># Open file for the H2 scale height profile of the galaxy (pc).</span>
+    <span class="k">if</span> <span class="n">constants</span><span class="o">.</span><span class="n">directory</span> <span class="o">!=</span> <span class="s1">&#39;&#39;</span><span class="p">:</span>
+        <span class="n">height</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">read_csv</span><span class="p">(</span><span class="n">constants</span><span class="o">.</span><span class="n">INPUTPATH</span><span class="o">+</span><span class="n">constants</span><span class="o">.</span><span class="n">directory</span><span class="o">+</span><span class="n">file</span><span class="p">,</span> 
+                             <span class="n">delim_whitespace</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">skiprows</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+        <span class="n">observations</span><span class="o">.</span><span class="n">h2_scale_height_profile</span> <span class="o">=</span> <span class="p">(</span><span class="n">height</span><span class="p">[</span><span class="s1">&#39;r&#39;</span><span class="p">]</span><span class="o">*</span><span class="mi">1000</span><span class="p">,</span> <span class="n">height</span><span class="p">[</span><span class="s1">&#39;h_h2&#39;</span><span class="p">])</span>
+    <span class="k">return</span></div>
+
+
+
+<div class="viewcode-block" id="hi_scale_height_profile">
+<a class="viewcode-back" href="../../../../_autosummary/kosmatau3d.models.observations.methods.hi_scale_height_profile.html#kosmatau3d.models.observations.methods.hi_scale_height_profile">[docs]</a>
+<span class="k">def</span> <span class="nf">hi_scale_height_profile</span><span class="p">(</span><span class="n">file</span><span class="o">=</span><span class="s1">&#39;hi_scale-height.dat&#39;</span><span class="p">):</span>
+    <span class="c1"># Open file for the HI scale height profile of the galaxy (pc).</span>
+    <span class="k">if</span> <span class="n">constants</span><span class="o">.</span><span class="n">directory</span> <span class="o">!=</span> <span class="s1">&#39;&#39;</span><span class="p">:</span>
+        <span class="n">height</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">read_csv</span><span class="p">(</span><span class="n">constants</span><span class="o">.</span><span class="n">INPUTPATH</span><span class="o">+</span><span class="n">constants</span><span class="o">.</span><span class="n">directory</span><span class="o">+</span><span class="n">file</span><span class="p">,</span> 
+                             <span class="n">delim_whitespace</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">skiprows</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+        <span class="n">observations</span><span class="o">.</span><span class="n">hi_scale_height_profile</span> <span class="o">=</span> <span class="p">(</span><span class="n">height</span><span class="p">[</span><span class="s1">&#39;r&#39;</span><span class="p">]</span><span class="o">*</span><span class="mi">1000</span><span class="p">,</span> <span class="n">height</span><span class="p">[</span><span class="s1">&#39;h_hi&#39;</span><span class="p">])</span>
+    <span class="k">return</span></div>
+
+
+
+<div class="viewcode-block" id="number_density_profile">
+<a class="viewcode-back" href="../../../../_autosummary/kosmatau3d.models.observations.methods.number_density_profile.html#kosmatau3d.models.observations.methods.number_density_profile">[docs]</a>
+<span class="k">def</span> <span class="nf">number_density_profile</span><span class="p">(</span><span class="n">file</span><span class="o">=</span><span class="s1">&#39;number-densities.dat&#39;</span><span class="p">):</span>
+    <span class="c1"># Open file for the number density profile of the object (n/cm**3)</span>
+    <span class="k">if</span> <span class="n">constants</span><span class="o">.</span><span class="n">directory</span> <span class="o">!=</span> <span class="s1">&#39;&#39;</span><span class="p">:</span>
+        <span class="n">density</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">genfromtxt</span><span class="p">(</span><span class="n">constants</span><span class="o">.</span><span class="n">INPUTPATH</span><span class="o">+</span><span class="n">constants</span><span class="o">.</span><span class="n">directory</span><span class="o">+</span><span class="n">file</span><span class="p">,</span> 
+                                <span class="n">names</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;radius&#39;</span><span class="p">,</span> <span class="s1">&#39;h2_density&#39;</span><span class="p">])</span>
+        <span class="n">observations</span><span class="o">.</span><span class="n">number_density_profile</span> <span class="o">=</span> <span class="p">((</span><span class="n">density</span><span class="p">[</span><span class="s1">&#39;radius&#39;</span><span class="p">]</span><span class="o">*</span><span class="mi">1000</span><span class="p">),</span> <span class="n">density</span><span class="p">[</span><span class="s1">&#39;h2_density&#39;</span><span class="p">])</span>
+    <span class="k">return</span></div>
+
+
+
+<div class="viewcode-block" id="fuv_profile">
+<a class="viewcode-back" href="../../../../_autosummary/kosmatau3d.models.observations.methods.fuv_profile.html#kosmatau3d.models.observations.methods.fuv_profile">[docs]</a>
+<span class="k">def</span> <span class="nf">fuv_profile</span><span class="p">(</span><span class="n">file</span><span class="o">=</span><span class="s1">&#39;galactic_FUV_complete.dat&#39;</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&#39;&#39;&#39;</span>
+<span class="sd">    Open file for the FUV profile of the object</span>
+<span class="sd">    &#39;radius&#39;, &#39;energy density 912&#39;, &#39;energy density 1350&#39;, &#39;energy density 1500&#39;, &#39;energy density 1650&#39;,</span>
+<span class="sd">    &#39;energy density 2000&#39;, &#39;energy density 2200&#39;, &#39;energy density 2500&#39;, &#39;energy density 2800&#39;, &#39;energy density 3650&#39;])</span>
+<span class="sd">    &#39;&#39;&#39;</span>
+    <span class="k">if</span> <span class="n">constants</span><span class="o">.</span><span class="n">directory</span> <span class="o">!=</span> <span class="s1">&#39;&#39;</span><span class="p">:</span>
+        <span class="n">fuv</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">loadtxt</span><span class="p">(</span><span class="n">constants</span><span class="o">.</span><span class="n">INPUTPATH</span><span class="o">+</span><span class="n">constants</span><span class="o">.</span><span class="n">directory</span><span class="o">+</span><span class="n">file</span><span class="p">)</span>
+        <span class="c1"># r = np.arange(0,20000,50)</span>
+        <span class="c1"># fuv = 50/4/np.pi/r**2</span>
+        <span class="n">observations</span><span class="o">.</span><span class="n">fuv_profile</span> <span class="o">=</span> <span class="p">(</span><span class="n">fuv</span><span class="p">[:,</span> <span class="p">:</span><span class="mi">2</span><span class="p">],</span> <span class="n">fuv</span><span class="p">[:,</span> <span class="mi">2</span><span class="p">]</span> <span class="o">/</span> <span class="p">(</span><span class="n">constants</span><span class="o">.</span><span class="n">pc</span><span class="o">*</span><span class="mi">100</span><span class="p">)</span><span class="o">**</span><span class="mi">3</span><span class="o">/</span><span class="n">constants</span><span class="o">.</span><span class="n">u_draine0</span><span class="p">,</span>
+                                    <span class="n">fuv</span><span class="p">[:,</span> <span class="mi">3</span><span class="p">:]</span> <span class="o">/</span> <span class="p">(</span><span class="n">constants</span><span class="o">.</span><span class="n">pc</span><span class="o">*</span><span class="mi">100</span><span class="p">)</span><span class="o">**</span><span class="mi">3</span><span class="o">/</span><span class="n">constants</span><span class="o">.</span><span class="n">u_draine0</span><span class="p">)</span>
+        <span class="c1"># return (r,fuv)</span>
+    <span class="k">return</span></div>
+
+
+
+<div class="viewcode-block" id="galaxy_rotation_profile">
+<a class="viewcode-back" href="../../../../_autosummary/kosmatau3d.models.observations.methods.galaxy_rotation_profile.html#kosmatau3d.models.observations.methods.galaxy_rotation_profile">[docs]</a>
+<span class="k">def</span> <span class="nf">galaxy_rotation_profile</span><span class="p">(</span><span class="n">file</span><span class="o">=</span><span class="s1">&#39;rot_milki2018_14.dat&#39;</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&#39;&#39;&#39;</span>
+<span class="sd">    Open file for the rotation profile of the object. There is `rot_milki2018_14.dat`, which is taken from</span>
+<span class="sd">    Bhattacharjee et al. (2014) and Eilers et al. (2018), and there is `rot_curve.dat`, for which I cannot find a</span>
+<span class="sd">    reference. Christoph&#39;s latest version of KOSMA-tau-3D seemed to be using the former data file, but I will test</span>
+<span class="sd">    both. The latter file has higher rotational velocities, though it seems somewhat artificially created (multiple</span>
+<span class="sd">    entries with the same value).</span>
+<span class="sd">    &#39;&#39;&#39;</span>
+    <span class="k">if</span> <span class="n">constants</span><span class="o">.</span><span class="n">directory</span> <span class="o">!=</span> <span class="s1">&#39;&#39;</span><span class="p">:</span>
+        <span class="n">rotation</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">genfromtxt</span><span class="p">(</span><span class="n">constants</span><span class="o">.</span><span class="n">INPUTPATH</span><span class="o">+</span><span class="n">constants</span><span class="o">.</span><span class="n">directory</span><span class="o">+</span><span class="n">file</span><span class="p">)</span>
+        <span class="n">observations</span><span class="o">.</span><span class="n">galaxy_rotation_profile</span> <span class="o">=</span> <span class="p">(</span><span class="n">rotation</span><span class="p">[:,</span> <span class="mi">0</span><span class="p">]</span><span class="o">*</span><span class="mf">1000.</span><span class="p">,</span> <span class="n">rotation</span><span class="p">[:,</span> <span class="mi">1</span><span class="p">:])</span>
+    <span class="k">return</span></div>
+
+
+
+<span class="c1"># jit_module(nopython=False)</span>
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2023, Craig Yanitski.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>
