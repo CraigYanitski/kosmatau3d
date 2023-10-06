@@ -6,7 +6,7 @@
 The documentation of a clumpy PDR model!
 ========================================
 
-kosmatau3d is a clumpy photo-dissociation region (PDR) model built on the KOSMA-:math:`\tau` PDR model from the Universität zu Köln and Tel Aviv University.
+:code:`kosmatau3d` is a clumpy photo-dissociation region (PDR) model built on the KOSMA-:math:`\tau` PDR model from the Universität zu Köln and Tel Aviv University.
 It will soon be able to download its required data from the InterStellar Medium DataBase (ISMDB) hosted at the Observatoire de Paris-Meudon.
 
 .. note::
@@ -14,11 +14,11 @@ It will soon be able to download its required data from the InterStellar Medium 
    Please send all questions and issues to yanitski@ph1.uni-koeln.de.
 
 .. toctree::
-   :maxdepth: 5
+   :maxdepth: 2
    :caption: Contents:
 
    Installation <installation>
-   KOSMA-$\tau$ Properties <properties>
+   Clump Properties <properties>
    Voxels <voxel>
    3D Models <model>
    Comparison to Observations <comparison>
