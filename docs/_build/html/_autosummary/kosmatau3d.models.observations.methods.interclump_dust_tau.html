@@ -42,7 +42,7 @@
   </form>
 </div>
         </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
-              <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+              <p class="caption" role="heading"><span class="caption-text">Sections:</span></p>
 <ul class="current">
 <li class="toctree-l1"><a class="reference internal" href="../installation.html">Installation</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../properties.html">Clump Properties</a></li>
@@ -52,18 +52,16 @@
 <li class="toctree-l1"><a class="reference internal" href="../development.html">Future Development</a></li>
 <li class="toctree-l1 current"><a class="reference internal" href="kosmatau3d.html">API Reference</a><ul class="current">
 <li class="toctree-l2"><a class="reference internal" href="kosmatau3d.comparison.html">kosmatau3d.comparison</a></li>
+<li class="toctree-l2"><a class="reference internal" href="kosmatau3d.kosmatau.html">kosmatau3d.kosmatau</a></li>
 <li class="toctree-l2 current"><a class="reference internal" href="kosmatau3d.models.html">kosmatau3d.models</a><ul class="current">
 <li class="toctree-l3"><a class="reference internal" href="kosmatau3d.models.dill_grid.html">kosmatau3d.models.dill_grid</a></li>
 <li class="toctree-l3"><a class="reference internal" href="kosmatau3d.models.help.html">kosmatau3d.models.help</a></li>
-<li class="toctree-l3"><a class="reference internal" href="kosmatau3d.models.Model.html">kosmatau3d.models.Model</a></li>
-<li class="toctree-l3"><a class="reference internal" href="kosmatau3d.models.Voxel.html">kosmatau3d.models.Voxel</a></li>
-<li class="toctree-l3"><a class="reference internal" href="kosmatau3d.models.VoxelGrid.html">kosmatau3d.models.VoxelGrid</a></li>
 <li class="toctree-l3"><a class="reference internal" href="kosmatau3d.models.combinations.html">kosmatau3d.models.combinations</a></li>
 <li class="toctree-l3"><a class="reference internal" href="kosmatau3d.models.constants.html">kosmatau3d.models.constants</a></li>
 <li class="toctree-l3"><a class="reference internal" href="kosmatau3d.models.ensemble.html">kosmatau3d.models.ensemble</a></li>
 <li class="toctree-l3"><a class="reference internal" href="kosmatau3d.models.interpolations.html">kosmatau3d.models.interpolations</a></li>
 <li class="toctree-l3"><a class="reference internal" href="kosmatau3d.models.masspoints.html">kosmatau3d.models.masspoints</a></li>
-<li class="toctree-l3"><a class="reference internal" href="kosmatau3d.models.models.html">kosmatau3d.models.models</a></li>
+<li class="toctree-l3"><a class="reference internal" href="kosmatau3d.models.model.html">kosmatau3d.models.model</a></li>
 <li class="toctree-l3 current"><a class="reference internal" href="kosmatau3d.models.observations.html">kosmatau3d.models.observations</a><ul class="current">
 <li class="toctree-l4 current"><a class="reference internal" href="kosmatau3d.models.observations.methods.html">kosmatau3d.models.observations.methods</a></li>
 </ul>
@@ -72,6 +70,8 @@
 <li class="toctree-l3"><a class="reference internal" href="kosmatau3d.models.radiativeTransfer.html">kosmatau3d.models.radiativeTransfer</a></li>
 <li class="toctree-l3"><a class="reference internal" href="kosmatau3d.models.shape.html">kosmatau3d.models.shape</a></li>
 <li class="toctree-l3"><a class="reference internal" href="kosmatau3d.models.species.html">kosmatau3d.models.species</a></li>
+<li class="toctree-l3"><a class="reference internal" href="kosmatau3d.models.voxel.html">kosmatau3d.models.voxel</a></li>
+<li class="toctree-l3"><a class="reference internal" href="kosmatau3d.models.voxel_grid.html">kosmatau3d.models.voxel_grid</a></li>
 </ul>
 </li>
 <li class="toctree-l2"><a class="reference internal" href="kosmatau3d.properties.html">kosmatau3d.properties</a></li>
@@ -112,7 +112,9 @@
 <dl class="py function">
 <dt class="sig sig-object py" id="kosmatau3d.models.observations.methods.interclump_dust_tau">
 <span class="sig-name descname"><span class="pre">interclump_dust_tau</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">file</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'interclumpDustTau.dat'</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/kosmatau3d/models/observations/methods.html#interclump_dust_tau"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#kosmatau3d.models.observations.methods.interclump_dust_tau" title="Link to this definition">¶</a></dt>
-<dd></dd></dl>
+<dd><p>Open file for KOSMA-:math:` au` simulations of optical depths</p>
+<p>FORMAT: n, M, UV, tau[dust]</p>
+</dd></dl>
 
 </section>
 

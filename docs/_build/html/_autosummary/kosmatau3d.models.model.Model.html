@@ -1,0 +1,268 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" /><meta name="generator" content="Docutils 0.18.1: http://docutils.sourceforge.net/" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>kosmatau3d.models.model.Model &mdash; kosmatau3d 1.0.3 documentation</title>
+      <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
+      <link rel="stylesheet" href="../_static/readthedocs-custom.css" type="text/css" />
+  <!--[if lt IE 9]>
+    <script src="../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script src="../_static/documentation_options.js?v=baaebd52"></script>
+        <script src="../_static/doctools.js?v=888ff710"></script>
+        <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
+        <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+    <script src="../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="kosmatau3d.models.model.SyntheticModel" href="kosmatau3d.models.model.SyntheticModel.html" />
+    <link rel="prev" title="kosmatau3d.models.model" href="kosmatau3d.models.model.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../index.html" class="icon icon-home">
+            kosmatau3d
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Sections:</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../installation.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../properties.html">Clump Properties</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../voxel.html">Voxels</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../model.html">3D Models</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../comparison.html">Comparison to Observations</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../development.html">Future Development</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="kosmatau3d.html">API Reference</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="kosmatau3d.comparison.html">kosmatau3d.comparison</a></li>
+<li class="toctree-l2"><a class="reference internal" href="kosmatau3d.kosmatau.html">kosmatau3d.kosmatau</a></li>
+<li class="toctree-l2 current"><a class="reference internal" href="kosmatau3d.models.html">kosmatau3d.models</a><ul class="current">
+<li class="toctree-l3"><a class="reference internal" href="kosmatau3d.models.dill_grid.html">kosmatau3d.models.dill_grid</a></li>
+<li class="toctree-l3"><a class="reference internal" href="kosmatau3d.models.help.html">kosmatau3d.models.help</a></li>
+<li class="toctree-l3"><a class="reference internal" href="kosmatau3d.models.combinations.html">kosmatau3d.models.combinations</a></li>
+<li class="toctree-l3"><a class="reference internal" href="kosmatau3d.models.constants.html">kosmatau3d.models.constants</a></li>
+<li class="toctree-l3"><a class="reference internal" href="kosmatau3d.models.ensemble.html">kosmatau3d.models.ensemble</a></li>
+<li class="toctree-l3"><a class="reference internal" href="kosmatau3d.models.interpolations.html">kosmatau3d.models.interpolations</a></li>
+<li class="toctree-l3"><a class="reference internal" href="kosmatau3d.models.masspoints.html">kosmatau3d.models.masspoints</a></li>
+<li class="toctree-l3 current"><a class="reference internal" href="kosmatau3d.models.model.html">kosmatau3d.models.model</a><ul class="current">
+<li class="toctree-l4 current"><a class="current reference internal" href="#">kosmatau3d.models.model.Model</a></li>
+<li class="toctree-l4"><a class="reference internal" href="kosmatau3d.models.model.SyntheticModel.html">kosmatau3d.models.model.SyntheticModel</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="kosmatau3d.models.observations.html">kosmatau3d.models.observations</a></li>
+<li class="toctree-l3"><a class="reference internal" href="kosmatau3d.models.plotting.html">kosmatau3d.models.plotting</a></li>
+<li class="toctree-l3"><a class="reference internal" href="kosmatau3d.models.radiativeTransfer.html">kosmatau3d.models.radiativeTransfer</a></li>
+<li class="toctree-l3"><a class="reference internal" href="kosmatau3d.models.shape.html">kosmatau3d.models.shape</a></li>
+<li class="toctree-l3"><a class="reference internal" href="kosmatau3d.models.species.html">kosmatau3d.models.species</a></li>
+<li class="toctree-l3"><a class="reference internal" href="kosmatau3d.models.voxel.html">kosmatau3d.models.voxel</a></li>
+<li class="toctree-l3"><a class="reference internal" href="kosmatau3d.models.voxel_grid.html">kosmatau3d.models.voxel_grid</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="kosmatau3d.properties.html">kosmatau3d.properties</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../acknowledgements.html">Acknowledgements</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">kosmatau3d</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="kosmatau3d.html">kosmatau3d</a></li>
+          <li class="breadcrumb-item"><a href="kosmatau3d.models.html">kosmatau3d.models</a></li>
+          <li class="breadcrumb-item"><a href="kosmatau3d.models.model.html">kosmatau3d.models.model</a></li>
+      <li class="breadcrumb-item active">kosmatau3d.models.model.Model</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="kosmatau3d-models-model-model">
+<h1>kosmatau3d.models.model.Model<a class="headerlink" href="#kosmatau3d-models-model-model" title="Link to this heading">¶</a></h1>
+<dl class="py class">
+<dt class="sig sig-object py" id="kosmatau3d.models.model.Model">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">Model</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">history_path</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">''</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">directory</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">''</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">folder</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">''</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">clump_tau_grid_file</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'clump_tau_LineCenter.dat'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">clump_tb_grid_file</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'clump_Tmb_LineCenter.dat'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">clump_taufuv_grid_file</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'RhoMassAFUV.dat'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">clump_column_density_file</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'clumpMeanCols.dat'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">clump_temperature_file</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'clumpTemperatures_filled.dat'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">interclump_tau_grid_file</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'interclumpTauLineCenter.dat'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">interclump_dust_tau_grid_file</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'interclumpDustTau.dat'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">interclump_tb_grid_file</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'interclumpTmbLineCenter.dat'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">interclump_dust_tb_grid_file</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'interclumpDustSED.dat'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">interclump_taufuv_grid_file</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'interclumpTauFUV.dat'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">interclump_column_density_file</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'interclumpMeanCols.dat'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">interclump_temperature_file</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'interclumpTemperatures_filled.dat'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">h2_surface_density_file</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'h2_surface-density.dat'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">hi_surface_density_file</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'hi_surface-density.dat'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">h2_scale_height_file</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'h2_scale-height.dat'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">hi_scale_height_file</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'hi_scale-height.dat'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">h_number_density_file</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'h_number-density.dat'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">fuv_file</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'galactic_FUV_complete.dat'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">l_range</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">(912,</span> <span class="pre">2066)</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">average_fuv</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">scale_gc</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">mhi_gc</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">mh2_gc</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">r_gc</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">4400</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">like_clumps</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">all_full</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">velocity_file</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'rot_milki2018_14.dat'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">disp_core</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">r_core</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">4400</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">disp_gmc</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">x</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">y</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">z</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">model_type</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">''</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">resolution</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1000</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">abundances</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">['ELECTR',</span> <span class="pre">'H',</span> <span class="pre">'H2',</span> <span class="pre">'H+']</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">transitions</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'all'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dust</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'molecular'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">velocity_range</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">()</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">velocity_number</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">clump_mass_range</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">((0,</span> <span class="pre">2),</span> <span class="pre">-2)</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">clump_mass_number</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">(3,</span> <span class="pre">1)</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">clump_n_max</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">(1,</span> <span class="pre">100)</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ensemble_mass_factor</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">(1,</span> <span class="pre">1)</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">interclump_idx</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">(False,</span> <span class="pre">True)</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">interclump_wnm_idx</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">(False,</span> <span class="pre">False)</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">interclump_hi_ratio</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">interclump_wnm_ratio</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.2</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">interclump_wnm_log_fuv</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">interclump_f_fuv_wnm</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">10000.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">interclump_fillingfactor</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">interclump_density</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1911</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">interclump_log_fuv</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">clump_log_fuv</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">hi_mass_factor</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">h2_mass_factor</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">fuv_factor</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">density_factor</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">global_uv</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">10</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">r_cmz</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">zeta_cmz</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1e-14</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">zeta_sol</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">2e-16</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">new_grid</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">suggested_calc</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dilled</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">timed</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">verbose</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">debug</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/kosmatau3d/models/model.html#Model"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#kosmatau3d.models.model.Model" title="Link to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference external" href="https://docs.python.org/3/library/functions.html#object" title="(in Python v3.12)"><code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></a></p>
+<p>This is the highest class in the hierarchy of the kosmatau3d simulation.
+It contains all of the information needed to properly model a PDR.</p>
+<p>The <cite>Model()</cite> class, which is used to create large three-dimensional PDR models and as
+well as a synthetic observation. For large models, it is best to stream the voxel
+data to the hard disk and avoid keeping the data in memory.</p>
+<p class="rubric">Methods</p>
+<table class="autosummary longtable docutils align-default">
+<tbody>
+<tr class="row-odd"><td><p><a class="reference internal" href="#kosmatau3d.models.model.Model.calculateModel" title="kosmatau3d.models.model.Model.calculateModel"><code class="xref py py-obj docutils literal notranslate"><span class="pre">calculateModel</span></code></a></p></td>
+<td><p>Compute voxel the emissivity and absorption spectra for each voxel.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#kosmatau3d.models.model.Model.getGrid" title="kosmatau3d.models.model.Model.getGrid"><code class="xref py py-obj docutils literal notranslate"><span class="pre">getGrid</span></code></a></p></td>
+<td><p>Return <cite>voxelGrid</cite> instance of the model.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#kosmatau3d.models.model.Model.getIntensityMap" title="kosmatau3d.models.model.Model.getIntensityMap"><code class="xref py py-obj docutils literal notranslate"><span class="pre">getIntensityMap</span></code></a></p></td>
+<td><p>Return synthetic intensity.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#kosmatau3d.models.model.Model.getOrientation" title="kosmatau3d.models.model.Model.getOrientation"><code class="xref py py-obj docutils literal notranslate"><span class="pre">getOrientation</span></code></a></p></td>
+<td><p>Return orientation of model.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#kosmatau3d.models.model.Model.getShape" title="kosmatau3d.models.model.Model.getShape"><code class="xref py py-obj docutils literal notranslate"><span class="pre">getShape</span></code></a></p></td>
+<td><p>Return <cite>Shape</cite> instance of model.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#kosmatau3d.models.model.Model.getSpecies" title="kosmatau3d.models.model.Model.getSpecies"><code class="xref py py-obj docutils literal notranslate"><span class="pre">getSpecies</span></code></a></p></td>
+<td><p>Return list of species names.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#kosmatau3d.models.model.Model.getSpeciesNames" title="kosmatau3d.models.model.Model.getSpeciesNames"><code class="xref py py-obj docutils literal notranslate"><span class="pre">getSpeciesNames</span></code></a></p></td>
+<td><p>Same as <cite>getSpecies()</cite>.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#kosmatau3d.models.model.Model.getType" title="kosmatau3d.models.model.Model.getType"><code class="xref py py-obj docutils literal notranslate"><span class="pre">getType</span></code></a></p></td>
+<td><p>Return type of model.</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">hdu_header</span></code></p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#kosmatau3d.models.model.Model.plotModel" title="kosmatau3d.models.model.Model.plotModel"><code class="xref py py-obj docutils literal notranslate"><span class="pre">plotModel</span></code></a></p></td>
+<td><p>Outdated method to plot model information.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#kosmatau3d.models.model.Model.printIntensityMap" title="kosmatau3d.models.model.Model.printIntensityMap"><code class="xref py py-obj docutils literal notranslate"><span class="pre">printIntensityMap</span></code></a></p></td>
+<td><p>Print synthetic intensity data to screen.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#kosmatau3d.models.model.Model.writeEmission" title="kosmatau3d.models.model.Model.writeEmission"><code class="xref py py-obj docutils literal notranslate"><span class="pre">writeEmission</span></code></a></p></td>
+<td><p>Write voxel spectra to hard disk.</p></td>
+</tr>
+</tbody>
+</table>
+<dl class="py method">
+<dt class="sig sig-object py" id="kosmatau3d.models.model.Model.calculateModel">
+<span class="sig-name descname"><span class="pre">calculateModel</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/kosmatau3d/models/model.html#Model.calculateModel"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#kosmatau3d.models.model.Model.calculateModel" title="Link to this definition">¶</a></dt>
+<dd><p>Compute voxel the emissivity and absorption spectra for each voxel.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="kosmatau3d.models.model.Model.getGrid">
+<span class="sig-name descname"><span class="pre">getGrid</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/kosmatau3d/models/model.html#Model.getGrid"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#kosmatau3d.models.model.Model.getGrid" title="Link to this definition">¶</a></dt>
+<dd><p>Return <cite>voxelGrid</cite> instance of the model. It contains all of the information regarding
+voxels used in the model.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="kosmatau3d.models.model.Model.getIntensityMap">
+<span class="sig-name descname"><span class="pre">getIntensityMap</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/kosmatau3d/models/model.html#Model.getIntensityMap"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#kosmatau3d.models.model.Model.getIntensityMap" title="Link to this definition">¶</a></dt>
+<dd><p>Return synthetic intensity. This is only useful when keeping the
+model in memory.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="kosmatau3d.models.model.Model.getOrientation">
+<span class="sig-name descname"><span class="pre">getOrientation</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/kosmatau3d/models/model.html#Model.getOrientation"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#kosmatau3d.models.model.Model.getOrientation" title="Link to this definition">¶</a></dt>
+<dd><p>Return orientation of model. This is important for integrating the radiative 
+transfer equation</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="kosmatau3d.models.model.Model.getShape">
+<span class="sig-name descname"><span class="pre">getShape</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/kosmatau3d/models/model.html#Model.getShape"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#kosmatau3d.models.model.Model.getShape" title="Link to this definition">¶</a></dt>
+<dd><p>Return <cite>Shape</cite> instance of model. This will soon be moved from a class to a subpackage.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="kosmatau3d.models.model.Model.getSpecies">
+<span class="sig-name descname"><span class="pre">getSpecies</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/kosmatau3d/models/model.html#Model.getSpecies"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#kosmatau3d.models.model.Model.getSpecies" title="Link to this definition">¶</a></dt>
+<dd><p>Return list of species names.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="kosmatau3d.models.model.Model.getSpeciesNames">
+<span class="sig-name descname"><span class="pre">getSpeciesNames</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/kosmatau3d/models/model.html#Model.getSpeciesNames"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#kosmatau3d.models.model.Model.getSpeciesNames" title="Link to this definition">¶</a></dt>
+<dd><p>Same as <cite>getSpecies()</cite>.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="kosmatau3d.models.model.Model.getType">
+<span class="sig-name descname"><span class="pre">getType</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/kosmatau3d/models/model.html#Model.getType"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#kosmatau3d.models.model.Model.getType" title="Link to this definition">¶</a></dt>
+<dd><p>Return type of model. Currently only the ‘disk’ models are working.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="kosmatau3d.models.model.Model.plotModel">
+<span class="sig-name descname"><span class="pre">plotModel</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">plot</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'total</span> <span class="pre">intensity'</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/kosmatau3d/models/model.html#Model.plotModel"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#kosmatau3d.models.model.Model.plotModel" title="Link to this definition">¶</a></dt>
+<dd><p>Outdated method to plot model information. Might be useful when
+keeping model data in memory.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="kosmatau3d.models.model.Model.printIntensityMap">
+<span class="sig-name descname"><span class="pre">printIntensityMap</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">index</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/kosmatau3d/models/model.html#Model.printIntensityMap"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#kosmatau3d.models.model.Model.printIntensityMap" title="Link to this definition">¶</a></dt>
+<dd><p>Print synthetic intensity data to screen.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="kosmatau3d.models.model.Model.writeEmission">
+<span class="sig-name descname"><span class="pre">writeEmission</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/kosmatau3d/models/model.html#Model.writeEmission"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#kosmatau3d.models.model.Model.writeEmission" title="Link to this definition">¶</a></dt>
+<dd><p>Write voxel spectra to hard disk. This is only useful when keeping 
+the model in memory.</p>
+</dd></dl>
+
+</dd></dl>
+
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="kosmatau3d.models.model.html" class="btn btn-neutral float-left" title="kosmatau3d.models.model" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="kosmatau3d.models.model.SyntheticModel.html" class="btn btn-neutral float-right" title="kosmatau3d.models.model.SyntheticModel" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2023, Craig Yanitski.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

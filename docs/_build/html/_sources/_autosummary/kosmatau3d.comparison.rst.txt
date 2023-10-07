@@ -34,6 +34,6 @@ kosmatau3d.comparison
    :template: custom-module-template.rst
    :recursive:
 
-   kosmatau3d.comparison.Observation
    kosmatau3d.comparison.model_selection
+   kosmatau3d.comparison.observation
 

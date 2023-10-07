@@ -39,7 +39,7 @@
   </form>
 </div>
         </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
-              <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+              <p class="caption" role="heading"><span class="caption-text">Sections:</span></p>
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="../../installation.html">Installation</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../properties.html">Clump Properties</a></li>
@@ -76,8 +76,15 @@
            <div itemprop="articleBody">
              
   <h1>Source code for kosmatau3d.comparison</h1><div class="highlight"><pre>
-<span></span><span class="kn">from</span> <span class="nn">.model_selection</span> <span class="kn">import</span> <span class="o">*</span>
-<span class="kn">from</span> <span class="nn">.Observation</span> <span class="kn">import</span> <span class="o">*</span>
+<span></span><span class="sd">&#39;&#39;&#39;</span>
+<span class="sd">The :code:`comparison` subpackage is useful both to load the observational data used for comparison</span>
+<span class="sd">and to perform a comparison to :code:`kosmatau3d` models.</span>
+<span class="sd">It is currently setup to compare to the Milky Way models from Yanitski (2023), but it will</span>
+<span class="sd">be extended soon to arbitrary model setup.</span>
+<span class="sd">&#39;&#39;&#39;</span>
+
+<span class="kn">from</span> <span class="nn">.model_selection</span> <span class="kn">import</span> <span class="o">*</span>
+<span class="kn">from</span> <span class="nn">.observation</span> <span class="kn">import</span> <span class="o">*</span>
 
 
 <div class="viewcode-block" id="help">

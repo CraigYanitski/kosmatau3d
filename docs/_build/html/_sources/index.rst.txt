@@ -15,7 +15,7 @@ It will soon be able to download its required data from the InterStellar Medium 
 
 .. toctree::
    :maxdepth: 2
-   :caption: Contents:
+   :caption: Sections:
 
    Installation <installation>
    Clump Properties <properties>

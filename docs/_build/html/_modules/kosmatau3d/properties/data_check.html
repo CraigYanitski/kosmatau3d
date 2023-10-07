@@ -39,7 +39,7 @@
   </form>
 </div>
         </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
-              <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+              <p class="caption" role="heading"><span class="caption-text">Sections:</span></p>
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="../../../installation.html">Installation</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../properties.html">Clump Properties</a></li>
@@ -89,6 +89,7 @@
 <a class="viewcode-back" href="../../../_autosummary/kosmatau3d.properties.data_check.grid_data_check.html#kosmatau3d.properties.data_check.grid_data_check">[docs]</a>
 <span class="k">def</span> <span class="nf">grid_data_check</span><span class="p">(</span><span class="n">file</span><span class="o">=</span><span class="s1">&#39;&#39;</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&#39;&#39;&#39;</span>
+<span class="sd">    Parse and return parameters used in KOSMA-tau grid from header.</span>
 <span class="sd">    &#39;&#39;&#39;</span>
     <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">file</span><span class="p">)</span> <span class="k">as</span> <span class="n">gd</span><span class="p">:</span>
         <span class="n">header</span> <span class="o">=</span> <span class="n">gd</span><span class="o">.</span><span class="n">readline</span><span class="p">()</span>
@@ -104,6 +105,7 @@
 <a class="viewcode-back" href="../../../_autosummary/kosmatau3d.properties.data_check.grid_data_limits.html#kosmatau3d.properties.data_check.grid_data_limits">[docs]</a>
 <span class="k">def</span> <span class="nf">grid_data_limits</span><span class="p">(</span><span class="n">file</span><span class="o">=</span><span class="s1">&#39;&#39;</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&#39;&#39;&#39;</span>
+<span class="sd">    Return limits of KOSMA-tau grid parameters.</span>
 <span class="sd">    &#39;&#39;&#39;</span>
     <span class="n">params</span> <span class="o">=</span> <span class="n">grid_data_check</span><span class="p">(</span><span class="n">file</span><span class="p">)</span>
     <span class="k">for</span> <span class="n">p</span> <span class="ow">in</span> <span class="n">params</span><span class="o">.</span><span class="n">keys</span><span class="p">():</span>

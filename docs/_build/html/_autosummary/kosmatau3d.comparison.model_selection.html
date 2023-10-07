@@ -19,8 +19,8 @@
     <script src="../_static/js/theme.js"></script>
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" />
-    <link rel="next" title="kosmatau3d.models" href="kosmatau3d.models.html" />
-    <link rel="prev" title="kosmatau3d.comparison.Observation" href="kosmatau3d.comparison.Observation.html" /> 
+    <link rel="next" title="kosmatau3d.comparison.model_selection.combine_regridded" href="kosmatau3d.comparison.model_selection.combine_regridded.html" />
+    <link rel="prev" title="kosmatau3d.comparison.help" href="kosmatau3d.comparison.help.html" /> 
 </head>
 
 <body class="wy-body-for-nav"> 
@@ -42,7 +42,7 @@
   </form>
 </div>
         </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
-              <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+              <p class="caption" role="heading"><span class="caption-text">Sections:</span></p>
 <ul class="current">
 <li class="toctree-l1"><a class="reference internal" href="../installation.html">Installation</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../properties.html">Clump Properties</a></li>
@@ -53,10 +53,24 @@
 <li class="toctree-l1 current"><a class="reference internal" href="kosmatau3d.html">API Reference</a><ul class="current">
 <li class="toctree-l2 current"><a class="reference internal" href="kosmatau3d.comparison.html">kosmatau3d.comparison</a><ul class="current">
 <li class="toctree-l3"><a class="reference internal" href="kosmatau3d.comparison.help.html">kosmatau3d.comparison.help</a></li>
-<li class="toctree-l3"><a class="reference internal" href="kosmatau3d.comparison.Observation.html">kosmatau3d.comparison.Observation</a></li>
-<li class="toctree-l3 current"><a class="current reference internal" href="#">kosmatau3d.comparison.model_selection</a></li>
+<li class="toctree-l3 current"><a class="current reference internal" href="#">kosmatau3d.comparison.model_selection</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="kosmatau3d.comparison.model_selection.combine_regridded.html">kosmatau3d.comparison.model_selection.combine_regridded</a></li>
+<li class="toctree-l4"><a class="reference internal" href="kosmatau3d.comparison.model_selection.determine_rms.html">kosmatau3d.comparison.model_selection.determine_rms</a></li>
+<li class="toctree-l4"><a class="reference internal" href="kosmatau3d.comparison.model_selection.double_line_plot.html">kosmatau3d.comparison.model_selection.double_line_plot</a></li>
+<li class="toctree-l4"><a class="reference internal" href="kosmatau3d.comparison.model_selection.error_correction.html">kosmatau3d.comparison.model_selection.error_correction</a></li>
+<li class="toctree-l4"><a class="reference internal" href="kosmatau3d.comparison.model_selection.line_ratio_comparison.html">kosmatau3d.comparison.model_selection.line_ratio_comparison</a></li>
+<li class="toctree-l4"><a class="reference internal" href="kosmatau3d.comparison.model_selection.model_selection_new.html">kosmatau3d.comparison.model_selection.model_selection_new</a></li>
+<li class="toctree-l4"><a class="reference internal" href="kosmatau3d.comparison.model_selection.model_selection_old.html">kosmatau3d.comparison.model_selection.model_selection_old</a></li>
+<li class="toctree-l4"><a class="reference internal" href="kosmatau3d.comparison.model_selection.plot_comparison.html">kosmatau3d.comparison.model_selection.plot_comparison</a></li>
+<li class="toctree-l4"><a class="reference internal" href="kosmatau3d.comparison.model_selection.regrid_observations.html">kosmatau3d.comparison.model_selection.regrid_observations</a></li>
+<li class="toctree-l4"><a class="reference internal" href="kosmatau3d.comparison.model_selection.view_observation.html">kosmatau3d.comparison.model_selection.view_observation</a></li>
+<li class="toctree-l4"><a class="reference internal" href="kosmatau3d.comparison.model_selection.violin_comparison.html">kosmatau3d.comparison.model_selection.violin_comparison</a></li>
 </ul>
 </li>
+<li class="toctree-l3"><a class="reference internal" href="kosmatau3d.comparison.observation.html">kosmatau3d.comparison.observation</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="kosmatau3d.kosmatau.html">kosmatau3d.kosmatau</a></li>
 <li class="toctree-l2"><a class="reference internal" href="kosmatau3d.models.html">kosmatau3d.models</a></li>
 <li class="toctree-l2"><a class="reference internal" href="kosmatau3d.properties.html">kosmatau3d.properties</a></li>
 </ul>
@@ -91,14 +105,54 @@
              
   <section id="module-kosmatau3d.comparison.model_selection">
 <span id="kosmatau3d-comparison-model-selection"></span><h1>kosmatau3d.comparison.model_selection<a class="headerlink" href="#module-kosmatau3d.comparison.model_selection" title="Link to this heading">¶</a></h1>
+<p>This subsubpackage contains functions to regrid and resample observational data,
+compute error, compare to grids of <code class="code docutils literal notranslate"><span class="pre">kosmatau3d</span></code> models, and plot the results.</p>
+<p class="rubric">Functions</p>
+<table class="autosummary longtable docutils align-default">
+<tbody>
+<tr class="row-odd"><td><p><a class="reference internal" href="kosmatau3d.comparison.model_selection.combine_regridded.html#kosmatau3d.comparison.model_selection.combine_regridded" title="kosmatau3d.comparison.model_selection.combine_regridded"><code class="xref py py-obj docutils literal notranslate"><span class="pre">combine_regridded</span></code></a></p></td>
+<td><p>Combine separate regridded files.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="kosmatau3d.comparison.model_selection.determine_rms.html#kosmatau3d.comparison.model_selection.determine_rms" title="kosmatau3d.comparison.model_selection.determine_rms"><code class="xref py py-obj docutils literal notranslate"><span class="pre">determine_rms</span></code></a></p></td>
+<td><p>determine RMS of selected surveys.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="kosmatau3d.comparison.model_selection.double_line_plot.html#kosmatau3d.comparison.model_selection.double_line_plot" title="kosmatau3d.comparison.model_selection.double_line_plot"><code class="xref py py-obj docutils literal notranslate"><span class="pre">double_line_plot</span></code></a></p></td>
+<td><p>Plot two lines against each other.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="kosmatau3d.comparison.model_selection.error_correction.html#kosmatau3d.comparison.model_selection.error_correction" title="kosmatau3d.comparison.model_selection.error_correction"><code class="xref py py-obj docutils literal notranslate"><span class="pre">error_correction</span></code></a></p></td>
+<td><p>Calculate configuration error</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="kosmatau3d.comparison.model_selection.line_ratio_comparison.html#kosmatau3d.comparison.model_selection.line_ratio_comparison" title="kosmatau3d.comparison.model_selection.line_ratio_comparison"><code class="xref py py-obj docutils literal notranslate"><span class="pre">line_ratio_comparison</span></code></a></p></td>
+<td><p>Plot comparison of line ratios.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="kosmatau3d.comparison.model_selection.model_selection_new.html#kosmatau3d.comparison.model_selection.model_selection_new" title="kosmatau3d.comparison.model_selection.model_selection_new"><code class="xref py py-obj docutils literal notranslate"><span class="pre">model_selection_new</span></code></a></p></td>
+<td><p>Like <cite>model_selection_old</cite>, but using <cite>SyntheticModel()</cite> and <cite>Observation</cite> instances.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="kosmatau3d.comparison.model_selection.model_selection_old.html#kosmatau3d.comparison.model_selection.model_selection_old" title="kosmatau3d.comparison.model_selection.model_selection_old"><code class="xref py py-obj docutils literal notranslate"><span class="pre">model_selection_old</span></code></a></p></td>
+<td><p>This function will compare the Milky Way models to the position-velocity observations depending on the</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="kosmatau3d.comparison.model_selection.plot_comparison.html#kosmatau3d.comparison.model_selection.plot_comparison" title="kosmatau3d.comparison.model_selection.plot_comparison"><code class="xref py py-obj docutils literal notranslate"><span class="pre">plot_comparison</span></code></a></p></td>
+<td><p>Plot heatmaps of a test statistic to exaimine over model grid.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="kosmatau3d.comparison.model_selection.regrid_observations.html#kosmatau3d.comparison.model_selection.regrid_observations" title="kosmatau3d.comparison.model_selection.regrid_observations"><code class="xref py py-obj docutils literal notranslate"><span class="pre">regrid_observations</span></code></a></p></td>
+<td><p>This function will regrid the specified mission data to the specified target header.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="kosmatau3d.comparison.model_selection.view_observation.html#kosmatau3d.comparison.model_selection.view_observation" title="kosmatau3d.comparison.model_selection.view_observation"><code class="xref py py-obj docutils literal notranslate"><span class="pre">view_observation</span></code></a></p></td>
+<td><p>This function will plot the specified (regridded) observation.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="kosmatau3d.comparison.model_selection.violin_comparison.html#kosmatau3d.comparison.model_selection.violin_comparison" title="kosmatau3d.comparison.model_selection.violin_comparison"><code class="xref py py-obj docutils literal notranslate"><span class="pre">violin_comparison</span></code></a></p></td>
+<td><p>Compare models and observation as violin plots.</p></td>
+</tr>
+</tbody>
+</table>
 </section>
 
 
            </div>
           </div>
           <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
-        <a href="kosmatau3d.comparison.Observation.html" class="btn btn-neutral float-left" title="kosmatau3d.comparison.Observation" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
-        <a href="kosmatau3d.models.html" class="btn btn-neutral float-right" title="kosmatau3d.models" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+        <a href="kosmatau3d.comparison.help.html" class="btn btn-neutral float-left" title="kosmatau3d.comparison.help" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="kosmatau3d.comparison.model_selection.combine_regridded.html" class="btn btn-neutral float-right" title="kosmatau3d.comparison.model_selection.combine_regridded" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
     </div>
 
   <hr/>

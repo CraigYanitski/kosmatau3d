@@ -1,0 +1,443 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>kosmatau3d.comparison.observation &mdash; kosmatau3d 1.0.3 documentation</title>
+      <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="../../../_static/css/theme.css" type="text/css" />
+      <link rel="stylesheet" href="../../../_static/readthedocs-custom.css" type="text/css" />
+  <!--[if lt IE 9]>
+    <script src="../../../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script src="../../../_static/documentation_options.js?v=baaebd52"></script>
+        <script src="../../../_static/doctools.js?v=888ff710"></script>
+        <script src="../../../_static/sphinx_highlight.js?v=dc90522c"></script>
+        <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+    <script src="../../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../../../index.html" class="icon icon-home">
+            kosmatau3d
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Sections:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../installation.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../properties.html">Clump Properties</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../voxel.html">Voxels</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../model.html">3D Models</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../comparison.html">Comparison to Observations</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../development.html">Future Development</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../_autosummary/kosmatau3d.html">API Reference</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../acknowledgements.html">Acknowledgements</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../index.html">kosmatau3d</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../../index.html">Module code</a></li>
+          <li class="breadcrumb-item"><a href="../comparison.html">kosmatau3d.comparison</a></li>
+      <li class="breadcrumb-item active">kosmatau3d.comparison.observation</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <h1>Source code for kosmatau3d.comparison.observation</h1><div class="highlight"><pre>
+<span></span><span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<span class="kn">import</span> <span class="nn">os</span>
+<span class="kn">import</span> <span class="nn">pandas</span> <span class="k">as</span> <span class="nn">pd</span>
+
+<span class="kn">from</span> <span class="nn">astropy.io</span> <span class="kn">import</span> <span class="n">fits</span>
+<span class="kn">from</span> <span class="nn">copy</span> <span class="kn">import</span> <span class="n">copy</span><span class="p">,</span> <span class="n">deepcopy</span>
+<span class="kn">from</span> <span class="nn">scipy.io</span> <span class="kn">import</span> <span class="n">readsav</span>
+
+<span class="n">cobe_idl_linfrq</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="mf">115.3</span><span class="p">,</span> <span class="mf">230.5</span><span class="p">,</span> <span class="mf">345.8</span><span class="p">,</span> <span class="mf">424.8</span><span class="p">,</span> <span class="mf">461.0</span><span class="p">,</span> <span class="mf">492.2</span><span class="p">,</span> <span class="mf">556.9</span><span class="p">,</span> <span class="mf">576.3</span><span class="p">,</span> <span class="mf">691.5</span><span class="p">,</span> <span class="mf">808.1</span><span class="p">,</span>
+                            <span class="mi">1113</span><span class="p">,</span> <span class="mi">1460</span><span class="p">,</span> <span class="mi">2226</span><span class="p">,</span> <span class="mi">1901</span><span class="p">,</span> <span class="mi">2060</span><span class="p">,</span> <span class="mi">2311</span><span class="p">,</span> <span class="mi">2459</span><span class="p">,</span> <span class="mi">2589</span><span class="p">,</span> <span class="mf">921.8</span><span class="p">])</span>
+<span class="c1"># cobe_idl_transitions = np.array([&#39;CO 1&#39;, &#39;CO 2&#39;, &#39;CO 3&#39;, &#39;CO 4&#39;, &#39;C 3&#39;, &#39;CO 5&#39;,</span>
+<span class="c1">#                                  &#39;CO 6&#39;, &#39;CO 7 + C 1&#39;, &#39;C+ 1&#39;, &#39;O 1&#39;, &#39;CO 8&#39;])</span>
+<span class="n">cobe_idl_transitions</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="s1">&#39;CO 1&#39;</span><span class="p">,</span> <span class="s1">&#39;CO 2&#39;</span><span class="p">,</span> <span class="s1">&#39;CO 3&#39;</span><span class="p">,</span> <span class="s1">&#39;CO 4&#39;</span><span class="p">,</span> <span class="s1">&#39;C 1&#39;</span><span class="p">,</span> <span class="s1">&#39;CO 5&#39;</span><span class="p">,</span>
+                                 <span class="s1">&#39;CO 6&#39;</span><span class="p">,</span> <span class="s1">&#39;CO 7 + C 2&#39;</span><span class="p">,</span> <span class="s1">&#39;C+ 1&#39;</span><span class="p">,</span> <span class="s1">&#39;CO 8&#39;</span><span class="p">])</span>
+<span class="c1"># cobe_idl_indeces = np.array([0, 1, 2, 4, 5, 7, 8, 9, 13, 14, 18])</span>
+<span class="n">cobe_idl_indeces</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">4</span><span class="p">,</span> <span class="mi">5</span><span class="p">,</span> <span class="mi">7</span><span class="p">,</span> <span class="mi">8</span><span class="p">,</span> <span class="mi">9</span><span class="p">,</span> <span class="mi">13</span><span class="p">,</span> <span class="mi">18</span><span class="p">])</span>
+<span class="n">missions_2d</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;COBE-FIRAS&#39;</span><span class="p">,</span> <span class="s1">&#39;COBE-DIRBE&#39;</span><span class="p">,</span> <span class="s1">&#39;Planck&#39;</span><span class="p">]</span>
+
+<div class="viewcode-block" id="Observation">
+<a class="viewcode-back" href="../../../_autosummary/kosmatau3d.comparison.observation.Observation.html#kosmatau3d.comparison.observation.Observation">[docs]</a>
+<span class="k">class</span> <span class="nc">Observation</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&#39;&#39;&#39;</span>
+<span class="sd">    This is an object to load individual observations. This is merely for</span>
+<span class="sd">    the convenience of opening all of the observations in a consistent manner.</span>
+<span class="sd">    There is an optional argument when initialising to set a base directory, which</span>
+<span class="sd">    makes it easier to load multiple models in succession.</span>
+<span class="sd">    &#39;&#39;&#39;</span>
+  
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">base_dir</span><span class="o">=</span><span class="s1">&#39;&#39;</span><span class="p">,</span> <span class="n">regridded_dir</span><span class="o">=</span><span class="s1">&#39;/regridded/temp/&#39;</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&#39;&#39;&#39;</span>
+<span class="sd">        This initialises the object along with the base directory.</span>
+<span class="sd">        The owned objects of `base_dir` and `files` are created.</span>
+<span class="sd">        `files` can be modified again when loading a model, but for now it</span>
+<span class="sd">        has the default filenames created with `kosmatau3d`.</span>
+<span class="sd">  </span>
+<span class="sd">        :param base_dir: the base directory to use when loading observations. Default: `&#39;&#39;`.</span>
+<span class="sd">        :param regridded_dir: the directory to use to load regridded observations. Default: `&#39;/regridded/temp/&#39;`.</span>
+<span class="sd">  </span>
+<span class="sd">  </span>
+<span class="sd">        &#39;&#39;&#39;</span>
+ 
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">base_dir</span><span class="p">):</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="n">base_dir</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">==</span> <span class="s1">&#39;/&#39;</span><span class="p">:</span>
+                <span class="n">base_dir</span> <span class="o">+=</span> <span class="s1">&#39;/&#39;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">base_dir</span> <span class="o">=</span> <span class="n">base_dir</span>
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">regridded_dir</span><span class="p">):</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="n">base_dir</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">==</span> <span class="s1">&#39;/&#39;</span><span class="p">:</span>
+                <span class="n">base_dir</span> <span class="o">=</span> <span class="s1">&#39;/&#39;</span> <span class="o">+</span> <span class="n">base_dir</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="n">base_dir</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">==</span> <span class="s1">&#39;/&#39;</span><span class="p">:</span>
+                <span class="n">base_dir</span> <span class="o">+=</span> <span class="s1">&#39;/&#39;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">regridded_dir</span> <span class="o">=</span> <span class="n">regridded_dir</span>
+        <span class="c1"># self.files = {&#39;intensity&#39;: &#39;synthetic_intensity&#39;,</span>
+        <span class="c1">#               &#39;optical_depth&#39;: &#39;synthetic_optical_depth&#39;,</span>
+        <span class="c1">#               &#39;dust_absorption&#39;: &#39;dust_absorption&#39;,</span>
+        <span class="c1">#               &#39;dust_emissivity&#39;: &#39;dust_emissivity&#39;,</span>
+        <span class="c1">#               &#39;species_absorption&#39;: &#39;species_absorption&#39;,</span>
+        <span class="c1">#               &#39;species_emissivity&#39;: &#39;species_emissivity&#39;,</span>
+        <span class="c1">#               &#39;density&#39;: &#39;voxel_density&#39;,</span>
+        <span class="c1">#               &#39;ensemble_dispersion&#39;: &#39;voxel_ensemble_dispersion&#39;, </span>
+        <span class="c1">#               &#39;ensemble_mass&#39;: &#39;voxel_ensemble_mass&#39;, </span>
+        <span class="c1">#               &#39;fuv_absorption&#39;: &#39;voxel_FUVabsorption&#39;, </span>
+        <span class="c1">#               &#39;fuv&#39;: &#39;voxel_fuv&#39;, </span>
+        <span class="c1">#               &#39;position&#39;: &#39;voxel_position&#39;, </span>
+        <span class="c1">#               &#39;velocity&#39;: &#39;voxel_velocity&#39;, </span>
+        <span class="c1">#               &#39;los_count&#39;: &#39;sightlines&#39;, </span>
+        <span class="c1">#               &#39;log&#39;: &#39;log&#39;, }</span>
+          
+        <span class="k">return</span>
+
+<div class="viewcode-block" id="Observation.reset_attributes">
+<a class="viewcode-back" href="../../../_autosummary/kosmatau3d.comparison.observation.Observation.html#kosmatau3d.comparison.observation.Observation.reset_attributes">[docs]</a>
+    <span class="k">def</span> <span class="nf">reset_attributes</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&#39;&#39;&#39;</span>
+<span class="sd">        Reinitialise instance attributes.</span>
+<span class="sd">        &#39;&#39;&#39;</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">obs</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">obs_error</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">obs_error_conf</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">obs_header</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">obs_data</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">obs_error_data</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">obs_error_conf_data</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">obs_lon</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">obs_lat</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">obs_vel</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">obs_iid</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">obs_i_iid</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">obs_wavelength</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">obs_frequency</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">obs_spectra</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">obs_spectra_resampled</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">obs_spectra_reduced</span> <span class="o">=</span> <span class="kc">None</span>
+
+        <span class="k">return</span></div>
+
+
+<div class="viewcode-block" id="Observation.load_survey">
+<a class="viewcode-back" href="../../../_autosummary/kosmatau3d.comparison.observation.Observation.html#kosmatau3d.comparison.observation.Observation.load_survey">[docs]</a>
+    <span class="k">def</span> <span class="nf">load_survey</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">directory</span><span class="o">=</span><span class="s1">&#39;&#39;</span><span class="p">,</span> <span class="n">survey</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">lat</span><span class="o">=</span><span class="mi">0</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&#39;&#39;&#39;</span>
+<span class="sd">        Load a survey into memory.</span>
+<span class="sd">        &#39;&#39;&#39;</span>
+
+        <span class="k">if</span> <span class="n">survey</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;ERROR: Please specify an observational survey&#39;</span><span class="p">)</span>
+            <span class="k">return</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">survey</span> <span class="o">=</span> <span class="n">survey</span>
+
+        <span class="k">if</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">base_dir</span> <span class="o">+</span> <span class="n">directory</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">survey</span><span class="p">):</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">directory</span> <span class="o">=</span> <span class="n">directory</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;ERROR: Survey </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">base_dir</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="n">directory</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="n">survey</span><span class="si">}</span><span class="s1"> does not exist. Ensure &#39;</span>
+                  <span class="o">+</span> <span class="s1">&#39;that base_dir was initialised correctly and that you have the correct survey&#39;</span><span class="p">)</span>
+            <span class="k">return</span>
+
+        <span class="k">if</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">base_dir</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">directory</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">survey</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">regridded_dir</span><span class="p">):</span>
+            <span class="n">full_path</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">base_dir</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">directory</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">survey</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">regridded_dir</span>
+            <span class="n">spectra_path</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">base_dir</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">directory</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">survey</span> <span class="o">+</span> <span class="s1">&#39;/spectra/&#39;</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;ERROR: Either the survey has not been regridded or the directory differs from &#39;</span>
+                  <span class="o">+</span> <span class="sa">f</span><span class="s1">&#39;</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">regridded_dir</span><span class="si">}</span><span class="s1">.&#39;</span><span class="p">)</span>
+            <span class="k">return</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">files</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">f</span><span class="o">.</span><span class="n">name</span> <span class="k">for</span> <span class="n">f</span> <span class="ow">in</span> <span class="n">os</span><span class="o">.</span><span class="n">scandir</span><span class="p">(</span><span class="n">full_path</span><span class="p">)</span> 
+                          <span class="k">if</span> <span class="p">(</span><span class="n">f</span><span class="o">.</span><span class="n">is_file</span><span class="p">()</span> <span class="ow">and</span> <span class="ow">not</span> <span class="s1">&#39;_error&#39;</span> <span class="ow">in</span> <span class="n">f</span><span class="o">.</span><span class="n">name</span><span class="p">))</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">reset_attributes</span><span class="p">()</span>
+
+        <span class="k">for</span> <span class="n">f</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">files</span><span class="p">:</span>
+            <span class="c1"># Open IDL files if necessary</span>
+            <span class="k">if</span> <span class="s1">&#39;.idl&#39;</span> <span class="ow">in</span> <span class="n">f</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">obs</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">readsav</span><span class="p">(</span><span class="n">full_path</span> <span class="o">+</span> <span class="n">f</span><span class="p">))</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">obs_header</span><span class="o">.</span><span class="n">append</span><span class="p">([</span><span class="kc">None</span><span class="p">])</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">obs_iid</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">deepcopy</span><span class="p">(</span><span class="n">cobe_idl_transitions</span><span class="p">))</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">obs_i_iid</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">deepcopy</span><span class="p">(</span><span class="n">cobe_idl_indeces</span><span class="p">))</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">obs_frequency</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">deepcopy</span><span class="p">(</span><span class="n">cobe_idl_linfrq</span><span class="p">)</span><span class="o">*</span><span class="mf">1e9</span><span class="p">)</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">obs_wavelength</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="mi">299792458</span><span class="o">/</span><span class="bp">self</span><span class="o">.</span><span class="n">obs_frequency</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">])</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">obs_data</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">obs</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">][</span><span class="s1">&#39;amplitude&#39;</span><span class="p">]</span> <span class="o">*</span> <span class="p">(</span><span class="mf">2.9979</span><span class="o">**</span><span class="mi">3</span><span class="p">)</span> <span class="o">/</span> <span class="p">((</span><span class="bp">self</span><span class="o">.</span><span class="n">obs_frequency</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span><span class="o">/</span><span class="mf">1e9</span><span class="p">)</span><span class="o">**</span><span class="mi">3</span><span class="o">*</span><span class="mi">2</span><span class="o">*</span><span class="mf">1.38</span><span class="p">)</span> <span class="o">*</span> <span class="mi">10</span><span class="o">**</span><span class="mi">8</span><span class="p">)</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">obs_error</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="kc">None</span><span class="p">)</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">obs_error_data</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">obs</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">][</span><span class="s1">&#39;sigma&#39;</span><span class="p">]</span> <span class="o">*</span> <span class="p">(</span><span class="mf">2.9979</span><span class="o">**</span><span class="mi">3</span><span class="p">)</span> <span class="o">/</span> <span class="p">((</span><span class="bp">self</span><span class="o">.</span><span class="n">obs_frequency</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span><span class="o">/</span><span class="mf">1e9</span><span class="p">)</span><span class="o">**</span><span class="mi">3</span><span class="o">*</span><span class="mi">2</span><span class="o">*</span><span class="mf">1.38</span><span class="p">)</span> <span class="o">*</span> <span class="mi">10</span><span class="o">**</span><span class="mi">8</span><span class="p">)</span>
+                <span class="n">error_conf</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros_like</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">obs_data</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">])</span>
+                <span class="k">for</span> <span class="n">_</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">int</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">floor</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">obs_data</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">/</span><span class="mi">2</span><span class="p">))):</span>
+                    <span class="n">idx</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="n">_</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="o">-</span><span class="n">_</span><span class="p">])</span>
+                    <span class="n">err</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">obs_data</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">][</span><span class="n">idx</span><span class="p">,</span> <span class="p">:]</span>
+                    <span class="n">error_conf</span><span class="p">[</span><span class="n">idx</span><span class="p">,</span> <span class="p">:]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">std</span><span class="p">(</span><span class="n">err</span><span class="o">-</span><span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">err</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">),</span> <span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">ddof</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span><span class="o">/</span><span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">err</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">obs_error_conf</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="kc">None</span><span class="p">)</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">obs_error_conf_data</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">deepcopy</span><span class="p">(</span><span class="n">error_conf</span><span class="p">))</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">obs_lon</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">deepcopy</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">obs</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">][</span><span class="s1">&#39;long&#39;</span><span class="p">]))</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">obs_lat</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="mi">0</span><span class="p">]))</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">obs_vel</span><span class="o">.</span><span class="n">append</span><span class="p">([</span><span class="kc">None</span><span class="p">])</span>
+            <span class="c1"># By default open data stored in a FITS file</span>
+            <span class="k">else</span><span class="p">:</span><span class="c1">#if &#39;.fits&#39; in f:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">obs</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">fits</span><span class="o">.</span><span class="n">open</span><span class="p">(</span><span class="n">full_path</span> <span class="o">+</span> <span class="n">f</span><span class="p">))</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">obs_data</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">obs</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">data</span><span class="p">)</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">obs_error</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">fits</span><span class="o">.</span><span class="n">open</span><span class="p">(</span><span class="n">full_path</span> <span class="o">+</span> <span class="n">f</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s1">&#39;.fits&#39;</span><span class="p">,</span> <span class="s1">&#39;_error.fits&#39;</span><span class="p">)))</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">obs_error_data</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">obs_error</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">data</span><span class="p">)</span>
+                <span class="k">if</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="n">full_path</span> <span class="o">+</span> <span class="n">f</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s1">&#39;.fits&#39;</span><span class="p">,</span> <span class="s1">&#39;_error_conf.fits&#39;</span><span class="p">)):</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">obs_error_conf</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">fits</span><span class="o">.</span><span class="n">open</span><span class="p">(</span><span class="n">full_path</span> <span class="o">+</span> <span class="n">f</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s1">&#39;.fits&#39;</span><span class="p">,</span> <span class="s1">&#39;_error_conf.fits&#39;</span><span class="p">)))</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">obs_error_conf_data</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">obs_error_conf</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">data</span><span class="p">)</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">obs_error_conf</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="kc">None</span><span class="p">)</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">obs_error_conf_data</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">obs_header</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">obs</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">header</span><span class="p">)</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">obs_lon</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">linspace</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">obs_header</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">][</span><span class="s1">&#39;CRVAL1&#39;</span><span class="p">]</span>
+                                                <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">obs_header</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">][</span><span class="s1">&#39;CDELT1&#39;</span><span class="p">]</span>
+                                                <span class="o">*</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">obs_header</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">][</span><span class="s1">&#39;CRPIX1&#39;</span><span class="p">]</span><span class="o">-</span><span class="mi">1</span><span class="p">),</span>
+                                                <span class="bp">self</span><span class="o">.</span><span class="n">obs_header</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">][</span><span class="s1">&#39;CRVAL1&#39;</span><span class="p">]</span> 
+                                                <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">obs_header</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">][</span><span class="s1">&#39;CDELT1&#39;</span><span class="p">]</span>
+                                                <span class="o">*</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">obs_header</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">][</span><span class="s1">&#39;NAXIS1&#39;</span><span class="p">]</span>
+                                                  <span class="o">-</span><span class="bp">self</span><span class="o">.</span><span class="n">obs_header</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">][</span><span class="s1">&#39;CRPIX1&#39;</span><span class="p">]),</span>
+                                                <span class="n">num</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">obs_header</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">][</span><span class="s1">&#39;NAXIS1&#39;</span><span class="p">]))</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">obs_lat</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">linspace</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">obs_header</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">][</span><span class="s1">&#39;CRVAL2&#39;</span><span class="p">]</span>
+                                                <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">obs_header</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">][</span><span class="s1">&#39;CDELT2&#39;</span><span class="p">]</span>
+                                                <span class="o">*</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">obs_header</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">][</span><span class="s1">&#39;CRPIX2&#39;</span><span class="p">]</span><span class="o">-</span><span class="mi">1</span><span class="p">),</span>
+                                                <span class="bp">self</span><span class="o">.</span><span class="n">obs_header</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">][</span><span class="s1">&#39;CRVAL2&#39;</span><span class="p">]</span> 
+                                                <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">obs_header</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">][</span><span class="s1">&#39;CDELT2&#39;</span><span class="p">]</span>
+                                                <span class="o">*</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">obs_header</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">][</span><span class="s1">&#39;NAXIS2&#39;</span><span class="p">]</span>
+                                                  <span class="o">-</span><span class="bp">self</span><span class="o">.</span><span class="n">obs_header</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">][</span><span class="s1">&#39;CRPIX2&#39;</span><span class="p">]),</span>
+                                                <span class="n">num</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">obs_header</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">][</span><span class="s1">&#39;NAXIS2&#39;</span><span class="p">]))</span>
+                <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">obs_header</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">][</span><span class="s1">&#39;NAXIS&#39;</span><span class="p">]</span> <span class="o">==</span> <span class="mi">3</span> <span class="ow">and</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">survey</span> <span class="ow">in</span> <span class="n">missions_2d</span><span class="p">:</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">obs_vel</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">linspace</span><span class="p">((</span><span class="bp">self</span><span class="o">.</span><span class="n">obs_header</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">][</span><span class="s1">&#39;CRVAL3&#39;</span><span class="p">]</span>
+                                                     <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">obs_header</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">][</span><span class="s1">&#39;CDELT3&#39;</span><span class="p">]</span>
+                                                     <span class="o">*</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">obs_header</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">][</span><span class="s1">&#39;CRPIX3&#39;</span><span class="p">]</span><span class="o">-</span><span class="mi">1</span><span class="p">)),</span>
+                                                    <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">obs_header</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">][</span><span class="s1">&#39;CRVAL3&#39;</span><span class="p">]</span> 
+                                                     <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">obs_header</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">][</span><span class="s1">&#39;CDELT3&#39;</span><span class="p">]</span>
+                                                     <span class="o">*</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">obs_header</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">][</span><span class="s1">&#39;NAXIS3&#39;</span><span class="p">]</span>
+                                                       <span class="o">-</span><span class="bp">self</span><span class="o">.</span><span class="n">obs_header</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">][</span><span class="s1">&#39;CRPIX3&#39;</span><span class="p">])),</span>
+                                                    <span class="n">num</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">obs_header</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">][</span><span class="s1">&#39;NAXIS3&#39;</span><span class="p">]))</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">obs_vel</span><span class="o">.</span><span class="n">append</span><span class="p">([</span><span class="kc">None</span><span class="p">])</span>
+
+                <span class="bp">self</span><span class="o">.</span><span class="n">obs_frequency</span><span class="o">.</span><span class="n">append</span><span class="p">([</span><span class="kc">None</span><span class="p">])</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">obs_wavelength</span><span class="o">.</span><span class="n">append</span><span class="p">([</span><span class="kc">None</span><span class="p">])</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">obs_iid</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">obs_header</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">][</span><span class="s1">&#39;TRANSL&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s1">&#39;, &#39;</span><span class="p">)))</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">obs_i_iid</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">obs_header</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">][</span><span class="s1">&#39;TRANSI&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s1">&#39;, &#39;</span><span class="p">))</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="nb">int</span><span class="p">))</span>
+
+        <span class="k">if</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="n">spectra_path</span><span class="p">):</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">files</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">survey</span> <span class="o">+</span> <span class="s1">&#39;_resampled_conf.csv&#39;</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">obs_iid</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="s1">&#39;C+ 1&#39;</span><span class="p">]))</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">obs_i_iid</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="mi">0</span><span class="p">]))</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">obs_spectra</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">read_csv</span><span class="p">(</span><span class="n">spectra_path</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">survey</span> <span class="o">+</span> <span class="s1">&#39;_combined.csv&#39;</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">obs_spectra_resampled</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">read_csv</span><span class="p">(</span><span class="n">spectra_path</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">survey</span> 
+                                                     <span class="o">+</span> <span class="s1">&#39;_resampled.csv&#39;</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">obs_spectra_mid</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">read_csv</span><span class="p">(</span><span class="n">spectra_path</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">survey</span>
+                                               <span class="o">+</span> <span class="s1">&#39;_resampled_conf.csv&#39;</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">obs_data</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">obs_spectra_mid</span><span class="o">.</span><span class="n">Tmb</span><span class="o">.</span><span class="n">to_numpy</span><span class="p">())</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">obs_lon</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">obs_spectra_mid</span><span class="o">.</span><span class="n">glon</span><span class="o">.</span><span class="n">to_numpy</span><span class="p">())</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">obs_lat</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="mi">1</span><span class="p">))</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">obs_vel</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">obs_spectra_mid</span><span class="o">.</span><span class="n">Vel</span><span class="o">.</span><span class="n">to_numpy</span><span class="p">())</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">obs_error_data</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">obs_spectra_mid</span><span class="o">.</span><span class="n">sigma</span><span class="o">.</span><span class="n">to_numpy</span><span class="p">())</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">obs_error_conf_data</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">obs_spectra_mid</span><span class="o">.</span><span class="n">sigma_conf</span><span class="o">.</span><span class="n">to_numpy</span><span class="p">())</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">obs_spectra_reduced</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">obs_spectra</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">obs_spectra</span><span class="o">.</span><span class="n">glat</span> <span class="o">==</span> <span class="n">lat</span><span class="p">]</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">obs_spectra_resampled_reduced</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">obs_spectra_resampled</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">obs_spectra_resampled</span><span class="o">.</span><span class="n">glat</span> <span class="o">==</span> <span class="n">lat</span><span class="p">]</span>
+
+        <span class="k">return</span></div>
+
+
+    <span class="c1"># Open spectra as a dataframe if included</span>
+<div class="viewcode-block" id="Observation.get_obs_extent">
+<a class="viewcode-back" href="../../../_autosummary/kosmatau3d.comparison.observation.Observation.html#kosmatau3d.comparison.observation.Observation.get_obs_extent">[docs]</a>
+    <span class="k">def</span> <span class="nf">get_obs_extent</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">filename</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">idx</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">kind</span><span class="o">=</span><span class="s1">&#39;extent&#39;</span><span class="p">,</span> <span class="n">verbose</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&#39;&#39;&#39;</span>
+<span class="sd">        Return the extent of the observation with usable data (nonzero and non-NaN).</span>
+<span class="sd">        Can return either the dimension values (&#39;extent&#39;) or the dimension indeces </span>
+<span class="sd">        (&#39;index&#39;), specified with `kind`.</span>
+<span class="sd">        </span>
+<span class="sd">        Returns tuple of (lon, lat, vel)</span>
+<span class="sd">        &#39;&#39;&#39;</span>
+
+        <span class="k">if</span> <span class="n">filename</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">and</span> <span class="n">idx</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;ERROR: Please specify a filename or index&#39;</span><span class="p">)</span>
+            <span class="k">return</span>
+        <span class="k">elif</span> <span class="ow">not</span> <span class="n">filename</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">idx</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">files</span><span class="o">.</span><span class="n">index</span><span class="p">(</span><span class="n">filename</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">filename</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">files</span><span class="p">[</span><span class="n">idx</span><span class="p">]</span>
+        
+        <span class="k">if</span> <span class="n">verbose</span><span class="p">:</span>
+            <span class="nb">print</span><span class="p">(</span><span class="n">filename</span><span class="p">)</span>
+
+        <span class="n">data</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">obs_data</span><span class="p">[</span><span class="n">idx</span><span class="p">]</span>
+
+        <span class="k">if</span> <span class="s1">&#39;.idl&#39;</span> <span class="ow">in</span> <span class="n">filename</span><span class="p">:</span>
+            <span class="n">lat</span> <span class="o">=</span> <span class="n">copy</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">obs_lat</span><span class="p">[</span><span class="n">idx</span><span class="p">])</span>
+            <span class="n">lon</span> <span class="o">=</span> <span class="n">copy</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">obs_lon</span><span class="p">[</span><span class="n">idx</span><span class="p">])</span>
+            <span class="n">extent</span> <span class="o">=</span> <span class="p">(</span><span class="n">lon</span><span class="p">,</span> <span class="n">lat</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+            <span class="n">i_extent</span> <span class="o">=</span> <span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="n">lon</span><span class="o">.</span><span class="n">size</span><span class="p">),</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="mi">0</span><span class="p">))</span>
+        <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">obs_lat</span><span class="p">[</span><span class="n">idx</span><span class="p">]</span><span class="o">.</span><span class="n">size</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
+            <span class="n">lon</span> <span class="o">=</span> <span class="n">copy</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">obs_lon</span><span class="p">[</span><span class="n">idx</span><span class="p">])</span>
+            <span class="n">lat</span> <span class="o">=</span> <span class="n">copy</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">obs_lat</span><span class="p">[</span><span class="n">idx</span><span class="p">])</span>
+            <span class="n">vel</span> <span class="o">=</span> <span class="n">copy</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">obs_vel</span><span class="p">[</span><span class="n">idx</span><span class="p">])</span>
+            <span class="n">extent</span> <span class="o">=</span> <span class="p">(</span><span class="n">lon</span><span class="p">,</span> <span class="n">lat</span><span class="p">,</span> <span class="n">vel</span><span class="p">)</span>
+            <span class="n">i_extent</span> <span class="o">=</span> <span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="n">lon</span><span class="o">.</span><span class="n">size</span><span class="p">),</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="mi">1</span><span class="p">),</span> <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="n">vel</span><span class="o">.</span><span class="n">size</span><span class="p">))</span>
+        <span class="k">elif</span> <span class="n">data</span><span class="o">.</span><span class="n">ndim</span> <span class="o">==</span> <span class="mi">2</span><span class="p">:</span>
+            <span class="n">i_nan</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">isnan</span><span class="p">(</span><span class="n">data</span><span class="p">)</span>
+            <span class="n">lon</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">obs_lon</span><span class="p">[</span><span class="n">idx</span><span class="p">][</span><span class="o">~</span><span class="n">i_nan</span><span class="o">.</span><span class="n">all</span><span class="p">(</span><span class="mi">0</span><span class="p">)]</span>
+            <span class="n">lat</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">obs_lat</span><span class="p">[</span><span class="n">idx</span><span class="p">][</span><span class="o">~</span><span class="n">i_nan</span><span class="o">.</span><span class="n">all</span><span class="p">(</span><span class="mi">1</span><span class="p">)]</span>
+            <span class="n">extent</span> <span class="o">=</span> <span class="p">(</span><span class="n">lon</span><span class="p">,</span> <span class="n">lat</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+            <span class="n">i_extent</span> <span class="o">=</span> <span class="p">(</span><span class="o">~</span><span class="n">i_nan</span><span class="o">.</span><span class="n">all</span><span class="p">(</span><span class="mi">1</span><span class="p">),</span> <span class="o">~</span><span class="n">i_nan</span><span class="o">.</span><span class="n">all</span><span class="p">(</span><span class="mi">0</span><span class="p">))</span>
+        <span class="k">elif</span> <span class="n">data</span><span class="o">.</span><span class="n">ndim</span> <span class="o">==</span> <span class="mi">3</span><span class="p">:</span>
+            <span class="n">i_nan</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">isnan</span><span class="p">(</span><span class="n">data</span><span class="p">)</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">survey</span> <span class="ow">in</span> <span class="n">missions_2d</span><span class="p">:</span>
+                <span class="n">lon</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">obs_lon</span><span class="p">[</span><span class="n">idx</span><span class="p">][</span><span class="o">~</span><span class="n">i_nan</span><span class="o">.</span><span class="n">all</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span><span class="o">.</span><span class="n">all</span><span class="p">(</span><span class="mi">0</span><span class="p">)]</span>
+                <span class="n">lat</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">obs_lat</span><span class="p">[</span><span class="n">idx</span><span class="p">][</span><span class="o">~</span><span class="n">i_nan</span><span class="o">.</span><span class="n">all</span><span class="p">(</span><span class="mi">2</span><span class="p">)</span><span class="o">.</span><span class="n">all</span><span class="p">(</span><span class="mi">0</span><span class="p">)]</span>
+                <span class="n">extent</span> <span class="o">=</span> <span class="p">(</span><span class="n">lon</span><span class="p">,</span> <span class="n">lat</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+                <span class="n">i_extent</span> <span class="o">=</span> <span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="n">data</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]),</span> <span class="o">~</span><span class="n">i_nan</span><span class="o">.</span><span class="n">all</span><span class="p">(</span><span class="mi">2</span><span class="p">)</span><span class="o">.</span><span class="n">all</span><span class="p">(</span><span class="mi">0</span><span class="p">),</span> <span class="o">~</span><span class="n">i_nan</span><span class="o">.</span><span class="n">all</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span><span class="o">.</span><span class="n">all</span><span class="p">(</span><span class="mi">0</span><span class="p">))</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">vel</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">obs_vel</span><span class="p">[</span><span class="n">idx</span><span class="p">][</span><span class="o">~</span><span class="n">i_nan</span><span class="o">.</span><span class="n">all</span><span class="p">(</span><span class="mi">2</span><span class="p">)</span><span class="o">.</span><span class="n">all</span><span class="p">(</span><span class="mi">1</span><span class="p">)]</span>
+                <span class="n">lon</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">obs_lon</span><span class="p">[</span><span class="n">idx</span><span class="p">][</span><span class="o">~</span><span class="n">i_nan</span><span class="o">.</span><span class="n">all</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span><span class="o">.</span><span class="n">all</span><span class="p">(</span><span class="mi">0</span><span class="p">)]</span>
+                <span class="n">lat</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">obs_lat</span><span class="p">[</span><span class="n">idx</span><span class="p">][</span><span class="o">~</span><span class="n">i_nan</span><span class="o">.</span><span class="n">all</span><span class="p">(</span><span class="mi">2</span><span class="p">)</span><span class="o">.</span><span class="n">all</span><span class="p">(</span><span class="mi">0</span><span class="p">)]</span>
+                <span class="n">extent</span> <span class="o">=</span> <span class="p">(</span><span class="n">lon</span><span class="p">,</span> <span class="n">lat</span><span class="p">,</span> <span class="n">vel</span><span class="p">)</span>
+                <span class="n">i_extent</span> <span class="o">=</span> <span class="p">(</span><span class="o">~</span><span class="n">i_nan</span><span class="o">.</span><span class="n">all</span><span class="p">(</span><span class="mi">2</span><span class="p">)</span><span class="o">.</span><span class="n">all</span><span class="p">(</span><span class="mi">1</span><span class="p">),</span> <span class="o">~</span><span class="n">i_nan</span><span class="o">.</span><span class="n">all</span><span class="p">(</span><span class="mi">2</span><span class="p">)</span><span class="o">.</span><span class="n">all</span><span class="p">(</span><span class="mi">0</span><span class="p">),</span> <span class="o">~</span><span class="n">i_nan</span><span class="o">.</span><span class="n">all</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span><span class="o">.</span><span class="n">all</span><span class="p">(</span><span class="mi">0</span><span class="p">))</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;ERROR: Choose a valid filename.&#39;</span><span class="p">)</span>
+            <span class="k">return</span>
+        
+        <span class="k">if</span> <span class="n">kind</span> <span class="o">==</span> <span class="s1">&#39;extent&#39;</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">extent</span>
+        <span class="k">elif</span> <span class="n">kind</span> <span class="o">==</span> <span class="s1">&#39;index&#39;</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">i_extent</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;ERROR: Choose a valid kind (&#39;extent&#39; or &#39;index&#39;).&quot;</span><span class="p">)</span>
+            <span class="k">return</span></div>
+
+
+<div class="viewcode-block" id="Observation.get_intensity">
+<a class="viewcode-back" href="../../../_autosummary/kosmatau3d.comparison.observation.Observation.html#kosmatau3d.comparison.observation.Observation.get_intensity">[docs]</a>
+    <span class="k">def</span> <span class="nf">get_intensity</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">filename</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">idx</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">integrated</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">log</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> 
+                      <span class="n">nan</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">trimmed</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">verbose</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&#39;&#39;&#39;</span>
+<span class="sd">        This method will return the intensity data </span>
+<span class="sd">        &#39;&#39;&#39;</span>
+
+        <span class="k">if</span> <span class="n">filename</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">and</span> <span class="n">idx</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;ERROR: Please specify a filename or index&#39;</span><span class="p">)</span>
+            <span class="k">return</span>
+        <span class="k">elif</span> <span class="ow">not</span> <span class="n">filename</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">idx</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">files</span><span class="o">.</span><span class="n">index</span><span class="p">(</span><span class="n">filename</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">filename</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">files</span><span class="p">[</span><span class="n">idx</span><span class="p">]</span>
+        
+        <span class="k">if</span> <span class="n">verbose</span><span class="p">:</span>
+            <span class="nb">print</span><span class="p">(</span><span class="n">filename</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">integrated</span> <span class="ow">and</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">survey</span> <span class="ow">in</span> <span class="p">(</span><span class="o">*</span><span class="n">missions_2d</span><span class="p">,</span> <span class="s1">&#39;GOT_C+&#39;</span><span class="p">):</span>
+            <span class="n">data</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">trapz</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">obs_data</span><span class="p">[</span><span class="n">idx</span><span class="p">],</span> <span class="bp">self</span><span class="o">.</span><span class="n">obs_vel</span><span class="p">[</span><span class="n">idx</span><span class="p">],</span> <span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">data</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">obs_data</span><span class="p">[</span><span class="n">idx</span><span class="p">]</span>
+        <span class="n">i_zero</span> <span class="o">=</span> <span class="n">data</span> <span class="o">&lt;=</span> <span class="mi">0</span>
+        <span class="n">i_nan</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">isnan</span><span class="p">(</span><span class="n">data</span><span class="p">)</span>
+
+        <span class="n">data_temp</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros_like</span><span class="p">(</span><span class="n">data</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">log</span><span class="p">:</span>
+            <span class="n">data_temp</span><span class="p">[</span><span class="n">i_nan</span><span class="o">|</span><span class="n">i_zero</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">nan</span>
+            <span class="n">data_temp</span><span class="p">[</span><span class="o">~</span><span class="p">(</span><span class="n">i_nan</span><span class="o">|</span><span class="n">i_zero</span><span class="p">)]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">log10</span><span class="p">(</span><span class="n">data</span><span class="p">[</span><span class="o">~</span><span class="p">(</span><span class="n">i_nan</span><span class="o">|</span><span class="n">i_zero</span><span class="p">)])</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">data_temp</span><span class="p">[</span><span class="n">i_nan</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">nan</span>
+            <span class="n">data_temp</span><span class="p">[</span><span class="o">~</span><span class="n">i_nan</span><span class="p">]</span> <span class="o">=</span> <span class="n">data</span><span class="p">[</span><span class="o">~</span><span class="n">i_nan</span><span class="p">]</span>
+
+        <span class="k">if</span> <span class="n">nan</span> <span class="ow">is</span> <span class="kc">False</span><span class="p">:</span>
+            <span class="n">index</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">isnan</span><span class="p">(</span><span class="n">data_temp</span><span class="p">)</span>
+            <span class="k">return</span> <span class="n">data_temp</span><span class="p">[</span><span class="n">index</span><span class="p">]</span>
+        <span class="k">elif</span> <span class="n">trimmed</span><span class="p">:</span>
+            <span class="n">index</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">ix_</span><span class="p">(</span><span class="o">*</span><span class="bp">self</span><span class="o">.</span><span class="n">get_obs_extent</span><span class="p">(</span><span class="n">idx</span><span class="o">=</span><span class="n">idx</span><span class="p">,</span> <span class="n">kind</span><span class="o">=</span><span class="s1">&#39;index&#39;</span><span class="p">))</span>
+            <span class="k">return</span> <span class="n">data_temp</span><span class="p">[</span><span class="n">index</span><span class="p">]</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">data_temp</span></div>
+</div>
+
+
+
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2023, Craig Yanitski.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

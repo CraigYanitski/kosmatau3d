@@ -1,0 +1,523 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" /><meta name="generator" content="Docutils 0.18.1: http://docutils.sourceforge.net/" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>kosmatau3d.models.voxel.Voxel &mdash; kosmatau3d 1.0.3 documentation</title>
+      <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
+      <link rel="stylesheet" href="../_static/readthedocs-custom.css" type="text/css" />
+  <!--[if lt IE 9]>
+    <script src="../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script src="../_static/documentation_options.js?v=baaebd52"></script>
+        <script src="../_static/doctools.js?v=888ff710"></script>
+        <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
+        <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+    <script src="../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="kosmatau3d.models.voxel_grid" href="kosmatau3d.models.voxel_grid.html" />
+    <link rel="prev" title="kosmatau3d.models.voxel" href="kosmatau3d.models.voxel.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../index.html" class="icon icon-home">
+            kosmatau3d
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Sections:</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../installation.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../properties.html">Clump Properties</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../voxel.html">Voxels</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../model.html">3D Models</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../comparison.html">Comparison to Observations</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../development.html">Future Development</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="kosmatau3d.html">API Reference</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="kosmatau3d.comparison.html">kosmatau3d.comparison</a></li>
+<li class="toctree-l2"><a class="reference internal" href="kosmatau3d.kosmatau.html">kosmatau3d.kosmatau</a></li>
+<li class="toctree-l2 current"><a class="reference internal" href="kosmatau3d.models.html">kosmatau3d.models</a><ul class="current">
+<li class="toctree-l3"><a class="reference internal" href="kosmatau3d.models.dill_grid.html">kosmatau3d.models.dill_grid</a></li>
+<li class="toctree-l3"><a class="reference internal" href="kosmatau3d.models.help.html">kosmatau3d.models.help</a></li>
+<li class="toctree-l3"><a class="reference internal" href="kosmatau3d.models.combinations.html">kosmatau3d.models.combinations</a></li>
+<li class="toctree-l3"><a class="reference internal" href="kosmatau3d.models.constants.html">kosmatau3d.models.constants</a></li>
+<li class="toctree-l3"><a class="reference internal" href="kosmatau3d.models.ensemble.html">kosmatau3d.models.ensemble</a></li>
+<li class="toctree-l3"><a class="reference internal" href="kosmatau3d.models.interpolations.html">kosmatau3d.models.interpolations</a></li>
+<li class="toctree-l3"><a class="reference internal" href="kosmatau3d.models.masspoints.html">kosmatau3d.models.masspoints</a></li>
+<li class="toctree-l3"><a class="reference internal" href="kosmatau3d.models.model.html">kosmatau3d.models.model</a></li>
+<li class="toctree-l3"><a class="reference internal" href="kosmatau3d.models.observations.html">kosmatau3d.models.observations</a></li>
+<li class="toctree-l3"><a class="reference internal" href="kosmatau3d.models.plotting.html">kosmatau3d.models.plotting</a></li>
+<li class="toctree-l3"><a class="reference internal" href="kosmatau3d.models.radiativeTransfer.html">kosmatau3d.models.radiativeTransfer</a></li>
+<li class="toctree-l3"><a class="reference internal" href="kosmatau3d.models.shape.html">kosmatau3d.models.shape</a></li>
+<li class="toctree-l3"><a class="reference internal" href="kosmatau3d.models.species.html">kosmatau3d.models.species</a></li>
+<li class="toctree-l3 current"><a class="reference internal" href="kosmatau3d.models.voxel.html">kosmatau3d.models.voxel</a><ul class="current">
+<li class="toctree-l4 current"><a class="current reference internal" href="#">kosmatau3d.models.voxel.Voxel</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="kosmatau3d.models.voxel_grid.html">kosmatau3d.models.voxel_grid</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="kosmatau3d.properties.html">kosmatau3d.properties</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../acknowledgements.html">Acknowledgements</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">kosmatau3d</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="kosmatau3d.html">kosmatau3d</a></li>
+          <li class="breadcrumb-item"><a href="kosmatau3d.models.html">kosmatau3d.models</a></li>
+          <li class="breadcrumb-item"><a href="kosmatau3d.models.voxel.html">kosmatau3d.models.voxel</a></li>
+      <li class="breadcrumb-item active">kosmatau3d.models.voxel.Voxel</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="kosmatau3d-models-voxel-voxel">
+<h1>kosmatau3d.models.voxel.Voxel<a class="headerlink" href="#kosmatau3d-models-voxel-voxel" title="Link to this heading">¶</a></h1>
+<dl class="py class">
+<dt class="sig sig-object py" id="kosmatau3d.models.voxel.Voxel">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">Voxel</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">index</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">debugging</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/kosmatau3d/models/voxel.html#Voxel"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#kosmatau3d.models.voxel.Voxel" title="Link to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference external" href="https://docs.python.org/3/library/functions.html#object" title="(in Python v3.12)"><code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></a></p>
+<p>This is a class to handle each voxel in KOSMA-tau^3. It contains ensembles
+of spherical PDR simulations (to mimic the fractal structure of PDRs), a FUV
+field element, and element absorption, separated for dust and transitions. It
+should have one clump ensemble and one interclump ensemble. This is to account
+for the diffuse surroundings of a clump.</p>
+<p class="rubric">Methods</p>
+<table class="autosummary longtable docutils align-default">
+<tbody>
+<tr class="row-odd"><td><p><a class="reference internal" href="#kosmatau3d.models.voxel.Voxel.calculate_emission" title="kosmatau3d.models.voxel.Voxel.calculate_emission"><code class="xref py py-obj docutils literal notranslate"><span class="pre">calculate_emission</span></code></a></p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#kosmatau3d.models.voxel.Voxel.gaussian" title="kosmatau3d.models.voxel.Voxel.gaussian"><code class="xref py py-obj docutils literal notranslate"><span class="pre">gaussian</span></code></a></p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#kosmatau3d.models.voxel.Voxel.get_abundances" title="kosmatau3d.models.voxel.Voxel.get_abundances"><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_abundances</span></code></a></p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#kosmatau3d.models.voxel.Voxel.get_clump_velocity" title="kosmatau3d.models.voxel.Voxel.get_clump_velocity"><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_clump_velocity</span></code></a></p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#kosmatau3d.models.voxel.Voxel.get_density" title="kosmatau3d.models.voxel.Voxel.get_density"><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_density</span></code></a></p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#kosmatau3d.models.voxel.Voxel.get_dust_absorption" title="kosmatau3d.models.voxel.Voxel.get_dust_absorption"><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_dust_absorption</span></code></a></p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#kosmatau3d.models.voxel.Voxel.get_dust_emissivity" title="kosmatau3d.models.voxel.Voxel.get_dust_emissivity"><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_dust_emissivity</span></code></a></p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#kosmatau3d.models.voxel.Voxel.get_dust_intensity" title="kosmatau3d.models.voxel.Voxel.get_dust_intensity"><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_dust_intensity</span></code></a></p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#kosmatau3d.models.voxel.Voxel.get_dust_optical_depth" title="kosmatau3d.models.voxel.Voxel.get_dust_optical_depth"><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_dust_optical_depth</span></code></a></p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#kosmatau3d.models.voxel.Voxel.get_dust_temperature" title="kosmatau3d.models.voxel.Voxel.get_dust_temperature"><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_dust_temperature</span></code></a></p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#kosmatau3d.models.voxel.Voxel.get_ensemble_mass" title="kosmatau3d.models.voxel.Voxel.get_ensemble_mass"><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_ensemble_mass</span></code></a></p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#kosmatau3d.models.voxel.Voxel.get_fuv" title="kosmatau3d.models.voxel.Voxel.get_fuv"><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_fuv</span></code></a></p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#kosmatau3d.models.voxel.Voxel.get_gas_temperature" title="kosmatau3d.models.voxel.Voxel.get_gas_temperature"><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_gas_temperature</span></code></a></p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#kosmatau3d.models.voxel.Voxel.get_h2_mass" title="kosmatau3d.models.voxel.Voxel.get_h2_mass"><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_h2_mass</span></code></a></p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#kosmatau3d.models.voxel.Voxel.get_hi_mass" title="kosmatau3d.models.voxel.Voxel.get_hi_mass"><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_hi_mass</span></code></a></p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#kosmatau3d.models.voxel.Voxel.get_index" title="kosmatau3d.models.voxel.Voxel.get_index"><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_index</span></code></a></p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#kosmatau3d.models.voxel.Voxel.get_model_mass" title="kosmatau3d.models.voxel.Voxel.get_model_mass"><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_model_mass</span></code></a></p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#kosmatau3d.models.voxel.Voxel.get_position" title="kosmatau3d.models.voxel.Voxel.get_position"><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_position</span></code></a></p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#kosmatau3d.models.voxel.Voxel.get_species_absorption" title="kosmatau3d.models.voxel.Voxel.get_species_absorption"><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_species_absorption</span></code></a></p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#kosmatau3d.models.voxel.Voxel.get_species_emissivity" title="kosmatau3d.models.voxel.Voxel.get_species_emissivity"><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_species_emissivity</span></code></a></p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#kosmatau3d.models.voxel.Voxel.get_species_intensity" title="kosmatau3d.models.voxel.Voxel.get_species_intensity"><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_species_intensity</span></code></a></p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#kosmatau3d.models.voxel.Voxel.get_species_number" title="kosmatau3d.models.voxel.Voxel.get_species_number"><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_species_number</span></code></a></p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#kosmatau3d.models.voxel.Voxel.get_species_optical_depth" title="kosmatau3d.models.voxel.Voxel.get_species_optical_depth"><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_species_optical_depth</span></code></a></p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#kosmatau3d.models.voxel.Voxel.get_taufuv" title="kosmatau3d.models.voxel.Voxel.get_taufuv"><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_taufuv</span></code></a></p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#kosmatau3d.models.voxel.Voxel.get_velocity" title="kosmatau3d.models.voxel.Voxel.get_velocity"><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_velocity</span></code></a></p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#kosmatau3d.models.voxel.Voxel.get_volume_filling_factor" title="kosmatau3d.models.voxel.Voxel.get_volume_filling_factor"><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_volume_filling_factor</span></code></a></p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#kosmatau3d.models.voxel.Voxel.get_voxel_filling_factor" title="kosmatau3d.models.voxel.Voxel.get_voxel_filling_factor"><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_voxel_filling_factor</span></code></a></p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#kosmatau3d.models.voxel.Voxel.plot_clump_number" title="kosmatau3d.models.voxel.Voxel.plot_clump_number"><code class="xref py py-obj docutils literal notranslate"><span class="pre">plot_clump_number</span></code></a></p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#kosmatau3d.models.voxel.Voxel.plot_spectrum" title="kosmatau3d.models.voxel.Voxel.plot_spectrum"><code class="xref py py-obj docutils literal notranslate"><span class="pre">plot_spectrum</span></code></a></p></td>
+<td><p>Plot the either the intesity or optical depth spectrum at the voxel velocity (the velocity with the largest ensemble).</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#kosmatau3d.models.voxel.Voxel.plot_transition" title="kosmatau3d.models.voxel.Voxel.plot_transition"><code class="xref py py-obj docutils literal notranslate"><span class="pre">plot_transition</span></code></a></p></td>
+<td><p>Plot the transition emission with respect to the voxel velocity structure</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#kosmatau3d.models.voxel.Voxel.printVoxel" title="kosmatau3d.models.voxel.Voxel.printVoxel"><code class="xref py py-obj docutils literal notranslate"><span class="pre">printVoxel</span></code></a></p></td>
+<td><p>Coming soon...</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#kosmatau3d.models.voxel.Voxel.set_index" title="kosmatau3d.models.voxel.Voxel.set_index"><code class="xref py py-obj docutils literal notranslate"><span class="pre">set_index</span></code></a></p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#kosmatau3d.models.voxel.Voxel.set_position" title="kosmatau3d.models.voxel.Voxel.set_position"><code class="xref py py-obj docutils literal notranslate"><span class="pre">set_position</span></code></a></p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#kosmatau3d.models.voxel.Voxel.set_properties" title="kosmatau3d.models.voxel.Voxel.set_properties"><code class="xref py py-obj docutils literal notranslate"><span class="pre">set_properties</span></code></a></p></td>
+<td><p>This method calculates the radii assuming an origin of (0,0). It then averages</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#kosmatau3d.models.voxel.Voxel.two_gaussians" title="kosmatau3d.models.voxel.Voxel.two_gaussians"><code class="xref py py-obj docutils literal notranslate"><span class="pre">two_gaussians</span></code></a></p></td>
+<td><p></p></td>
+</tr>
+</tbody>
+</table>
+<dl class="py method">
+<dt class="sig sig-object py" id="kosmatau3d.models.voxel.Voxel.calculate_emission">
+<span class="sig-name descname"><span class="pre">calculate_emission</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">taufuv</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">test_calc</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">test_opacity</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">test_pexp</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">test_fv</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">verbose</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">timed</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/kosmatau3d/models/voxel.html#Voxel.calculate_emission"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#kosmatau3d.models.voxel.Voxel.calculate_emission" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="kosmatau3d.models.voxel.Voxel.gaussian">
+<span class="sig-name descname"><span class="pre">gaussian</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">a</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sigma</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/kosmatau3d/models/voxel.html#Voxel.gaussian"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#kosmatau3d.models.voxel.Voxel.gaussian" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="kosmatau3d.models.voxel.Voxel.get_abundances">
+<span class="sig-name descname"><span class="pre">get_abundances</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/kosmatau3d/models/voxel.html#Voxel.get_abundances"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#kosmatau3d.models.voxel.Voxel.get_abundances" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="kosmatau3d.models.voxel.Voxel.get_clump_velocity">
+<span class="sig-name descname"><span class="pre">get_clump_velocity</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/kosmatau3d/models/voxel.html#Voxel.get_clump_velocity"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#kosmatau3d.models.voxel.Voxel.get_clump_velocity" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="kosmatau3d.models.voxel.Voxel.get_density">
+<span class="sig-name descname"><span class="pre">get_density</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/kosmatau3d/models/voxel.html#Voxel.get_density"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#kosmatau3d.models.voxel.Voxel.get_density" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="kosmatau3d.models.voxel.Voxel.get_dust_absorption">
+<span class="sig-name descname"><span class="pre">get_dust_absorption</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">fit</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">total</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">minimal</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/kosmatau3d/models/voxel.html#Voxel.get_dust_absorption"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#kosmatau3d.models.voxel.Voxel.get_dust_absorption" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="kosmatau3d.models.voxel.Voxel.get_dust_emissivity">
+<span class="sig-name descname"><span class="pre">get_dust_emissivity</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">fit</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">total</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">minimal</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/kosmatau3d/models/voxel.html#Voxel.get_dust_emissivity"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#kosmatau3d.models.voxel.Voxel.get_dust_emissivity" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="kosmatau3d.models.voxel.Voxel.get_dust_intensity">
+<span class="sig-name descname"><span class="pre">get_dust_intensity</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">fit</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">total</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">minimal</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/kosmatau3d/models/voxel.html#Voxel.get_dust_intensity"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#kosmatau3d.models.voxel.Voxel.get_dust_intensity" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="kosmatau3d.models.voxel.Voxel.get_dust_optical_depth">
+<span class="sig-name descname"><span class="pre">get_dust_optical_depth</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">fit</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">total</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">minimal</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/kosmatau3d/models/voxel.html#Voxel.get_dust_optical_depth"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#kosmatau3d.models.voxel.Voxel.get_dust_optical_depth" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="kosmatau3d.models.voxel.Voxel.get_dust_temperature">
+<span class="sig-name descname"><span class="pre">get_dust_temperature</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">total</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/kosmatau3d/models/voxel.html#Voxel.get_dust_temperature"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#kosmatau3d.models.voxel.Voxel.get_dust_temperature" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="kosmatau3d.models.voxel.Voxel.get_ensemble_mass">
+<span class="sig-name descname"><span class="pre">get_ensemble_mass</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">total</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/kosmatau3d/models/voxel.html#Voxel.get_ensemble_mass"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#kosmatau3d.models.voxel.Voxel.get_ensemble_mass" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="kosmatau3d.models.voxel.Voxel.get_fuv">
+<span class="sig-name descname"><span class="pre">get_fuv</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/kosmatau3d/models/voxel.html#Voxel.get_fuv"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#kosmatau3d.models.voxel.Voxel.get_fuv" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="kosmatau3d.models.voxel.Voxel.get_gas_temperature">
+<span class="sig-name descname"><span class="pre">get_gas_temperature</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">total</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/kosmatau3d/models/voxel.html#Voxel.get_gas_temperature"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#kosmatau3d.models.voxel.Voxel.get_gas_temperature" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="kosmatau3d.models.voxel.Voxel.get_h2_mass">
+<span class="sig-name descname"><span class="pre">get_h2_mass</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">total</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/kosmatau3d/models/voxel.html#Voxel.get_h2_mass"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#kosmatau3d.models.voxel.Voxel.get_h2_mass" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="kosmatau3d.models.voxel.Voxel.get_hi_mass">
+<span class="sig-name descname"><span class="pre">get_hi_mass</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">total</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/kosmatau3d/models/voxel.html#Voxel.get_hi_mass"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#kosmatau3d.models.voxel.Voxel.get_hi_mass" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="kosmatau3d.models.voxel.Voxel.get_index">
+<span class="sig-name descname"><span class="pre">get_index</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/kosmatau3d/models/voxel.html#Voxel.get_index"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#kosmatau3d.models.voxel.Voxel.get_index" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="kosmatau3d.models.voxel.Voxel.get_model_mass">
+<span class="sig-name descname"><span class="pre">get_model_mass</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">total</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/kosmatau3d/models/voxel.html#Voxel.get_model_mass"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#kosmatau3d.models.voxel.Voxel.get_model_mass" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="kosmatau3d.models.voxel.Voxel.get_position">
+<span class="sig-name descname"><span class="pre">get_position</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/kosmatau3d/models/voxel.html#Voxel.get_position"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#kosmatau3d.models.voxel.Voxel.get_position" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="kosmatau3d.models.voxel.Voxel.get_species_absorption">
+<span class="sig-name descname"><span class="pre">get_species_absorption</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">kind</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'linear'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">include_dust</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">fit</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">total</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">hi</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/kosmatau3d/models/voxel.html#Voxel.get_species_absorption"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#kosmatau3d.models.voxel.Voxel.get_species_absorption" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="kosmatau3d.models.voxel.Voxel.get_species_emissivity">
+<span class="sig-name descname"><span class="pre">get_species_emissivity</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">kind</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'linear'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">include_dust</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">fit</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">total</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">hi</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/kosmatau3d/models/voxel.html#Voxel.get_species_emissivity"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#kosmatau3d.models.voxel.Voxel.get_species_emissivity" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="kosmatau3d.models.voxel.Voxel.get_species_intensity">
+<span class="sig-name descname"><span class="pre">get_species_intensity</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">integrated</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">kind</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'linear'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">include_dust</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">fit</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">total</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">hi</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/kosmatau3d/models/voxel.html#Voxel.get_species_intensity"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#kosmatau3d.models.voxel.Voxel.get_species_intensity" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="kosmatau3d.models.voxel.Voxel.get_species_number">
+<span class="sig-name descname"><span class="pre">get_species_number</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">species</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">abun</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">nref</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">[('H',</span> <span class="pre">1),</span> <span class="pre">('H2',</span> <span class="pre">2)]</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">total</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/kosmatau3d/models/voxel.html#Voxel.get_species_number"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#kosmatau3d.models.voxel.Voxel.get_species_number" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="kosmatau3d.models.voxel.Voxel.get_species_optical_depth">
+<span class="sig-name descname"><span class="pre">get_species_optical_depth</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">kind</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'linear'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">include_dust</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">fit</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">total</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">hi</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/kosmatau3d/models/voxel.html#Voxel.get_species_optical_depth"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#kosmatau3d.models.voxel.Voxel.get_species_optical_depth" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="kosmatau3d.models.voxel.Voxel.get_taufuv">
+<span class="sig-name descname"><span class="pre">get_taufuv</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/kosmatau3d/models/voxel.html#Voxel.get_taufuv"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#kosmatau3d.models.voxel.Voxel.get_taufuv" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="kosmatau3d.models.voxel.Voxel.get_velocity">
+<span class="sig-name descname"><span class="pre">get_velocity</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/kosmatau3d/models/voxel.html#Voxel.get_velocity"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#kosmatau3d.models.voxel.Voxel.get_velocity" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="kosmatau3d.models.voxel.Voxel.get_volume_filling_factor">
+<span class="sig-name descname"><span class="pre">get_volume_filling_factor</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/kosmatau3d/models/voxel.html#Voxel.get_volume_filling_factor"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#kosmatau3d.models.voxel.Voxel.get_volume_filling_factor" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="kosmatau3d.models.voxel.Voxel.get_voxel_filling_factor">
+<span class="sig-name descname"><span class="pre">get_voxel_filling_factor</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/kosmatau3d/models/voxel.html#Voxel.get_voxel_filling_factor"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#kosmatau3d.models.voxel.Voxel.get_voxel_filling_factor" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="kosmatau3d.models.voxel.Voxel.plot_clump_number">
+<span class="sig-name descname"><span class="pre">plot_clump_number</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">effective</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">mass</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/kosmatau3d/models/voxel.html#Voxel.plot_clump_number"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#kosmatau3d.models.voxel.Voxel.plot_clump_number" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="kosmatau3d.models.voxel.Voxel.plot_spectrum">
+<span class="sig-name descname"><span class="pre">plot_spectrum</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">quantity</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'intensity'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">kind</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'linear'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">integrated</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">total</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">vel</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">title</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">''</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/kosmatau3d/models/voxel.html#Voxel.plot_spectrum"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#kosmatau3d.models.voxel.Voxel.plot_spectrum" title="Link to this definition">¶</a></dt>
+<dd><p>Plot the either the intesity or optical depth spectrum at the voxel velocity (the velocity with the largest
+ensemble).</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="kosmatau3d.models.voxel.Voxel.plot_transition">
+<span class="sig-name descname"><span class="pre">plot_transition</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">transition</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">''</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">quantity</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'intensity'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">kind</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'linear'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">include_dust</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">total</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">label</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">''</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">title</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">''</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">logscale</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/kosmatau3d/models/voxel.html#Voxel.plot_transition"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#kosmatau3d.models.voxel.Voxel.plot_transition" title="Link to this definition">¶</a></dt>
+<dd><p>Plot the transition emission with respect to the voxel velocity structure</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="kosmatau3d.models.voxel.Voxel.printVoxel">
+<span class="sig-name descname"><span class="pre">printVoxel</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/kosmatau3d/models/voxel.html#Voxel.printVoxel"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#kosmatau3d.models.voxel.Voxel.printVoxel" title="Link to this definition">¶</a></dt>
+<dd><p>Coming soon…</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="kosmatau3d.models.voxel.Voxel.set_index">
+<span class="sig-name descname"><span class="pre">set_index</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">index</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/kosmatau3d/models/voxel.html#Voxel.set_index"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#kosmatau3d.models.voxel.Voxel.set_index" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="kosmatau3d.models.voxel.Voxel.set_position">
+<span class="sig-name descname"><span class="pre">set_position</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">y</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">z</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">r</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">phi</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/kosmatau3d/models/voxel.html#Voxel.set_position"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#kosmatau3d.models.voxel.Voxel.set_position" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="kosmatau3d.models.voxel.Voxel.set_properties">
+<span class="sig-name descname"><span class="pre">set_properties</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">voxel_size</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">transitions</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'all'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dust</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'PAH'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">alpha</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1.84</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">gamma</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">2.31</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">clump_tau_grid_file</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'clump_tau_LineCenter.dat'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">clump_tb_grid_file</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'clump_Tmb_LineCenter.dat'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">clump_taufuv_grid_file</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'RhoMassAFUV.dat'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">clump_column_density_file</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'clumpMeanCols.dat'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">clump_temperature_file</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'clumpTemperatures_filled.dat'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">interclump_tau_grid_file</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'interclumpTauLineCenter.dat'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">interclump_dust_tau_grid_file</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'interclumpDustTau.dat'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">interclump_tb_grid_file</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'interclumpTmbLineCenter.dat'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">interclump_dust_tb_grid_file</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'interclumpDustSED.dat'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">interclump_taufuv_grid_file</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'interclumpTauFUV.dat'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">interclump_column_density_file</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'interclumpMeanCols.dat'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">interclump_temperature_file</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'interclumpTemperatures_filled.dat'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">abundances</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">['ELECTR',</span> <span class="pre">'H',</span> <span class="pre">'H2',</span> <span class="pre">'H+']</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">clump_mass_number</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">(3,</span> <span class="pre">1)</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">clump_mass_range</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">([0,</span> <span class="pre">2],</span> <span class="pre">[-3])</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">clump_n_max</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">(1,</span> <span class="pre">100)</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">interclump_idx</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">[False,</span> <span class="pre">True]</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">interclump_wnm_idx</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">[False,</span> <span class="pre">False]</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">velocity_range</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">(-10,</span> <span class="pre">10)</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">velocity_number</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">201</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">velocity</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">velocity_resolution</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">10</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ensemble_mass</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">(100,</span> <span class="pre">40)</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ensemble_dispersion</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">2</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">volume_factor</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">voxel_factor</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ensemble_density</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">(100000.0,</span> <span class="pre">1911)</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">fuv</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">200</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">crir</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">2e-16</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">suggested_calc</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">from_grid</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">new_grid</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">change_interpolation</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dilled</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">timed</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">verbose</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">debug</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/kosmatau3d/models/voxel.html#Voxel.set_properties"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#kosmatau3d.models.voxel.Voxel.set_properties" title="Link to this definition">¶</a></dt>
+<dd><blockquote>
+<div><p>This method calculates the radii assuming an origin of (0,0). It then averages</p>
+</div></blockquote>
+<p>over a subgrid of 3x3. It might be improved later by having functionality to
+change the subgrid dimensions.</p>
+<p>There are a few kwargs that can be used to initialise a Voxel instance:</p>
+<p>MODEL PARAMETERS</p>
+<dl class="simple">
+<dt>alpha: The power law distribution required for initial mass function dN(M)/dM = M^-alpha.</dt><dd><p>The default is 1.84 as determined in Heithausen et al. (1998).</p>
+</dd>
+<dt>gamma: The power law mass-size relation satisfying M = C R^gamma. The default is 2.31 as</dt><dd><p>determined in Heithausen et al. (1998).</p>
+</dd>
+<dt>velocityRange: The range (list) of the observed radial velocities. By default it</dt><dd><p>is [-10, 10].</p>
+</dd>
+<dt>velocityNumber: The number of observed velocities in the specified range (including</dt><dd><p>endpoints). The default is 51.</p>
+</dd>
+<dt>clumpMassNumber: The number of clump masses for each set. This should be a list of</dt><dd><p>integers with the same length as clumpMassRange. The default is
+[3, 1].</p>
+</dd>
+<dt>clumpMassRange: The range (list) of clump masses for each set. This is a list of</dt><dd><p>ranges with the same length as clumpMassNumber. The ranges can have
+length 1, in which case it only evaluates that clump mass. The
+masses are in units of dex(Msol). By default it is [[0, 2], [-2]].</p>
+</dd>
+<dt>clumpDensity: This changes the default clump density in the constants module. This</dt><dd><p>overrides the voxel density kwarg, and is useful for creating interclumps
+medium that is not scaled according to the clumps. the default is
+[None, 1911], so the first clump set takes the voxel density. This is in
+units of cm^-3.</p>
+</dd>
+<dt>clumpFUV: This changes the default clump FUV in the constants module. This overrides</dt><dd><p>the voxel FUV kwarg. It is a list of length of the number of clump sets.
+Use a value of None to use the voxel FUV field. The default is [None, 1], in
+units of the Draine field.</p>
+</dd>
+<dt>clumpNmax: The maximum number of the largest clump in the ensemble. This helps to limit</dt><dd><p>the calculation of a large combination of clumps by rescaling the voxel (thus
+eliminating any change to the brightness temperature). Larger combinations are used
+if the rescaled voxel is smaller than the largest clump. The default is [1, 100].</p>
+</dd>
+</dl>
+<p>voxel_size: The voxel size in parsecs. The default is 1 pc.
+transitions: The transitions included in the model. This is a list of strings, where each</p>
+<blockquote>
+<div><p>string has the element name (as in the grid) followed by the transition
+number (Which is taken from KOSMA-tau). It is set to the first transition
+of C+, C, and CO by default.</p>
+</div></blockquote>
+<dl class="simple">
+<dt>dust: This is a string to limit how much of the dust continuum is included. The</dt><dd><p>available continuum ranges from 1 nm to 3.1 mm. This can be limited to the range
+of molecular lines by setting dust=’molecular’ (22 dust lines), or to the range of
+PAH dust features by setting dust=’PAH’ (201 dust lines). All dust lines (333)
+will be calculated if dust=’’</p>
+</dd>
+</dl>
+<p>VOXEL PROPERTIES</p>
+<dl class="simple">
+<dt>ensembleMass: This can be either a float or list of floats, depending on how many clump</dt><dd><p>sets you have. The default is 100 Msol.</p>
+</dd>
+<dt>velocity: The radial velocity of the observed Voxel instance. This is used with the</dt><dd><p>model velocities to determine the number of clumps seen at a given velocity.
+The default is 0 km/s.</p>
+</dd>
+<dt>ensembleDispersion: The velocity dispersion of the ensemble. This is used with the</dt><dd><p>model velocities to determine the number of clumps at a given
+velocity. The default is 1 km/s.</p>
+</dd>
+<dt>ensembleDensity: The observed hydrogen density in the voxel. This is different from and overridden by</dt><dd><p>any default density specified in the constants module. the default is
+15000 cm^-3.</p>
+</dd>
+<dt>FUV: The FUV field of the voxel. All clumps are isotropically radiated with this</dt><dd><p>field. It is different from and overridden by any default FUV field specified
+in the constants module. The default is 20000 Draine units.</p>
+</dd>
+<dt>crir: The primary cosmic ray ionisation rate with respect to molecular hydrogen (zeta_H2). By default,</dt><dd><p>the local rate is used (2e-16).</p>
+</dd>
+</dl>
+<p>GENERAL FLAGS</p>
+<dl class="simple">
+<dt>suggested_calc: This flag is used to specify the corrected version of the calculation</dt><dd><p>should be used. It is True by default.</p>
+</dd>
+<dt>fromFile: This flag can be set to retrieve the voxel properties from a file. It is</dt><dd><p>False by default.</p>
+</dd>
+<dt>verbose: This is mainly used for debugging purposes. It prints various statements</dt><dd><p>as the code is evaluated</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="kosmatau3d.models.voxel.Voxel.two_gaussians">
+<span class="sig-name descname"><span class="pre">two_gaussians</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">a1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">a2</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sigma</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/kosmatau3d/models/voxel.html#Voxel.two_gaussians"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#kosmatau3d.models.voxel.Voxel.two_gaussians" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="kosmatau3d.models.voxel.html" class="btn btn-neutral float-left" title="kosmatau3d.models.voxel" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="kosmatau3d.models.voxel_grid.html" class="btn btn-neutral float-right" title="kosmatau3d.models.voxel_grid" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2023, Craig Yanitski.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

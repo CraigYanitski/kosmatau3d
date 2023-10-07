@@ -1,0 +1,227 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" /><meta name="generator" content="Docutils 0.18.1: http://docutils.sourceforge.net/" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>kosmatau3d.models.voxel_grid.VoxelGrid &mdash; kosmatau3d 1.0.3 documentation</title>
+      <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
+      <link rel="stylesheet" href="../_static/readthedocs-custom.css" type="text/css" />
+  <!--[if lt IE 9]>
+    <script src="../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script src="../_static/documentation_options.js?v=baaebd52"></script>
+        <script src="../_static/doctools.js?v=888ff710"></script>
+        <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
+        <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+    <script src="../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="kosmatau3d.properties" href="kosmatau3d.properties.html" />
+    <link rel="prev" title="kosmatau3d.models.voxel_grid" href="kosmatau3d.models.voxel_grid.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../index.html" class="icon icon-home">
+            kosmatau3d
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Sections:</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../installation.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../properties.html">Clump Properties</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../voxel.html">Voxels</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../model.html">3D Models</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../comparison.html">Comparison to Observations</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../development.html">Future Development</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="kosmatau3d.html">API Reference</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="kosmatau3d.comparison.html">kosmatau3d.comparison</a></li>
+<li class="toctree-l2"><a class="reference internal" href="kosmatau3d.kosmatau.html">kosmatau3d.kosmatau</a></li>
+<li class="toctree-l2 current"><a class="reference internal" href="kosmatau3d.models.html">kosmatau3d.models</a><ul class="current">
+<li class="toctree-l3"><a class="reference internal" href="kosmatau3d.models.dill_grid.html">kosmatau3d.models.dill_grid</a></li>
+<li class="toctree-l3"><a class="reference internal" href="kosmatau3d.models.help.html">kosmatau3d.models.help</a></li>
+<li class="toctree-l3"><a class="reference internal" href="kosmatau3d.models.combinations.html">kosmatau3d.models.combinations</a></li>
+<li class="toctree-l3"><a class="reference internal" href="kosmatau3d.models.constants.html">kosmatau3d.models.constants</a></li>
+<li class="toctree-l3"><a class="reference internal" href="kosmatau3d.models.ensemble.html">kosmatau3d.models.ensemble</a></li>
+<li class="toctree-l3"><a class="reference internal" href="kosmatau3d.models.interpolations.html">kosmatau3d.models.interpolations</a></li>
+<li class="toctree-l3"><a class="reference internal" href="kosmatau3d.models.masspoints.html">kosmatau3d.models.masspoints</a></li>
+<li class="toctree-l3"><a class="reference internal" href="kosmatau3d.models.model.html">kosmatau3d.models.model</a></li>
+<li class="toctree-l3"><a class="reference internal" href="kosmatau3d.models.observations.html">kosmatau3d.models.observations</a></li>
+<li class="toctree-l3"><a class="reference internal" href="kosmatau3d.models.plotting.html">kosmatau3d.models.plotting</a></li>
+<li class="toctree-l3"><a class="reference internal" href="kosmatau3d.models.radiativeTransfer.html">kosmatau3d.models.radiativeTransfer</a></li>
+<li class="toctree-l3"><a class="reference internal" href="kosmatau3d.models.shape.html">kosmatau3d.models.shape</a></li>
+<li class="toctree-l3"><a class="reference internal" href="kosmatau3d.models.species.html">kosmatau3d.models.species</a></li>
+<li class="toctree-l3"><a class="reference internal" href="kosmatau3d.models.voxel.html">kosmatau3d.models.voxel</a></li>
+<li class="toctree-l3 current"><a class="reference internal" href="kosmatau3d.models.voxel_grid.html">kosmatau3d.models.voxel_grid</a><ul class="current">
+<li class="toctree-l4 current"><a class="current reference internal" href="#">kosmatau3d.models.voxel_grid.VoxelGrid</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="kosmatau3d.properties.html">kosmatau3d.properties</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../acknowledgements.html">Acknowledgements</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">kosmatau3d</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="kosmatau3d.html">kosmatau3d</a></li>
+          <li class="breadcrumb-item"><a href="kosmatau3d.models.html">kosmatau3d.models</a></li>
+          <li class="breadcrumb-item"><a href="kosmatau3d.models.voxel_grid.html">kosmatau3d.models.voxel_grid</a></li>
+      <li class="breadcrumb-item active">kosmatau3d.models.voxel_grid.VoxelGrid</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="kosmatau3d-models-voxel-grid-voxelgrid">
+<h1>kosmatau3d.models.voxel_grid.VoxelGrid<a class="headerlink" href="#kosmatau3d-models-voxel-grid-voxelgrid" title="Link to this heading">¶</a></h1>
+<dl class="py class">
+<dt class="sig sig-object py" id="kosmatau3d.models.voxel_grid.VoxelGrid">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">VoxelGrid</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">shape</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">suggested_calc</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">verbose</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">debug</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/kosmatau3d/models/voxel_grid.html#VoxelGrid"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#kosmatau3d.models.voxel_grid.VoxelGrid" title="Link to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference external" href="https://docs.python.org/3/library/functions.html#object" title="(in Python v3.12)"><code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></a></p>
+<p>This is a class to handle all of the voxels in KOSMA-tau^3. It contains a
+specified arrangement of voxels, and must coordinate with the Dimensions class
+to make the Shape class functional.</p>
+<p>Initialise all attributes.</p>
+<p class="rubric">Methods</p>
+<table class="autosummary longtable docutils align-default">
+<tbody>
+<tr class="row-odd"><td><p><a class="reference internal" href="#kosmatau3d.models.voxel_grid.VoxelGrid.allVoxels" title="kosmatau3d.models.voxel_grid.VoxelGrid.allVoxels"><code class="xref py py-obj docutils literal notranslate"><span class="pre">allVoxels</span></code></a></p></td>
+<td><p>Just in case all of the <cite>Voxel()</cite> instances need to be retrieved</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#kosmatau3d.models.voxel_grid.VoxelGrid.calculateEmission" title="kosmatau3d.models.voxel_grid.VoxelGrid.calculateEmission"><code class="xref py py-obj docutils literal notranslate"><span class="pre">calculateEmission</span></code></a></p></td>
+<td><p>This will initialise the grid of voxels and calculate their emission.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#kosmatau3d.models.voxel_grid.VoxelGrid.getDimensions" title="kosmatau3d.models.voxel_grid.VoxelGrid.getDimensions"><code class="xref py py-obj docutils literal notranslate"><span class="pre">getDimensions</span></code></a></p></td>
+<td><p>Return dimensions of <cite>Shape</cite> object.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#kosmatau3d.models.voxel_grid.VoxelGrid.printVoxels" title="kosmatau3d.models.voxel_grid.VoxelGrid.printVoxels"><code class="xref py py-obj docutils literal notranslate"><span class="pre">printVoxels</span></code></a></p></td>
+<td><p>Print each voxel.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#kosmatau3d.models.voxel_grid.VoxelGrid.shdu_header" title="kosmatau3d.models.voxel_grid.VoxelGrid.shdu_header"><code class="xref py py-obj docutils literal notranslate"><span class="pre">shdu_header</span></code></a></p></td>
+<td><p>method to setup the header used for a <cite>StreamingHDU</cite> instance.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#kosmatau3d.models.voxel_grid.VoxelGrid.voxelproperties" title="kosmatau3d.models.voxel_grid.VoxelGrid.voxelproperties"><code class="xref py py-obj docutils literal notranslate"><span class="pre">voxelproperties</span></code></a></p></td>
+<td><p>Print the parameters passed to a particular voxel instance depending on x, y, z.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#kosmatau3d.models.voxel_grid.VoxelGrid.writeEmission" title="kosmatau3d.models.voxel_grid.VoxelGrid.writeEmission"><code class="xref py py-obj docutils literal notranslate"><span class="pre">writeEmission</span></code></a></p></td>
+<td><p>NO LONGER USED: writing of data is coupled to calculating the emission! This will stream the model parameters and emission to FITS files in the corresponding directory for the model.</p></td>
+</tr>
+</tbody>
+</table>
+<dl class="py method">
+<dt class="sig sig-object py" id="kosmatau3d.models.voxel_grid.VoxelGrid.allVoxels">
+<span class="sig-name descname"><span class="pre">allVoxels</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/kosmatau3d/models/voxel_grid.html#VoxelGrid.allVoxels"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#kosmatau3d.models.voxel_grid.VoxelGrid.allVoxels" title="Link to this definition">¶</a></dt>
+<dd><p>Just in case all of the <cite>Voxel()</cite> instances need to be retrieved</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="kosmatau3d.models.voxel_grid.VoxelGrid.calculateEmission">
+<span class="sig-name descname"><span class="pre">calculateEmission</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">index</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dilled</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">kind</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'linear'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">timed</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">verbose</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">debug</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">multiprocessing</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/kosmatau3d/models/voxel_grid.html#VoxelGrid.calculateEmission"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#kosmatau3d.models.voxel_grid.VoxelGrid.calculateEmission" title="Link to this definition">¶</a></dt>
+<dd><p>This will initialise the grid of voxels and calculate their emission. This has to be
+done in succession for each voxel since the calculations are modular (the temporary
+voxel terms are changed when calculating different voxels). This can be rerun and it
+will reinitialise the grid.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="kosmatau3d.models.voxel_grid.VoxelGrid.getDimensions">
+<span class="sig-name descname"><span class="pre">getDimensions</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/kosmatau3d/models/voxel_grid.html#VoxelGrid.getDimensions"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#kosmatau3d.models.voxel_grid.VoxelGrid.getDimensions" title="Link to this definition">¶</a></dt>
+<dd><p>Return dimensions of <cite>Shape</cite> object.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="kosmatau3d.models.voxel_grid.VoxelGrid.printVoxels">
+<span class="sig-name descname"><span class="pre">printVoxels</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/kosmatau3d/models/voxel_grid.html#VoxelGrid.printVoxels"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#kosmatau3d.models.voxel_grid.VoxelGrid.printVoxels" title="Link to this definition">¶</a></dt>
+<dd><p>Print each voxel.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="kosmatau3d.models.voxel_grid.VoxelGrid.shdu_header">
+<span class="sig-name descname"><span class="pre">shdu_header</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">name</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">''</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">units</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">''</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">molecules</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">hi</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dust</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">abundance</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">velocity</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dim</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">kw</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">25</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">cw</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">50</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">filename</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/kosmatau3d/models/voxel_grid.html#VoxelGrid.shdu_header"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#kosmatau3d.models.voxel_grid.VoxelGrid.shdu_header" title="Link to this definition">¶</a></dt>
+<dd><p>method to setup the header used for a <cite>StreamingHDU</cite> instance.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="kosmatau3d.models.voxel_grid.VoxelGrid.voxelproperties">
+<span class="sig-name descname"><span class="pre">voxelproperties</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">y</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">z</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/kosmatau3d/models/voxel_grid.html#VoxelGrid.voxelproperties"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#kosmatau3d.models.voxel_grid.VoxelGrid.voxelproperties" title="Link to this definition">¶</a></dt>
+<dd><p>Print the parameters passed to a particular voxel instance depending on x, y, z.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="kosmatau3d.models.voxel_grid.VoxelGrid.writeEmission">
+<span class="sig-name descname"><span class="pre">writeEmission</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">verbose</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">debug</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/kosmatau3d/models/voxel_grid.html#VoxelGrid.writeEmission"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#kosmatau3d.models.voxel_grid.VoxelGrid.writeEmission" title="Link to this definition">¶</a></dt>
+<dd><p>NO LONGER USED: writing of data is coupled to calculating the emission!
+This will stream the model parameters and emission to FITS files in the corresponding
+directory for the model.</p>
+</dd></dl>
+
+</dd></dl>
+
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="kosmatau3d.models.voxel_grid.html" class="btn btn-neutral float-left" title="kosmatau3d.models.voxel_grid" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="kosmatau3d.properties.html" class="btn btn-neutral float-right" title="kosmatau3d.properties" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2023, Craig Yanitski.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

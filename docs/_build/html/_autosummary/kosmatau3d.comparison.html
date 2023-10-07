@@ -42,7 +42,7 @@
   </form>
 </div>
         </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
-              <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+              <p class="caption" role="heading"><span class="caption-text">Sections:</span></p>
 <ul class="current">
 <li class="toctree-l1"><a class="reference internal" href="../installation.html">Installation</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../properties.html">Clump Properties</a></li>
@@ -53,10 +53,11 @@
 <li class="toctree-l1 current"><a class="reference internal" href="kosmatau3d.html">API Reference</a><ul class="current">
 <li class="toctree-l2 current"><a class="current reference internal" href="#">kosmatau3d.comparison</a><ul>
 <li class="toctree-l3"><a class="reference internal" href="kosmatau3d.comparison.help.html">kosmatau3d.comparison.help</a></li>
-<li class="toctree-l3"><a class="reference internal" href="kosmatau3d.comparison.Observation.html">kosmatau3d.comparison.Observation</a></li>
 <li class="toctree-l3"><a class="reference internal" href="kosmatau3d.comparison.model_selection.html">kosmatau3d.comparison.model_selection</a></li>
+<li class="toctree-l3"><a class="reference internal" href="kosmatau3d.comparison.observation.html">kosmatau3d.comparison.observation</a></li>
 </ul>
 </li>
+<li class="toctree-l2"><a class="reference internal" href="kosmatau3d.kosmatau.html">kosmatau3d.kosmatau</a></li>
 <li class="toctree-l2"><a class="reference internal" href="kosmatau3d.models.html">kosmatau3d.models</a></li>
 <li class="toctree-l2"><a class="reference internal" href="kosmatau3d.properties.html">kosmatau3d.properties</a></li>
 </ul>
@@ -90,6 +91,10 @@
              
   <section id="module-kosmatau3d.comparison">
 <span id="kosmatau3d-comparison"></span><h1>kosmatau3d.comparison<a class="headerlink" href="#module-kosmatau3d.comparison" title="Link to this heading">¶</a></h1>
+<p>The <code class="code docutils literal notranslate"><span class="pre">comparison</span></code> subpackage is useful both to load the observational data used for comparison
+and to perform a comparison to <code class="code docutils literal notranslate"><span class="pre">kosmatau3d</span></code> models.
+It is currently setup to compare to the Milky Way models from Yanitski (2023), but it will
+be extended soon to arbitrary model setup.</p>
 <p class="rubric">Functions</p>
 <table class="autosummary longtable docutils align-default">
 <tbody>
@@ -100,11 +105,11 @@
 </table>
 <table class="autosummary longtable docutils align-default">
 <tbody>
-<tr class="row-odd"><td><p><a class="reference internal" href="kosmatau3d.comparison.Observation.html#module-kosmatau3d.comparison.Observation" title="kosmatau3d.comparison.Observation"><code class="xref py py-obj docutils literal notranslate"><span class="pre">kosmatau3d.comparison.Observation</span></code></a>([...])</p></td>
-<td><p>This is an object to load individual observations.</p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="kosmatau3d.comparison.model_selection.html#module-kosmatau3d.comparison.model_selection" title="kosmatau3d.comparison.model_selection"><code class="xref py py-obj docutils literal notranslate"><span class="pre">kosmatau3d.comparison.model_selection</span></code></a></p></td>
+<td><p>This subsubpackage contains functions to regrid and resample observational data, compute error, compare to grids of <code class="code docutils literal notranslate"><span class="pre">kosmatau3d</span></code> models, and plot the results.</p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="kosmatau3d.comparison.model_selection.html#module-kosmatau3d.comparison.model_selection" title="kosmatau3d.comparison.model_selection"><code class="xref py py-obj docutils literal notranslate"><span class="pre">kosmatau3d.comparison.model_selection</span></code></a>([...])</p></td>
-<td><p>This function will compare the Milky Way models to the position-velocity observations depending on the</p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="kosmatau3d.comparison.observation.html#module-kosmatau3d.comparison.observation" title="kosmatau3d.comparison.observation"><code class="xref py py-obj docutils literal notranslate"><span class="pre">kosmatau3d.comparison.observation</span></code></a></p></td>
+<td><p></p></td>
 </tr>
 </tbody>
 </table>

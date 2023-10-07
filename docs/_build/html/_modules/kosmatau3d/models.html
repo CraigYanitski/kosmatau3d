@@ -39,7 +39,7 @@
   </form>
 </div>
         </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
-              <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+              <p class="caption" role="heading"><span class="caption-text">Sections:</span></p>
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="../../installation.html">Installation</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../properties.html">Clump Properties</a></li>
@@ -77,11 +77,21 @@
              
   <h1>Source code for kosmatau3d.models</h1><div class="highlight"><pre>
 <span></span><span class="sd">&#39;&#39;&#39;</span>
-<span class="sd">The `models` subpackage contains all of the code relevant for creating voxels.</span>
+<span class="sd">The :code:`models` subpackage contains all of the code relevant for creating voxels.</span>
 <span class="sd">There are currently two ways to model PDRs:</span>
 
-<span class="sd">    - single-voxel model (`class Voxel()`): this is useful to a homogeneous voxel to compare to pixels in an observation. Note that the voxel does not necessarily need to be cubic; PDR clumps can *overfill* a voxel resulting in a homogeneous *column*. This functionality will require more attention if you plan to integrate the radiative transfer equation.</span>
-<span class="sd">    - full 3-D model (`class Model()`): The full three-dimensional model used in the first applications of this code (Andree-Labsch et al. 2017, Yanitski et al. 2023). This requires knowledge of the three-dimensional structure and distribution of interstellar gas in the object being modelled. Currently this is setup to model a Milky-Way-type galaxy.</span>
+<span class="sd">    - single-voxel model (:code:`class Voxel()`): this is useful to a homogeneous voxel </span>
+<span class="sd">      to compare to pixels in an observation.</span>
+<span class="sd">      Note that the voxel does not necessarily need to be cubic; PDR clumps can </span>
+<span class="sd">      *overfill* a voxel resulting in a homogeneous *column*. </span>
+<span class="sd">      This functionality will require more attention if you plan to integrate </span>
+<span class="sd">      the radiative transfer equation.</span>
+<span class="sd">    - full 3-D model (:code:`class Model()`): The full three-dimensional model used </span>
+<span class="sd">      in the first applications of this code (Andree-Labsch et al. 2017, Yanitski </span>
+<span class="sd">      et al. 2023). </span>
+<span class="sd">      This requires knowledge of the three-dimensional structure and distribution </span>
+<span class="sd">      of interstellar gas in the object being modelled. Currently this is setup to </span>
+<span class="sd">      model a Milky-Way-type galaxy.</span>
 
 <span class="sd">Most of the calculations are split into subsubpackages, although there is an object containing all</span>
 <span class="sd">of the evaluated voxels.</span>
@@ -96,8 +106,8 @@
 
 <span class="kn">from</span> <span class="nn">copy</span> <span class="kn">import</span> <span class="n">copy</span>
 
-<span class="kn">from</span> <span class="nn">.Model</span> <span class="kn">import</span> <span class="o">*</span>
-<span class="kn">from</span> <span class="nn">.Voxel</span> <span class="kn">import</span> <span class="o">*</span>
+<span class="kn">from</span> <span class="nn">.model</span> <span class="kn">import</span> <span class="o">*</span>
+<span class="kn">from</span> <span class="nn">.voxel</span> <span class="kn">import</span> <span class="o">*</span>
 
 <span class="kn">from</span> <span class="nn">kosmatau3d.models</span> <span class="kn">import</span> <span class="n">constants</span>
 <span class="kn">from</span> <span class="nn">kosmatau3d.models</span> <span class="kn">import</span> <span class="n">species</span>
@@ -116,8 +126,8 @@
 <span class="w">    </span><span class="sd">&#39;&#39;&#39;</span>
 <span class="sd">    Use this function to load the grid, initialise all of the interpolation functions, and</span>
 <span class="sd">    save them in the package folder. This helps to reduce computation time when first running</span>
-<span class="sd">    a voxel. After the dilled files are created, load the grid from them by passing `dill=True`</span>
-<span class="sd">    as a kwarg when running Voxel.setProperties()`.</span>
+<span class="sd">    a voxel. After the dilled files are created, load the grid from them by passing :code:`dill=True`</span>
+<span class="sd">    as a kwarg when running :code:`Voxel.setProperties()`.</span>
 <span class="sd">    &#39;&#39;&#39;</span>
     <span class="n">model_directory</span> <span class="o">=</span> <span class="n">copy</span><span class="p">(</span><span class="n">constants</span><span class="o">.</span><span class="n">directory</span><span class="p">)</span>
     <span class="n">constants</span><span class="o">.</span><span class="n">directory</span> <span class="o">=</span> <span class="s1">&#39;&#39;</span>

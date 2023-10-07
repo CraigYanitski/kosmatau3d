@@ -27,6 +27,7 @@
    :recursive:
 
    kosmatau3d.comparison
+   kosmatau3d.kosmatau
    kosmatau3d.models
    kosmatau3d.properties
 

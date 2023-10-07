@@ -39,7 +39,7 @@
   </form>
 </div>
         </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
-              <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+              <p class="caption" role="heading"><span class="caption-text">Sections:</span></p>
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="../../../../installation.html">Installation</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../../properties.html">Clump Properties</a></li>
@@ -78,7 +78,12 @@
            <div itemprop="articleBody">
              
   <h1>Source code for kosmatau3d.properties.grid_interpolation.compare_ml</h1><div class="highlight"><pre>
-<span></span><span class="kn">import</span> <span class="nn">inspect</span>
+<span></span><span class="sd">&#39;&#39;&#39;</span>
+<span class="sd">This is a subpackage containing a class to compare methods of interpolating the </span>
+<span class="sd">KOSMA-:math:`\\tau` grid.</span>
+<span class="sd">&#39;&#39;&#39;</span>
+
+<span class="kn">import</span> <span class="nn">inspect</span>
 <span class="kn">import</span> <span class="nn">matplotlib.pyplot</span> <span class="k">as</span> <span class="nn">plt</span>
 <span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
 <span class="kn">import</span> <span class="nn">os</span>
@@ -91,11 +96,16 @@
 <div class="viewcode-block" id="CompareInterpolation">
 <a class="viewcode-back" href="../../../../_autosummary/kosmatau3d.properties.grid_interpolation.compare_ml.CompareInterpolation.html#kosmatau3d.properties.grid_interpolation.compare_ml.CompareInterpolation">[docs]</a>
 <span class="k">class</span> <span class="nc">CompareInterpolation</span><span class="p">():</span>
+<span class="w">    </span><span class="sd">&#39;&#39;&#39;</span>
+<span class="sd">    This is a class to facilitate the comparison of interpolation methods.</span>
+<span class="sd">    &#39;&#39;&#39;</span>
 
     <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">tmb_file</span><span class="o">=</span><span class="s1">&#39;clump_Tmb_LineCenter.dat&#39;</span><span class="p">,</span> <span class="n">tau_file</span><span class="o">=</span><span class="s1">&#39;clump_tau_LineCenter.dat&#39;</span><span class="p">,</span> 
                  <span class="n">n_param</span><span class="o">=</span><span class="mi">4</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&#39;&#39;&#39;</span>
+<span class="sd">        Initialise attributes and open grid files.</span>
 <span class="sd">        &#39;&#39;&#39;</span>
+
         <span class="n">filename</span> <span class="o">=</span> <span class="n">inspect</span><span class="o">.</span><span class="n">getframeinfo</span><span class="p">(</span><span class="n">inspect</span><span class="o">.</span><span class="n">currentframe</span><span class="p">())</span><span class="o">.</span><span class="n">filename</span>
         <span class="n">package_path</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">abspath</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">dirname</span><span class="p">(</span><span class="n">filename</span><span class="p">)</span><span class="o">+</span><span class="s1">&#39;/../../&#39;</span><span class="p">)</span>  <span class="c1"># kosmatau3d dir</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">path</span> <span class="o">=</span> <span class="n">package_path</span> <span class="o">+</span> <span class="s1">&#39;/grid/&#39;</span>  <span class="c1"># grid dir</span>
@@ -115,7 +125,9 @@
 <a class="viewcode-back" href="../../../../_autosummary/kosmatau3d.properties.grid_interpolation.compare_ml.CompareInterpolation.html#kosmatau3d.properties.grid_interpolation.compare_ml.CompareInterpolation.open_files">[docs]</a>
     <span class="k">def</span> <span class="nf">open_files</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">n_param</span><span class="o">=</span><span class="mi">4</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&#39;&#39;&#39;</span>
+<span class="sd">        Parse header of grid files and load data into memory.</span>
 <span class="sd">        &#39;&#39;&#39;</span>
+
         <span class="n">header</span> <span class="o">=</span> <span class="p">[]</span>
         <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">path</span><span class="o">+</span><span class="bp">self</span><span class="o">.</span><span class="n">tmb_file</span><span class="p">)</span> <span class="k">as</span> <span class="n">tmb</span><span class="p">:</span>
             <span class="n">header</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">tmb</span><span class="o">.</span><span class="n">readline</span><span class="p">())</span>
@@ -137,7 +149,11 @@
 <a class="viewcode-back" href="../../../../_autosummary/kosmatau3d.properties.grid_interpolation.compare_ml.CompareInterpolation.html#kosmatau3d.properties.grid_interpolation.compare_ml.CompareInterpolation.interpolate">[docs]</a>
     <span class="k">def</span> <span class="nf">interpolate</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">transition</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">full_grid</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">all_species</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">savedir</span><span class="o">=</span><span class="s1">&#39;&#39;</span><span class="p">,</span> <span class="n">verbose</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&#39;&#39;&#39;</span>
+<span class="sd">        Perform interpolation of model grid at each point in multiple ways.</span>
+<span class="sd">        Currently this performs a linear interpolation as well as predicting </span>
+<span class="sd">        the interpolated point using extremely-randomised trees.</span>
 <span class="sd">        &#39;&#39;&#39;</span>
+
         <span class="k">if</span> <span class="ow">not</span> <span class="n">transition</span><span class="p">:</span>
             <span class="n">transition</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">species</span>
         <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">transition</span><span class="p">,</span> <span class="p">(</span><span class="nb">str</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="nb">tuple</span><span class="p">)):</span>
@@ -252,6 +268,7 @@
 <a class="viewcode-back" href="../../../../_autosummary/kosmatau3d.properties.grid_interpolation.compare_ml.CompareInterpolation.html#kosmatau3d.properties.grid_interpolation.compare_ml.CompareInterpolation.save_results">[docs]</a>
     <span class="k">def</span> <span class="nf">save_results</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">directory</span><span class="o">=</span><span class="s1">&#39;&#39;</span><span class="p">,</span> <span class="n">full_grid</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&#39;&#39;&#39;</span>
+<span class="sd">        Save original and interpolated data in separate numpy binary files.</span>
 <span class="sd">        &#39;&#39;&#39;</span>
         <span class="k">if</span> <span class="n">directory</span><span class="p">:</span>
             <span class="n">savedir</span> <span class="o">=</span> <span class="p">(</span><span class="n">directory</span><span class="o">+</span><span class="s1">&#39;/&#39;</span><span class="p">)</span> <span class="k">if</span> <span class="ow">not</span> <span class="p">(</span><span class="n">directory</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span><span class="o">==</span><span class="s1">&#39;/&#39;</span><span class="p">)</span> <span class="k">else</span> <span class="n">directory</span>
@@ -276,6 +293,7 @@
 <a class="viewcode-back" href="../../../../_autosummary/kosmatau3d.properties.grid_interpolation.compare_ml.CompareInterpolation.html#kosmatau3d.properties.grid_interpolation.compare_ml.CompareInterpolation.plot_result">[docs]</a>
     <span class="k">def</span> <span class="nf">plot_result</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">ax</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">transition</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&#39;&#39;&#39;</span>
+<span class="sd">        Plot ratio of the interpolated and original data as a function of parameter.</span>
 <span class="sd">        &#39;&#39;&#39;</span>
         <span class="k">if</span> <span class="ow">not</span> <span class="n">transition</span><span class="p">:</span>
             <span class="n">warnings</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="s1">&#39;Please specify a transition&#39;</span><span class="p">)</span>
@@ -293,6 +311,7 @@
         <span class="n">ax</span><span class="o">.</span><span class="n">set_ylabel</span><span class="p">(</span><span class="s1">&#39;Relative error&#39;</span><span class="p">,</span> <span class="n">fontsize</span><span class="o">=</span><span class="mi">24</span><span class="p">)</span>
         <span class="k">return</span> <span class="n">ax</span></div>
 </div>
+
 
 </pre></div>
 

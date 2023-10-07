@@ -42,7 +42,7 @@
   </form>
 </div>
         </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
-              <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+              <p class="caption" role="heading"><span class="caption-text">Sections:</span></p>
 <ul class="current">
 <li class="toctree-l1"><a class="reference internal" href="../installation.html">Installation</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../properties.html">Clump Properties</a></li>
@@ -52,6 +52,7 @@
 <li class="toctree-l1"><a class="reference internal" href="../development.html">Future Development</a></li>
 <li class="toctree-l1 current"><a class="reference internal" href="kosmatau3d.html">API Reference</a><ul class="current">
 <li class="toctree-l2"><a class="reference internal" href="kosmatau3d.comparison.html">kosmatau3d.comparison</a></li>
+<li class="toctree-l2"><a class="reference internal" href="kosmatau3d.kosmatau.html">kosmatau3d.kosmatau</a></li>
 <li class="toctree-l2"><a class="reference internal" href="kosmatau3d.models.html">kosmatau3d.models</a></li>
 <li class="toctree-l2 current"><a class="reference internal" href="kosmatau3d.properties.html">kosmatau3d.properties</a><ul class="current">
 <li class="toctree-l3"><a class="reference internal" href="kosmatau3d.properties.help.html">kosmatau3d.properties.help</a></li>
@@ -102,42 +103,50 @@
 <dt class="sig sig-object py" id="kosmatau3d.properties.grid_interpolation.compare_ml.CompareInterpolation">
 <em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">CompareInterpolation</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">tmb_file</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'clump_Tmb_LineCenter.dat'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">tau_file</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'clump_tau_LineCenter.dat'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">n_param</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">4</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/kosmatau3d/properties/grid_interpolation/compare_ml.html#CompareInterpolation"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#kosmatau3d.properties.grid_interpolation.compare_ml.CompareInterpolation" title="Link to this definition">¶</a></dt>
 <dd><p>Bases: <a class="reference external" href="https://docs.python.org/3/library/functions.html#object" title="(in Python v3.12)"><code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></a></p>
+<p>This is a class to facilitate the comparison of interpolation methods.</p>
+<p>Initialise attributes and open grid files.</p>
 <p class="rubric">Methods</p>
 <table class="autosummary longtable docutils align-default">
 <tbody>
 <tr class="row-odd"><td><p><a class="reference internal" href="#kosmatau3d.properties.grid_interpolation.compare_ml.CompareInterpolation.interpolate" title="kosmatau3d.properties.grid_interpolation.compare_ml.CompareInterpolation.interpolate"><code class="xref py py-obj docutils literal notranslate"><span class="pre">interpolate</span></code></a></p></td>
-<td><p></p></td>
+<td><p>Perform interpolation of model grid at each point in multiple ways.</p></td>
 </tr>
 <tr class="row-even"><td><p><a class="reference internal" href="#kosmatau3d.properties.grid_interpolation.compare_ml.CompareInterpolation.open_files" title="kosmatau3d.properties.grid_interpolation.compare_ml.CompareInterpolation.open_files"><code class="xref py py-obj docutils literal notranslate"><span class="pre">open_files</span></code></a></p></td>
-<td><p></p></td>
+<td><p>Parse header of grid files and load data into memory.</p></td>
 </tr>
 <tr class="row-odd"><td><p><a class="reference internal" href="#kosmatau3d.properties.grid_interpolation.compare_ml.CompareInterpolation.plot_result" title="kosmatau3d.properties.grid_interpolation.compare_ml.CompareInterpolation.plot_result"><code class="xref py py-obj docutils literal notranslate"><span class="pre">plot_result</span></code></a></p></td>
-<td><p></p></td>
+<td><p>Plot ratio of the interpolated and original data as a function of parameter.</p></td>
 </tr>
 <tr class="row-even"><td><p><a class="reference internal" href="#kosmatau3d.properties.grid_interpolation.compare_ml.CompareInterpolation.save_results" title="kosmatau3d.properties.grid_interpolation.compare_ml.CompareInterpolation.save_results"><code class="xref py py-obj docutils literal notranslate"><span class="pre">save_results</span></code></a></p></td>
-<td><p></p></td>
+<td><p>Save original and interpolated data in separate numpy binary files.</p></td>
 </tr>
 </tbody>
 </table>
 <dl class="py method">
 <dt class="sig sig-object py" id="kosmatau3d.properties.grid_interpolation.compare_ml.CompareInterpolation.interpolate">
 <span class="sig-name descname"><span class="pre">interpolate</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">transition</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">full_grid</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">all_species</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">savedir</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">''</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">verbose</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/kosmatau3d/properties/grid_interpolation/compare_ml.html#CompareInterpolation.interpolate"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#kosmatau3d.properties.grid_interpolation.compare_ml.CompareInterpolation.interpolate" title="Link to this definition">¶</a></dt>
-<dd></dd></dl>
+<dd><p>Perform interpolation of model grid at each point in multiple ways.
+Currently this performs a linear interpolation as well as predicting 
+the interpolated point using extremely-randomised trees.</p>
+</dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="kosmatau3d.properties.grid_interpolation.compare_ml.CompareInterpolation.open_files">
 <span class="sig-name descname"><span class="pre">open_files</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">n_param</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">4</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/kosmatau3d/properties/grid_interpolation/compare_ml.html#CompareInterpolation.open_files"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#kosmatau3d.properties.grid_interpolation.compare_ml.CompareInterpolation.open_files" title="Link to this definition">¶</a></dt>
-<dd></dd></dl>
+<dd><p>Parse header of grid files and load data into memory.</p>
+</dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="kosmatau3d.properties.grid_interpolation.compare_ml.CompareInterpolation.plot_result">
 <span class="sig-name descname"><span class="pre">plot_result</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">ax</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">transition</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/kosmatau3d/properties/grid_interpolation/compare_ml.html#CompareInterpolation.plot_result"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#kosmatau3d.properties.grid_interpolation.compare_ml.CompareInterpolation.plot_result" title="Link to this definition">¶</a></dt>
-<dd></dd></dl>
+<dd><p>Plot ratio of the interpolated and original data as a function of parameter.</p>
+</dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="kosmatau3d.properties.grid_interpolation.compare_ml.CompareInterpolation.save_results">
 <span class="sig-name descname"><span class="pre">save_results</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">directory</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">''</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">full_grid</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/kosmatau3d/properties/grid_interpolation/compare_ml.html#CompareInterpolation.save_results"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#kosmatau3d.properties.grid_interpolation.compare_ml.CompareInterpolation.save_results" title="Link to this definition">¶</a></dt>
-<dd></dd></dl>
+<dd><p>Save original and interpolated data in separate numpy binary files.</p>
+</dd></dl>
 
 </dd></dl>
 
