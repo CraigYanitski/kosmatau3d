@@ -18,13 +18,13 @@ from kosmatau3d.models import interpolations
 from kosmatau3d.models import observations
 from kosmatau3d.models import shape  # import Shape
 from kosmatau3d.models import species
-from .VoxelGrid import VoxelGrid
+from .voxel_grid import VoxelGrid
 
 
 class Model(object):
     '''
-    This is the highest class in the hierarchy of the KOSMA-tau^3 simulation.
-    It contains all of the information needed to properly model a PDR (I think).
+    This is the highest class in the hierarchy of the kosmatau3d simulation.
+    It contains all of the information needed to properly model a PDR.
     '''
     # PRIVATE
   
@@ -62,7 +62,12 @@ class Model(object):
                  hi_mass_factor=1, h2_mass_factor=1, fuv_factor=1, density_factor=1, global_uv=10, 
                  r_cmz=0, zeta_cmz=1e-14, zeta_sol=2e-16, new_grid=True, suggested_calc=True,
                  dilled=False, timed=False, verbose=False, debug=False):
-      
+        '''
+        The `Model()` class, which is used to create large three-dimensional PDR models and as
+        well as a synthetic observation. For large models, it is best to stream the voxel
+        data to the hard disk and avoid keeping the data in memory.
+        '''
+
         if not len(clump_mass_range):
             sys.exit('<<ERROR>> Define mass sets in argument.')
             # sys.exit()
@@ -202,11 +207,19 @@ class Model(object):
         return
   
     def __add_transitions(self, species_transition):
+        '''
+        Add transition(s) to the list of transitions in model output.
+        Note that this is for the transitions used in radiative transfer.
+        '''
         species.add_transitions(species_transition)
         species.add_transitions(species_transition, interclump=True)
         return
   
     def __str__(self):
+        '''
+        Print information of the model. This will become useful for smaller
+        models that can be kept in memory.
+        '''
         printout = 'A {} model of {} voxels'.format(constants.type, self.getGrid().getVoxelNumber())
         if self.__verbose:
             printout += '\n  arranged in {}'.format(self.__shape.getDimensions())
@@ -221,24 +234,44 @@ class Model(object):
     # PUBLIC
   
     def getType(self):
+        '''
+        Return type of model. Currently only the 'disk' models are working.
+        '''
         return constants.type
   
     def getShape(self):
+        '''
+        Return `Shape` instance of model. This will soon be moved from a class to a subpackage.
+        '''
         return self.__shape
   
     def getGrid(self):
+        '''
+        Return `voxelGrid` instance of the model. It contains all of the information regarding
+        voxels used in the model.
+        '''
         return self.__grid
   
     def getOrientation(self):
+        '''
+        Return orientation of model. This is important for integrating the radiative 
+        transfer equation
+        '''
         return self.__orientation
   
     # def getObservations(self):
     #   return self.__observations
   
     def getSpecies(self):
+        '''
+        Return list of species names.
+        '''
         return species.species_names
   
     def getSpeciesNames(self):
+        '''
+        Same as `getSpecies()`.
+        '''
         return species.species_names
   
     # def reloadModules(self):
@@ -257,6 +290,9 @@ class Model(object):
     #   return
   
     def calculateModel(self, **kwargs):
+        '''
+        Compute voxel the emissivity and absorption spectra for each voxel.
+        '''
         # Point logger to file
         format_str = '\n\n%(levelname)s [%(name)s]: %(message)s\n\n'
         filename = constants.HISTORYPATH + constants.directory + constants.history + 'log.txt'
@@ -282,13 +318,24 @@ class Model(object):
         return
   
     def writeEmission(self):
+        '''
+        Write voxel spectra to hard disk. This is only useful when keeping 
+        the model in memory.
+        '''
         self.__grid.writeEmission(verbose=self.__verbose, debug=self.__debug)
         return
   
     def getIntensityMap(self):
+        '''
+        Return synthetic intensity. This is only useful when keeping the
+        model in memory.
+        '''
         return (self.__mapPositions, self.__intensityMap)
   
     def printIntensityMap(self, index=None):
+        '''
+        Print synthetic intensity data to screen.
+        '''
   
         print(self.__species[0].getMolecules(), self.__species[1].getDust())
     
@@ -329,6 +376,10 @@ class Model(object):
         return
       
     def plotModel(self, plot='total intensity'):
+        '''
+        Outdated method to plot model information. Might be useful when
+        keeping model data in memory.
+        '''
         positions = self.__grid.getVoxelPositions()
         limits = [positions.min(), positions.max()]
         if plot == 'total intensity':
@@ -416,7 +467,7 @@ class Model(object):
 
 class SyntheticModel(object):
     '''
-    This is an object to load individual `kosmatau3d` models. This in merely for
+    This is a class to load individual `kosmatau3d` models. This in merely for
     the convenience of examining the model information in a consistent manner.
     There is an optional argument when initialising to set a base directory, which
     makes it easier to load multiple models in succession. Due to the complexity
@@ -500,6 +551,9 @@ class SyntheticModel(object):
         return
 
     def __open_file(self, filename):
+        '''
+        Open and return model data if file exists, otherwise return NaN.
+        '''
         if (filename + '.fits') in self.model_files:
             file_data = fits.open(os.path.join(self.dir_path, filename + '.fits'))
         elif (filename + '.csv') in self.model_files:
@@ -512,6 +566,9 @@ class SyntheticModel(object):
         return file_data
 
     def __hdul_data(self, hdul, idx=0):
+        '''
+        Verify and return data in an HDUList, otherwise return NaN.
+        '''
         if isinstance(hdul, fits.HDUList):
             if isinstance(idx, list):
                 return tuple(hdul[i].data for i in idx)
@@ -842,16 +899,25 @@ class SyntheticModel(object):
         return
 
     def get_dust_wavelengths(self):
+        '''
+        Return dust wavelengths used in model.
+        '''
         wav = list(map(u.Unit, self.dust))
         return list([w.decompose() for w in wav])
 
     def get_volume_filling_factor(self):
+        '''
+        Return volume filling factor data.
+        '''
         if isinstance(self.clump_number, np.ndarray) and isinstance(self.clump_radius, np.ndarray):
             return (4/3*np.pi*self.clump_number*self.clump_radius**3).sum(1)/self.ds**3
         else:
             raise TypeError
 
     def get_species_number(self, species=None, abun=False, nref=[('H', 1), ('H2', 2)], total=True):
+        '''
+        Return species number data. This is the number of a given species contained in each voxel.
+        '''
         if species in [None, 'all']:
             species = self.N_species
         elif isinstance(species, str):
@@ -876,22 +942,33 @@ class SyntheticModel(object):
             return N_species
 
     def get_abundances(self, *args, **kwargs):
+        '''
+        Return species abundance data.
+        '''
         return self.get_species_number(*args, **kwargs, abun=True)
 
     def get_gas_temperature(self, total=True):
+        '''
+        Return gas temperature data.
+        '''
         if total:
             return (self.ensemble_mass*self.t_gas).sum(1) / self.ensemble_mass.sum(1)
         else:
             return copy(self.t_gas)
 
     def get_dust_temperature(self, total=True):
+        '''
+        Return dust temperature data.
+        '''
         if total:
             return (self.ensemble_mass*self.t_dust).sum(1) / self.ensemble_mass.sum(1)
         else:
             return copy(self.t_dust)
 
     def get_model_species_emissivity(self, transition=None, idx=None, include_dust=False):
-
+        '''
+        Return species emissivity in model (ie. for each voxel).
+        '''
         if transition is None and idx is None:
             transition = self.species
             idx = range(len(self.species))
@@ -931,6 +1008,9 @@ class SyntheticModel(object):
             return np.array(emissivity[0])
 
     def get_model_species_absorption(self, transition=None, idx=None, include_dust=False):
+        '''
+        Return species absorption in model (ie. for each voxel).
+        '''
 
         if transition is None and idx is None:
             transition = self.species
@@ -971,6 +1051,9 @@ class SyntheticModel(object):
             return np.array(absorption[0])
 
     def get_model_species_intensity(self, transition=None, idx=None, include_dust=False, integrated=False):
+        '''
+        Return species intensity in model (ie. for each voxel).
+        '''
 
         eps = self.get_model_species_emissivity(transition=transition, idx=idx, include_dust=include_dust)
         kap = self.get_model_species_absorption(transition=transition, idx=idx, include_dust=include_dust)
@@ -987,6 +1070,9 @@ class SyntheticModel(object):
             return np.array(intensity)
 
     def get_model_hi_emissivity(self, include_dust=False):
+        '''
+        Return HI 21cm line emissivity in model (ie. for each voxel).
+        '''
 
         if include_dust:
             emissivity = self.hi_emissivity[:, :, 0]
@@ -1004,6 +1090,9 @@ class SyntheticModel(object):
         return emissivity
 
     def get_model_hi_absorption(self, include_dust=False):
+        '''
+        Return HI 21cm line absorption in model (ie. for each voxel).
+        '''
 
         if include_dust:
             absorption = self.hi_absorption[:, :, 0]
@@ -1021,6 +1110,9 @@ class SyntheticModel(object):
         return absorption
 
     def get_model_hi_intensity(self, include_dust=False, integrated=False):
+        '''
+        Return HI 21cm line emissivity in model (ie. for each voxel).
+        '''
 
         eps = self.get_model_hi_emissivity(include_dust=include_dust)
         kap = self.get_model_hi_absorption(include_dust=include_dust)
@@ -1032,6 +1124,9 @@ class SyntheticModel(object):
         return intensity
 
     def get_model_dust_emissivity(self, wavelength=None, idx=None):
+        '''
+        Return dust emissivity in model (ie. for each voxel).
+        '''
 
         if wavelength is None and idx is None:
             wavelength = self.dust
@@ -1061,6 +1156,9 @@ class SyntheticModel(object):
             return np.array(emissivity[0])
 
     def get_model_dust_absorption(self, wavelength=None, idx=None):
+        '''
+        Return dust absorption in model (ie. for each voxel).
+        '''
 
         if wavelength is None and idx is None:
             wavelength = self.dust
@@ -1090,6 +1188,9 @@ class SyntheticModel(object):
             return np.array(absorption[0])
 
     def get_model_dust_intensity(self, wavelength=None, idx=None):
+        '''
+        Return dust intensity in model (ie. for each voxel).
+        '''
 
         eps = self.get_model_dust_emissivity(wavelength=wavelength, idx=idx)
         kap = self.get_model_dust_absorption(wavelength=wavelength, idx=idx)
@@ -1101,6 +1202,9 @@ class SyntheticModel(object):
         return np.array(intensity)
 
     def get_species_intensity(self, transition=None, idx=None, include_dust=False, integrated=False):
+        '''
+        Return species intensity in synthetic observation.
+        '''
 
         if transition is None and idx is None:
             transition = self.species
@@ -1145,6 +1249,9 @@ class SyntheticModel(object):
             return np.array(intensity[0])
 
     def get_species_optical_depth(self, transition=None, idx=None, include_dust=False):
+        '''
+        Return species optical depth in synthetic observation.
+        '''
 
         if transition is None and idx is None:
             transition = self.species
@@ -1185,6 +1292,9 @@ class SyntheticModel(object):
             return np.array(optical_depth[0])
 
     def get_hi_intensity(self, include_dust=False, integrated=False):
+        '''
+        Return HI 21cm line intensity in synthetic observation.
+        '''
 
         if include_dust:
             intensity_temp = self.hi_intensity_species[:, :, :, 0]
@@ -1206,6 +1316,9 @@ class SyntheticModel(object):
         return intensity
 
     def get_hi_optical_depth(self, include_dust=False):
+        '''
+        Return HI 21cm line optical depth in synthetic observation.
+        '''
 
         if include_dust:
             optical_depth = self.hi_optical_depth_species[:, :, :, 0]
@@ -1223,6 +1336,9 @@ class SyntheticModel(object):
         return optical_depth
 
     def get_dust_intensity(self, wavelength=None, idx=None):
+        '''
+        Return dust intensity in synthetic observation.
+        '''
 
         if wavelength is None and idx is None:
             wavelength = self.dust
@@ -1252,6 +1368,9 @@ class SyntheticModel(object):
             return np.array(intensity[0])
 
     def get_dust_optical_depth(self, wavelength=None, idx=None):
+        '''
+        Return dust optical depth in synthetic observation.
+        '''
 
         if wavelength is None and idx is None:
             wavelength = self.dust
@@ -1498,6 +1617,10 @@ class SyntheticModel(object):
                     ls='-', lw=2, color='xkcd:maroon', label='', fontsize=42, labelsize=36, 
                     legendsize=36, legendloc=0, 
                     bins=36, bin_lim=(0, 18000), stat='mean', voxel_size=None, ax=None):
+        '''
+        Plot a given quantity as a function of galactocentric radius.
+        This is only valid for galaxy models of type 'disk'.
+        '''
 
         mpl.rcParams['text.usetex'] = False
         mpl.rcParams['font.family'] = 'Nimbus Roman'

@@ -1,5 +1,5 @@
 '''
-A module containing the VoxelGrid class.
+A module containing the :code:`VoxelGrid` class.
 '''
 
 import os
@@ -18,7 +18,7 @@ from copy import copy
 from pprint import pprint
 from time import time
 
-from .Voxel import *
+from .voxel import *
 from kosmatau3d.models import (
   constants,
   species,
@@ -35,7 +35,10 @@ class VoxelGrid(object):
     # PRIVATE
   
     def __init__(self, shape, suggested_calc=True, verbose=False, debug=False):
-  
+        '''
+        Initialise all attributes.
+        '''
+
         self.__shape = shape
     
         self.__voxel_number = self.__shape.voxelNumber()
@@ -85,17 +88,25 @@ class VoxelGrid(object):
         return
   
     def __initialiseGrid(self):
+        '''
+        Initialise all `Voxel()` instances used in model.
+        '''
         self.__voxels = []
         for i in range(self.__voxel_number):
           self.__voxels.append(Voxel(i))
         return
   
     def __str__(self):
+        '''
+        Print `VoxelGrid()` instance information.
+        '''
         return 'VoxelGrid\n  ->{} voxels\n'.format(self.__voxel_number)
   
     def __calculateProperties(self, X, Y, Z, average=False):
-        # This is a method to calculate the dict to unpack into the argument for Voxel.setProperties().
-    
+        '''
+        This is a method to calculate the dict to unpack into the argument for `Voxel.setProperties()`.
+        '''
+        
         if average:
             x, y = np.meshgrid(np.linspace(X-.5*constants.voxel_size, X+.5*constants.voxel_size, average),
                                np.linspace(Y-.5*constants.voxel_size, Y+.5*constants.voxel_size, average))
@@ -292,13 +303,18 @@ class VoxelGrid(object):
     # PUBLIC
   
     def getDimensions(self):
+        '''
+        Return dimensions of `Shape` object.
+        '''
         return self.__shape.getDimensions()
   
     def calculateEmission(self, index=0, dilled=False, kind='linear', timed=False, verbose=False, debug=False, multiprocessing=0):
-        # This will initialise the grid of voxels and calculate their emission. This has to be
-        # done in succession for each voxel since the calculations are modular (the temporary
-        # voxel terms are changed when calculating different voxels). This can be rerun and it
-        # will reinitialise the grid.
+        '''
+        This will initialise the grid of voxels and calculate their emission. This has to be
+        done in succession for each voxel since the calculations are modular (the temporary
+        voxel terms are changed when calculating different voxels). This can be rerun and it
+        will reinitialise the grid.
+        '''
       
         if timed:
             t0 = time()
@@ -512,9 +528,11 @@ class VoxelGrid(object):
 #         return
   
     def writeEmission(self, verbose=False, debug=False):
-        # NO LONGER USED: writing of data is coupled to calculating the emission!
-        # This will stream the model parameters and emission to FITS files in the corresponding
-        #  directory for the model.
+        '''
+        NO LONGER USED: writing of data is coupled to calculating the emission!
+        This will stream the model parameters and emission to FITS files in the corresponding
+        directory for the model.
+        '''
       
         print('\nStreaming to fits files...\n')
     
@@ -660,7 +678,7 @@ class VoxelGrid(object):
         return
   
     def allVoxels(self):
-        # Just in case all of the Voxel() instances need to be retrieved
+        '''Just in case all of the `Voxel()` instances need to be retrieved'''
         return self.__voxels
 
 #     # These methods may be used if and when we decide to work with models as objects
@@ -691,18 +709,22 @@ class VoxelGrid(object):
 #         return self.__voxelFUVabsorption
   
     def printVoxels(self):
+        '''Print each voxel.'''
         for voxel in self.__voxels:
             voxel.printVoxel()
         return
     
     def voxelproperties(self, x, y, z):
-        # print the parameters passed to a particular voxel instance depending on x, y, z.
+        '''Print the parameters passed to a particular voxel instance depending on x, y, z.'''
         self.__calculateProperties(x, y, z)
         print(self.__properties)
         return
   
     def shdu_header(self, name='', units='', molecules=False, hi=False, dust=False, abundance=False, velocity=False, 
                     dim=None, kw=25, cw=50, filename=None):
+        '''
+        method to setup the header used for a `StreamingHDU` instance.
+        '''
   
         if filename == None or dim == None:
           return

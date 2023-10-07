@@ -8,6 +8,7 @@ import pandas as pd
 
 def grid_data_check(file=''):
     '''
+    Parse and return parameters used in KOSMA-tau grid from header.
     '''
     with open(file) as gd:
         header = gd.readline()
@@ -20,6 +21,7 @@ def grid_data_check(file=''):
 
 def grid_data_limits(file=''):
     '''
+    Return limits of KOSMA-tau grid parameters.
     '''
     params = grid_data_check(file)
     for p in params.keys():

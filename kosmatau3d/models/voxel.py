@@ -1,5 +1,5 @@
 '''
-A module containing the Voxel class.
+A module containing the :code:`Voxel` class.
 '''
 
 import importlib as il

@@ -1,3 +1,8 @@
+'''
+A subpackage to compare the far-UV spectral shapes used in
+the literature to the one used in KOSMA-tau.
+'''
+
 from .models import *
 
 

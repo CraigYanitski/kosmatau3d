@@ -66,7 +66,10 @@ class Observation(object):
         return
 
     def reset_attributes(self):
-        
+        '''
+        Reinitialise instance attributes.
+        '''
+
         self.obs = []
         self.obs_error = []
         self.obs_error_conf = []
@@ -89,6 +92,7 @@ class Observation(object):
 
     def load_survey(self, directory='', survey=None, lat=0):
         '''
+        Load a survey into memory.
         '''
 
         if survey is None:

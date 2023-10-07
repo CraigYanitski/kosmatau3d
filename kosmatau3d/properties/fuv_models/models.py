@@ -7,18 +7,18 @@ from astropy.modeling.physical_models import BlackBody
 
 
 def u_habing(l):
-    # Habing (1968)
+    '''Spectrum used in Habing (1968), as derived by Bertoldi and Draine (1996).'''
     return (-25/6*(l/1e3)**3 + 25/2*(l/1e3)**2 - 13/3*l/1e3)*1e-14
 
 def u_draine(l, chi=1.71, test=False):
-    # Draine (1978)
+    '''Spectrum used in Draine (1978).'''
     if test:
         return 4e-14 * (53.05461*(l/1e3)**-3 - 85.37824*(l/1e3)**-4 + 34.03412*(l/1e3)**-5)
     else:
         return 4e-14 * chi * (31.02609*(l/1e3)**-3 - 49.92879*(l/1e3)**-4 + 19.90300*(l/1e3)**-5)
 
 def u_mezger(l, floattype=False):
-    # Mezger, Mathis, and Panagia (1982)
+    '''Spectrum used in Mezger, Mathis, and Panagia (1982).'''
     if type(l) == int or type(l) == float:
         floattype = True
         l = np.asarray([l])
@@ -41,12 +41,12 @@ def u_mezger(l, floattype=False):
         return ul
 
 def u_zucconi(l, temp=22000, scale=5.7e-17):
-    # Zucconi, Walmsley, and Galli (2003)
+    '''Spectrum used in Zucconi, Walmsley, and Galli (2003).'''
     ul = (2*con.h*con.c/l**3/u.AA**3).to(u.g/u.s**2).value * scale / (np.exp(con.h*con.c/l/u.AA/con.k_B/temp/u.K).value - 1)
     return ul
 
 def u_kosma(l, floattype=False, **kwargs):
-    # Röllig, Szczerba, Ossenkopf, and Glück  (2013)
+    ''' Spectrum used in KOSMA-tau (Röllig, Szczerba, Ossenkopf, and Glück  2013).'''
     if type(l) == int or type(l) == float:
         floattype = True
         l = np.asarray([l])
@@ -59,6 +59,9 @@ def u_kosma(l, floattype=False, **kwargs):
         return ul
 
 def compare_models(l_range=(912, 2066)):
+    '''
+    Print spectrum information to screen.
+    '''
     l = np.linspace(l_range[0], l_range[1], num=1000)
     t = 29000
     w = 1.5e-11
@@ -95,6 +98,10 @@ def compare_models(l_range=(912, 2066)):
 
 
 def plot_comparison(l_range=(912, 2066), num=10000, ticklabelsize=16, labelsize=24):
+    '''
+    Plot spectra together.
+    '''
+
     l = np.linspace(l_range[0], l_range[1], num=num)
     t = 29000
     w = 1.5e-11

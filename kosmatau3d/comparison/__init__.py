@@ -1,5 +1,12 @@
+'''
+The :code:`comparison` subpackage is useful both to load the observational data used for comparison
+and to perform a comparison to :code:`kosmatau3d` models.
+It is currently setup to compare to the Milky Way models from Yanitski (2023), but it will
+be extended soon to arbitrary model setup.
+'''
+
 from .model_selection import *
-from .Observation import *
+from .observation import *
 
 
 def help():

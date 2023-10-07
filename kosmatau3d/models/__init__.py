@@ -1,9 +1,19 @@
 '''
-The `models` subpackage contains all of the code relevant for creating voxels.
+The :code:`models` subpackage contains all of the code relevant for creating voxels.
 There are currently two ways to model PDRs:
 
-    - single-voxel model (`class Voxel()`): this is useful to a homogeneous voxel to compare to pixels in an observation. Note that the voxel does not necessarily need to be cubic; PDR clumps can *overfill* a voxel resulting in a homogeneous *column*. This functionality will require more attention if you plan to integrate the radiative transfer equation.
-    - full 3-D model (`class Model()`): The full three-dimensional model used in the first applications of this code (Andree-Labsch et al. 2017, Yanitski et al. 2023). This requires knowledge of the three-dimensional structure and distribution of interstellar gas in the object being modelled. Currently this is setup to model a Milky-Way-type galaxy.
+    - single-voxel model (:code:`class Voxel()`): this is useful to a homogeneous voxel 
+      to compare to pixels in an observation.
+      Note that the voxel does not necessarily need to be cubic; PDR clumps can 
+      *overfill* a voxel resulting in a homogeneous *column*. 
+      This functionality will require more attention if you plan to integrate 
+      the radiative transfer equation.
+    - full 3-D model (:code:`class Model()`): The full three-dimensional model used 
+      in the first applications of this code (Andree-Labsch et al. 2017, Yanitski 
+      et al. 2023). 
+      This requires knowledge of the three-dimensional structure and distribution 
+      of interstellar gas in the object being modelled. Currently this is setup to 
+      model a Milky-Way-type galaxy.
 
 Most of the calculations are split into subsubpackages, although there is an object containing all
 of the evaluated voxels.
@@ -18,8 +28,8 @@ import sys
 
 from copy import copy
 
-from .Model import *
-from .Voxel import *
+from .model import *
+from .voxel import *
 
 from kosmatau3d.models import constants
 from kosmatau3d.models import species
@@ -36,8 +46,8 @@ def dill_grid():
     '''
     Use this function to load the grid, initialise all of the interpolation functions, and
     save them in the package folder. This helps to reduce computation time when first running
-    a voxel. After the dilled files are created, load the grid from them by passing `dill=True`
-    as a kwarg when running Voxel.setProperties()`.
+    a voxel. After the dilled files are created, load the grid from them by passing :code:`dill=True`
+    as a kwarg when running :code:`Voxel.setProperties()`.
     '''
     model_directory = copy(constants.directory)
     constants.directory = ''

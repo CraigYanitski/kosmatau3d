@@ -1,3 +1,8 @@
+'''
+This subsubpackage contains functions to regrid and resample observational data,
+compute error, compare to grids of :code:`kosmatau3d` models, and plot the results.
+'''
+
 import cygrid
 import numpy as np
 from astropy.io import fits
@@ -17,7 +22,7 @@ from pprint import pprint
 from copy import copy, deepcopy
 import os
 
-from .Observation import *
+from .observation import *
 from kosmatau3d import models
 
 
@@ -958,6 +963,9 @@ def regrid_observations(path='/media/hpc_backup/yanitski/projects/pdr/observatio
 
 def combine_regridded(path=None, regridded_path=None, target_header=None,
                       target_kernel=None, target_vel=None, output_file=None):
+    '''
+    Combine separate regridded files. Useful for large datasets.
+    '''
 
     # if path==None or regridded_path==None or output_file==None\
     #         or isinstance(target_header, dict) or isinstance(target_vel, np.ndarray):
@@ -1273,7 +1281,7 @@ def error_correction(data, conf=''):
 
 
 
-def model_selection(path='/mnt/hpc_backup/yanitski/projects/pdr/KT3_history/MilkyWay', missions=None, lat=None,
+def model_selection_old(path='/mnt/hpc_backup/yanitski/projects/pdr/KT3_history/MilkyWay', missions=None, lat=None,
                     model_dir='', model_param=[[]], comp_type='pv', log_comp=True, cmap='gist_ncar',
                     PLOT=False, PRINT=False, debug=False):
     '''
@@ -1848,6 +1856,9 @@ def model_selection(path='/mnt/hpc_backup/yanitski/projects/pdr/KT3_history/Milk
 def model_selection_new(path='/mnt/yanitski_backup/yanitski/projects/pdr/KT3_history/MilkyWay', missions=None, lat=None, f_idx=0, 
                         model_dir='', model_param=[[]], comp_type='pv', log_comp=True, cmap='gist_ncar',
                         spectra=True, PLOT=False, PRINT=False, debug=False):
+    '''
+    Like `model_selection_old`, but using `SyntheticModel()` and `Observation` instances.
+    '''
     
     # Check that the missions are specified properly.
     if missions == '' or missions == None or missions == []:
@@ -2184,6 +2195,9 @@ def line_ratio_comparison(obs_path='/mnt/hpc_backup/yanitski/projects/pdr/observ
                           label_rotation=30, label_fontsize=16, fontsize=20,
                           save_plot=False, output_file='', output_format='png',
                           debug=False, verbose=False, violin_width=1, violin_spacing=1, **kwargs):
+    '''
+    Plot comparison of line ratios.
+    '''
 
     survey_paths = [[], []]  # list for paths to plotted data (in order observed, synthetic)
     survey_maps = [[], []]   # list for unprocessed (pre-calculation) data to plot (in order observed, synthetic)
@@ -2438,6 +2452,9 @@ def violin_comparison(path='/mnt/hpc_backup/yanitski/projects/pdr/observational_
                       label_rotation=30, label_fontsize=16, fontsize=20,
                       figsize=None, save_plot=False, output_file='', output_format='png',
                       debug=False, verbose=False, **kwargs):
+    '''
+    Compare models and observation as violin plots.
+    '''
 
     # Check that the missions are specified properly.
     if surveys == '' or surveys == None or surveys == []:
@@ -2772,6 +2789,9 @@ def double_line_plot(obs_path='/mnt/hpc_backup/yanitski/projects/pdr/observation
                      label_rotation=30, label_fontsize=16, fontsize=20,
                      save_plot=False, output_file='', output_format='png',
                      debug=False, verbose=False, **kwargs):
+    '''
+    Plot two lines against each other. Not setup well for comparing model grids.
+    '''
 
     survey_paths = [[], []]  # list for paths to plotted data (in order observed, synthetic)
     survey_maps = [[], []]   # list for unprocessed (pre-calculation) data to plot (in order observed, synthetic)
@@ -3027,7 +3047,9 @@ def plot_comparison(path='/mnt/hpc_backup/yanitski/projects/pdr/KT3_history/Milk
                     pad=1.0, pad_left=0, pad_right=0.125, pad_bottom=0, pad_top=0.12, wspace=0, hspace=0,
                     figsize=None, save_plot=False, output_file='', prefix='', output_format='png', transparent=False,
                     verbose=False, debug=False, **kwargs):
-    #
+    '''
+    Plot heatmaps of a test statistic to exaimine over model grid.
+    '''
 
     # Check that the missions are specified properly.
     if missions == '' or missions == None or missions == []:

@@ -1,6 +1,6 @@
 '''
-This is a submodule containing various methods to examine the properties of the 
-clumpy ensemble description of PDRs.
+The :code:`properties` subpackage containing various methods to examine the properties of the 
+both the clumpy ensemble description of PDRs as well as the individual clumps.
 '''
 
 from kosmatau3d.properties import fuv_models

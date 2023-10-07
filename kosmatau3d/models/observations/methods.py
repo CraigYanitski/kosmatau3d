@@ -3,15 +3,15 @@ import warnings
 import numpy as np
 import pandas as pd
 
-from numba import jit_module
-from numba.core.errors import NumbaDeprecationWarning, NumbaPendingDeprecationWarning
+# from numba import jit_module
+# from numba.core.errors import NumbaDeprecationWarning, NumbaPendingDeprecationWarning
 
 from kosmatau3d.models import constants
 from kosmatau3d.models import observations
 
 
-warnings.simplefilter('ignore', category=NumbaDeprecationWarning)
-warnings.simplefilter('ignore', category=NumbaPendingDeprecationWarning)
+# warnings.simplefilter('ignore', category=NumbaDeprecationWarning)
+# warnings.simplefilter('ignore', category=NumbaPendingDeprecationWarning)
 
 
 def initialise_grid(clump_tau_grid_file='clump_tau_LineCenter.dat', 
@@ -26,7 +26,10 @@ def initialise_grid(clump_tau_grid_file='clump_tau_LineCenter.dat',
                     interclump_column_density_file='interclumpMeanCols.dat',
                     clump_temperature_file='clumpTemperatures_filled.dat',
                     interclump_temperature_file='interclumpTemperatures_filled.dat'):
-    # Grid
+    '''
+    Open data to interpolate data for `Voxel` instance.
+    '''
+
     clump_tau_centerline(clump_tau_grid_file)
     interclump_tau_centerline(interclump_tau_grid_file)
     interclump_dust_tau(interclump_dust_tau_grid_file)
@@ -53,7 +56,10 @@ def initialise_input(h2_surface_density_file='h2_surface-density.dat',
                      h_number_density_file='h_number-density.dat', 
                      fuv_file='galactic_FUV_complete.dat', 
                      velocity_file='rot_milki2018_14.dat'):
-    # Model
+    '''
+    Open data to interpolate data for `Model` instance.
+    '''
+    
     h2_surface_mass_profile(h2_surface_density_file)
     hi_surface_mass_profile(hi_surface_density_file)
     h2_scale_height_profile(h2_scale_height_file)
@@ -71,8 +77,11 @@ def initialise_input(h2_surface_density_file='h2_surface-density.dat',
 
 
 def clump_tb_centerline(file='clump_Tmb_LineCenter.dat'):
-    # Open file for KOSMA-tau simulations of line intensities
-    # FORMAT: chi, n, M, UV, intensity[molecules then dust]
+    '''
+    Open file for KOSMA-:math:`\tau` simulations of line intensities
+    
+    FORMAT: chi, n, M, UV, intensity[molecules then dust]
+    '''
     header = []
     with open(constants.GRIDPATH+file) as tb:
         header.append(tb.readline())
@@ -89,8 +98,11 @@ def clump_tb_centerline(file='clump_Tmb_LineCenter.dat'):
 
 
 def interclump_tb_centerline(file='interclumpTmbLineCenter.dat'):
-    # Open file for KOSMA-tau simulations of line intensities
-    # FORMAT: n, M, UV, intensity[molecules]
+    '''
+    Open file for KOSMA-:math:`\tau` simulations of line intensities
+    
+    FORMAT: n, M, UV, intensity[molecules]
+    '''
     header = []
     with open(constants.GRIDPATH+file) as tb:
         header.append(tb.readline())
@@ -107,79 +119,101 @@ def interclump_tb_centerline(file='interclumpTmbLineCenter.dat'):
 
 
 def interclump_dust_tb(file='interclumpDustTmb.dat'):
-    # Open file for KOSMA-tau simulations of line intensities
-    # FORMAT: n, M, UV, intensity[dust]
+    '''
+    Open file for KOSMA-:math:`\tau` simulations of line intensities
+    
+    FORMAT: n, M, UV, intensity[dust]
+    '''
     tb = pd.read_csv(constants.GRIDPATH+file, sep='\s+')
     observations.interclump_dust_tb_centerline = (tb.loc[:, ['n', 'M', 'chi']].to_numpy(), tb.loc[:, '3.1mm':].to_numpy())
     return
 
 
 def clump_tau_centerline(file='clump_tau_LineCenter.dat'):
-    # Open file for KOSMA-tau simulations of optical depths
-    # FORMAT: chi, n, M, UV, tau[molecules then dust]
+    '''
+    Open file for KOSMA-:math:`\tau` simulations of optical depths
+    
+    FORMAT: chi, n, M, UV, tau[molecules then dust]
+    '''
     tau = np.genfromtxt(constants.GRIDPATH+file)
     observations.clump_tau_centerline = (tau[:, :4], tau[:, 4:])
     return
 
 
 def interclump_tau_centerline(file='interclumpTauLineCenter.dat'):
-    # Open file for KOSMA-tau simulations of optical depths
-    # FORMAT: n, M, UV, tau[molecules]
+    '''
+    Open file for KOSMA-:math:`\tau` simulations of optical depths
+    
+    FORMAT: n, M, UV, tau[molecules]
+    '''
     tau = np.genfromtxt(constants.GRIDPATH+file)
     observations.interclump_tau_centerline = (tau[:, :3], tau[:, 3:])
     return
 
 
 def interclump_dust_tau(file='interclumpDustTau.dat'):
-    # Open file for KOSMA-tau simulations of optical depths
-    # FORMAT: n, M, UV, tau[dust]
+    '''
+    Open file for KOSMA-:math:`\tau` simulations of optical depths
+    
+    FORMAT: n, M, UV, tau[dust]
+    '''
     tau = pd.read_csv(constants.GRIDPATH+file, sep='\s+')
     observations.interclump_dust_tau_centerline = (tau.loc[:, ['n', 'M', 'chi']].to_numpy(), tau.loc[:, '3.1mm':].to_numpy())
     return
 
 
 def clump_taufuv(file='RhoMassAFUV.dat'):
+    '''
+    Open file for KOSMA-:math:`\tau` simulations of far-UV optical depths.
+    
+    FORMAT: n, M, tau_fuv
+    '''
     taufuv = pd.read_csv(constants.GRIDPATH+file, sep='\s+')
     observations.clump_taufuv = (taufuv.loc[:, ['n', 'M']].to_numpy(), taufuv.loc[:, 'tauFUV'].to_numpy())
     return
 
 
 def interclump_taufuv(file='interclumpTauFUV.dat'):
+    '''
+    Open file for KOSMA-:math:`\tau` simulations of far-UV optical depths.
+    
+    FORMAT: n, M, tau_fuv
+    '''
     taufuv = pd.read_csv(constants.GRIDPATH+file, sep='\s+')
     observations.interclump_taufuv = (taufuv.loc[:, ['n', 'M', 'chi']].to_numpy(), taufuv.loc[:, 'tauFUV'].to_numpy())
     return
 
 
 def clump_column_density(file='clumpMeanCols.dat'):
-    # Open file containing the column densities
+    '''Open file containing the column densities.'''
     N = pd.read_csv(constants.GRIDPATH + file, sep='\s+')
     observations.clump_column_density = (N.loc[:, ['n', 'M', 'chi']], N.loc[:, 'ELECTR':])
     return
 
 
 def interclump_column_density(file='interclumpMeanCols.dat'):
-    # Open file containing the column densities
+    '''Open file containing the column densities.'''
     N = pd.read_csv(constants.GRIDPATH + file, sep='\s+')
     observations.interclump_column_density = (N.loc[:, ['n', 'M', 'chi']], N.loc[:, 'ELECTR':])
     return
 
 
 def clump_temperature(file='clumpTemperatures.dat'):
-    # Open file containing the column densities
+    '''Open file containing the column densities.'''
     N = pd.read_csv(constants.GRIDPATH + file, sep='\s+')
     observations.clump_temperature = (N.loc[:, ['n', 'M', 'chi']], N.loc[:, ('Tg', 'Td')])
     return
 
 
 def interclump_temperature(file='interclumpTemperatures.dat'):
-    # Open file containing the column densities
+    '''Open file containing the column densities.'''
     N = pd.read_csv(constants.GRIDPATH + file, sep='\s+')
     observations.interclump_temperature = (N.loc[:, ['n', 'M', 'chi']], N.loc[:, ('Tg', 'Td')])
     return
 
 
 def species_data(file='frequencies.dat'):
-    # Open file containing the transition frequencies of various elements
+    '''Open file containing the transition frequencies of various elements.'''
     frequencies = np.genfromtxt(constants.GRIDPATH+file, names=['number', 'species', 'transition', 'frequency'],
                                 dtype="i8,U8,i8,f8", delimiter=',')
     observations.species_data = (frequencies['number'], frequencies['species'],
@@ -188,18 +222,21 @@ def species_data(file='frequencies.dat'):
 
 
 def init_rad_transfer():
+    '''Depreciated functions from an old version of the code.'''
     e_tilde_real()
     e_tilde_imaginary()
     return
 
 
 def e_tilde_real(file='Ereal.dat'):
+    '''No longer used...'''
     eReal = np.genfromtxt(constants.GRIDPATH+file, names=['x', 'Ereal'])
     observations.e_tilde_real = (eReal['x'], eReal['Ereal'])
     return
 
 
 def e_tilde_imaginary(file='Eimag.dat'):
+    '''No longer used...'''
     eImaginary = np.genfromtxt(constants.GRIDPATH+file, names=['x', 'Eimaginary'])
     observations.e_tilde_imaginary = (eImaginary['x'], eImaginary['Eimaginary'])
     return
@@ -209,7 +246,7 @@ def e_tilde_imaginary(file='Eimag.dat'):
 
 
 def h2_surface_mass_profile(file='h2_surface-density.dat'):
-    # Open file for the mass profile (clump) of the object (Msol/pc**2)
+    '''Open file for the mass profile (clump) of the object (Msol/pc**2).'''
     if constants.directory != '':
         sigma_h2 = pd.read_csv(constants.INPUTPATH+constants.directory+file, 
                                delim_whitespace=True, skiprows=1)
@@ -239,7 +276,7 @@ def h2_surface_mass_profile(file='h2_surface-density.dat'):
 
 
 def hi_surface_mass_profile(file='hi_surface-density.dat'):
-    # Open file for the mass profile (interclump) of the object (Msol/pc**2)
+    '''Open file for the mass profile (interclump) of the object (M:math:`_\odot`/pc:math:`^2`).'''
     if constants.directory != '':
         sigma_hi = pd.read_csv(constants.INPUTPATH+constants.directory+file, 
                                delim_whitespace=True, skiprows=1)
@@ -270,7 +307,7 @@ def hi_surface_mass_profile(file='hi_surface-density.dat'):
 
 
 def h2_scale_height_profile(file='h2_scale-height.dat'):
-    # Open file for the H2 scale height profile of the galaxy (pc).
+    '''Open file for the H:math:`_2` scale height profile of the galaxy (pc).'''
     if constants.directory != '':
         height = pd.read_csv(constants.INPUTPATH+constants.directory+file, 
                              delim_whitespace=True, skiprows=1)
@@ -279,7 +316,7 @@ def h2_scale_height_profile(file='h2_scale-height.dat'):
 
 
 def hi_scale_height_profile(file='hi_scale-height.dat'):
-    # Open file for the HI scale height profile of the galaxy (pc).
+    '''Open file for the H:math:`^0` scale height profile of the galaxy (pc).'''
     if constants.directory != '':
         height = pd.read_csv(constants.INPUTPATH+constants.directory+file, 
                              delim_whitespace=True, skiprows=1)
@@ -288,7 +325,7 @@ def hi_scale_height_profile(file='hi_scale-height.dat'):
 
 
 def number_density_profile(file='number-densities.dat'):
-    # Open file for the number density profile of the object (n/cm**3)
+    '''Open file for the number density profile of the object (n cm:math:`^{3}`).'''
     if constants.directory != '':
         density = np.genfromtxt(constants.INPUTPATH+constants.directory+file, 
                                 names=['radius', 'h2_density'])
@@ -298,10 +335,9 @@ def number_density_profile(file='number-densities.dat'):
 
 def fuv_profile(file='galactic_FUV_complete.dat'):
     '''
-    Open file for the FUV profile of the object
-    'radius', 'energy density 912', 'energy density 1350', 'energy density 1500', 'energy density 1650',
-    'energy density 2000', 'energy density 2200', 'energy density 2500', 'energy density 2800', 'energy density 3650'])
+    Open file for the far-UV profile of the object.
     '''
+
     if constants.directory != '':
         fuv = np.loadtxt(constants.INPUTPATH+constants.directory+file)
         # r = np.arange(0,20000,50)
@@ -320,10 +356,9 @@ def galaxy_rotation_profile(file='rot_milki2018_14.dat'):
     both. The latter file has higher rotational velocities, though it seems somewhat artificially created (multiple
     entries with the same value).
     '''
+
     if constants.directory != '':
         rotation = np.genfromtxt(constants.INPUTPATH+constants.directory+file)
         observations.galaxy_rotation_profile = (rotation[:, 0]*1000., rotation[:, 1:])
     return
 
-
-# jit_module(nopython=False)

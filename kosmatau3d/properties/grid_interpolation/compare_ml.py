@@ -1,3 +1,8 @@
+'''
+This is a subpackage containing a class to compare methods of interpolating the 
+KOSMA-:math:`\\tau` grid.
+'''
+
 import inspect
 import matplotlib.pyplot as plt
 import numpy as np
@@ -9,11 +14,16 @@ from sklearn.ensemble import ExtraTreesRegressor
 
 
 class CompareInterpolation():
+    '''
+    This is a class to facilitate the comparison of interpolation methods.
+    '''
 
     def __init__(self, tmb_file='clump_Tmb_LineCenter.dat', tau_file='clump_tau_LineCenter.dat', 
                  n_param=4):
         '''
+        Initialise attributes and open grid files.
         '''
+
         filename = inspect.getframeinfo(inspect.currentframe()).filename
         package_path = os.path.abspath(os.path.dirname(filename)+'/../../')  # kosmatau3d dir
         self.path = package_path + '/grid/'  # grid dir
@@ -31,7 +41,9 @@ class CompareInterpolation():
 
     def open_files(self, n_param=4):
         '''
+        Parse header of grid files and load data into memory.
         '''
+
         header = []
         with open(self.path+self.tmb_file) as tmb:
             header.append(tmb.readline())
@@ -50,7 +62,11 @@ class CompareInterpolation():
 
     def interpolate(self, transition=None, full_grid=False, all_species=False, savedir='', verbose=False):
         '''
+        Perform interpolation of model grid at each point in multiple ways.
+        Currently this performs a linear interpolation as well as predicting 
+        the interpolated point using extremely-randomised trees.
         '''
+
         if not transition:
             transition = self.species
         elif isinstance(transition, (str, np.ndarray, tuple)):
@@ -162,6 +178,7 @@ class CompareInterpolation():
 
     def save_results(self, directory='', full_grid=True):
         '''
+        Save original and interpolated data in separate numpy binary files.
         '''
         if directory:
             savedir = (directory+'/') if not (directory[-1]=='/') else directory
@@ -183,6 +200,7 @@ class CompareInterpolation():
 
     def plot_result(self, ax=None, transition=None, **kwargs):
         '''
+        Plot ratio of the interpolated and original data as a function of parameter.
         '''
         if not transition:
             warnings.error('Please specify a transition')
@@ -199,3 +217,4 @@ class CompareInterpolation():
         ax.set_xlabel('Parameter', fontsize=24)
         ax.set_ylabel('Relative error', fontsize=24)
         return ax
+
