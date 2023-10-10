@@ -108,6 +108,10 @@
              
   <section id="module-kosmatau3d.models.combinations.combination">
 <span id="kosmatau3d-models-combinations-combination"></span><h1>kosmatau3d.models.combinations.combination<a class="headerlink" href="#module-kosmatau3d.models.combinations.combination" title="Link to this heading">¶</a></h1>
+<p>This is a module to handle a combination of fractal masses in an ensemble.
+It will have its associated probability, which will scale its intrinsic
+intensity and optical depth. It returns a tuple of the combination’s
+probability, intensity, optical depth, and far-UV field.</p>
 <p class="rubric">Functions</p>
 <table class="autosummary longtable docutils align-default">
 <tbody>
@@ -115,13 +119,13 @@
 <td><p>This retrieves the emission from the masspoints, with dimensions (masspoints,species,velocity,velocity).</p></td>
 </tr>
 <tr class="row-even"><td><p><a class="reference internal" href="kosmatau3d.models.combinations.combination.get_fuv_extinction.html#kosmatau3d.models.combinations.combination.get_fuv_extinction" title="kosmatau3d.models.combinations.combination.get_fuv_extinction"><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_fuv_extinction</span></code></a></p></td>
-<td><p></p></td>
+<td><p>The input is the density in the voxel.</p></td>
 </tr>
 <tr class="row-odd"><td><p><a class="reference internal" href="kosmatau3d.models.combinations.combination.initialise.html#kosmatau3d.models.combinations.combination.initialise" title="kosmatau3d.models.combinations.combination.initialise"><code class="xref py py-obj docutils literal notranslate"><span class="pre">initialise</span></code></a></p></td>
-<td><p></p></td>
+<td><p>This function assigns the combination data from <code class="code docutils literal notranslate"><span class="pre">models.ensemble</span></code> to variables in this subpackage.</p></td>
 </tr>
 <tr class="row-even"><td><p><a class="reference internal" href="kosmatau3d.models.combinations.combination.reinitialise.html#kosmatau3d.models.combinations.combination.reinitialise" title="kosmatau3d.models.combinations.combination.reinitialise"><code class="xref py py-obj docutils literal notranslate"><span class="pre">reinitialise</span></code></a></p></td>
-<td><p></p></td>
+<td><p>Reinitialise all temporary variables to the correct number of clump sets.</p></td>
 </tr>
 <tr class="row-odd"><td><p><a class="reference internal" href="kosmatau3d.models.combinations.combination.set_clump_combination.html#kosmatau3d.models.combinations.combination.set_clump_combination" title="kosmatau3d.models.combinations.combination.set_clump_combination"><code class="xref py py-obj docutils literal notranslate"><span class="pre">set_clump_combination</span></code></a></p></td>
 <td><p></p></td>

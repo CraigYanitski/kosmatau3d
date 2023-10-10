@@ -17,7 +17,7 @@ kosmatau3d.models.ensemble.ensemble
    
       calculate
       calculate_combinations
-      create_combination_objects
+      create_clump_combinations
       initialise
       print_ensembleparameters
       reinitialise

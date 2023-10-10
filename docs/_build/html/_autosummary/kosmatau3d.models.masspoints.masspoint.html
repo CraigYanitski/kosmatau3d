@@ -108,6 +108,11 @@
              
   <section id="module-kosmatau3d.models.masspoints.masspoint">
 <span id="kosmatau3d-models-masspoints-masspoint"></span><h1>kosmatau3d.models.masspoints.masspoint<a class="headerlink" href="#module-kosmatau3d.models.masspoints.masspoint" title="Link to this heading">¶</a></h1>
+<p>This is a module to handle one fractal mass in a combination.
+It will have the associated emission and extinction information from the KOSMA-tau simulations,
+which will be used to contribute to the Combination class’ intrinsic intensity and optical depth.
+At the moment, the emission interpolation is performed for each individual species. It will be
+an future update to perform the interpolation for all species at the same time.</p>
 <p class="rubric">Functions</p>
 <table class="autosummary longtable docutils align-default">
 <tbody>
@@ -115,16 +120,16 @@
 <td><p>This function can be called to set-up the clump emissions in the masspoints module.</p></td>
 </tr>
 <tr class="row-even"><td><p><a class="reference internal" href="kosmatau3d.models.masspoints.masspoint.get_taufuv.html#kosmatau3d.models.masspoints.masspoint.get_taufuv" title="kosmatau3d.models.masspoints.masspoint.get_taufuv"><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_taufuv</span></code></a></p></td>
-<td><p></p></td>
+<td><p>Return the far-UV optical depth for each clump in each ensemble.</p></td>
 </tr>
 <tr class="row-odd"><td><p><a class="reference internal" href="kosmatau3d.models.masspoints.masspoint.masspoint_emission.html#kosmatau3d.models.masspoints.masspoint.masspoint_emission" title="kosmatau3d.models.masspoints.masspoint.masspoint_emission"><code class="xref py py-obj docutils literal notranslate"><span class="pre">masspoint_emission</span></code></a></p></td>
 <td><p>This function calculates the emission of a single clump of the given mass/density/radius.</p></td>
 </tr>
 <tr class="row-even"><td><p><a class="reference internal" href="kosmatau3d.models.masspoints.masspoint.plot_intensity.html#kosmatau3d.models.masspoints.masspoint.plot_intensity" title="kosmatau3d.models.masspoints.masspoint.plot_intensity"><code class="xref py py-obj docutils literal notranslate"><span class="pre">plot_intensity</span></code></a></p></td>
-<td><p></p></td>
+<td><p>Plot the emissivity or absorption for each clump in each ensemble.</p></td>
 </tr>
 <tr class="row-odd"><td><p><a class="reference internal" href="kosmatau3d.models.masspoints.masspoint.reinitialise.html#kosmatau3d.models.masspoints.masspoint.reinitialise" title="kosmatau3d.models.masspoints.masspoint.reinitialise"><code class="xref py py-obj docutils literal notranslate"><span class="pre">reinitialise</span></code></a></p></td>
-<td><p></p></td>
+<td><p>Reinitialise all temporary variable to the correct number of clump sets.</p></td>
 </tr>
 <tr class="row-even"><td><p><a class="reference internal" href="kosmatau3d.models.masspoints.masspoint.set_masspoint_data.html#kosmatau3d.models.masspoints.masspoint.set_masspoint_data" title="kosmatau3d.models.masspoints.masspoint.set_masspoint_data"><code class="xref py py-obj docutils literal notranslate"><span class="pre">set_masspoint_data</span></code></a></p></td>
 <td><p>This sets the information for the masspoints used in a given voxel.</p></td>

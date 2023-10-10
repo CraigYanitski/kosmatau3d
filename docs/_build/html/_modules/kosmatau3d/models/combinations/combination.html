@@ -77,7 +77,15 @@
            <div itemprop="articleBody">
              
   <h1>Source code for kosmatau3d.models.combinations.combination</h1><div class="highlight"><pre>
-<span></span><span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<span></span><span class="sd">&#39;&#39;&#39;</span>
+<span class="sd">This is a module to handle a combination of fractal masses in an ensemble.</span>
+<span class="sd">It will have its associated probability, which will scale its intrinsic</span>
+<span class="sd">intensity and optical depth. It returns a tuple of the combination&#39;s</span>
+<span class="sd">probability, intensity, optical depth, and far-UV field.</span>
+<span class="sd">&#39;&#39;&#39;</span>
+
+
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
 <span class="kn">from</span> <span class="nn">copy</span> <span class="kn">import</span> <span class="n">copy</span>
 <span class="c1">#from numba import jit_module</span>
 <span class="c1">#import importlib as il</span>
@@ -86,17 +94,14 @@
 <span class="kn">from</span> <span class="nn">kosmatau3d.models</span> <span class="kn">import</span> <span class="n">constants</span>
 <span class="kn">from</span> <span class="nn">kosmatau3d.models</span> <span class="kn">import</span> <span class="n">masspoints</span>
 
-<span class="sd">&#39;&#39;&#39;</span>
-<span class="sd">This is a class to handle a combination of fractal masses in an ensemble.</span>
-<span class="sd">It will have its associated probability, which will scale its intrinsic</span>
-<span class="sd">intensity and optical depth. It returns a tuple of the combination&#39;s</span>
-<span class="sd">probability, intensity, optical depth, and FUV field.</span>
-<span class="sd">&#39;&#39;&#39;</span>
-
 
 <div class="viewcode-block" id="initialise">
 <a class="viewcode-back" href="../../../../_autosummary/kosmatau3d.models.combinations.combination.initialise.html#kosmatau3d.models.combinations.combination.initialise">[docs]</a>
 <span class="k">def</span> <span class="nf">initialise</span><span class="p">(</span><span class="n">clump_combination</span><span class="o">=</span><span class="p">[],</span> <span class="n">total_combination</span><span class="o">=</span><span class="p">[]):</span>
+<span class="w">    </span><span class="sd">&#39;&#39;&#39;</span>
+<span class="sd">    This function assigns the combination data from :code:`models.ensemble` to variables in</span>
+<span class="sd">    this subpackage. It needs to be executed after :code:`models.ensemble.ensemble.initialise()`.</span>
+<span class="sd">    &#39;&#39;&#39;</span>
     <span class="n">combinations</span><span class="o">.</span><span class="n">clump_combination</span> <span class="o">=</span> <span class="n">clump_combination</span>
     <span class="n">combinations</span><span class="o">.</span><span class="n">clump_max_combination</span> <span class="o">=</span> <span class="n">total_combination</span>
     <span class="k">return</span></div>
@@ -114,8 +119,12 @@
 <div class="viewcode-block" id="get_fuv_extinction">
 <a class="viewcode-back" href="../../../../_autosummary/kosmatau3d.models.combinations.combination.get_fuv_extinction.html#kosmatau3d.models.combinations.combination.get_fuv_extinction">[docs]</a>
 <span class="k">def</span> <span class="nf">get_fuv_extinction</span><span class="p">(</span><span class="n">verbose</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
-    <span class="c1"># The input is the density in the voxel. The probability should be included outside of this module.</span>
-    <span class="c1">#  (velocity-independent)</span>
+<span class="w">    </span><span class="sd">&#39;&#39;&#39;</span>
+<span class="sd">    The input is the density in the voxel. </span>
+<span class="sd">    The probability should be included outside of this module.</span>
+
+<span class="sd">    (velocity-independent)</span>
+<span class="sd">    &#39;&#39;&#39;</span>
     <span class="n">afuv</span> <span class="o">=</span> <span class="n">masspoints</span><span class="o">.</span><span class="n">get_taufuv</span><span class="p">()</span>
     <span class="k">for</span> <span class="n">ens</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">afuv</span><span class="p">)):</span>
         <span class="n">afuv</span><span class="p">[</span><span class="n">ens</span><span class="p">]</span> <span class="o">=</span> <span class="n">afuv</span><span class="p">[</span><span class="n">ens</span><span class="p">]</span> <span class="o">*</span> <span class="n">combinations</span><span class="o">.</span><span class="n">clump_max_combination</span><span class="p">[</span><span class="n">ens</span><span class="p">]</span>
@@ -243,7 +252,7 @@
 <div class="viewcode-block" id="reinitialise">
 <a class="viewcode-back" href="../../../../_autosummary/kosmatau3d.models.combinations.combination.reinitialise.html#kosmatau3d.models.combinations.combination.reinitialise">[docs]</a>
 <span class="k">def</span> <span class="nf">reinitialise</span><span class="p">():</span>
-    <span class="c1"># Reinitialise all temporary variables to the correct number of clump sets.</span>
+<span class="w">    </span><span class="sd">&#39;&#39;&#39;Reinitialise all temporary variables to the correct number of clump sets.&#39;&#39;&#39;</span>
   
     <span class="n">combinations</span><span class="o">.</span><span class="n">clump_combination</span> <span class="o">=</span> <span class="p">[[]</span> <span class="k">for</span> <span class="n">_</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">constants</span><span class="o">.</span><span class="n">clump_mass_number</span><span class="p">))]</span>
     <span class="n">combinations</span><span class="o">.</span><span class="n">clump_max_combination</span> <span class="o">=</span> <span class="p">[[]</span> <span class="k">for</span> <span class="n">_</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">constants</span><span class="o">.</span><span class="n">clump_mass_number</span><span class="p">))]</span>

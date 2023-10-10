@@ -63,6 +63,17 @@ templates_path = ['../_templates']
 # This pattern also affects html_static_path and html_extra_path.
 # exclude_patterns = ['kosmatau3d.models.cyplot']
 
+def skip_member(app, what, name, obj, skip, options):
+    # List of external module names to skip
+    external_modules_to_skip = ['scipy', 'scipy.interpolate']
+
+    if what == 'module' and obj.__name__ in external_modules_to_skip:
+        return True
+    return None
+
+def setup(app):
+    app.connect('autodoc-skip-member', skip_member)
+
 
 # -- Options for HTML output -------------------------------------------------
 

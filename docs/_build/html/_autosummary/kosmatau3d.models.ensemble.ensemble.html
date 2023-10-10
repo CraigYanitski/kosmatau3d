@@ -108,6 +108,11 @@
              
   <section id="module-kosmatau3d.models.ensemble.ensemble">
 <span id="kosmatau3d-models-ensemble-ensemble"></span><h1>kosmatau3d.models.ensemble.ensemble<a class="headerlink" href="#module-kosmatau3d.models.ensemble.ensemble" title="Link to this heading">¶</a></h1>
+<p>This module owes itself largely to the work  done by Silke Andree-Labsch and
+Christoph Bruckmann. It contains a number of combinations of fractal mass
+configurations, and therefore contains the ensemble-averaged intensity and
+optical depth.
+It can be either a clump or an interclump ensemble.</p>
 <p class="rubric">Functions</p>
 <table class="autosummary longtable docutils align-default">
 <tbody>
@@ -117,17 +122,17 @@
 <tr class="row-even"><td><p><a class="reference internal" href="kosmatau3d.models.ensemble.ensemble.calculate_combinations.html#kosmatau3d.models.ensemble.ensemble.calculate_combinations" title="kosmatau3d.models.ensemble.ensemble.calculate_combinations"><code class="xref py py-obj docutils literal notranslate"><span class="pre">calculate_combinations</span></code></a></p></td>
 <td><p>This function calculates all of the different combinations of clump masses that may be in a line-of-sight.</p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="kosmatau3d.models.ensemble.ensemble.create_combination_objects.html#kosmatau3d.models.ensemble.ensemble.create_combination_objects" title="kosmatau3d.models.ensemble.ensemble.create_combination_objects"><code class="xref py py-obj docutils literal notranslate"><span class="pre">create_combination_objects</span></code></a></p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="kosmatau3d.models.ensemble.ensemble.create_clump_combinations.html#kosmatau3d.models.ensemble.ensemble.create_clump_combinations" title="kosmatau3d.models.ensemble.ensemble.create_clump_combinations"><code class="xref py py-obj docutils literal notranslate"><span class="pre">create_clump_combinations</span></code></a></p></td>
 <td><p>This function removes all of the unnecessary degenerate looping during this calculation.</p></td>
 </tr>
 <tr class="row-even"><td><p><a class="reference internal" href="kosmatau3d.models.ensemble.ensemble.initialise.html#kosmatau3d.models.ensemble.ensemble.initialise" title="kosmatau3d.models.ensemble.ensemble.initialise"><code class="xref py py-obj docutils literal notranslate"><span class="pre">initialise</span></code></a></p></td>
-<td><p></p></td>
+<td><p>Initialise the combinations of clumps for each ensemble and calculate the probabilities.</p></td>
 </tr>
 <tr class="row-odd"><td><p><a class="reference internal" href="kosmatau3d.models.ensemble.ensemble.print_ensembleparameters.html#kosmatau3d.models.ensemble.ensemble.print_ensembleparameters" title="kosmatau3d.models.ensemble.ensemble.print_ensembleparameters"><code class="xref py py-obj docutils literal notranslate"><span class="pre">print_ensembleparameters</span></code></a></p></td>
-<td><p></p></td>
+<td><p>This function prints the number of clumps in the ensemble, both standard and normalised.</p></td>
 </tr>
 <tr class="row-even"><td><p><a class="reference internal" href="kosmatau3d.models.ensemble.ensemble.reinitialise.html#kosmatau3d.models.ensemble.ensemble.reinitialise" title="kosmatau3d.models.ensemble.ensemble.reinitialise"><code class="xref py py-obj docutils literal notranslate"><span class="pre">reinitialise</span></code></a></p></td>
-<td><p></p></td>
+<td><p>Reinitialise all subpackage variables to the correct number of clump sets.</p></td>
 </tr>
 </tbody>
 </table>
