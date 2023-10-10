@@ -1,7 +1,14 @@
+'''
+This subpackage is to keep track of the combinations of clumps used
+in the calculation of the ensemble-averaged emission, as well as the
+associated emissivity and absorption.
+'''
+
+
 #import numpy as np
 #from numba import jit_module
 
-from .combination import *
+# from .combination import *
 from kosmatau3d.models import constants
 
 clump_combination = [[] for _ in range(len(constants.clump_mass_number))]

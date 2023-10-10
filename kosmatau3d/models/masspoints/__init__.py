@@ -1,7 +1,14 @@
+'''
+This is a subpackage to appropriately handle all of the information concerning
+a KOSMA-:math:`\\tau` clump.
+The interpolated values are loaded into some of the subpackage variables.
+'''
+
+
 import numpy as np
 #from numba import jit_module
 
-from .masspoint import *
+# from .masspoint import *
 from kosmatau3d.models import species
 from kosmatau3d.models import constants
 

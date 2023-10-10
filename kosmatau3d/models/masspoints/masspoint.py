@@ -1,3 +1,12 @@
+'''
+This is a module to handle one fractal mass in a combination.
+It will have the associated emission and extinction information from the KOSMA-tau simulations,
+which will be used to contribute to the Combination class' intrinsic intensity and optical depth.
+At the moment, the emission interpolation is performed for each individual species. It will be
+an future update to perform the interpolation for all species at the same time.
+'''
+
+
 import importlib as il
 from time import time
 
@@ -10,15 +19,6 @@ from kosmatau3d.models import masspoints
 from kosmatau3d.models import constants
 from kosmatau3d.models import interpolations
 from kosmatau3d.models import species
-
-
-'''
-This is a module to handle one fractal mass in a combination.
-It will have the associated emission and extinction information from the KOSMA-tau simulations,
-which will be used to contribute to the Combination class' intrinsic intensity and optical depth.
-At the moment, the emission interpolation is performed for each individual species. It will be
-an future update to perform the interpolation for all species at the same time.
-'''
 
 
 def set_masspoint_data(density=[], fuv=[0], crir=2e-16):
@@ -52,6 +52,9 @@ def set_masspoint_data(density=[], fuv=[0], crir=2e-16):
 
 
 def get_taufuv(debug=False):
+    '''
+    Return the far-UV optical depth for each clump in each ensemble.
+    '''
     taufuv = [[] for _ in range(len(constants.clump_mass_number))]
     for ens in range(len(constants.clump_mass_number)):
         if constants.interclump_idx[ens]:
@@ -186,6 +189,10 @@ def calculate_emission(taufuv=0, timed=False):
 
 def plot_intensity(transitions='all', quantity='intensity', n_cl=[], title='', velocity=None, logscale=None,
                    test_calc=False):
+    '''
+    Plot the emissivity or absorption for each clump in each ensemble.
+    It is assumed that the line profile is Gaussian.
+    '''
 
     if isinstance(transitions, str) and transitions in species.clump_transitions:
         transitions = [transitions]
@@ -292,7 +299,7 @@ def plot_intensity(transitions='all', quantity='intensity', n_cl=[], title='', v
 
 
 def reinitialise():
-    # Reinitialise all temporary variable to the correct number of clump sets.
+    '''Reinitialise all temporary variable to the correct number of clump sets.'''
   
     # Properties
   

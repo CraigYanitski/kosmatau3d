@@ -1,3 +1,12 @@
+'''
+This module owes itself largely to the work  done by Silke Andree-Labsch and
+Christoph Bruckmann. It contains a number of combinations of fractal mass
+configurations, and therefore contains the ensemble-averaged intensity and
+optical depth.
+It can be either a clump or an interclump ensemble.
+'''
+
+
 import sys
 import gc
 #import importlib as il
@@ -14,20 +23,15 @@ from kosmatau3d.models import ensemble
 from kosmatau3d.models import masspoints
 # from kosmatau3d.models import ensembleStatistics as stat
 
-'''
-This class owes itself largely to the work  done by Silke Andree-Labsch and
-Christoph Bruckmann. It contains a number of combinations of fractal mass
-configurations, and therefore contains the ensemble-averaged intensity and
-optical depth.
-It can be either a clump or an interclump ensemble.
-'''
 
-
-def initialise(ensembledispersion=0, ensemblemass=0, suggested_calc=True, verbose=False):
+def initialise(ensemble_dispersion=0, ensemble_mass=0, suggested_calc=True, verbose=False):
+    '''
+    Initialise the combinations of clumps for each ensemble and calculate the probabilities.
+    '''
     if verbose:
         print('Ensemble instance initialised\n')
-    ensemble.clumpMass = ensemblemass
-    create_combination_objects(ensembledispersion, dtype=constants.dtype, suggested_calc=suggested_calc)
+    ensemble.clumpMass = ensemble_mass
+    create_clump_combinations(ensemble_dispersion, dtype=constants.dtype, suggested_calc=suggested_calc)
     return
 
 
@@ -35,6 +39,9 @@ def calculate_combinations(clumpN, test=True, verbose=False):
     '''
     This function calculates all of the different combinations of clump masses that may be in a line-of-sight.
     It is basically the essence of the probabilistic approach used to create the superposition of clumps.
+    
+    A package that might help drastically reduce the complexity of this code is :code:`awkward`.
+    It should allow for easy computation of combinatorics.
     '''
     dimension = len(clumpN[0])
     ranges = clumpN
@@ -99,7 +106,7 @@ def calculate_combinations(clumpN, test=True, verbose=False):
     return combinations
 
 
-def create_combination_objects(ensemble_dispersion, dtype=np.float64, suggested_calc=True, verbose=False, debug=False):
+def create_clump_combinations(ensemble_dispersion, dtype=np.float64, suggested_calc=True, verbose=False, debug=False):
     '''
     This function removes all of the unnecessary degenerate looping during this calculation.
     Of course it is possible because of the wonders of numpy.ndarray(). . .
@@ -505,7 +512,7 @@ def calculate(afuv, debug=False, test=False):
 
 
 def reinitialise():
-    # Reinitialise all temporary variables to the correct number of clump sets.
+    '''Reinitialise all subpackage variables to the correct number of clump sets.'''
   
     ensemble.clumpMass = 0
 
@@ -540,7 +547,10 @@ def reinitialise():
 
 
 def print_ensembleparameters():
-  
+    '''
+    This function prints the number of clumps in the ensemble, both standard and normalised.
+    It can be useful for debugging the calculation of a voxel.
+    '''
     np.set_printoptions(precision=4, suppress=True)
   
     for i in range(len(ensemble.clumpNj)):

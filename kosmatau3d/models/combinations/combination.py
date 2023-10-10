@@ -1,3 +1,11 @@
+'''
+This is a module to handle a combination of fractal masses in an ensemble.
+It will have its associated probability, which will scale its intrinsic
+intensity and optical depth. It returns a tuple of the combination's
+probability, intensity, optical depth, and far-UV field.
+'''
+
+
 import numpy as np
 from copy import copy
 #from numba import jit_module
@@ -7,15 +15,12 @@ from kosmatau3d.models import combinations
 from kosmatau3d.models import constants
 from kosmatau3d.models import masspoints
 
-'''
-This is a class to handle a combination of fractal masses in an ensemble.
-It will have its associated probability, which will scale its intrinsic
-intensity and optical depth. It returns a tuple of the combination's
-probability, intensity, optical depth, and FUV field.
-'''
-
 
 def initialise(clump_combination=[], total_combination=[]):
+    '''
+    This function assigns the combination data from :code:`models.ensemble` to variables in
+    this subpackage. It needs to be executed after :code:`models.ensemble.ensemble.initialise()`.
+    '''
     combinations.clump_combination = clump_combination
     combinations.clump_max_combination = total_combination
     return
@@ -27,8 +32,12 @@ def set_clump_combination(clump_combination=[]):
 
 
 def get_fuv_extinction(verbose=False):
-    # The input is the density in the voxel. The probability should be included outside of this module.
-    #  (velocity-independent)
+    '''
+    The input is the density in the voxel. 
+    The probability should be included outside of this module.
+
+    (velocity-independent)
+    '''
     afuv = masspoints.get_taufuv()
     for ens in range(len(afuv)):
         afuv[ens] = afuv[ens] * combinations.clump_max_combination[ens]
@@ -150,7 +159,7 @@ def calculate_emission(test_calc=False, test_opacity=False, test_fv=False, f_v=N
 
 
 def reinitialise():
-    # Reinitialise all temporary variables to the correct number of clump sets.
+    '''Reinitialise all temporary variables to the correct number of clump sets.'''
   
     combinations.clump_combination = [[] for _ in range(len(constants.clump_mass_number))]
     combinations.clump_max_combination = [[] for _ in range(len(constants.clump_mass_number))]

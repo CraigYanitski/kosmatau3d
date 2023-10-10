@@ -1,3 +1,9 @@
+'''
+This subpackage uses the ISM mass and discrete clump masses to compute the combinations 
+of clumps that are likely in a line-of-sight.
+'''
+
+
 #import numpy as np
 #from numba import jit_module
 
