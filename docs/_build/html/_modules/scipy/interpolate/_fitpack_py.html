@@ -1,80 +1,416 @@
+
 <!DOCTYPE html>
-<html class="writer-html5" lang="en" >
-<head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>scipy.interpolate._fitpack_py &mdash; kosmatau3d 1.0.3 documentation</title>
-      <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
-      <link rel="stylesheet" href="../../../_static/css/theme.css" type="text/css" />
-      <link rel="stylesheet" href="../../../_static/readthedocs-custom.css" type="text/css" />
-  <!--[if lt IE 9]>
-    <script src="../../../_static/js/html5shiv.min.js"></script>
-  <![endif]-->
+
+
+<html lang="en" >
+
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>scipy.interpolate._fitpack_py &#8212; kosmatau3d 1.0.3 documentation</title>
   
-        <script src="../../../_static/documentation_options.js?v=baaebd52"></script>
-        <script src="../../../_static/doctools.js?v=888ff710"></script>
-        <script src="../../../_static/sphinx_highlight.js?v=dc90522c"></script>
-        <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
-    <script src="../../../_static/js/theme.js"></script>
+  
+  
+  <script data-cfasync="false">
+    document.documentElement.dataset.mode = localStorage.getItem("mode") || "";
+    document.documentElement.dataset.theme = localStorage.getItem("theme") || "light";
+  </script>
+  
+  <!-- Loaded before other Sphinx assets -->
+  <link href="../../../_static/styles/theme.css?digest=ac02cc09edc035673794" rel="stylesheet" />
+<link href="../../../_static/styles/bootstrap.css?digest=ac02cc09edc035673794" rel="stylesheet" />
+<link href="../../../_static/styles/pydata-sphinx-theme.css?digest=ac02cc09edc035673794" rel="stylesheet" />
+
+  
+  <link href="../../../_static/vendor/fontawesome/6.1.2/css/all.min.css?digest=ac02cc09edc035673794" rel="stylesheet" />
+  <link rel="preload" as="font" type="font/woff2" crossorigin href="../../../_static/vendor/fontawesome/6.1.2/webfonts/fa-solid-900.woff2" />
+<link rel="preload" as="font" type="font/woff2" crossorigin href="../../../_static/vendor/fontawesome/6.1.2/webfonts/fa-brands-400.woff2" />
+<link rel="preload" as="font" type="font/woff2" crossorigin href="../../../_static/vendor/fontawesome/6.1.2/webfonts/fa-regular-400.woff2" />
+
+    <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=a746c00c" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/readthedocs-custom.css?v=0fedbe66" />
+  
+  <!-- Pre-loaded scripts that we'll load fully later -->
+  <link rel="preload" as="script" href="../../../_static/scripts/bootstrap.js?digest=ac02cc09edc035673794" />
+<link rel="preload" as="script" href="../../../_static/scripts/pydata-sphinx-theme.js?digest=ac02cc09edc035673794" />
+  <script src="../../../_static/vendor/fontawesome/6.1.2/js/all.min.js?digest=ac02cc09edc035673794"></script>
+
+    <script src="../../../_static/documentation_options.js?v=6e0e1bcd"></script>
+    <script src="../../../_static/doctools.js?v=888ff710"></script>
+    <script src="../../../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+    <script>DOCUMENTATION_OPTIONS.pagename = '_modules/scipy/interpolate/_fitpack_py';</script>
     <link rel="index" title="Index" href="../../../genindex.html" />
-    <link rel="search" title="Search" href="../../../search.html" /> 
-</head>
+    <link rel="search" title="Search" href="../../../search.html" />
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <meta name="docsearch:language" content="en"/>
+  </head>
+  
+  
+  <body data-bs-spy="scroll" data-bs-target=".bd-toc-nav" data-offset="180" data-bs-root-margin="0px 0px -60%" data-default-mode="">
 
-<body class="wy-body-for-nav"> 
-  <div class="wy-grid-for-nav">
-    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
-      <div class="wy-side-scroll">
-        <div class="wy-side-nav-search" >
+  
+  
+  <a class="skip-link" href="#main-content">Skip to main content</a>
+  
+  <div id="pst-scroll-pixel-helper"></div>
 
-          
-          
-          <a href="../../../index.html" class="icon icon-home">
-            kosmatau3d
-          </a>
-<div role="search">
-  <form id="rtd-search-form" class="wy-form" action="../../../search.html" method="get">
-    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
-    <input type="hidden" name="check_keywords" value="yes" />
-    <input type="hidden" name="area" value="default" />
-  </form>
-</div>
-        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
-              <p class="caption" role="heading"><span class="caption-text">Sections:</span></p>
-<ul>
-<li class="toctree-l1"><a class="reference internal" href="../../../installation.html">Installation</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../../../properties.html">Clump Properties</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../../../voxel.html">Voxels</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../../../model.html">3D Models</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../../../comparison.html">Comparison to Observations</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../../../development.html">Future Development</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../../../_autosummary/kosmatau3d.html">API Reference</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../../../acknowledgements.html">Acknowledgements</a></li>
-</ul>
+  
+  <button type="button" class="btn rounded-pill" id="pst-back-to-top">
+    <i class="fa-solid fa-arrow-up"></i>
+    Back to top
+  </button>
 
-        </div>
-      </div>
-    </nav>
+  
+  <input type="checkbox"
+          class="sidebar-toggle"
+          name="__primary"
+          id="__primary"/>
+  <label class="overlay overlay-primary" for="__primary"></label>
+  
+  <input type="checkbox"
+          class="sidebar-toggle"
+          name="__secondary"
+          id="__secondary"/>
+  <label class="overlay overlay-secondary" for="__secondary"></label>
+  
+  <div class="search-button__wrapper">
+    <div class="search-button__overlay"></div>
+    <div class="search-button__search-container">
+<form class="bd-search d-flex align-items-center"
+      action="../../../search.html"
+      method="get">
+  <i class="fa-solid fa-magnifying-glass"></i>
+  <input type="search"
+         class="form-control"
+         name="q"
+         id="search-input"
+         placeholder="Search the docs ..."
+         aria-label="Search the docs ..."
+         autocomplete="off"
+         autocorrect="off"
+         autocapitalize="off"
+         spellcheck="false"/>
+  <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd>K</kbd></span>
+</form></div>
+  </div>
+  
+    <nav class="bd-header navbar navbar-expand-lg bd-navbar">
+<div class="bd-header__inner bd-page-width">
+  <label class="sidebar-toggle primary-toggle" for="__primary">
+    <span class="fa-solid fa-bars"></span>
+  </label>
+  
+  
+  <div class="col-lg-3 navbar-header-items__start">
+    
+      <div class="navbar-item">
+  
 
-    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
-          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
-          <a href="../../../index.html">kosmatau3d</a>
-      </nav>
+<a class="navbar-brand logo" href="../../../index.html">
+  
+  
+  
+  
+  
+    <p class="title logo__title">kosmatau3d 1.0.3 documentation</p>
+  
+</a></div>
+    
+  </div>
+  
+  <div class="col-lg-9 navbar-header-items">
+    
+    <div class="me-auto navbar-header-items__center">
+      
+        <div class="navbar-item"><nav class="navbar-nav">
+  <p class="sidebar-header-items__title"
+     role="heading"
+     aria-level="1"
+     aria-label="Site Navigation">
+    Site Navigation
+  </p>
+  <ul class="bd-navbar-elements navbar-nav">
+    
+                    <li class="nav-item">
+                      <a class="nav-link nav-internal" href="../../../installation.html">
+                        Installation
+                      </a>
+                    </li>
+                
 
-      <div class="wy-nav-content">
-        <div class="rst-content">
-          <div role="navigation" aria-label="Page navigation">
-  <ul class="wy-breadcrumbs">
-      <li><a href="../../../index.html" class="icon icon-home" aria-label="Home"></a></li>
-          <li class="breadcrumb-item"><a href="../../index.html">Module code</a></li>
-      <li class="breadcrumb-item active">scipy.interpolate._fitpack_py</li>
-      <li class="wy-breadcrumbs-aside">
-      </li>
+                    <li class="nav-item">
+                      <a class="nav-link nav-internal" href="../../../properties.html">
+                        Clump Properties
+                      </a>
+                    </li>
+                
+
+                    <li class="nav-item">
+                      <a class="nav-link nav-internal" href="../../../voxel.html">
+                        Voxels
+                      </a>
+                    </li>
+                
+
+                    <li class="nav-item">
+                      <a class="nav-link nav-internal" href="../../../model.html">
+                        3D Models
+                      </a>
+                    </li>
+                
+
+                    <li class="nav-item">
+                      <a class="nav-link nav-internal" href="../../../comparison.html">
+                        Comparison to Observations
+                      </a>
+                    </li>
+                
+            <li class="nav-item dropdown">
+                <button class="btn dropdown-toggle nav-item" type="button" data-bs-toggle="dropdown" aria-expanded="false" aria-controls="pst-header-nav-more-links">
+                    More
+                </button>
+                <ul id="pst-header-nav-more-links" class="dropdown-menu">
+                    
+                    <li class="nav-item">
+                      <a class="nav-link dropdown-item nav-internal" href="../../../development.html">
+                        Future Development
+                      </a>
+                    </li>
+                
+
+                    <li class="nav-item">
+                      <a class="nav-link dropdown-item nav-internal" href="../../../_autosummary/kosmatau3d.html">
+                        API Reference
+                      </a>
+                    </li>
+                
+
+                    <li class="nav-item">
+                      <a class="nav-link dropdown-item nav-internal" href="../../../acknowledgements.html">
+                        Acknowledgements
+                      </a>
+                    </li>
+                
+                </ul>
+            </li>
+            
   </ul>
-  <hr/>
+</nav></div>
+      
+    </div>
+    
+    
+    <div class="navbar-header-items__end">
+      
+        <div class="navbar-item navbar-persistent--container">
+          
+ <script>
+ document.write(`
+   <button class="btn navbar-btn search-button-field search-button__button" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+    <i class="fa-solid fa-magnifying-glass"></i>
+    <span class="search-button__default-text">Search</span>
+    <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd class="kbd-shortcut__modifier">K</kbd></span>
+   </button>
+ `);
+ </script>
+        </div>
+      
+      
+        <div class="navbar-item">
+<script>
+document.write(`
+  <button class="btn btn-sm navbar-btn theme-switch-button" title="light/dark" aria-label="light/dark" data-bs-placement="bottom" data-bs-toggle="tooltip">
+    <span class="theme-switch nav-link" data-mode="light"><i class="fa-solid fa-sun fa-lg"></i></span>
+    <span class="theme-switch nav-link" data-mode="dark"><i class="fa-solid fa-moon fa-lg"></i></span>
+    <span class="theme-switch nav-link" data-mode="auto"><i class="fa-solid fa-circle-half-stroke fa-lg"></i></span>
+  </button>
+`);
+</script></div>
+      
+    </div>
+    
+  </div>
+  
+  
+    <div class="navbar-persistent--mobile">
+ <script>
+ document.write(`
+   <button class="btn navbar-btn search-button-field search-button__button" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+    <i class="fa-solid fa-magnifying-glass"></i>
+    <span class="search-button__default-text">Search</span>
+    <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd class="kbd-shortcut__modifier">K</kbd></span>
+   </button>
+ `);
+ </script>
+    </div>
+  
+
+  
 </div>
-          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
-           <div itemprop="articleBody">
-             
+
+    </nav>
+  
+  <div class="bd-container">
+    <div class="bd-container__inner bd-page-width">
+      
+      <div class="bd-sidebar-primary bd-sidebar hide-on-wide">
+        
+
+  
+  <div class="sidebar-header-items sidebar-primary__section">
+    
+    
+      <div class="sidebar-header-items__center">
+        
+          <div class="navbar-item"><nav class="navbar-nav">
+  <p class="sidebar-header-items__title"
+     role="heading"
+     aria-level="1"
+     aria-label="Site Navigation">
+    Site Navigation
+  </p>
+  <ul class="bd-navbar-elements navbar-nav">
+    
+                    <li class="nav-item">
+                      <a class="nav-link nav-internal" href="../../../installation.html">
+                        Installation
+                      </a>
+                    </li>
+                
+
+                    <li class="nav-item">
+                      <a class="nav-link nav-internal" href="../../../properties.html">
+                        Clump Properties
+                      </a>
+                    </li>
+                
+
+                    <li class="nav-item">
+                      <a class="nav-link nav-internal" href="../../../voxel.html">
+                        Voxels
+                      </a>
+                    </li>
+                
+
+                    <li class="nav-item">
+                      <a class="nav-link nav-internal" href="../../../model.html">
+                        3D Models
+                      </a>
+                    </li>
+                
+
+                    <li class="nav-item">
+                      <a class="nav-link nav-internal" href="../../../comparison.html">
+                        Comparison to Observations
+                      </a>
+                    </li>
+                
+            <li class="nav-item dropdown">
+                <button class="btn dropdown-toggle nav-item" type="button" data-bs-toggle="dropdown" aria-expanded="false" aria-controls="pst-header-nav-more-links">
+                    More
+                </button>
+                <ul id="pst-header-nav-more-links" class="dropdown-menu">
+                    
+                    <li class="nav-item">
+                      <a class="nav-link dropdown-item nav-internal" href="../../../development.html">
+                        Future Development
+                      </a>
+                    </li>
+                
+
+                    <li class="nav-item">
+                      <a class="nav-link dropdown-item nav-internal" href="../../../_autosummary/kosmatau3d.html">
+                        API Reference
+                      </a>
+                    </li>
+                
+
+                    <li class="nav-item">
+                      <a class="nav-link dropdown-item nav-internal" href="../../../acknowledgements.html">
+                        Acknowledgements
+                      </a>
+                    </li>
+                
+                </ul>
+            </li>
+            
+  </ul>
+</nav></div>
+        
+      </div>
+    
+    
+    
+      <div class="sidebar-header-items__end">
+        
+          <div class="navbar-item">
+<script>
+document.write(`
+  <button class="btn btn-sm navbar-btn theme-switch-button" title="light/dark" aria-label="light/dark" data-bs-placement="bottom" data-bs-toggle="tooltip">
+    <span class="theme-switch nav-link" data-mode="light"><i class="fa-solid fa-sun fa-lg"></i></span>
+    <span class="theme-switch nav-link" data-mode="dark"><i class="fa-solid fa-moon fa-lg"></i></span>
+    <span class="theme-switch nav-link" data-mode="auto"><i class="fa-solid fa-circle-half-stroke fa-lg"></i></span>
+  </button>
+`);
+</script></div>
+        
+      </div>
+    
+  </div>
+  
+  
+  <div class="sidebar-primary-items__end sidebar-primary__section">
+  </div>
+  
+  <div id="rtd-footer-container"></div>
+
+
+      </div>
+      
+      <main id="main-content" class="bd-main">
+        
+        
+          <div class="bd-content">
+            <div class="bd-article-container">
+              
+              <div class="bd-header-article">
+<div class="header-article-items header-article__inner">
+  
+    <div class="header-article-items__start">
+      
+        <div class="header-article-item">
+
+
+
+<nav aria-label="Breadcrumb">
+  <ul class="bd-breadcrumbs">
+    
+    <li class="breadcrumb-item breadcrumb-home">
+      <a href="../../../index.html" class="nav-link" aria-label="Home">
+        <i class="fa-solid fa-home"></i>
+      </a>
+    </li>
+    
+    <li class="breadcrumb-item"><a href="../../index.html" class="nav-link">Module code</a></li>
+    
+    <li class="breadcrumb-item active" aria-current="page">scipy.interp...</li>
+  </ul>
+</nav>
+</div>
+      
+    </div>
+  
+  
+</div>
+</div>
+              
+              
+              
+                
+<div id="searchbox"></div>
+                <article class="bd-article" role="main">
+                  
   <h1>Source code for scipy.interpolate._fitpack_py</h1><div class="highlight"><pre>
 <span></span><span class="n">__all__</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;splrep&#39;</span><span class="p">,</span> <span class="s1">&#39;splprep&#39;</span><span class="p">,</span> <span class="s1">&#39;splev&#39;</span><span class="p">,</span> <span class="s1">&#39;splint&#39;</span><span class="p">,</span> <span class="s1">&#39;sproot&#39;</span><span class="p">,</span> <span class="s1">&#39;spalde&#39;</span><span class="p">,</span>
            <span class="s1">&#39;bisplrep&#39;</span><span class="p">,</span> <span class="s1">&#39;bisplev&#39;</span><span class="p">,</span> <span class="s1">&#39;insert&#39;</span><span class="p">,</span> <span class="s1">&#39;splder&#39;</span><span class="p">,</span> <span class="s1">&#39;splantider&#39;</span><span class="p">]</span>
@@ -83,7 +419,7 @@
 <span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
 
 <span class="c1"># These are in the API for fitpack even if not used in fitpack.py itself.</span>
-<span class="kn">from</span> <span class="nn">._fitpack_impl</span> <span class="kn">import</span> <span class="n">bisplrep</span><span class="p">,</span> <span class="n">bisplev</span><span class="p">,</span> <span class="n">dblint</span>
+<span class="kn">from</span> <span class="nn">._fitpack_impl</span> <span class="kn">import</span> <span class="n">bisplrep</span><span class="p">,</span> <span class="n">bisplev</span><span class="p">,</span> <span class="n">dblint</span>  <span class="c1"># noqa: F401</span>
 <span class="kn">from</span> <span class="nn">.</span> <span class="kn">import</span> <span class="n">_fitpack_impl</span> <span class="k">as</span> <span class="n">_impl</span>
 <span class="kn">from</span> <span class="nn">._bsplines</span> <span class="kn">import</span> <span class="n">BSpline</span>
 
@@ -96,7 +432,7 @@
 <span class="sd">    Find the B-spline representation of an N-D curve.</span>
 
 <span class="sd">    Given a list of N rank-1 arrays, `x`, which represent a curve in</span>
-<span class="sd">    N-D space parametrized by `u`, find a smooth approximating</span>
+<span class="sd">    N-dimensional space parametrized by `u`, find a smooth approximating</span>
 <span class="sd">    spline curve g(`u`). Uses the FORTRAN routine parcur from FITPACK.</span>
 
 <span class="sd">    Parameters</span>
@@ -143,8 +479,9 @@
 <span class="sd">        standard-deviation of y, then a good `s` value should be found in</span>
 <span class="sd">        the range ``(m-sqrt(2*m),m+sqrt(2*m))``, where m is the number of</span>
 <span class="sd">        data points in x, y, and w.</span>
-<span class="sd">    t : int, optional</span>
-<span class="sd">        The knots needed for task=-1.</span>
+<span class="sd">    t : array, optional</span>
+<span class="sd">        The knots needed for ``task=-1``.</span>
+<span class="sd">        There must be at least ``2*k+2`` knots.</span>
 <span class="sd">    full_output : int, optional</span>
 <span class="sd">        If non-zero, then return optional outputs.</span>
 <span class="sd">    nest : int, optional</span>
@@ -161,7 +498,7 @@
 <span class="sd">    Returns</span>
 <span class="sd">    -------</span>
 <span class="sd">    tck : tuple</span>
-<span class="sd">        (t,c,k) a tuple containing the vector of knots, the B-spline</span>
+<span class="sd">        A tuple, ``(t,c,k)`` containing the vector of knots, the B-spline</span>
 <span class="sd">        coefficients, and the degree of the spline.</span>
 <span class="sd">    u : array</span>
 <span class="sd">        An array of the values of the parameter.</span>
@@ -230,6 +567,7 @@
 <span class="sd">    &gt;&gt;&gt; plt.show()</span>
 
 <span class="sd">    &quot;&quot;&quot;</span>
+
     <span class="n">res</span> <span class="o">=</span> <span class="n">_impl</span><span class="o">.</span><span class="n">splprep</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">w</span><span class="p">,</span> <span class="n">u</span><span class="p">,</span> <span class="n">ub</span><span class="p">,</span> <span class="n">ue</span><span class="p">,</span> <span class="n">k</span><span class="p">,</span> <span class="n">task</span><span class="p">,</span> <span class="n">s</span><span class="p">,</span> <span class="n">t</span><span class="p">,</span> <span class="n">full_output</span><span class="p">,</span> <span class="n">nest</span><span class="p">,</span> <span class="n">per</span><span class="p">,</span>
                         <span class="n">quiet</span><span class="p">)</span>
     <span class="k">return</span> <span class="n">res</span></div>
@@ -274,7 +612,7 @@
 <span class="sd">        added automatically.</span>
 <span class="sd">    s : float, optional</span>
 <span class="sd">        A smoothing condition. The amount of smoothness is determined by</span>
-<span class="sd">        satisfying the conditions: sum((w * (y - g))**2,axis=0) &lt;= s where g(x)</span>
+<span class="sd">        satisfying the conditions: ``sum((w * (y - g))**2,axis=0) &lt;= s`` where g(x)</span>
 <span class="sd">        is the smoothed interpolation of (x,y). The user can use s to control</span>
 <span class="sd">        the tradeoff between closeness and smoothness of fit. Larger s means</span>
 <span class="sd">        more smoothing while smaller values of s indicate less smoothing.</span>
@@ -414,16 +752,16 @@
 <span class="sd">        the points in `x`.  If `tck` was returned from `splprep`, then this</span>
 <span class="sd">        is a list of arrays representing the curve in an N-D space.</span>
 
-<span class="sd">    Notes</span>
-<span class="sd">    -----</span>
-<span class="sd">    Manipulating the tck-tuples directly is not recommended. In new code,</span>
-<span class="sd">    prefer using `BSpline` objects.</span>
-
 <span class="sd">    See Also</span>
 <span class="sd">    --------</span>
 <span class="sd">    splprep, splrep, sproot, spalde, splint</span>
 <span class="sd">    bisplrep, bisplev</span>
 <span class="sd">    BSpline</span>
+
+<span class="sd">    Notes</span>
+<span class="sd">    -----</span>
+<span class="sd">    Manipulating the tck-tuples directly is not recommended. In new code,</span>
+<span class="sd">    prefer using `BSpline` objects.</span>
 
 <span class="sd">    References</span>
 <span class="sd">    ----------</span>
@@ -484,6 +822,12 @@
 <span class="sd">        defined on the set of knots.</span>
 <span class="sd">        (Only returned if `full_output` is non-zero)</span>
 
+<span class="sd">    See Also</span>
+<span class="sd">    --------</span>
+<span class="sd">    splprep, splrep, sproot, spalde, splev</span>
+<span class="sd">    bisplrep, bisplev</span>
+<span class="sd">    BSpline</span>
+
 <span class="sd">    Notes</span>
 <span class="sd">    -----</span>
 <span class="sd">    `splint` silently assumes that the spline function is zero outside the data</span>
@@ -491,12 +835,6 @@
 
 <span class="sd">    Manipulating the tck-tuples directly is not recommended. In new code,</span>
 <span class="sd">    prefer using the `BSpline` objects.</span>
-
-<span class="sd">    See Also</span>
-<span class="sd">    --------</span>
-<span class="sd">    splprep, splrep, sproot, spalde, splev</span>
-<span class="sd">    bisplrep, bisplev</span>
-<span class="sd">    BSpline</span>
 
 <span class="sd">    References</span>
 <span class="sd">    ----------</span>
@@ -551,17 +889,16 @@
 <span class="sd">    zeros : ndarray</span>
 <span class="sd">        An array giving the roots of the spline.</span>
 
-<span class="sd">    Notes</span>
-<span class="sd">    -----</span>
-<span class="sd">    Manipulating the tck-tuples directly is not recommended. In new code,</span>
-<span class="sd">    prefer using the `BSpline` objects.</span>
-
 <span class="sd">    See Also</span>
 <span class="sd">    --------</span>
 <span class="sd">    splprep, splrep, splint, spalde, splev</span>
 <span class="sd">    bisplrep, bisplev</span>
 <span class="sd">    BSpline</span>
 
+<span class="sd">    Notes</span>
+<span class="sd">    -----</span>
+<span class="sd">    Manipulating the tck-tuples directly is not recommended. In new code,</span>
+<span class="sd">    prefer using the `BSpline` objects.</span>
 
 <span class="sd">    References</span>
 <span class="sd">    ----------</span>
@@ -635,8 +972,8 @@
 <span class="sd">        A point or a set of points at which to evaluate the derivatives.</span>
 <span class="sd">        Note that ``t(k) &lt;= x &lt;= t(n-k+1)`` must hold for each `x`.</span>
 <span class="sd">    tck : tuple</span>
-<span class="sd">        A tuple ``(t, c, k)``, containing the vector of knots, the B-spline</span>
-<span class="sd">        coefficients, and the degree of the spline (see `splev`).</span>
+<span class="sd">        A tuple (t,c,k) containing the vector of knots,</span>
+<span class="sd">        the B-spline coefficients, and the degree of the spline.</span>
 
 <span class="sd">    Returns</span>
 <span class="sd">    -------</span>
@@ -647,20 +984,16 @@
 <span class="sd">    See Also</span>
 <span class="sd">    --------</span>
 <span class="sd">    splprep, splrep, splint, sproot, splev, bisplrep, bisplev,</span>
-<span class="sd">    BSpline</span>
+<span class="sd">    UnivariateSpline, BivariateSpline</span>
 
 <span class="sd">    References</span>
 <span class="sd">    ----------</span>
-<span class="sd">    .. [1] C. de Boor: On calculating with b-splines, J. Approximation Theory</span>
+<span class="sd">    .. [1] de Boor C : On calculating with b-splines, J. Approximation Theory</span>
 <span class="sd">       6 (1972) 50-62.</span>
-<span class="sd">    .. [2] M. G. Cox : The numerical evaluation of b-splines, J. Inst. Maths</span>
+<span class="sd">    .. [2] Cox M.G. : The numerical evaluation of b-splines, J. Inst. Maths</span>
 <span class="sd">       applics 10 (1972) 134-149.</span>
-<span class="sd">    .. [3] P. Dierckx : Curve and surface fitting with splines, Monographs on</span>
+<span class="sd">    .. [3] Dierckx P. : Curve and surface fitting with splines, Monographs on</span>
 <span class="sd">       Numerical Analysis, Oxford University Press, 1993.</span>
-
-<span class="sd">    Examples</span>
-<span class="sd">    --------</span>
-<span class="sd">    Examples are given :ref:`in the tutorial &lt;tutorial-interpolate_splXXX&gt;`.</span>
 
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">tck</span><span class="p">,</span> <span class="n">BSpline</span><span class="p">):</span>
@@ -785,15 +1118,15 @@
 <span class="sd">        A tuple is returned iff the input argument `tck` is a tuple, otherwise</span>
 <span class="sd">        a BSpline object is constructed and returned.</span>
 
-<span class="sd">    Notes</span>
-<span class="sd">    -----</span>
-
-<span class="sd">    .. versionadded:: 0.13.0</span>
-
 <span class="sd">    See Also</span>
 <span class="sd">    --------</span>
 <span class="sd">    splantider, splev, spalde</span>
 <span class="sd">    BSpline</span>
+
+<span class="sd">    Notes</span>
+<span class="sd">    -----</span>
+
+<span class="sd">    .. versionadded:: 0.13.0</span>
 
 <span class="sd">    Examples</span>
 <span class="sd">    --------</span>
@@ -891,33 +1224,74 @@
     <span class="k">else</span><span class="p">:</span>
         <span class="k">return</span> <span class="n">_impl</span><span class="o">.</span><span class="n">splantider</span><span class="p">(</span><span class="n">tck</span><span class="p">,</span> <span class="n">n</span><span class="p">)</span></div>
 
+
 </pre></div>
 
-           </div>
+                </article>
+              
+              
+              
+              
+              
+                <footer class="prev-next-footer">
+                  <!-- Previous / next buttons -->
+<div class="prev-next-area">
+</div>
+                </footer>
+              
+            </div>
+            
+            
+              
+            
           </div>
-          <footer>
-
-  <hr/>
-
-  <div role="contentinfo">
-    <p>&#169; Copyright 2023, Craig Yanitski.</p>
+          <footer class="bd-footer-content">
+            
+          </footer>
+        
+      </main>
+    </div>
   </div>
+  
+  <!-- Scripts loaded after <body> so the DOM is not blocked -->
+  <script src="../../../_static/scripts/bootstrap.js?digest=ac02cc09edc035673794"></script>
+<script src="../../../_static/scripts/pydata-sphinx-theme.js?digest=ac02cc09edc035673794"></script>
 
-  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
-    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
-    provided by <a href="https://readthedocs.org">Read the Docs</a>.
-   
+  <footer class="bd-footer">
+<div class="bd-footer__inner bd-page-width">
+  
+    <div class="footer-items__start">
+      
+        <div class="footer-item">
+  <p class="copyright">
+    
+      © Copyright 2023, Craig Yanitski.
+      <br/>
+    
+  </p>
+</div>
+      
+        <div class="footer-item">
+  <p class="sphinx-version">
+    Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 7.2.6.
+    <br/>
+  </p>
+</div>
+      
+    </div>
+  
+  
+  
+    <div class="footer-items__end">
+      
+        <div class="footer-item"><p class="theme-version">
+  Built with the <a href="https://pydata-sphinx-theme.readthedocs.io/en/stable/index.html">PyData Sphinx Theme</a> 0.14.1.
+</p></div>
+      
+    </div>
+  
+</div>
 
-</footer>
-        </div>
-      </div>
-    </section>
-  </div>
-  <script>
-      jQuery(function () {
-          SphinxRtdTheme.Navigation.enable(true);
-      });
-  </script> 
-
-</body>
+  </footer>
+  </body>
 </html>

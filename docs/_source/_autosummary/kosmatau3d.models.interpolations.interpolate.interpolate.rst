@@ -34,6 +34,5 @@ kosmatau3d.models.interpolations.interpolate.interpolate
    kosmatau3d.models.interpolations.interpolate.interpolate.ndgriddata
    kosmatau3d.models.interpolations.interpolate.interpolate.polyint
    kosmatau3d.models.interpolations.interpolate.interpolate.rbf
-   kosmatau3d.models.interpolations.interpolate.interpolate.setup
    kosmatau3d.models.interpolations.interpolate.interpolate.tests
 

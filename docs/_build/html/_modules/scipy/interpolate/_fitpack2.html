@@ -1,80 +1,416 @@
+
 <!DOCTYPE html>
-<html class="writer-html5" lang="en" >
-<head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>scipy.interpolate._fitpack2 &mdash; kosmatau3d 1.0.3 documentation</title>
-      <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
-      <link rel="stylesheet" href="../../../_static/css/theme.css" type="text/css" />
-      <link rel="stylesheet" href="../../../_static/readthedocs-custom.css" type="text/css" />
-  <!--[if lt IE 9]>
-    <script src="../../../_static/js/html5shiv.min.js"></script>
-  <![endif]-->
+
+
+<html lang="en" >
+
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>scipy.interpolate._fitpack2 &#8212; kosmatau3d 1.0.3 documentation</title>
   
-        <script src="../../../_static/documentation_options.js?v=baaebd52"></script>
-        <script src="../../../_static/doctools.js?v=888ff710"></script>
-        <script src="../../../_static/sphinx_highlight.js?v=dc90522c"></script>
-        <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
-    <script src="../../../_static/js/theme.js"></script>
+  
+  
+  <script data-cfasync="false">
+    document.documentElement.dataset.mode = localStorage.getItem("mode") || "";
+    document.documentElement.dataset.theme = localStorage.getItem("theme") || "light";
+  </script>
+  
+  <!-- Loaded before other Sphinx assets -->
+  <link href="../../../_static/styles/theme.css?digest=ac02cc09edc035673794" rel="stylesheet" />
+<link href="../../../_static/styles/bootstrap.css?digest=ac02cc09edc035673794" rel="stylesheet" />
+<link href="../../../_static/styles/pydata-sphinx-theme.css?digest=ac02cc09edc035673794" rel="stylesheet" />
+
+  
+  <link href="../../../_static/vendor/fontawesome/6.1.2/css/all.min.css?digest=ac02cc09edc035673794" rel="stylesheet" />
+  <link rel="preload" as="font" type="font/woff2" crossorigin href="../../../_static/vendor/fontawesome/6.1.2/webfonts/fa-solid-900.woff2" />
+<link rel="preload" as="font" type="font/woff2" crossorigin href="../../../_static/vendor/fontawesome/6.1.2/webfonts/fa-brands-400.woff2" />
+<link rel="preload" as="font" type="font/woff2" crossorigin href="../../../_static/vendor/fontawesome/6.1.2/webfonts/fa-regular-400.woff2" />
+
+    <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=a746c00c" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/readthedocs-custom.css?v=0fedbe66" />
+  
+  <!-- Pre-loaded scripts that we'll load fully later -->
+  <link rel="preload" as="script" href="../../../_static/scripts/bootstrap.js?digest=ac02cc09edc035673794" />
+<link rel="preload" as="script" href="../../../_static/scripts/pydata-sphinx-theme.js?digest=ac02cc09edc035673794" />
+  <script src="../../../_static/vendor/fontawesome/6.1.2/js/all.min.js?digest=ac02cc09edc035673794"></script>
+
+    <script src="../../../_static/documentation_options.js?v=6e0e1bcd"></script>
+    <script src="../../../_static/doctools.js?v=888ff710"></script>
+    <script src="../../../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+    <script>DOCUMENTATION_OPTIONS.pagename = '_modules/scipy/interpolate/_fitpack2';</script>
     <link rel="index" title="Index" href="../../../genindex.html" />
-    <link rel="search" title="Search" href="../../../search.html" /> 
-</head>
+    <link rel="search" title="Search" href="../../../search.html" />
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <meta name="docsearch:language" content="en"/>
+  </head>
+  
+  
+  <body data-bs-spy="scroll" data-bs-target=".bd-toc-nav" data-offset="180" data-bs-root-margin="0px 0px -60%" data-default-mode="">
 
-<body class="wy-body-for-nav"> 
-  <div class="wy-grid-for-nav">
-    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
-      <div class="wy-side-scroll">
-        <div class="wy-side-nav-search" >
+  
+  
+  <a class="skip-link" href="#main-content">Skip to main content</a>
+  
+  <div id="pst-scroll-pixel-helper"></div>
 
-          
-          
-          <a href="../../../index.html" class="icon icon-home">
-            kosmatau3d
-          </a>
-<div role="search">
-  <form id="rtd-search-form" class="wy-form" action="../../../search.html" method="get">
-    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
-    <input type="hidden" name="check_keywords" value="yes" />
-    <input type="hidden" name="area" value="default" />
-  </form>
-</div>
-        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
-              <p class="caption" role="heading"><span class="caption-text">Sections:</span></p>
-<ul>
-<li class="toctree-l1"><a class="reference internal" href="../../../installation.html">Installation</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../../../properties.html">Clump Properties</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../../../voxel.html">Voxels</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../../../model.html">3D Models</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../../../comparison.html">Comparison to Observations</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../../../development.html">Future Development</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../../../_autosummary/kosmatau3d.html">API Reference</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../../../acknowledgements.html">Acknowledgements</a></li>
-</ul>
+  
+  <button type="button" class="btn rounded-pill" id="pst-back-to-top">
+    <i class="fa-solid fa-arrow-up"></i>
+    Back to top
+  </button>
 
-        </div>
-      </div>
-    </nav>
+  
+  <input type="checkbox"
+          class="sidebar-toggle"
+          name="__primary"
+          id="__primary"/>
+  <label class="overlay overlay-primary" for="__primary"></label>
+  
+  <input type="checkbox"
+          class="sidebar-toggle"
+          name="__secondary"
+          id="__secondary"/>
+  <label class="overlay overlay-secondary" for="__secondary"></label>
+  
+  <div class="search-button__wrapper">
+    <div class="search-button__overlay"></div>
+    <div class="search-button__search-container">
+<form class="bd-search d-flex align-items-center"
+      action="../../../search.html"
+      method="get">
+  <i class="fa-solid fa-magnifying-glass"></i>
+  <input type="search"
+         class="form-control"
+         name="q"
+         id="search-input"
+         placeholder="Search the docs ..."
+         aria-label="Search the docs ..."
+         autocomplete="off"
+         autocorrect="off"
+         autocapitalize="off"
+         spellcheck="false"/>
+  <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd>K</kbd></span>
+</form></div>
+  </div>
+  
+    <nav class="bd-header navbar navbar-expand-lg bd-navbar">
+<div class="bd-header__inner bd-page-width">
+  <label class="sidebar-toggle primary-toggle" for="__primary">
+    <span class="fa-solid fa-bars"></span>
+  </label>
+  
+  
+  <div class="col-lg-3 navbar-header-items__start">
+    
+      <div class="navbar-item">
+  
 
-    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
-          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
-          <a href="../../../index.html">kosmatau3d</a>
-      </nav>
+<a class="navbar-brand logo" href="../../../index.html">
+  
+  
+  
+  
+  
+    <p class="title logo__title">kosmatau3d 1.0.3 documentation</p>
+  
+</a></div>
+    
+  </div>
+  
+  <div class="col-lg-9 navbar-header-items">
+    
+    <div class="me-auto navbar-header-items__center">
+      
+        <div class="navbar-item"><nav class="navbar-nav">
+  <p class="sidebar-header-items__title"
+     role="heading"
+     aria-level="1"
+     aria-label="Site Navigation">
+    Site Navigation
+  </p>
+  <ul class="bd-navbar-elements navbar-nav">
+    
+                    <li class="nav-item">
+                      <a class="nav-link nav-internal" href="../../../installation.html">
+                        Installation
+                      </a>
+                    </li>
+                
 
-      <div class="wy-nav-content">
-        <div class="rst-content">
-          <div role="navigation" aria-label="Page navigation">
-  <ul class="wy-breadcrumbs">
-      <li><a href="../../../index.html" class="icon icon-home" aria-label="Home"></a></li>
-          <li class="breadcrumb-item"><a href="../../index.html">Module code</a></li>
-      <li class="breadcrumb-item active">scipy.interpolate._fitpack2</li>
-      <li class="wy-breadcrumbs-aside">
-      </li>
+                    <li class="nav-item">
+                      <a class="nav-link nav-internal" href="../../../properties.html">
+                        Clump Properties
+                      </a>
+                    </li>
+                
+
+                    <li class="nav-item">
+                      <a class="nav-link nav-internal" href="../../../voxel.html">
+                        Voxels
+                      </a>
+                    </li>
+                
+
+                    <li class="nav-item">
+                      <a class="nav-link nav-internal" href="../../../model.html">
+                        3D Models
+                      </a>
+                    </li>
+                
+
+                    <li class="nav-item">
+                      <a class="nav-link nav-internal" href="../../../comparison.html">
+                        Comparison to Observations
+                      </a>
+                    </li>
+                
+            <li class="nav-item dropdown">
+                <button class="btn dropdown-toggle nav-item" type="button" data-bs-toggle="dropdown" aria-expanded="false" aria-controls="pst-header-nav-more-links">
+                    More
+                </button>
+                <ul id="pst-header-nav-more-links" class="dropdown-menu">
+                    
+                    <li class="nav-item">
+                      <a class="nav-link dropdown-item nav-internal" href="../../../development.html">
+                        Future Development
+                      </a>
+                    </li>
+                
+
+                    <li class="nav-item">
+                      <a class="nav-link dropdown-item nav-internal" href="../../../_autosummary/kosmatau3d.html">
+                        API Reference
+                      </a>
+                    </li>
+                
+
+                    <li class="nav-item">
+                      <a class="nav-link dropdown-item nav-internal" href="../../../acknowledgements.html">
+                        Acknowledgements
+                      </a>
+                    </li>
+                
+                </ul>
+            </li>
+            
   </ul>
-  <hr/>
+</nav></div>
+      
+    </div>
+    
+    
+    <div class="navbar-header-items__end">
+      
+        <div class="navbar-item navbar-persistent--container">
+          
+ <script>
+ document.write(`
+   <button class="btn navbar-btn search-button-field search-button__button" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+    <i class="fa-solid fa-magnifying-glass"></i>
+    <span class="search-button__default-text">Search</span>
+    <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd class="kbd-shortcut__modifier">K</kbd></span>
+   </button>
+ `);
+ </script>
+        </div>
+      
+      
+        <div class="navbar-item">
+<script>
+document.write(`
+  <button class="btn btn-sm navbar-btn theme-switch-button" title="light/dark" aria-label="light/dark" data-bs-placement="bottom" data-bs-toggle="tooltip">
+    <span class="theme-switch nav-link" data-mode="light"><i class="fa-solid fa-sun fa-lg"></i></span>
+    <span class="theme-switch nav-link" data-mode="dark"><i class="fa-solid fa-moon fa-lg"></i></span>
+    <span class="theme-switch nav-link" data-mode="auto"><i class="fa-solid fa-circle-half-stroke fa-lg"></i></span>
+  </button>
+`);
+</script></div>
+      
+    </div>
+    
+  </div>
+  
+  
+    <div class="navbar-persistent--mobile">
+ <script>
+ document.write(`
+   <button class="btn navbar-btn search-button-field search-button__button" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+    <i class="fa-solid fa-magnifying-glass"></i>
+    <span class="search-button__default-text">Search</span>
+    <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd class="kbd-shortcut__modifier">K</kbd></span>
+   </button>
+ `);
+ </script>
+    </div>
+  
+
+  
 </div>
-          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
-           <div itemprop="articleBody">
-             
+
+    </nav>
+  
+  <div class="bd-container">
+    <div class="bd-container__inner bd-page-width">
+      
+      <div class="bd-sidebar-primary bd-sidebar hide-on-wide">
+        
+
+  
+  <div class="sidebar-header-items sidebar-primary__section">
+    
+    
+      <div class="sidebar-header-items__center">
+        
+          <div class="navbar-item"><nav class="navbar-nav">
+  <p class="sidebar-header-items__title"
+     role="heading"
+     aria-level="1"
+     aria-label="Site Navigation">
+    Site Navigation
+  </p>
+  <ul class="bd-navbar-elements navbar-nav">
+    
+                    <li class="nav-item">
+                      <a class="nav-link nav-internal" href="../../../installation.html">
+                        Installation
+                      </a>
+                    </li>
+                
+
+                    <li class="nav-item">
+                      <a class="nav-link nav-internal" href="../../../properties.html">
+                        Clump Properties
+                      </a>
+                    </li>
+                
+
+                    <li class="nav-item">
+                      <a class="nav-link nav-internal" href="../../../voxel.html">
+                        Voxels
+                      </a>
+                    </li>
+                
+
+                    <li class="nav-item">
+                      <a class="nav-link nav-internal" href="../../../model.html">
+                        3D Models
+                      </a>
+                    </li>
+                
+
+                    <li class="nav-item">
+                      <a class="nav-link nav-internal" href="../../../comparison.html">
+                        Comparison to Observations
+                      </a>
+                    </li>
+                
+            <li class="nav-item dropdown">
+                <button class="btn dropdown-toggle nav-item" type="button" data-bs-toggle="dropdown" aria-expanded="false" aria-controls="pst-header-nav-more-links">
+                    More
+                </button>
+                <ul id="pst-header-nav-more-links" class="dropdown-menu">
+                    
+                    <li class="nav-item">
+                      <a class="nav-link dropdown-item nav-internal" href="../../../development.html">
+                        Future Development
+                      </a>
+                    </li>
+                
+
+                    <li class="nav-item">
+                      <a class="nav-link dropdown-item nav-internal" href="../../../_autosummary/kosmatau3d.html">
+                        API Reference
+                      </a>
+                    </li>
+                
+
+                    <li class="nav-item">
+                      <a class="nav-link dropdown-item nav-internal" href="../../../acknowledgements.html">
+                        Acknowledgements
+                      </a>
+                    </li>
+                
+                </ul>
+            </li>
+            
+  </ul>
+</nav></div>
+        
+      </div>
+    
+    
+    
+      <div class="sidebar-header-items__end">
+        
+          <div class="navbar-item">
+<script>
+document.write(`
+  <button class="btn btn-sm navbar-btn theme-switch-button" title="light/dark" aria-label="light/dark" data-bs-placement="bottom" data-bs-toggle="tooltip">
+    <span class="theme-switch nav-link" data-mode="light"><i class="fa-solid fa-sun fa-lg"></i></span>
+    <span class="theme-switch nav-link" data-mode="dark"><i class="fa-solid fa-moon fa-lg"></i></span>
+    <span class="theme-switch nav-link" data-mode="auto"><i class="fa-solid fa-circle-half-stroke fa-lg"></i></span>
+  </button>
+`);
+</script></div>
+        
+      </div>
+    
+  </div>
+  
+  
+  <div class="sidebar-primary-items__end sidebar-primary__section">
+  </div>
+  
+  <div id="rtd-footer-container"></div>
+
+
+      </div>
+      
+      <main id="main-content" class="bd-main">
+        
+        
+          <div class="bd-content">
+            <div class="bd-article-container">
+              
+              <div class="bd-header-article">
+<div class="header-article-items header-article__inner">
+  
+    <div class="header-article-items__start">
+      
+        <div class="header-article-item">
+
+
+
+<nav aria-label="Breadcrumb">
+  <ul class="bd-breadcrumbs">
+    
+    <li class="breadcrumb-item breadcrumb-home">
+      <a href="../../../index.html" class="nav-link" aria-label="Home">
+        <i class="fa-solid fa-home"></i>
+      </a>
+    </li>
+    
+    <li class="breadcrumb-item"><a href="../../index.html" class="nav-link">Module code</a></li>
+    
+    <li class="breadcrumb-item active" aria-current="page">scipy.interp...</li>
+  </ul>
+</nav>
+</div>
+      
+    </div>
+  
+  
+</div>
+</div>
+              
+              
+              
+                
+<div id="searchbox"></div>
+                <article class="bd-article" role="main">
+                  
   <h1>Source code for scipy.interpolate._fitpack2</h1><div class="highlight"><pre>
 <span></span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">fitpack --- curve and surface fitting with splines</span>
@@ -267,6 +603,21 @@
 <span class="sd">    Notice the need to replace a ``nan`` by a numerical value (precise value</span>
 <span class="sd">    does not matter as long as the corresponding weight is zero.)</span>
 
+<span class="sd">    References</span>
+<span class="sd">    ----------</span>
+<span class="sd">    Based on algorithms described in [1]_, [2]_, [3]_, and [4]_:</span>
+
+<span class="sd">    .. [1] P. Dierckx, &quot;An algorithm for smoothing, differentiation and</span>
+<span class="sd">       integration of experimental data using spline functions&quot;,</span>
+<span class="sd">       J.Comp.Appl.Maths 1 (1975) 165-184.</span>
+<span class="sd">    .. [2] P. Dierckx, &quot;A fast algorithm for smoothing data on a rectangular</span>
+<span class="sd">       grid while using spline functions&quot;, SIAM J.Numer.Anal. 19 (1982)</span>
+<span class="sd">       1286-1304.</span>
+<span class="sd">    .. [3] P. Dierckx, &quot;An improved algorithm for curve fitting with spline</span>
+<span class="sd">       functions&quot;, report tw54, Dept. Computer Science,K.U. Leuven, 1981.</span>
+<span class="sd">    .. [4] P. Dierckx, &quot;Curve and surface fitting with splines&quot;, Monographs on</span>
+<span class="sd">       Numerical Analysis, Oxford University Press, 1993.</span>
+
 <span class="sd">    Examples</span>
 <span class="sd">    --------</span>
 <span class="sd">    &gt;&gt;&gt; import numpy as np</span>
@@ -397,8 +748,8 @@
         <span class="k">else</span><span class="p">:</span>
             <span class="k">if</span> <span class="ow">not</span> <span class="n">n</span> <span class="o">&lt;=</span> <span class="n">nest</span><span class="p">:</span>
                 <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;`nest` can only be increased&quot;</span><span class="p">)</span>
-        <span class="n">t</span><span class="p">,</span> <span class="n">c</span><span class="p">,</span> <span class="n">fpint</span><span class="p">,</span> <span class="n">nrdata</span> <span class="o">=</span> <span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">resize</span><span class="p">(</span><span class="n">data</span><span class="p">[</span><span class="n">j</span><span class="p">],</span> <span class="n">nest</span><span class="p">)</span> <span class="k">for</span> <span class="n">j</span> <span class="ow">in</span>
-                               <span class="p">[</span><span class="mi">8</span><span class="p">,</span> <span class="mi">9</span><span class="p">,</span> <span class="mi">11</span><span class="p">,</span> <span class="mi">12</span><span class="p">]]</span>
+        <span class="n">t</span><span class="p">,</span> <span class="n">c</span><span class="p">,</span> <span class="n">fpint</span><span class="p">,</span> <span class="n">nrdata</span> <span class="o">=</span> <span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">resize</span><span class="p">(</span><span class="n">data</span><span class="p">[</span><span class="n">j</span><span class="p">],</span> <span class="n">nest</span><span class="p">)</span> <span class="k">for</span> <span class="n">j</span> <span class="ow">in</span>
+                               <span class="p">[</span><span class="mi">8</span><span class="p">,</span> <span class="mi">9</span><span class="p">,</span> <span class="mi">11</span><span class="p">,</span> <span class="mi">12</span><span class="p">])</span>
 
         <span class="n">args</span> <span class="o">=</span> <span class="n">data</span><span class="p">[:</span><span class="mi">8</span><span class="p">]</span> <span class="o">+</span> <span class="p">(</span><span class="n">t</span><span class="p">,</span> <span class="n">c</span><span class="p">,</span> <span class="n">n</span><span class="p">,</span> <span class="n">fpint</span><span class="p">,</span> <span class="n">nrdata</span><span class="p">,</span> <span class="n">data</span><span class="p">[</span><span class="mi">13</span><span class="p">])</span>
         <span class="n">data</span> <span class="o">=</span> <span class="n">dfitpack</span><span class="o">.</span><span class="n">fpcurf1</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">)</span>
@@ -595,7 +946,9 @@
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">k</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_data</span><span class="p">[</span><span class="mi">5</span><span class="p">]</span>
         <span class="k">if</span> <span class="n">k</span> <span class="o">==</span> <span class="mi">3</span><span class="p">:</span>
-            <span class="k">return</span> <span class="n">_fitpack_impl</span><span class="o">.</span><span class="n">sproot</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_eval_args</span><span class="p">)</span>
+            <span class="n">t</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_eval_args</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+            <span class="n">mest</span> <span class="o">=</span> <span class="mi">3</span> <span class="o">*</span> <span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">t</span><span class="p">)</span> <span class="o">-</span> <span class="mi">7</span><span class="p">)</span>
+            <span class="k">return</span> <span class="n">_fitpack_impl</span><span class="o">.</span><span class="n">sproot</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_eval_args</span><span class="p">,</span> <span class="n">mest</span><span class="o">=</span><span class="n">mest</span><span class="p">)</span>
         <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">(</span><span class="s1">&#39;finding roots unsupported for &#39;</span>
                                   <span class="s1">&#39;non-cubic splines&#39;</span><span class="p">)</span>
 
@@ -1040,8 +1393,9 @@
 <span class="sd">            defined by the coordinate arrays x, y. The arrays must be</span>
 <span class="sd">            sorted to increasing order.</span>
 
-<span class="sd">            Note that the axis ordering is inverted relative to</span>
-<span class="sd">            the output of meshgrid.</span>
+<span class="sd">            The ordering of axes is consistent with</span>
+<span class="sd">            ``np.meshgrid(..., indexing=&quot;ij&quot;)`` and inconsistent with the</span>
+<span class="sd">            default ordering ``np.meshgrid(..., indexing=&quot;xy&quot;)``.</span>
 <span class="sd">        dx : int</span>
 <span class="sd">            Order of x-derivative</span>
 
@@ -1056,6 +1410,43 @@
 
 <span class="sd">            .. versionadded:: 0.14.0</span>
 
+<span class="sd">        Examples</span>
+<span class="sd">        --------</span>
+<span class="sd">        Suppose that we want to bilinearly interpolate an exponentially decaying</span>
+<span class="sd">        function in 2 dimensions.</span>
+
+<span class="sd">        &gt;&gt;&gt; import numpy as np</span>
+<span class="sd">        &gt;&gt;&gt; from scipy.interpolate import RectBivariateSpline</span>
+
+<span class="sd">        We sample the function on a coarse grid. Note that the default indexing=&quot;xy&quot;</span>
+<span class="sd">        of meshgrid would result in an unexpected (transposed) result after</span>
+<span class="sd">        interpolation.</span>
+
+<span class="sd">        &gt;&gt;&gt; xarr = np.linspace(-3, 3, 100)</span>
+<span class="sd">        &gt;&gt;&gt; yarr = np.linspace(-3, 3, 100)</span>
+<span class="sd">        &gt;&gt;&gt; xgrid, ygrid = np.meshgrid(xarr, yarr, indexing=&quot;ij&quot;)</span>
+
+<span class="sd">        The function to interpolate decays faster along one axis than the other.</span>
+
+<span class="sd">        &gt;&gt;&gt; zdata = np.exp(-np.sqrt((xgrid / 2) ** 2 + ygrid**2))</span>
+
+<span class="sd">        Next we sample on a finer grid using interpolation (kx=ky=1 for bilinear).</span>
+
+<span class="sd">        &gt;&gt;&gt; rbs = RectBivariateSpline(xarr, yarr, zdata, kx=1, ky=1)</span>
+<span class="sd">        &gt;&gt;&gt; xarr_fine = np.linspace(-3, 3, 200)</span>
+<span class="sd">        &gt;&gt;&gt; yarr_fine = np.linspace(-3, 3, 200)</span>
+<span class="sd">        &gt;&gt;&gt; xgrid_fine, ygrid_fine = np.meshgrid(xarr_fine, yarr_fine, indexing=&quot;ij&quot;)</span>
+<span class="sd">        &gt;&gt;&gt; zdata_interp = rbs(xgrid_fine, ygrid_fine, grid=False)</span>
+
+<span class="sd">        And check that the result agrees with the input by plotting both.</span>
+
+<span class="sd">        &gt;&gt;&gt; import matplotlib.pyplot as plt</span>
+<span class="sd">        &gt;&gt;&gt; fig = plt.figure()</span>
+<span class="sd">        &gt;&gt;&gt; ax1 = fig.add_subplot(1, 2, 1, aspect=&quot;equal&quot;)</span>
+<span class="sd">        &gt;&gt;&gt; ax2 = fig.add_subplot(1, 2, 2, aspect=&quot;equal&quot;)</span>
+<span class="sd">        &gt;&gt;&gt; ax1.imshow(zdata)</span>
+<span class="sd">        &gt;&gt;&gt; ax2.imshow(zdata_interp)</span>
+<span class="sd">        &gt;&gt;&gt; plt.show()</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">x</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
         <span class="n">y</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">y</span><span class="p">)</span>
@@ -1243,6 +1634,9 @@
 <span class="sd">        ----------</span>
 <span class="sd">        xi, yi : array_like</span>
 <span class="sd">            Input coordinates. Standard Numpy broadcasting is obeyed.</span>
+<span class="sd">            The ordering of axes is consistent with</span>
+<span class="sd">            ``np.meshgrid(..., indexing=&quot;ij&quot;)`` and inconsistent with the</span>
+<span class="sd">            default ordering ``np.meshgrid(..., indexing=&quot;xy&quot;)``.</span>
 <span class="sd">        dx : int, optional</span>
 <span class="sd">            Order of x-derivative</span>
 
@@ -1251,6 +1645,43 @@
 <span class="sd">            Order of y-derivative</span>
 
 <span class="sd">            .. versionadded:: 0.14.0</span>
+
+<span class="sd">        Examples</span>
+<span class="sd">        --------</span>
+<span class="sd">        Suppose that we want to bilinearly interpolate an exponentially decaying</span>
+<span class="sd">        function in 2 dimensions.</span>
+
+<span class="sd">        &gt;&gt;&gt; import numpy as np</span>
+<span class="sd">        &gt;&gt;&gt; from scipy.interpolate import RectBivariateSpline</span>
+<span class="sd">        &gt;&gt;&gt; def f(x, y):</span>
+<span class="sd">        ...     return np.exp(-np.sqrt((x / 2) ** 2 + y**2))</span>
+
+<span class="sd">        We sample the function on a coarse grid and set up the interpolator. Note that</span>
+<span class="sd">        the default ``indexing=&quot;xy&quot;`` of meshgrid would result in an unexpected (transposed)</span>
+<span class="sd">        result after interpolation.</span>
+
+<span class="sd">        &gt;&gt;&gt; xarr = np.linspace(-3, 3, 21)</span>
+<span class="sd">        &gt;&gt;&gt; yarr = np.linspace(-3, 3, 21)</span>
+<span class="sd">        &gt;&gt;&gt; xgrid, ygrid = np.meshgrid(xarr, yarr, indexing=&quot;ij&quot;)</span>
+<span class="sd">        &gt;&gt;&gt; zdata = f(xgrid, ygrid)</span>
+<span class="sd">        &gt;&gt;&gt; rbs = RectBivariateSpline(xarr, yarr, zdata, kx=1, ky=1)</span>
+
+<span class="sd">        Next we sample the function along a diagonal slice through the coordinate space</span>
+<span class="sd">        on a finer grid using interpolation.</span>
+
+<span class="sd">        &gt;&gt;&gt; xinterp = np.linspace(-3, 3, 201)</span>
+<span class="sd">        &gt;&gt;&gt; yinterp = np.linspace(3, -3, 201)</span>
+<span class="sd">        &gt;&gt;&gt; zinterp = rbs.ev(xinterp, yinterp)</span>
+
+<span class="sd">        And check that the interpolation passes through the function evaluations as a</span>
+<span class="sd">        function of the distance from the origin along the slice.</span>
+
+<span class="sd">        &gt;&gt;&gt; import matplotlib.pyplot as plt</span>
+<span class="sd">        &gt;&gt;&gt; fig = plt.figure()</span>
+<span class="sd">        &gt;&gt;&gt; ax1 = fig.add_subplot(1, 1, 1)</span>
+<span class="sd">        &gt;&gt;&gt; ax1.plot(np.sqrt(xarr**2 + yarr**2), np.diag(zdata), &quot;or&quot;)</span>
+<span class="sd">        &gt;&gt;&gt; ax1.plot(np.sqrt(xinterp**2 + yinterp**2), zinterp, &quot;-b&quot;)</span>
+<span class="sd">        &gt;&gt;&gt; plt.show()</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="fm">__call__</span><span class="p">(</span><span class="n">xi</span><span class="p">,</span> <span class="n">yi</span><span class="p">,</span> <span class="n">dx</span><span class="o">=</span><span class="n">dx</span><span class="p">,</span> <span class="n">dy</span><span class="o">=</span><span class="n">dy</span><span class="p">,</span> <span class="n">grid</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
 
@@ -1693,6 +2124,9 @@
 <span class="sd">            If `grid` is True: evaluate spline at the grid points</span>
 <span class="sd">            defined by the coordinate arrays theta, phi. The arrays</span>
 <span class="sd">            must be sorted to increasing order.</span>
+<span class="sd">            The ordering of axes is consistent with</span>
+<span class="sd">            ``np.meshgrid(..., indexing=&quot;ij&quot;)`` and inconsistent with the</span>
+<span class="sd">            default ordering ``np.meshgrid(..., indexing=&quot;xy&quot;)``.</span>
 <span class="sd">        dtheta : int, optional</span>
 <span class="sd">            Order of theta-derivative</span>
 
@@ -1707,6 +2141,44 @@
 
 <span class="sd">            .. versionadded:: 0.14.0</span>
 
+<span class="sd">        Examples</span>
+<span class="sd">        --------</span>
+
+<span class="sd">        Suppose that we want to use splines to interpolate a bivariate function on a sphere.</span>
+<span class="sd">        The value of the function is known on a grid of longitudes and colatitudes.</span>
+
+<span class="sd">        &gt;&gt;&gt; import numpy as np</span>
+<span class="sd">        &gt;&gt;&gt; from scipy.interpolate import RectSphereBivariateSpline</span>
+<span class="sd">        &gt;&gt;&gt; def f(theta, phi):</span>
+<span class="sd">        ...     return np.sin(theta) * np.cos(phi)</span>
+
+<span class="sd">        We evaluate the function on the grid. Note that the default indexing=&quot;xy&quot;</span>
+<span class="sd">        of meshgrid would result in an unexpected (transposed) result after</span>
+<span class="sd">        interpolation.</span>
+
+<span class="sd">        &gt;&gt;&gt; thetaarr = np.linspace(0, np.pi, 22)[1:-1]</span>
+<span class="sd">        &gt;&gt;&gt; phiarr = np.linspace(0, 2 * np.pi, 21)[:-1]</span>
+<span class="sd">        &gt;&gt;&gt; thetagrid, phigrid = np.meshgrid(thetaarr, phiarr, indexing=&quot;ij&quot;)</span>
+<span class="sd">        &gt;&gt;&gt; zdata = f(thetagrid, phigrid)</span>
+
+<span class="sd">        We next set up the interpolator and use it to evaluate the function</span>
+<span class="sd">        on a finer grid.</span>
+
+<span class="sd">        &gt;&gt;&gt; rsbs = RectSphereBivariateSpline(thetaarr, phiarr, zdata)</span>
+<span class="sd">        &gt;&gt;&gt; thetaarr_fine = np.linspace(0, np.pi, 200)</span>
+<span class="sd">        &gt;&gt;&gt; phiarr_fine = np.linspace(0, 2 * np.pi, 200)</span>
+<span class="sd">        &gt;&gt;&gt; zdata_fine = rsbs(thetaarr_fine, phiarr_fine)</span>
+
+<span class="sd">        Finally we plot the coarsly-sampled input data alongside the</span>
+<span class="sd">        finely-sampled interpolated data to check that they agree.</span>
+
+<span class="sd">        &gt;&gt;&gt; import matplotlib.pyplot as plt</span>
+<span class="sd">        &gt;&gt;&gt; fig = plt.figure()</span>
+<span class="sd">        &gt;&gt;&gt; ax1 = fig.add_subplot(1, 2, 1)</span>
+<span class="sd">        &gt;&gt;&gt; ax2 = fig.add_subplot(1, 2, 2)</span>
+<span class="sd">        &gt;&gt;&gt; ax1.imshow(zdata)</span>
+<span class="sd">        &gt;&gt;&gt; ax2.imshow(zdata_fine)</span>
+<span class="sd">        &gt;&gt;&gt; plt.show()</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">theta</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">theta</span><span class="p">)</span>
         <span class="n">phi</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">phi</span><span class="p">)</span>
@@ -1728,6 +2200,9 @@
 <span class="sd">        ----------</span>
 <span class="sd">        theta, phi : array_like</span>
 <span class="sd">            Input coordinates. Standard Numpy broadcasting is obeyed.</span>
+<span class="sd">            The ordering of axes is consistent with</span>
+<span class="sd">            np.meshgrid(..., indexing=&quot;ij&quot;) and inconsistent with the</span>
+<span class="sd">            default ordering np.meshgrid(..., indexing=&quot;xy&quot;).</span>
 <span class="sd">        dtheta : int, optional</span>
 <span class="sd">            Order of theta-derivative</span>
 
@@ -1736,6 +2211,43 @@
 <span class="sd">            Order of phi-derivative</span>
 
 <span class="sd">            .. versionadded:: 0.14.0</span>
+
+<span class="sd">        Examples</span>
+<span class="sd">        --------</span>
+<span class="sd">        Suppose that we want to use splines to interpolate a bivariate function on a sphere.</span>
+<span class="sd">        The value of the function is known on a grid of longitudes and colatitudes.</span>
+
+<span class="sd">        &gt;&gt;&gt; import numpy as np</span>
+<span class="sd">        &gt;&gt;&gt; from scipy.interpolate import RectSphereBivariateSpline</span>
+<span class="sd">        &gt;&gt;&gt; def f(theta, phi):</span>
+<span class="sd">        ...     return np.sin(theta) * np.cos(phi)</span>
+
+<span class="sd">        We evaluate the function on the grid. Note that the default indexing=&quot;xy&quot;</span>
+<span class="sd">        of meshgrid would result in an unexpected (transposed) result after</span>
+<span class="sd">        interpolation.</span>
+
+<span class="sd">        &gt;&gt;&gt; thetaarr = np.linspace(0, np.pi, 22)[1:-1]</span>
+<span class="sd">        &gt;&gt;&gt; phiarr = np.linspace(0, 2 * np.pi, 21)[:-1]</span>
+<span class="sd">        &gt;&gt;&gt; thetagrid, phigrid = np.meshgrid(thetaarr, phiarr, indexing=&quot;ij&quot;)</span>
+<span class="sd">        &gt;&gt;&gt; zdata = f(thetagrid, phigrid)</span>
+
+<span class="sd">        We next set up the interpolator and use it to evaluate the function</span>
+<span class="sd">        at points not on the original grid.</span>
+
+<span class="sd">        &gt;&gt;&gt; rsbs = RectSphereBivariateSpline(thetaarr, phiarr, zdata)</span>
+<span class="sd">        &gt;&gt;&gt; thetainterp = np.linspace(thetaarr[0], thetaarr[-1], 200)</span>
+<span class="sd">        &gt;&gt;&gt; phiinterp = np.linspace(phiarr[0], phiarr[-1], 200)</span>
+<span class="sd">        &gt;&gt;&gt; zinterp = rsbs.ev(thetainterp, phiinterp)</span>
+
+<span class="sd">        Finally we plot the original data for a diagonal slice through the</span>
+<span class="sd">        initial grid, and the spline approximation along the same slice.</span>
+
+<span class="sd">        &gt;&gt;&gt; import matplotlib.pyplot as plt</span>
+<span class="sd">        &gt;&gt;&gt; fig = plt.figure()</span>
+<span class="sd">        &gt;&gt;&gt; ax1 = fig.add_subplot(1, 1, 1)</span>
+<span class="sd">        &gt;&gt;&gt; ax1.plot(np.sin(thetaarr) * np.sin(phiarr), np.diag(zdata), &quot;or&quot;)</span>
+<span class="sd">        &gt;&gt;&gt; ax1.plot(np.sin(thetainterp) * np.sin(phiinterp), zinterp, &quot;-b&quot;)</span>
+<span class="sd">        &gt;&gt;&gt; plt.show()</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="fm">__call__</span><span class="p">(</span><span class="n">theta</span><span class="p">,</span> <span class="n">phi</span><span class="p">,</span> <span class="n">dtheta</span><span class="o">=</span><span class="n">dtheta</span><span class="p">,</span> <span class="n">dphi</span><span class="o">=</span><span class="n">dphi</span><span class="p">,</span> <span class="n">grid</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
 
@@ -2322,31 +2834,71 @@
 
 </pre></div>
 
-           </div>
+                </article>
+              
+              
+              
+              
+              
+                <footer class="prev-next-footer">
+                  <!-- Previous / next buttons -->
+<div class="prev-next-area">
+</div>
+                </footer>
+              
+            </div>
+            
+            
+              
+            
           </div>
-          <footer>
-
-  <hr/>
-
-  <div role="contentinfo">
-    <p>&#169; Copyright 2023, Craig Yanitski.</p>
+          <footer class="bd-footer-content">
+            
+          </footer>
+        
+      </main>
+    </div>
   </div>
+  
+  <!-- Scripts loaded after <body> so the DOM is not blocked -->
+  <script src="../../../_static/scripts/bootstrap.js?digest=ac02cc09edc035673794"></script>
+<script src="../../../_static/scripts/pydata-sphinx-theme.js?digest=ac02cc09edc035673794"></script>
 
-  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
-    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
-    provided by <a href="https://readthedocs.org">Read the Docs</a>.
-   
+  <footer class="bd-footer">
+<div class="bd-footer__inner bd-page-width">
+  
+    <div class="footer-items__start">
+      
+        <div class="footer-item">
+  <p class="copyright">
+    
+      © Copyright 2023, Craig Yanitski.
+      <br/>
+    
+  </p>
+</div>
+      
+        <div class="footer-item">
+  <p class="sphinx-version">
+    Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 7.2.6.
+    <br/>
+  </p>
+</div>
+      
+    </div>
+  
+  
+  
+    <div class="footer-items__end">
+      
+        <div class="footer-item"><p class="theme-version">
+  Built with the <a href="https://pydata-sphinx-theme.readthedocs.io/en/stable/index.html">PyData Sphinx Theme</a> 0.14.1.
+</p></div>
+      
+    </div>
+  
+</div>
 
-</footer>
-        </div>
-      </div>
-    </section>
-  </div>
-  <script>
-      jQuery(function () {
-          SphinxRtdTheme.Navigation.enable(true);
-      });
-  </script> 
-
-</body>
+  </footer>
+  </body>
 </html>
