@@ -1,2 +1,3 @@
+sphinx
 sphinx_autodocs_typehints
 pydata-sphinx-theme
