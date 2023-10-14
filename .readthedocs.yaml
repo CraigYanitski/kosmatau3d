@@ -7,9 +7,7 @@ build:
 
 python:
   install:
-    requirements:
-      - "sphinx_atodoc_typehints"
-      - "pydata-sphinx-theme"
+    requirements: docs/requirements.txt
 
 sphinx:
   configuration: docs/_source/conf.py
