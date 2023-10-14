@@ -5,5 +5,11 @@ build:
   tools:
     python: "3.10"
 
+python:
+  install:
+    requirements:
+      - "sphinx_atodoc_typehints"
+      - "pydata-sphinx-theme"
+
 sphinx:
   configuration: docs/_source/conf.py
