@@ -14,7 +14,6 @@ build:
 
 python:
   install:
-    - package
     - requirements: docs/requirements.txt
 
 sphinx:
