@@ -4,19 +4,15 @@ build:
   os: "ubuntu-22.04"
   tools:
     python: "3.11"
-      #commands:
-      #  - echo $READTHEDOCS_OUTPUT
-      #  - mkdir --parents _readthedocs/html/
   jobs:
     pre_build:
       - pip list
       - echo $READTHEDOCS_OUTPUT
     post_build:
-      - ls ../../_readthedocs/html
       - ls _readthedocs/html
-      - rm -rf ../../_readthedocs/html
-      - sphinx-build -b html docs/_source ../../_readthedocs
-      - ls _readthedocs/html
+      - ls _readthedocs/html/_sources
+      # - rm -rf _readthedocs/html
+      # - sphinx-build -b html docs/_source _readthedocs
 
 
 python:
