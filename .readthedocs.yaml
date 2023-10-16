@@ -13,8 +13,13 @@ build:
 
 
 python:
+  version: 3.11
   install:
     - requirements: docs/requirements.txt
+    - method: pip
+      path: .
+      extra_requirements:
+        - docs
 
 sphinx:
   builder: html
