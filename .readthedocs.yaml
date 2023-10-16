@@ -6,6 +6,7 @@ build:
     python: "3.11"
   commands:
     - echo $READTHEDOCS_OUTPUT
+    - mkdir --parents _readthedocs/html/
 
 python:
   install:
