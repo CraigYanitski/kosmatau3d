@@ -13,3 +13,5 @@ kosmatau3d/grid/dilled/*
 *.ipynb_checkpoints/
 */plots/*.png
 */.obsidian
+docs/_build
+docs/_source/_autosummary
