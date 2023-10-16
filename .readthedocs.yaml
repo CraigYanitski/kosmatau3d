@@ -9,7 +9,7 @@ build:
       #  - mkdir --parents _readthedocs/html/
   jobs:
     pre_build:
-      - conda list
+      - pip list
 
 
 python:
