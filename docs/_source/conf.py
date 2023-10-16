@@ -92,7 +92,7 @@ html_static_path = ['../_static']
 # List of patterns, relative to source directory, that match files and
 # directories to ignore when looking for source files.
 # This pattern also affects html_static_path and html_extra_path.
-exclude_patterns = ["_build", "_templates", "Thumbs.db", "jupyter_execute", ".*"]
+# exclude_patterns = ["_build", "_templates", "Thumbs.db", "jupyter_execute", ".*"]
 
 # Additional stuff
 master_doc = "index"
