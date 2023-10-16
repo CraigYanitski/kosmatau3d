@@ -10,6 +10,10 @@ build:
   jobs:
     pre_build:
       - pip list
+      - ls
+    post_build:
+      - rm -rf _readthedocs/html
+      - sphinx-build -b html docs/_source _readthedocs
 
 
 python:
