@@ -1,3 +1,4 @@
+../kosmatau3d
 ipython==8.16.1
 jupytext==1.15.2
 nbsphinx==0.9.3
