@@ -10,19 +10,19 @@ build:
   jobs:
     pre_build:
       - pip list
-      - echo $(READTHEDOCS_OUTPUT)
+      - echo $READTHEDOCS_OUTPUT
     post_build:
-      - ls
+      - ls _readthedocs/html
       - rm -rf ../../_readthedocs/html
       - sphinx-build -b html docs/_source ../../_readthedocs
-      - ls
+      - ls _readthedocs/html
 
 
 python:
   install:
     - requirements: docs/requirements.txt
     - method: pip
-      path: .
+      path: ../kosmatau3d
       extra_requirements:
         - docs
 
