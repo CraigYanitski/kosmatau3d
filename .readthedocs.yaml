@@ -7,16 +7,15 @@ build:
       #commands:
       #  - echo $READTHEDOCS_OUTPUT
       #  - mkdir --parents _readthedocs/html/
+  jobs:
+    pre_build:
+      - conda list
+
 
 python:
   install:
-    - method: pip
-      path: .
+    - package
     - requirements: docs/requirements.txt
-
-build:
-  commands:
-    - conda list
 
 sphinx:
   builder: html
