@@ -12,7 +12,7 @@
 #
 import os
 import sys
-sys.path.insert(0, os.path.abspath('..'))
+sys.path.insert(0, os.path.abspath('../../kosmatau3d/'))
 
 
 # -- Project information -----------------------------------------------------
@@ -43,9 +43,9 @@ extensions = [
 ]
 
 # Mappings for sphinx.ext.intersphinx. Projects have to have Sphinx-generated doc! (.inv file)
-intersphinx_mapping = {
-    "python": ("https://docs.python.org/3/", None),
-}
+# intersphinx_mapping = {
+#     "python": ("https://docs.python.org/3/", None),
+# }
 
 autosummary_generate = True   # Turn on sphinx.ext.autosummary
 autoclass_content = 'both'    # Add __init__ doc (params) to class summaries
