@@ -4,10 +4,15 @@ build:
   os: "ubuntu-22.04"
   tools:
     python: "3.11"
+  commands:
+    - echo $READTHEDOCS_OUTPUT
 
 python:
   install:
-  - requirements: docs/requirements.txt
+    - method: pip
+      path: .
+    - requirements: docs/requirements.txt
 
 sphinx:
+  builder: html
   configuration: docs/_source/conf.py
