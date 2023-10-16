@@ -14,6 +14,10 @@ python:
       path: .
     - requirements: docs/requirements.txt
 
+build:
+  commands:
+    - conda list
+
 sphinx:
   builder: html
   configuration: docs/_source/conf.py
