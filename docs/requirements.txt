@@ -1,5 +1,7 @@
-ipython==8.16.1
-nbsphinx==0.9.3
-pydata-sphinx-theme==0.14.1
-sphinx==7.2.6
-sphinx_autodoc_typehints==1.24.0
+ipython
+jupytext
+nbsphinx
+pydata-sphinx-theme
+pyqt5
+sphinx
+sphinx_autodoc_typehints
