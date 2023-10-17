@@ -12,8 +12,8 @@ build:
     post_build:
       - ls _readthedocs/html
       - ls _readthedocs/html/_sources
-      # - rm -rf _readthedocs/html
-      # - sphinx-build -b html docs/_source _readthedocs
+      - rm -rf _readthedocs/html
+      - sphinx-build -b html docs/_source _readthedocs
 
 conda:
   environment: environment.yml
