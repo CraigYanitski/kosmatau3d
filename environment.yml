@@ -33,7 +33,7 @@ dependencies:
       - asciitree==0.3.3
       - astrodendro==0.2.0
       - astroid==3.0.1
-      - git+https://github.com/skabanovic/astrokit.git
+      - astrokit@git+https://github.com/skabanovic/astrokit.git
       - astropy==5.3.4
       - astropy-healpix==1.0.0
       - astroquery==0.4.6
@@ -99,7 +99,7 @@ dependencies:
       - jupytext==1.15.2
       - keyring==24.2.0
       - kiwisolver==1.4.5
-      - git+https://github.com/CraigYanitski/kosmatau3d.git
+      - kosmatau3d
       - latexcodec==2.0.1
       - libsass==0.22.0
       - linkify-it-py==2.0.2
@@ -177,9 +177,9 @@ dependencies:
       - snowballstemmer==2.2.0
       - soupsieve==2.5
       - spectres==2.2.0
-      - sphinx==7.2.6
+      - sphinx==5.0.2
       - sphinx-autoapi==2.0.1
-      - sphinx-autodoc-typehints==1.24.0
+        #- sphinx-autodoc-typehints==1.24.0
       - sphinx-book-theme==1.0.1
       - sphinx-comments==0.0.3
       - sphinx-copybutton==0.5.2
