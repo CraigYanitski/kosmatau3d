@@ -14,10 +14,12 @@ build:
       # - rm -rf _readthedocs/html
       # - sphinx-build -b html docs/_source _readthedocs
 
+conda:
+  - environment: environment.yml
 
-python:
-  install:
-    - requirements: docs/requirements.txt
+        # python:
+        #   install:
+        #     - requirements: docs/requirements.txt
 
 sphinx:
   builder: html
