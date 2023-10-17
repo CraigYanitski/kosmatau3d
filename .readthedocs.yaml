@@ -6,6 +6,7 @@ build:
     python: "mambaforge-22.9"
   jobs:
     pre_build:
+      - conda list
       - pip list
       - echo $READTHEDOCS_OUTPUT
     post_build:
