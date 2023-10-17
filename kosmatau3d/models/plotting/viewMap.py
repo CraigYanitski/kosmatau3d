@@ -9,7 +9,7 @@ import matplotlib
 import matplotlib.pyplot as plt
 import matplotlib.colors as colors
 # import QtQuick.Controls.Universal 2.2
-from PyQt5.QtCore import Qt
+# from PyQt5.QtCore import Qt
 from PyQt5.QtWidgets import (
   QApplication,
   QMainWindow,
