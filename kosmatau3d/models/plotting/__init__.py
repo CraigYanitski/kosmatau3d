@@ -1,12 +1,14 @@
 from pprint import pprint
 
 import numpy as np
+import os
 from astropy.io import fits
 import matplotlib.pyplot as plt
 import matplotlib.colors as colors
 from scipy.interpolate import interp2d
 
-from .viewMap import *
+if "READTHEDOCS" not in os.environ:
+    from .viewMap import *
 from .diagram import *
 from kosmatau3d.models import constants
 
