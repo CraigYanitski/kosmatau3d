@@ -155,7 +155,7 @@ def determine_rms(hdul, mission='', file=''):
     determine RMS of selected surveys.
     '''
     import astrokit
-    print(mission, 'GOT C+', mission=='GOT C+')
+    # print(mission, 'GOT C+', mission=='GOT C+')
 
     if mission == 'GOT C+':
 
@@ -275,17 +275,25 @@ def determine_rms(hdul, mission='', file=''):
     return hdul_rms
 
 
-def regrid_observations(path='/media/hpc_backup/yanitski/projects/pdr/observational_data/MilkyWay/', mission=None,
-                        nu_planck=713e9, target_header=None, target_kernel=None, output_file='obs_regridded.fits'):
+def regrid_observations(path='/media/hpc_backup/yanitski/projects/' 
+        + 'pdr/observational_data/MilkyWay/', 
+        mission=None, nu_planck=713e9, target_header=None, target_kernel=None, 
+        output_file='obs_regridded.fits', cal_error=0):
     '''
-    This function will regrid the specified mission data to the specified target header. This prepares the
-    observational data for comparison to simulated data. For now, the target header must
+    This function will regrid the specified mission data to the specified 
+    target header. 
+    This prepares the observational data for comparison to simulated data. 
+    For now, the target header must
 
-    :param path: The directory storing the mission folders. Each mission folder should contain the relevant fits files.
-    :param mission: The mission you wish to regrid. The default functionality is to regrid all missions.
-    :param target_header: The target header, which must have longitude on axis 1 and latitude on axis 2. An optional
-        axis 3 may be used for the velocity. If there is not a third dimension, the data will be regridded with a
-        spacing of 1 km/s.
+    :param path: The directory storing the mission folders. 
+            Each mission folder should contain the relevant fits files.
+    :param mission: The mission you wish to regrid. 
+            The default functionality is to regrid all missions.
+    :param target_header: The target header, which must have longitude on 
+            axis 1 and latitude on axis 2. 
+            An optional axis 3 may be used for the velocity. 
+            If there is not a third dimension, the data will be 
+            regridded with a spacing of 1 km/s.
     :param target_kernel: The kernel to use for regridding.
     :return: Float -- 0 for success; 1 for fail
     '''
@@ -301,21 +309,25 @@ def regrid_observations(path='/media/hpc_backup/yanitski/projects/pdr/observatio
     elif mission[0] in os.listdir(path):
         print('Regridding {} survey'.format(mission[0]))
     else:
-        print('Invalid mission... {} observations do not exist or are not downloaded'.format(mission[0]))
+        print('Invalid mission... {} observations do not exist or ' 
+                + 'are not downloaded'.format(mission[0]))
         return 1
 
     if target_header==None:
-        print('Error: Please specify target_header to regrid the observations.')
+        print('Error: Please specify target_header to regrid the ' 
+                + 'observations.')
         print('Regrid failed.')
         return 1
 
     if target_header['NAXIS'] == 3:
-        target_vel = np.linspace(target_header['CRVAL3'] - target_header['CDELT3'] * (target_header['CRPIX3'] - 1),
-                                 target_header['CRVAL3'] + target_header['CDELT3'] *
-                                 (target_header['NAXIS3'] - target_header['CRPIX3']),
-                                 num=target_header['NAXIS3'])
+        target_vel = np.linspace(target_header['CRVAL3'] 
+                - target_header['CDELT3'] * (target_header['CRPIX3'] - 1),
+                target_header['CRVAL3'] + target_header['CDELT3'] 
+                * (target_header['NAXIS3'] - target_header['CRPIX3']),
+                num=target_header['NAXIS3'])
     else:
-        print('Error: Please enter a target velocity to regrid the spectroscopic observations.')
+        print('Error: Please enter a target velocity to regrid the '
+                + 'spectroscopic observations.')
         return 1
         target_vel = None
 
@@ -393,7 +405,10 @@ def regrid_observations(path='/media/hpc_backup/yanitski/projects/pdr/observatio
         elif survey == 'SEDIGISM':
             ico2_gridder = cygrid.WcsGrid(target_header)
             ico2_gridder.set_kernel(*target_kernel)
-            ico2_gridder_err = cygrid.WcsGrid(twod_header)
+            if cal_error:
+                ico2_gridder_err = cygrid.WcsGrid(target_header)
+            else:
+                ico2_gridder_err = cygrid.WcsGrid(twod_header)
             ico2_gridder_err.set_kernel(*target_kernel)
             iCO2 = True
         elif survey == 'Planck':
@@ -406,7 +421,8 @@ def regrid_observations(path='/media/hpc_backup/yanitski/projects/pdr/observatio
 
         for file in files:
 
-            if file == 'regridded' or file == 'temp' or 'RMS' in file or survey == 'HiGAL':
+            if file == 'regridded' or file == 'temp' or \
+                    'RMS' in file or survey == 'HiGAL':
                 continue
 
             # Grid data and RMS
@@ -421,18 +437,24 @@ def regrid_observations(path='/media/hpc_backup/yanitski/projects/pdr/observatio
                 obs = fits.open(path + survey + '/' + file)
 
                 # Get axes
-                lon = np.linspace(obs[0].header['CRVAL2'] - obs[0].header['CDELT2'] * (obs[0].header['CRPIX2'] - 1),
-                                  obs[0].header['CRVAL2'] + obs[0].header['CDELT2'] * (
-                                              obs[0].header['NAXIS2'] - obs[0].header['CRPIX2']),
-                                  num=obs[0].header['NAXIS2'])
-                lat = np.linspace(obs[0].header['CRVAL3'] - obs[0].header['CDELT3'] * (obs[0].header['CRPIX3'] - 1),
-                                  obs[0].header['CRVAL3'] + obs[0].header['CDELT3'] * (
-                                              obs[0].header['NAXIS3'] - obs[0].header['CRPIX3']),
-                                  num=obs[0].header['NAXIS3'])
-                vel = np.linspace(obs[0].header['CRVAL1'] - obs[0].header['CDELT1'] * (obs[0].header['CRPIX1'] - 1),
-                                  obs[0].header['CRVAL1'] + obs[0].header['CDELT1'] * (
-                                              obs[0].header['NAXIS1'] - obs[0].header['CRPIX1']),
-                                  num=obs[0].header['NAXIS1'])
+                lon = np.linspace(obs[0].header['CRVAL2'] 
+                        - obs[0].header['CDELT2'] 
+                        * (obs[0].header['CRPIX2'] - 1),
+                        obs[0].header['CRVAL2'] + obs[0].header['CDELT2'] 
+                        * (obs[0].header['NAXIS2'] - obs[0].header['CRPIX2']),
+                        num=obs[0].header['NAXIS2'])
+                lat = np.linspace(obs[0].header['CRVAL3'] 
+                        - obs[0].header['CDELT3'] 
+                        * (obs[0].header['CRPIX3'] - 1),
+                        obs[0].header['CRVAL3'] + obs[0].header['CDELT3'] 
+                        * (obs[0].header['NAXIS3'] - obs[0].header['CRPIX3']),
+                        num=obs[0].header['NAXIS3'])
+                vel = np.linspace(obs[0].header['CRVAL1'] 
+                        - obs[0].header['CDELT1'] 
+                        * (obs[0].header['CRPIX1'] - 1),
+                        obs[0].header['CRVAL1'] + obs[0].header['CDELT1'] 
+                        * (obs[0].header['NAXIS1'] - obs[0].header['CRPIX1']),
+                        num=obs[0].header['NAXIS1'])
 
                 # Copy header
                 temp_header['NAXIS'] = 3
@@ -444,23 +466,30 @@ def regrid_observations(path='/media/hpc_backup/yanitski/projects/pdr/observatio
                 temp_header['CDELT3'] = target_header['CDELT3']
                 temp_header['CRPIX3'] = target_header['CRPIX3']
 
-                obs_data = spectres(target_vel, vel, np.nan_to_num(obs[0].data, nan=0), fill=0, verbose=False)
-                obs_data = np.nan_to_num(obs_data.reshape(-1, obs_data.shape[-1]), nan=0)
-                obs_error = determine_rms(obs, mission=survey)[0].data.reshape(-1, 1)
+                obs_data = spectres(target_vel, vel, 
+                        np.nan_to_num(obs[0].data, nan=0), fill=0, 
+                        verbose=False)
+                obs_data = np.nan_to_num(obs_data.reshape(-1, 
+                    obs_data.shape[-1]), nan=0)
+                obs_error = determine_rms(obs, 
+                        mission=survey)[0].data.reshape(-1, 1)
                 print(obs_error.shape)
                 # obs_error = np.swapaxes(obs_error, 0, 2)
                 # obs_error = np.swapaxes(obs_error, 0, 1)
 
                 # Grid
                 lon_mesh, lat_mesh = np.meshgrid(lon, lat)
-                co1_gridder.grid(lon_mesh.flatten(), lat_mesh.flatten(), obs_data)
-                co1_gridder_err.grid(lon_mesh.flatten(), lat_mesh.flatten(), obs_error[:, 0])
+                co1_gridder.grid(lon_mesh.flatten(), lat_mesh.flatten(), 
+                        obs_data)
+                co1_gridder_err.grid(lon_mesh.flatten(), lat_mesh.flatten(), 
+                        obs_error[:, 0])
 
                 if vel.min() < min_vel:
                     min_vel = vel.min()
                 if vel.max() > max_vel:
                     max_vel = vel.max()
-            elif survey == 'Mopra' and ('_Vfull.fits' in file) and (('12CO' in file) or ('13CO' in file)):
+            elif survey == 'Mopra' and ('_Vfull.fits' in file) \
+                    and (('12CO' in file) or ('13CO' in file)):
                 print(file)
 
                 transition = file.split('_')[0]
@@ -474,21 +503,28 @@ def regrid_observations(path='/media/hpc_backup/yanitski/projects/pdr/observatio
 
                 # Open file
                 obs = fits.open(path + survey + '/' + file)
-                obs_error = np.nanmean(fits.open(path + survey + '/' + file.replace('_Vfull', '.sigma'))[0].data)
+                obs_error = np.nanmean(fits.open(path + survey + '/' 
+                    + file.replace('_Vfull', '.sigma'))[0].data)
 
                 # Get axes
-                lon = np.linspace(obs[0].header['CRVAL1'] - obs[0].header['CDELT1'] * (obs[0].header['CRPIX1'] - 1),
-                                  obs[0].header['CRVAL1'] + obs[0].header['CDELT1'] * (
-                                              obs[0].header['NAXIS1'] - obs[0].header['CRPIX1']),
-                                  num=obs[0].header['NAXIS1'])
-                lat = np.linspace(obs[0].header['CRVAL2'] - obs[0].header['CDELT2'] * (obs[0].header['CRPIX2'] - 1),
-                                  obs[0].header['CRVAL2'] + obs[0].header['CDELT2'] * (
-                                              obs[0].header['NAXIS2'] - obs[0].header['CRPIX2']),
-                                  num=obs[0].header['NAXIS2'])
-                vel = np.linspace(obs[0].header['CRVAL3'] - obs[0].header['CDELT3'] * (obs[0].header['CRPIX3'] - 1),
-                                  obs[0].header['CRVAL3'] + obs[0].header['CDELT3'] * (
-                                              obs[0].header['NAXIS3'] - obs[0].header['CRPIX3']),
-                                  num=obs[0].header['NAXIS3']) / 1e3
+                lon = np.linspace(obs[0].header['CRVAL1'] 
+                        - obs[0].header['CDELT1'] 
+                        * (obs[0].header['CRPIX1'] - 1),
+                        obs[0].header['CRVAL1'] + obs[0].header['CDELT1'] 
+                        * (obs[0].header['NAXIS1'] - obs[0].header['CRPIX1']),
+                        num=obs[0].header['NAXIS1'])
+                lat = np.linspace(obs[0].header['CRVAL2'] 
+                        - obs[0].header['CDELT2'] 
+                        * (obs[0].header['CRPIX2'] - 1),
+                        obs[0].header['CRVAL2'] + obs[0].header['CDELT2'] 
+                        * (obs[0].header['NAXIS2'] - obs[0].header['CRPIX2']),
+                        num=obs[0].header['NAXIS2'])
+                vel = np.linspace(obs[0].header['CRVAL3'] 
+                        - obs[0].header['CDELT3'] 
+                        * (obs[0].header['CRPIX3'] - 1),
+                        obs[0].header['CRVAL3'] + obs[0].header['CDELT3'] 
+                        * (obs[0].header['NAXIS3'] - obs[0].header['CRPIX3']),
+                        num=obs[0].header['NAXIS3']) / 1e3
 
                 # Copy header
                 temp_header['NAXIS'] = 3
@@ -503,22 +539,29 @@ def regrid_observations(path='/media/hpc_backup/yanitski/projects/pdr/observatio
                 # Grid
                 obs_data = np.swapaxes(obs[0].data, 0, 2)
                 obs_data = np.swapaxes(obs_data, 0, 1)
-                obs_data = spectres(target_vel, vel, np.nan_to_num(obs[0].data.T, nan=0), fill=0, verbose=False)
+                obs_data = spectres(target_vel, vel, 
+                        np.nan_to_num(obs[0].data.T, nan=0), fill=0, 
+                        verbose=False)
                 obs_data = obs_data.reshape(-1, obs_data.shape[-1])
-                obs_error = fits.open(path + survey + '/' + file.replace('_Vfull', '.sigma'))[0].data.reshape(-1)
+                obs_error = fits.open(path + survey + '/' 
+                        + file.replace('_Vfull', '.sigma'))[0].data.reshape(-1)
                 i_nan = np.isnan(obs_error)
                 del obs
 
                 # Grid
                 lon_mesh, lat_mesh = np.meshgrid(lon, lat)
                 if '12CO' in transition:
-                    co1_gridder.grid(lon_mesh.flatten(), lat_mesh.flatten(), obs_data)
-                    co1_gridder_err.grid(lon_mesh.flatten()[~i_nan.flatten()], lat_mesh.flatten()[~i_nan.flatten()],
-                                         obs_error[~i_nan])
+                    co1_gridder.grid(lon_mesh.flatten(), lat_mesh.flatten(), 
+                            obs_data)
+                    co1_gridder_err.grid(lon_mesh.flatten()[~i_nan.flatten()], 
+                            lat_mesh.flatten()[~i_nan.flatten()],
+                            obs_error[~i_nan])
                 elif '13CO' in transition:
-                    ico1_gridder.grid(lon_mesh.flatten(), lat_mesh.flatten(), obs_data)
-                    ico1_gridder_err.grid(lon_mesh.flatten()[~i_nan.flatten()], lat_mesh.flatten()[~i_nan.flatten()],
-                                          obs_error[~i_nan])
+                    ico1_gridder.grid(lon_mesh.flatten(), lat_mesh.flatten(), 
+                            obs_data)
+                    ico1_gridder_err.grid(lon_mesh.flatten()[~i_nan.flatten()], 
+                            lat_mesh.flatten()[~i_nan.flatten()],
+                            obs_error[~i_nan])
 
                 if vel.min() < min_vel:
                     min_vel = vel.min()
@@ -542,18 +585,24 @@ def regrid_observations(path='/media/hpc_backup/yanitski/projects/pdr/observatio
                 obs = fits.open(path + survey + '/' + file)
 
                 # Get axes
-                lon = np.linspace(obs[0].header['CRVAL1'] - obs[0].header['CDELT1'] * (obs[0].header['CRPIX1'] - 1),
-                                  obs[0].header['CRVAL1'] + obs[0].header['CDELT1'] * (
-                                              obs[0].header['NAXIS1'] - obs[0].header['CRPIX1']),
-                                  num=obs[0].header['NAXIS1'])
-                lat = np.linspace(obs[0].header['CRVAL2'] - obs[0].header['CDELT2'] * (obs[0].header['CRPIX2'] - 1),
-                                  obs[0].header['CRVAL2'] + obs[0].header['CDELT2'] * (
-                                              obs[0].header['NAXIS2'] - obs[0].header['CRPIX2']),
-                                  num=obs[0].header['NAXIS2'])
-                vel = np.linspace(obs[0].header['CRVAL3'] - obs[0].header['CDELT3'] * (obs[0].header['CRPIX3'] - 1),
-                                  obs[0].header['CRVAL3'] + obs[0].header['CDELT3'] * (
-                                              obs[0].header['NAXIS3'] - obs[0].header['CRPIX3']),
-                                  num=obs[0].header['NAXIS3']) / 1e3
+                lon = np.linspace(obs[0].header['CRVAL1'] 
+                        - obs[0].header['CDELT1'] 
+                        * (obs[0].header['CRPIX1'] - 1),
+                        obs[0].header['CRVAL1'] + obs[0].header['CDELT1'] 
+                        * (obs[0].header['NAXIS1'] - obs[0].header['CRPIX1']),
+                        num=obs[0].header['NAXIS1'])
+                lat = np.linspace(obs[0].header['CRVAL2'] 
+                        - obs[0].header['CDELT2'] 
+                        * (obs[0].header['CRPIX2'] - 1),
+                        obs[0].header['CRVAL2'] + obs[0].header['CDELT2'] 
+                        * (obs[0].header['NAXIS2'] - obs[0].header['CRPIX2']),
+                        num=obs[0].header['NAXIS2'])
+                vel = np.linspace(obs[0].header['CRVAL3'] 
+                        - obs[0].header['CDELT3'] 
+                        * (obs[0].header['CRPIX3'] - 1),
+                        obs[0].header['CRVAL3'] + obs[0].header['CDELT3'] 
+                        * (obs[0].header['NAXIS3'] - obs[0].header['CRPIX3']),
+                        num=obs[0].header['NAXIS3']) / 1e3
 
                 # Copy header
                 temp_header['NAXIS'] = 3
@@ -567,7 +616,8 @@ def regrid_observations(path='/media/hpc_backup/yanitski/projects/pdr/observatio
 
                 obs_data = np.swapaxes(obs[0].data, 0, 2)
                 obs_data = np.swapaxes(obs_data, 0, 1)
-                obs_data = spectres(target_vel, vel, np.nan_to_num(obs_data, nan=0), fill=0, verbose=False)
+                obs_data = spectres(target_vel, vel, 
+                        np.nan_to_num(obs_data, nan=0), fill=0, verbose=False)
                 obs_data = obs_data.reshape(-1, obs_data.shape[-1])
                 if '12' in transition:
                     # from Barnes et al. (2015)
@@ -580,11 +630,15 @@ def regrid_observations(path='/media/hpc_backup/yanitski/projects/pdr/observatio
                 # Grid
                 lon_mesh, lat_mesh = np.meshgrid(lon, lat)
                 if '12' in transition:
-                    co1_gridder.grid(lon_mesh.flatten(), lat_mesh.flatten(), obs_data)
-                    co1_gridder_err.grid(lon_mesh.flatten(), lat_mesh.flatten(), obs_error)
+                    co1_gridder.grid(lon_mesh.flatten(), 
+                            lat_mesh.flatten(), obs_data)
+                    co1_gridder_err.grid(lon_mesh.flatten(), 
+                            lat_mesh.flatten(), obs_error)
                 elif '13' in transition:
-                    ico1_gridder.grid(lon_mesh.flatten(), lat_mesh.flatten(), obs_data)
-                    ico1_gridder_err.grid(lon_mesh.flatten(), lat_mesh.flatten(), obs_error)
+                    ico1_gridder.grid(lon_mesh.flatten(), 
+                            lat_mesh.flatten(), obs_data)
+                    ico1_gridder_err.grid(lon_mesh.flatten(), 
+                            lat_mesh.flatten(), obs_error)
 
                 if vel.min() < min_vel:
                     min_vel = vel.min()
@@ -603,18 +657,24 @@ def regrid_observations(path='/media/hpc_backup/yanitski/projects/pdr/observatio
                 obs = fits.open(path + survey + '/' + file)
 
                 # Get axes
-                lon = np.linspace(obs[0].header['CRVAL1'] - obs[0].header['CDELT1'] * (obs[0].header['CRPIX1'] - 1),
-                                  obs[0].header['CRVAL1'] + obs[0].header['CDELT1'] * (
-                                              obs[0].header['NAXIS1'] - obs[0].header['CRPIX1']),
-                                  num=obs[0].header['NAXIS1'])
-                lat = np.linspace(obs[0].header['CRVAL2'] - obs[0].header['CDELT2'] * (obs[0].header['CRPIX2'] - 1),
-                                  obs[0].header['CRVAL2'] + obs[0].header['CDELT2'] * (
-                                              obs[0].header['NAXIS2'] - obs[0].header['CRPIX2']),
-                                  num=obs[0].header['NAXIS2'])
-                vel = np.linspace(obs[0].header['CRVAL3'] - obs[0].header['CDELT3'] * (obs[0].header['CRPIX3'] - 1),
-                                  obs[0].header['CRVAL3'] + obs[0].header['CDELT3'] * (
-                                              obs[0].header['NAXIS3'] - obs[0].header['CRPIX3']),
-                                  num=obs[0].header['NAXIS3']) / 1e3
+                lon = np.linspace(obs[0].header['CRVAL1'] 
+                        - obs[0].header['CDELT1'] 
+                        * (obs[0].header['CRPIX1'] - 1),
+                        obs[0].header['CRVAL1'] + obs[0].header['CDELT1'] 
+                        * (obs[0].header['NAXIS1'] - obs[0].header['CRPIX1']),
+                        num=obs[0].header['NAXIS1'])
+                lat = np.linspace(obs[0].header['CRVAL2'] 
+                        - obs[0].header['CDELT2'] 
+                        * (obs[0].header['CRPIX2'] - 1),
+                        obs[0].header['CRVAL2'] + obs[0].header['CDELT2'] 
+                        * (obs[0].header['NAXIS2'] - obs[0].header['CRPIX2']),
+                        num=obs[0].header['NAXIS2'])
+                vel = np.linspace(obs[0].header['CRVAL3'] 
+                        - obs[0].header['CDELT3'] 
+                        * (obs[0].header['CRPIX3'] - 1),
+                        obs[0].header['CRVAL3'] + obs[0].header['CDELT3'] 
+                        * (obs[0].header['NAXIS3'] - obs[0].header['CRPIX3']),
+                        num=obs[0].header['NAXIS3']) / 1e3
 
                 # Copy header
                 temp_header['NAXIS'] = 3
@@ -629,7 +689,9 @@ def regrid_observations(path='/media/hpc_backup/yanitski/projects/pdr/observatio
 
                 if 'THOR' in file:
                     obs_data = np.swapaxes(obs[0].data, 0, 2)
-                    obs_data = (obs_data * 1.0492224297700237*0.21106**2/obs[0].header['BMAJ']/obs[0].header['BMAJ']) #Jy/beam->Tb
+                    obs_data = (obs_data * 1.0492224297700237*0.21106**2
+                            /obs[0].header['BMAJ']
+                            /obs[0].header['BMAJ']) #Jy/beam->Tb
                 elif '.pks.' in file:
                     obs_data = np.swapaxes(obs[0].data, 0, 2)
                 elif 'CGPS' in file:
@@ -640,9 +702,11 @@ def regrid_observations(path='/media/hpc_backup/yanitski/projects/pdr/observatio
                 else:
                     obs_data = np.swapaxes(obs[0].data[0], 0, 2)
                 obs_data = np.swapaxes(obs_data, 0, 1)
-                obs_data = spectres(target_vel, vel, np.nan_to_num(obs_data, nan=0), fill=0, verbose=False)
+                obs_data = spectres(target_vel, vel, np.nan_to_num(obs_data, 
+                    nan=0), fill=0, verbose=False)
                 obs_data = obs_data.reshape(-1, obs_data.shape[-1])
-                # obs_error = determine_rms(obs, mission=survey, file=file)[0].data.reshape(-1, 1)
+                # obs_error = determine_rms(obs, mission=survey, 
+                #         file=file)[0].data.reshape(-1, 1)
                 # i_nan = np.isnan(obs_error)
                 # print(np.nanmean(obs_error), np.mean(obs_error[~i_nan]))
                 # np.save('/home/yanitski/obs_error.npy', obs_error)
@@ -651,7 +715,8 @@ def regrid_observations(path='/media/hpc_backup/yanitski/projects/pdr/observatio
 
                 # Grid
                 lon_mesh, lat_mesh = np.meshgrid(lon, lat)
-                hi_gridder.grid(lon_mesh.flatten(), lat_mesh.flatten(), obs_data)
+                hi_gridder.grid(lon_mesh.flatten(), lat_mesh.flatten(), 
+                        obs_data)
                 hi_gridder_err.grid(lon_mesh.flatten(), lat_mesh.flatten(),
                                       np.full_like(lon_mesh.flatten(), 1.6))
 
@@ -670,18 +735,24 @@ def regrid_observations(path='/media/hpc_backup/yanitski/projects/pdr/observatio
                 obs = fits.open(path + survey + '/' + file)
 
                 # Get axes
-                lon = np.linspace(obs[0].header['CRVAL1'] - obs[0].header['CDELT1'] * (obs[0].header['CRPIX1'] - 1),
-                                  obs[0].header['CRVAL1'] + obs[0].header['CDELT1'] * (
-                                              obs[0].header['NAXIS1'] - obs[0].header['CRPIX1']),
-                                  num=obs[0].header['NAXIS1'])
-                lat = np.linspace(obs[0].header['CRVAL2'] - obs[0].header['CDELT2'] * (obs[0].header['CRPIX2'] - 1),
-                                  obs[0].header['CRVAL2'] + obs[0].header['CDELT2'] * (
-                                              obs[0].header['NAXIS2'] - obs[0].header['CRPIX2']),
-                                  num=obs[0].header['NAXIS2'])
-                vel = np.linspace(obs[0].header['CRVAL3'] - obs[0].header['CDELT3'] * (obs[0].header['CRPIX3'] - 1),
-                                  obs[0].header['CRVAL3'] + obs[0].header['CDELT3'] * (
-                                              obs[0].header['NAXIS3'] - obs[0].header['CRPIX3']),
-                                  num=obs[0].header['NAXIS3']) / 1e3
+                lon = np.linspace(obs[0].header['CRVAL1'] 
+                        - obs[0].header['CDELT1'] 
+                        * (obs[0].header['CRPIX1'] - 1),
+                        obs[0].header['CRVAL1'] + obs[0].header['CDELT1'] 
+                        * (obs[0].header['NAXIS1'] - obs[0].header['CRPIX1']),
+                        num=obs[0].header['NAXIS1'])
+                lat = np.linspace(obs[0].header['CRVAL2'] 
+                        - obs[0].header['CDELT2'] 
+                        * (obs[0].header['CRPIX2'] - 1),
+                        obs[0].header['CRVAL2'] + obs[0].header['CDELT2'] 
+                        * (obs[0].header['NAXIS2'] - obs[0].header['CRPIX2']),
+                        num=obs[0].header['NAXIS2'])
+                vel = np.linspace(obs[0].header['CRVAL3'] 
+                        - obs[0].header['CDELT3'] 
+                        * (obs[0].header['CRPIX3'] - 1),
+                        obs[0].header['CRVAL3'] + obs[0].header['CDELT3'] 
+                        * (obs[0].header['NAXIS3'] - obs[0].header['CRPIX3']),
+                        num=obs[0].header['NAXIS3']) / 1e3
 
                 # Copy header
                 temp_header['NAXIS'] = 3
@@ -696,9 +767,15 @@ def regrid_observations(path='/media/hpc_backup/yanitski/projects/pdr/observatio
 
                 obs_data = np.swapaxes(obs[0].data, 0, 2)
                 obs_data = np.swapaxes(obs_data, 0, 1)
-                obs_data = spectres(target_vel, vel, np.nan_to_num(obs_data, nan=0), fill=0, verbose=False)
+                obs_data = spectres(target_vel, vel, 
+                        np.nan_to_num(obs_data, nan=0), fill=0, verbose=False)
                 obs_data = obs_data.reshape(-1, obs_data.shape[-1])
-                obs_error = determine_rms(obs, mission=survey, file=file)[0].data.reshape(-1, 1)
+                obs_rms_error = determine_rms(obs, mission=survey, 
+                        file=file)[0].data.reshape(-1, 1)
+                if cal_error:
+                    obs_error = cal_error*obs_data + obs_rms_error
+                else:
+                    obs_error = obs_rms_error
                 i_nan = np.isnan(obs_error)
                 # print(np.nanmean(obs_error), np.mean(obs_error[~i_nan]))
                 # np.save('/home/yanitski/obs_error.npy', obs_error)
@@ -707,9 +784,11 @@ def regrid_observations(path='/media/hpc_backup/yanitski/projects/pdr/observatio
 
                 # Grid
                 lon_mesh, lat_mesh = np.meshgrid(lon, lat)
-                ico2_gridder.grid(lon_mesh.flatten(), lat_mesh.flatten(), obs_data)
-                ico2_gridder_err.grid(lon_mesh.flatten()[~i_nan.flatten()], lat_mesh.flatten()[~i_nan.flatten()],
-                                      obs_error[~i_nan])
+                ico2_gridder.grid(lon_mesh.flatten(), lat_mesh.flatten(), 
+                        obs_data)
+                ico2_gridder_err.grid(lon_mesh.flatten()[~i_nan.flatten()], 
+                        lat_mesh.flatten()[~i_nan.flatten()], 
+                        obs_error[~i_nan])
 
                 if vel.min() < min_vel:
                     min_vel = vel.min()
@@ -734,14 +813,18 @@ def regrid_observations(path='/media/hpc_backup/yanitski/projects/pdr/observatio
                     obs_t = obs[1].data['TEMP_ML']
                     obs_beta = obs[1].data['BETA_ML']
                     obs_gamma = 6.646e-34/1.38e-23/obs_t
-                    obs_data = obs_tkj #* (nu_planck/545e9)**(obs_beta+1) * (np.exp(obs_gamma*545e9)-1)/(np.exp(obs_gamma*nu_planck)-1)
+                    obs_data = obs_tkj 
+                    # * (nu_planck/545e9)**(obs_beta+1) 
+                    # * (np.exp(obs_gamma*545e9)-1)
+                    # / (np.exp(obs_gamma*nu_planck)-1)
                     obs_error = obs[1].data['I_RMS'] * 1e-6
                 elif 'GNILC' in file:
                     freq = int(file.split('F')[1].split('_')[0])
                     obs_data = obs[1].data['I'] * 32.56 / freq ** 2
                     obs_error = np.full_like(obs_data, obs_data.min())
                 else:
-                    print('File {} not available in survey {}'.format(file, survey))
+                    print('File {} not available in survey {}'.format(
+                        file, survey))
                     continue
 
                 nside = obs[1].header['NSIDE']
@@ -759,7 +842,8 @@ def regrid_observations(path='/media/hpc_backup/yanitski/projects/pdr/observatio
                 # Gridding parameters (split large files into multiple chuncks)
                 chunck = 1000000
                 n_chuncks = int(np.ceil(obs_data.size/chunck))
-                lat_mesh, lon_mesh = np.degrees(hp.pix2ang(nside=nside, ipix=np.arange(npix), nest=nest))
+                lat_mesh, lon_mesh = np.degrees(hp.pix2ang(nside=nside, 
+                    ipix=np.arange(npix), nest=nest))
                 lat_mesh = 90 - lat_mesh
 
                 # Grid
@@ -779,12 +863,17 @@ def regrid_observations(path='/media/hpc_backup/yanitski/projects/pdr/observatio
                 print('save file')
                 temp_header['TRANSL'] = transitions[0]
                 temp_header['TRANSI'] = '0'
-                grid_hdu = fits.PrimaryHDU(data=dust_gridder.get_datacube(), header=fits.Header(temp_header))
-                grid_hdu_err = fits.PrimaryHDU(data=dust_gridder_err.get_datacube(), header=fits.Header(twod_header))
-                grid_hdu.writeto(path + survey + '/regridded/temp/planck_' + file.split('_')[2] + '_regridded.fits',
-                                 overwrite=True, output_verify='ignore')
-                grid_hdu_err.writeto(path + survey + '/regridded/temp/planck_' + file.split('_')[2]
-                                     + '_regridded_error.fits', overwrite=True, output_verify='ignore')
+                grid_hdu = fits.PrimaryHDU(data=dust_gridder.get_datacube(), 
+                        header=fits.Header(temp_header))
+                grid_hdu_err = fits.PrimaryHDU(
+                        data=dust_gridder_err.get_datacube(), 
+                        header=fits.Header(twod_header))
+                grid_hdu.writeto(path + survey + '/regridded/temp/planck_' 
+                        + file.split('_')[2] + '_regridded.fits',
+                        overwrite=True, output_verify='ignore')
+                grid_hdu_err.writeto(path + survey + '/regridded/temp/planck_' 
+                        + file.split('_')[2] + '_regridded_error.fits', 
+                        overwrite=True, output_verify='ignore')
                 del obs_data
                 del obs_error
                 del obs
@@ -793,23 +882,34 @@ def regrid_observations(path='/media/hpc_backup/yanitski/projects/pdr/observatio
 
                 # Specify transitions
                 if 'HIGH' in file.split('.')[0]:
-                    transitions = ['CO 6', 'C 2', 'H2O f1113', 'N+ 1', 'H2O 2', 'C+ 1', 'O 1', 'Si', 'N+ 2', 'CH 2']   #'CO 6', 'O 2'
-                    transition_indeces = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9]   #0, 6
+                    transitions = ['CO 6', 'C 2', 'H2O f1113', 'N+ 1', 
+                            'H2O 2', 'C+ 1', 'O 1', 'Si', 'N+ 2', 'CH 2']   
+                    #'CO 6', 'O 2'
+                    transition_indeces = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9] #0, 6
                 elif 'HRES' in file.split('.')[0]:
-                    transitions = ['CO 1', 'CO 2', 'CO 3', 'O2 13', 'CO 4', 'C 1', 'H2O f557', 'CO 5']
+                    transitions = ['CO 1', 'CO 2', 'CO 3', 'O2 13', 
+                            'CO 4', 'C 1', 'H2O f557', 'CO 5']
                     transition_indeces = [0, 1, 2, 4, 5, 7]
                 elif 'LOWF' in file.split('.')[0]:
-                    transitions = ['CO 1', 'CO 2', 'CO 3', 'CO 4', 'C 1', 'CO 5']
+                    transitions = ['CO 1', 'CO 2', 'CO 3', 
+                            'CO 4', 'C 1', 'CO 5']
                     transition_indeces = [0, 1, 2, 4, 5, 7]
 
                 # Open data and convert to brightness temperature
                 obs = fits.open(path + survey + '/' + file)
-                linfrq = np.array([obs[0].header[key] for key in obs[0].header.keys()
+                linfrq = np.array([obs[0].header[key] for key in \
+                        obs[0].header.keys()
                                    if 'LINFRQ' in key])
-                obs_data = (np.nan_to_num(obs[1].data['LINE_FLU'], nan=0) * (2.9979**3) / (linfrq**3) / 2
-                            / 1.38 * 10 ** 8) #* np.pi**3*7**2/180**2  # corresponding beam size in sr
-                obs_error = (np.nan_to_num(obs[1].data['LINE_FL2'], nan=0) * (2.9979**3) / (linfrq**3) / 2
-                             / 1.38 * 10 ** 8) #* np.pi**3*7**2/180**2  # corresponding beam size in sr
+                obs_data = (np.nan_to_num(obs[1].data['LINE_FLU'], nan=0)
+                        * (2.9979**3) / (linfrq**3) / 2
+                        / 1.38 * 10 ** 8) 
+                #* np.pi**3*7**2/180**2  
+                # corresponding beam size in sr
+                obs_error = (np.nan_to_num(obs[1].data['LINE_FL2'], nan=0) 
+                        * (2.9979**3) / (linfrq**3) / 2
+                        / 1.38 * 10 ** 8) 
+                #* np.pi**3*7**2/180**2  
+                # corresponding beam size in sr
 
                 # Get axes
                 lon_mesh = obs[1].data['GAL_LON']
@@ -834,15 +934,21 @@ def regrid_observations(path='/media/hpc_backup/yanitski/projects/pdr/observatio
                 gridder_err.set_kernel(*target_kernel)
                 gridder_err.grid(lon_mesh, lat_mesh, obs_error)
                 temp_header['TRANSL'] = ', '.join(transitions)
-                temp_header['TRANSI'] = ', '.join('{}'.format(_) for _ in np.arange(len(transitions)))
-                grid_hdu = fits.PrimaryHDU(data=gridder.get_datacube(), header=fits.Header(temp_header))
-                grid_hdu_err = fits.PrimaryHDU(data=gridder_err.get_datacube(), header=fits.Header(temp_header))
-                grid_hdu.writeto(path + survey + '/regridded/temp/' + file.replace('.FITS', '_regridded.fits'),
-                                 overwrite=True, output_verify='ignore')
-                grid_hdu_err.writeto(path + survey + '/regridded/temp/' + file.replace('.FITS', '_regridded_error.fits'),
-                                     overwrite=True, output_verify='ignore')
+                temp_header['TRANSI'] = ', '.join('{}'.format(_) for 
+                        _ in np.arange(len(transitions)))
+                grid_hdu = fits.PrimaryHDU(data=gridder.get_datacube(), 
+                        header=fits.Header(temp_header))
+                grid_hdu_err = fits.PrimaryHDU(data=gridder_err.get_datacube(), 
+                        header=fits.Header(temp_header))
+                grid_hdu.writeto(path + survey + '/regridded/temp/' 
+                        + file.replace('.FITS', '_regridded.fits'),
+                        overwrite=True, output_verify='ignore')
+                grid_hdu_err.writeto(path + survey + '/regridded/temp/' 
+                        + file.replace('.FITS', '_regridded_error.fits'),
+                        overwrite=True, output_verify='ignore')
             elif survey == 'COBE-DIRBE':
-                if file == 'DIRBE_SKYMAP_INFO.FITS' or file == 'additional_files':
+                if file == 'DIRBE_SKYMAP_INFO.FITS' or \
+                        file == 'additional_files':
                     continue
                 print(file)
 
@@ -852,12 +958,14 @@ def regrid_observations(path='/media/hpc_backup/yanitski/projects/pdr/observatio
 
                 # Open data and convert to brightness temperature
                 obs = fits.open(path + survey + '/' + file)
-                pixcoord = fits.open(path + survey + '/additional_files/DIRBE_SKYMAP_INFO.FITS')
-                linfrq = 2.9979e5 / 240  # convert the relevant DIRBE band to GHz
-                obs_data = (np.nan_to_num([obs[1].data['Resid']], nan=0).T * (2.9979**2) / (linfrq**2) / 2
-                            / 1.38 * 10)
-                obs_error = (np.nan_to_num([obs[1].data['StdDev']], nan=0).T * (2.9979**2) / (linfrq**2) / 2
-                             / 1.38 * 10) 
+                pixcoord = fits.open(path + survey + 
+                        '/additional_files/DIRBE_SKYMAP_INFO.FITS')
+                linfrq = 2.9979e5 / 240  
+                # convert the relevant DIRBE band to GHz
+                obs_data = (np.nan_to_num([obs[1].data['Resid']], nan=0).T 
+                        * (2.9979**2) / (linfrq**2) / 2 / 1.38 * 10)
+                obs_error = (np.nan_to_num([obs[1].data['StdDev']], nan=0).T 
+                        * (2.9979**2) / (linfrq**2) / 2 / 1.38 * 10) 
 
                 # Get axes
                 lon_mesh = pixcoord[1].data['GLON-CSC']
@@ -883,71 +991,110 @@ def regrid_observations(path='/media/hpc_backup/yanitski/projects/pdr/observatio
                 gridder_err.set_kernel(*target_kernel)
                 gridder_err.grid(lon_mesh, lat_mesh, obs_error.flatten())
                 temp_header['TRANSL'] = ', '.join(transitions)
-                temp_header['TRANSI'] = ', '.join('{}'.format(_) for _ in np.arange(len(transitions)))
-                grid_hdu = fits.PrimaryHDU(data=gridder.get_datacube(), header=fits.Header(temp_header))
-                grid_hdu_err = fits.PrimaryHDU(data=gridder_err.get_datacube(), header=fits.Header(temp_header))
-                grid_hdu.writeto(path + survey + '/regridded/temp/' + file.replace('.FITS', '_regridded.fits'),
-                                 overwrite=True, output_verify='ignore')
-                grid_hdu_err.writeto(path + survey + '/regridded/temp/' + file.replace('.FITS', '_regridded_error.fits'),
-                                     overwrite=True, output_verify='ignore')
+                temp_header['TRANSI'] = ', '.join('{}'.format(_) for 
+                        _ in np.arange(len(transitions)))
+                grid_hdu = fits.PrimaryHDU(data=gridder.get_datacube(), 
+                        header=fits.Header(temp_header))
+                grid_hdu_err = fits.PrimaryHDU(data=gridder_err.get_datacube(), 
+                        header=fits.Header(temp_header))
+                grid_hdu.writeto(path + survey + '/regridded/temp/' 
+                        + file.replace('.FITS', '_regridded.fits'),
+                        overwrite=True, output_verify='ignore')
+                grid_hdu_err.writeto(path + survey + '/regridded/temp/' 
+                        + file.replace('.FITS', '_regridded_error.fits'),
+                        overwrite=True, output_verify='ignore')
             else:
-                # print('The specified survey {} is unavailable. Please add it to ´model selection´.'.format(survey))
+                # print('The specified survey {} is unavailable. 
+                # Please add it to ´model selection´.'.format(survey))
                 continue
 
         if CO1:
             temp_header['TRANSL'] = 'CO 1'
             temp_header['TRANSI'] = '0'
-            grid_hdu = fits.PrimaryHDU(data=co1_gridder.get_datacube(), header=fits.Header(temp_header))
-            grid_hdu_err = fits.PrimaryHDU(data=co1_gridder_err.get_datacube(), header=fits.Header(twod_header))
+            grid_hdu = fits.PrimaryHDU(data=co1_gridder.get_datacube(), 
+                    header=fits.Header(temp_header))
+            grid_hdu_err = fits.PrimaryHDU(data=co1_gridder_err.get_datacube(), 
+                    header=fits.Header(twod_header))
             grid_hdu.writeto(path + survey + '/regridded/temp/' +
-                             'co1_test_regridded.fits', overwrite=True, output_verify='ignore')
+                    'co1_test_regridded.fits', overwrite=True, 
+                    output_verify='ignore')
             grid_hdu_err.writeto(path + survey + '/regridded/temp/' +
-                                 'co1_test_regridded_error.fits', overwrite=True, output_verify='ignore')
+                    'co1_test_regridded_error.fits', overwrite=True, 
+                    output_verify='ignore')
         if CO2:
             temp_header['TRANSL'] = 'CO 2'
             temp_header['TRANSI'] = '0'
-            grid_hdu = fits.PrimaryHDU(data=co2_gridder.get_datacube(), header=fits.Header(temp_header))
-            grid_hdu_err = fits.PrimaryHDU(data=co2_gridder_err.get_datacube(), header=fits.Header(twod_header))
+            grid_hdu = fits.PrimaryHDU(data=co2_gridder.get_datacube(), 
+                    header=fits.Header(temp_header))
+            grid_hdu_err = fits.PrimaryHDU(data=co2_gridder_err.get_datacube(), 
+                    header=fits.Header(twod_header))
             grid_hdu.writeto(path + survey + '/regridded/temp/' +
-                             'co2_test_regridded.fits', overwrite=True, output_verify='ignore')
+                    'co2_test_regridded.fits', overwrite=True, 
+                    output_verify='ignore')
             grid_hdu_err.writeto(path + survey + '/regridded/temp/' +
-                                 'co2_test_regridded_error.fits', overwrite=True, output_verify='ignore')
+                    'co2_test_regridded_error.fits', overwrite=True,
+                    output_verify='ignore')
         if iCO1:
             temp_header['TRANSL'] = '13CO 1'
             temp_header['TRANSI'] = '0'
-            grid_hdu = fits.PrimaryHDU(data=ico1_gridder.get_datacube(), header=fits.Header(temp_header))
-            grid_hdu_err = fits.PrimaryHDU(data=ico1_gridder_err.get_datacube(), header=fits.Header(twod_header))
+            grid_hdu = fits.PrimaryHDU(data=ico1_gridder.get_datacube(), 
+                    header=fits.Header(temp_header))
+            grid_hdu_err = fits.PrimaryHDU(
+                    data=ico1_gridder_err.get_datacube(), 
+                    header=fits.Header(twod_header))
             grid_hdu.writeto(path + survey + '/regridded/temp/' +
-                             '13co1_test_regridded.fits', overwrite=True, output_verify='ignore')
+                    '13co1_test_regridded.fits', overwrite=True, 
+                    output_verify='ignore')
             grid_hdu_err.writeto(path + survey + '/regridded/temp/' +
-                                 '13co1_test_regridded_error.fits', overwrite=True, output_verify='ignore')
+                    '13co1_test_regridded_error.fits', overwrite=True, 
+                    output_verify='ignore')
         if iCO2:
             temp_header['TRANSL'] = '13CO 2'
             temp_header['TRANSI'] = '0'
-            grid_hdu = fits.PrimaryHDU(data=ico2_gridder.get_datacube(), header=fits.Header(temp_header))
-            grid_hdu_err = fits.PrimaryHDU(data=ico2_gridder_err.get_datacube(), header=fits.Header(twod_header))
+            grid_hdu = fits.PrimaryHDU(data=ico2_gridder.get_datacube(), 
+                    header=fits.Header(temp_header))
+            grid_hdu_err = fits.PrimaryHDU(
+                    data=ico2_gridder_err.get_datacube(), 
+                    header=fits.Header(twod_header))
             grid_hdu.writeto(path + survey + '/regridded/temp/' +
-                             '13co2_test_regridded.fits', overwrite=True, output_verify='ignore')
-            grid_hdu_err.writeto(path + survey + '/regridded/temp/' +
-                                 '13co2_test_regridded_error.fits', overwrite=True, output_verify='ignore')
+                    '13co2_test_regridded.fits', overwrite=True, 
+                    output_verify='ignore')
+            if cal_error:
+                grid_hdu_err.writeto(path + survey + '/regridded/temp/' + 
+                        '13co2_test_regridded_complete_error.fits', 
+                        overwrite=True, output_verify='ignore')
+            else:
+                grid_hdu_err.writeto(path + survey + '/regridded/temp/' + 
+                        '13co2_test_regridded_error.fits', overwrite=True, 
+                        output_verify='ignore')
         if hi:
             temp_header['TRANSL'] = 'HI'
             temp_header['TRANSI'] = '0'
-            grid_hdu = fits.PrimaryHDU(data=hi_gridder.get_datacube(), header=fits.Header(temp_header))
-            grid_hdu_err = fits.PrimaryHDU(data=hi_gridder_err.get_datacube(), header=fits.Header(twod_header))
+            grid_hdu = fits.PrimaryHDU(data=hi_gridder.get_datacube(), 
+                    header=fits.Header(temp_header))
+            grid_hdu_err = fits.PrimaryHDU(data=hi_gridder_err.get_datacube(), 
+                    header=fits.Header(twod_header))
             grid_hdu.writeto(path + survey + '/regridded/temp/' +
-                             'hi_test_regridded.fits', overwrite=True, output_verify='ignore')
+                    'hi_test_regridded.fits', overwrite=True, 
+                    output_verify='ignore')
             grid_hdu_err.writeto(path + survey + '/regridded/temp/' +
-                                 'hi_test_regridded_error.fits', overwrite=True, output_verify='ignore')
+                    'hi_test_regridded_error.fits', overwrite=True, 
+                    output_verify='ignore')
         # if dust:
         #     temp_header['TRANSL'] = 'Dust'
         #     temp_header['TRANSI'] = '0'
-        #     grid_hdu = fits.PrimaryHDU(data=dust_gridder.get_datacube(), header=fits.Header(temp_header))
-        #     grid_hdu_err = fits.PrimaryHDU(data=dust_gridder_err.get_datacube(), header=fits.Header(twod_header))
-        #     grid_hdu.writeto(path + survey + '/regridded/temp/planck_dust_' + file + '_regridded.fits',
-        #                      overwrite=True, output_verify='ignore')
-        #     grid_hdu_err.writeto(path + survey + '/regridded/temp/' + 'planck_dust_regridded_error.fits',
-        #                          overwrite=True, output_verify='ignore')
+        #     grid_hdu = fits.PrimaryHDU(data=dust_gridder.get_datacube(), 
+        #             header=fits.Header(temp_header))
+        #     grid_hdu_err = fits.PrimaryHDU(
+        #             data=dust_gridder_err.get_datacube(), 
+        #             header=fits.Header(twod_header))
+        #     grid_hdu.writeto(path + survey 
+        #             + '/regridded/temp/planck_dust_' + file 
+        #             + '_regridded.fits',
+        #             overwrite=True, output_verify='ignore')
+        #     grid_hdu_err.writeto(path + survey + '/regridded/temp/' 
+        #             + 'planck_dust_regridded_error.fits',
+        #             overwrite=True, output_verify='ignore')
 
         CO1 = False
         CO2 = False
@@ -3276,7 +3423,10 @@ def plot_comparison(path='/mnt/hpc_backup/yanitski/projects/pdr/KT3_history/Milk
                         for _ in range(len(param_log_likelihood)):
                             param_log_likelihood[_][param_log_likelihood[_] == 0] = np.nan
                             param_log_likelihood[_][param_log_likelihood[_] >= stat_lim] = np.nan
-                        log_likelihood[i, j] = log_likelihood[i, j] + np.nansum(param_log_likelihood)
+                        if likelihood:
+                            log_likelihood[i, j] = log_likelihood[i, j] + np.nansum(param_log_likelihood)
+                        else:
+                            log_likelihood[i, j] = log_likelihood[i, j] + np.nanprod(param_log_likelihood)
                         for t in range(len(transitions)):
                             transition_log_likelihood[t][i, j] = transition_log_likelihood[t][i, j] \
                                                                  + np.nansum(param_log_likelihood[t])

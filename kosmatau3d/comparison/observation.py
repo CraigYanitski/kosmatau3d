@@ -72,10 +72,12 @@ class Observation(object):
 
         self.obs = []
         self.obs_error = []
+        self.obs_error_complete = []
         self.obs_error_conf = []
         self.obs_header = []
         self.obs_data = []
         self.obs_error_data = []
+        self.obs_error_complete = []
         self.obs_error_conf_data = []
         self.obs_lon = []
         self.obs_lat = []
@@ -149,8 +151,16 @@ class Observation(object):
                 self.obs_data.append(self.obs[-1][0].data)
                 self.obs_error.append(fits.open(full_path + f.replace('.fits', '_error.fits')))
                 self.obs_error_data.append(self.obs_error[-1][0].data)
+                if os.path.exists(full_path + f.replace('.fits', '_complete_error.fits')):
+                    self.obs_error_complete.append(fits.open(
+                        full_path + f.replace('.fits', '_complete_error.fits')))
+                    self.obs_error_complete_data.append(self.obs_error_complete[-1][0].data)
+                else:
+                    self.obs_error_complete.append([])
+                    self.obs_error_complete_data.append([])
                 if os.path.exists(full_path + f.replace('.fits', '_error_conf.fits')):
-                    self.obs_error_conf.append(fits.open(full_path + f.replace('.fits', '_error_conf.fits')))
+                    self.obs_error_conf.append(fits.open(
+                        full_path + f.replace('.fits', '_error_conf.fits')))
                     self.obs_error_conf_data.append(self.obs_error_conf[-1][0].data)
                 else:
                     self.obs_error_conf.append(None)
