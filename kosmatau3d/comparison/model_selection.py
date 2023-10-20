@@ -278,7 +278,7 @@ def determine_rms(hdul, mission='', file=''):
 def regrid_observations(path='/media/hpc_backup/yanitski/projects/' 
         + 'pdr/observational_data/MilkyWay/', 
         mission=None, nu_planck=713e9, target_header=None, target_kernel=None, 
-        output_file='obs_regridded.fits', cal_error=0):
+        output_file='obs_regridded.fits', cal_error=0, sig_th=3):
     '''
     This function will regrid the specified mission data to the specified 
     target header. 
@@ -773,7 +773,10 @@ def regrid_observations(path='/media/hpc_backup/yanitski/projects/'
                 obs_rms_error = determine_rms(obs, mission=survey, 
                         file=file)[0].data.reshape(-1, 1)
                 if cal_error:
-                    obs_error = cal_error*obs_data + obs_rms_error
+                    idx_sig = obs_data > sig_th*obs_rms_error
+                    obs_error = obs_rms_error
+                    obs_error[idx_sig] = cal_error*obs_data[idx_sig] \
+                            + obs_error[idx_sig]
                 else:
                     obs_error = obs_rms_error
                 i_nan = np.isnan(obs_error)
@@ -786,9 +789,13 @@ def regrid_observations(path='/media/hpc_backup/yanitski/projects/'
                 lon_mesh, lat_mesh = np.meshgrid(lon, lat)
                 ico2_gridder.grid(lon_mesh.flatten(), lat_mesh.flatten(), 
                         obs_data)
-                ico2_gridder_err.grid(lon_mesh.flatten()[~i_nan.flatten()], 
-                        lat_mesh.flatten()[~i_nan.flatten()], 
-                        obs_error[~i_nan])
+                if cal_error:
+                    ico2_gridder_err.grid(lon_mesh.flatten(), 
+                            lat_mesh.flatten(), obs_error)
+                else:
+                    ico2_gridder_err.grid(lon_mesh.flatten()[~i_nan.flatten()], 
+                            lat_mesh.flatten()[~i_nan.flatten()], 
+                            obs_error[~i_nan])
 
                 if vel.min() < min_vel:
                     min_vel = vel.min()
