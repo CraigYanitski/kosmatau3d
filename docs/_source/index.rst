@@ -3,11 +3,14 @@
    You can adapt this file completely to your liking, but it should at least
    contain the root `toctree` directive.
 
-The documentation of a clumpy PDR model!
+The documentation of a clumpy PDR model.
 ========================================
 
-:code:`kosmatau3d` is a clumpy photo-dissociation region (PDR) model built on the KOSMA-:math:`\tau` PDR model from the Universität zu Köln and Tel Aviv University.
-It will soon be able to download its required data from the InterStellar Medium DataBase (ISMDB) hosted at the Observatoire de Paris-Meudon.
+:code:`kosmatau3d` is a clumpy photo-dissociation region (PDR) model built on 
+the KOSMA-:math:`\tau` PDR model from the Universität zu Köln and Tel Aviv 
+University.
+It will soon be able to download its required data from the InterStellar Medium 
+DataBase (ISMDB) hosted at the Observatoire de Paris-Meudon.
 
 .. note::
    This documentation and the corresponding code are under active development.
