@@ -1,6 +1,7 @@
 '''
 This subsubpackage contains functions to regrid and resample observational data,
-compute error, compare to grids of :code:`kosmatau3d` models, and plot the results.
+compute error, compare to grids of :code:`kosmatau3d` models, and plot the 
+results.
 '''
 
 import cygrid
@@ -144,10 +145,12 @@ sgps_rms_window = {
     'g348.hi.fits' : 1.9,
     'g353.hi.fits' : 2.6,
 }
-cobe_idl_linfrq = np.array([115.3, 230.5, 345.8, 424.8, 461.0, 492.2, 556.9, 576.3, 691.5, 808.1,
-                             1113,  1460,  2226,  1901,  2060,  2311,  2459,  2589, 921.8])
-cobe_idl_transitions = np.array(['CO 1',       'CO 2', 'CO 3', 'CO 4', 'C 1', 'CO 5',
-                                 'CO 6', 'CO 7 + C 2', 'C+ 1',  'O 1', 'CO 8'])
+cobe_idl_linfrq = np.array([
+    115.3, 230.5, 345.8, 424.8, 461.0, 492.2, 556.9, 576.3, 691.5, 808.1,
+     1113,  1460,  2226,  1901,  2060,  2311,  2459,  2589, 921.8])
+cobe_idl_transitions = np.array([
+    'CO 1',       'CO 2', 'CO 3', 'CO 4',  'C 1', 'CO 5',
+    'CO 6', 'CO 7 + C 2', 'C+ 1',  'O 1', 'CO 8'])
 
 
 def determine_rms(hdul, mission='', file=''):
@@ -2007,9 +2010,10 @@ def model_selection_old(path='/mnt/hpc_backup/yanitski/projects/pdr/KT3_history/
     return
 
 
-def model_selection_new(path='/mnt/yanitski_backup/yanitski/projects/pdr/KT3_history/MilkyWay', missions=None, lat=None, f_idx=0, 
-                        model_dir='', model_param=[[]], comp_type='pv', log_comp=True, cmap='gist_ncar',
-                        spectra=True, PLOT=False, PRINT=False, debug=False):
+def model_selection_new(path='/mnt/yanitski_backup/yanitski/projects/pdr/KT3_history/MilkyWay', 
+        missions=None, lat=None, f_idx=0, error_cal=0, model_dir='', 
+        model_param=[[]], comp_type='pv', log_comp=True, cmap='gist_ncar', 
+        spectra=True, PLOT=False, PRINT=False, debug=False):
     '''
     Like `model_selection_old`, but using `SyntheticModel()` and `Observation` instances.
     '''
@@ -2246,7 +2250,9 @@ def model_selection_new(path='/mnt/yanitski_backup/yanitski/projects/pdr/KT3_his
                             ix = np.ix_(np.arange(vel_model.size), i_lat_model, i_lon_model)
                             ix_obs = np.ix_(np.arange(vel_model.size), i_lat_obs, i_lon_model)
                             model_data = model.get_species_intensity(transition=transition, include_dust=False, integrated=False)
-                            obs_error_final = np.sqrt(obs_error**2+obs_error_conf**2)[ix_obs][ix]
+                            obs_error_final = np.sqrt(obs_error**2
+                                    +obs_error_conf**2
+                                    +(obs_data*error_cal)**2)[ix_obs][ix]
                     elif transition in model.dust:
                         ix = np.ix_(i_lat_model, i_lon_model)
                         ix_obs = np.ix_(i_lat_obs, i_lon_model)

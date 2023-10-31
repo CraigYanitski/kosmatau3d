@@ -8,7 +8,7 @@ associated emissivity and absorption.
 #import numpy as np
 #from numba import jit_module
 
-# from .combination import *
+from .combination import *
 from kosmatau3d.models import constants
 
 clump_combination = [[] for _ in range(len(constants.clump_mass_number))]

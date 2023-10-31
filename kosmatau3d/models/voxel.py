@@ -497,8 +497,8 @@ class Voxel(object):
         )
         # print('  masspoints:', (time()-t0)/60)
         ensemble.initialise(
-            ensembledispersion=self.__ensemble_dispersion,
-            ensemblemass=self.__ensemble_mass,
+            ensemble_dispersion=self.__ensemble_dispersion,
+            ensemble_mass=self.__ensemble_mass,
             suggested_calc=self.suggested_calc,
         )
         # print('  ensemble:', (time()-t0)/60)

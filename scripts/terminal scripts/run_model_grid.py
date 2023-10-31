@@ -345,7 +345,7 @@ parameters = {
               'interclump_idx': (False, True), #True
               'interclump_wnm_idx': (False, False), #True
               'interclump_density': 19.11, 
-              'disp_gmc': 1.1*40**0.38, #0.001,
+              'disp_gmc': 0.001, #1.1*40**0.38, #0.001,
               'velocity_range': [-350, 350],
               'velocity_number': 701,
 

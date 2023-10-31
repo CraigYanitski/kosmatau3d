@@ -6,8 +6,8 @@ from astropy.io import fits
 from copy import copy, deepcopy
 from scipy.io import readsav
 
-cobe_idl_linfrq = np.array([115.3, 230.5, 345.8, 424.8, 461.0, 492.2, 556.9, 576.3, 691.5, 808.1,
-                            1113, 1460, 2226, 1901, 2060, 2311, 2459, 2589, 921.8])
+cobe_idl_linfrq = np.array([115.3, 230.5, 345.8, 424.8, 461.0, 492.2, 556.9, 
+    576.3, 691.5, 808.1, 1113, 1460, 2226, 1901, 2060, 2311, 2459, 2589, 921.8])
 # cobe_idl_transitions = np.array(['CO 1', 'CO 2', 'CO 3', 'CO 4', 'C 3', 'CO 5',
 #                                  'CO 6', 'CO 7 + C 1', 'C+ 1', 'O 1', 'CO 8'])
 cobe_idl_transitions = np.array(['CO 1', 'CO 2', 'CO 3', 'CO 4', 'C 1', 'CO 5',
@@ -20,8 +20,8 @@ class Observation(object):
     '''
     This is an object to load individual observations. This is merely for
     the convenience of opening all of the observations in a consistent manner.
-    There is an optional argument when initialising to set a base directory, which
-    makes it easier to load multiple models in succession.
+    There is an optional argument when initialising to set a base directory, 
+    which makes it easier to load multiple models in succession.
     '''
   
     def __init__(self, base_dir='', regridded_dir='/regridded/temp/'):
@@ -31,8 +31,10 @@ class Observation(object):
         `files` can be modified again when loading a model, but for now it
         has the default filenames created with `kosmatau3d`.
   
-        :param base_dir: the base directory to use when loading observations. Default: `''`.
-        :param regridded_dir: the directory to use to load regridded observations. Default: `'/regridded/temp/'`.
+        :param base_dir: the base directory to use when loading observations. 
+        Default: `''`.
+        :param regridded_dir: the directory to use to load regridded 
+        observations. Default: `'/regridded/temp/'`.
   
   
         '''
@@ -77,7 +79,7 @@ class Observation(object):
         self.obs_header = []
         self.obs_data = []
         self.obs_error_data = []
-        self.obs_error_complete = []
+        self.obs_error_complete_data = []
         self.obs_error_conf_data = []
         self.obs_lon = []
         self.obs_lat = []
@@ -106,20 +108,25 @@ class Observation(object):
         if os.path.exists(self.base_dir + directory + self.survey):
             self.directory = directory
         else:
-            print(f'ERROR: Survey {self.base_dir + directory + survey} does not exist. Ensure '
-                  + 'that base_dir was initialised correctly and that you have the correct survey')
+            print(f'ERROR: Survey {self.base_dir + directory + survey} does ' 
+                    + 'not exist. Ensure that base_dir was initialised '
+                    + 'correctly and that you have the correct survey')
             return
 
-        if os.path.exists(self.base_dir + self.directory + self.survey + self.regridded_dir):
-            full_path = self.base_dir + self.directory + self.survey + self.regridded_dir
-            spectra_path = self.base_dir + self.directory + self.survey + '/spectra/'
+        if os.path.exists(self.base_dir + self.directory 
+                + self.survey + self.regridded_dir):
+            full_path = self.base_dir + self.directory + self.survey \
+                    + self.regridded_dir
+            spectra_path = self.base_dir + self.directory + self.survey \
+                    + '/spectra/'
         else:
-            print('ERROR: Either the survey has not been regridded or the directory differs from '
-                  + f'{self.regridded_dir}.')
+            print('ERROR: Either the survey has not been regridded or the ' 
+                    + f'directory differs from {self.regridded_dir}.')
             return
 
         self.files = list(f.name for f in os.scandir(full_path) 
-                          if (f.is_file() and not '_error' in f.name))
+                if (f.is_file() and not 
+                    ('_error' in f.name or '.fuse_hidden' in f.name)))
 
         self.reset_attributes()
 
@@ -132,14 +139,17 @@ class Observation(object):
                 self.obs_i_iid.append(deepcopy(cobe_idl_indeces))
                 self.obs_frequency.append(deepcopy(cobe_idl_linfrq)*1e9)
                 self.obs_wavelength.append(299792458/self.obs_frequency[-1])
-                self.obs_data.append(self.obs[-1]['amplitude'] * (2.9979**3) / ((self.obs_frequency[-1]/1e9)**3*2*1.38) * 10**8)
+                self.obs_data.append(self.obs[-1]['amplitude'] * (2.9979**3) 
+                        / ((self.obs_frequency[-1]/1e9)**3*2*1.38) * 10**8)
                 self.obs_error.append(None)
-                self.obs_error_data.append(self.obs[-1]['sigma'] * (2.9979**3) / ((self.obs_frequency[-1]/1e9)**3*2*1.38) * 10**8)
+                self.obs_error_data.append(self.obs[-1]['sigma'] * (2.9979**3) 
+                        / ((self.obs_frequency[-1]/1e9)**3*2*1.38) * 10**8)
                 error_conf = np.zeros_like(self.obs_data[-1])
                 for _ in range(int(np.floor(self.obs_data[-1].shape[0]/2))):
                     idx = np.array([_, -1-_])
                     err = self.obs_data[-1][idx, :]
-                    error_conf[idx, :] = np.std(err-np.mean(err, axis=0), axis=0, ddof=1)/np.sqrt(err.shape[0])
+                    error_conf[idx, :] = np.std(err-np.mean(err, axis=0), 
+                            axis=0, ddof=1)/np.sqrt(err.shape[0])
                 self.obs_error_conf.append(None)
                 self.obs_error_conf_data.append(deepcopy(error_conf))
                 self.obs_lon.append(deepcopy(self.obs[-1]['long']))
@@ -149,82 +159,99 @@ class Observation(object):
             else:#if '.fits' in f:
                 self.obs.append(fits.open(full_path + f))
                 self.obs_data.append(self.obs[-1][0].data)
-                self.obs_error.append(fits.open(full_path + f.replace('.fits', '_error.fits')))
+                self.obs_error.append(fits.open(full_path 
+                    + f.replace('.fits', '_error.fits')))
                 self.obs_error_data.append(self.obs_error[-1][0].data)
-                if os.path.exists(full_path + f.replace('.fits', '_complete_error.fits')):
-                    self.obs_error_complete.append(fits.open(
-                        full_path + f.replace('.fits', '_complete_error.fits')))
-                    self.obs_error_complete_data.append(self.obs_error_complete[-1][0].data)
+                if os.path.exists(full_path 
+                        + f.replace('.fits', '_complete_error.fits')):
+                    self.obs_error_complete.append(fits.open(full_path 
+                        + f.replace('.fits', '_complete_error.fits')))
+                    self.obs_error_complete_data.append(
+                            self.obs_error_complete[-1][0].data)
                 else:
                     self.obs_error_complete.append([])
                     self.obs_error_complete_data.append([])
-                if os.path.exists(full_path + f.replace('.fits', '_error_conf.fits')):
-                    self.obs_error_conf.append(fits.open(
-                        full_path + f.replace('.fits', '_error_conf.fits')))
-                    self.obs_error_conf_data.append(self.obs_error_conf[-1][0].data)
+                if os.path.exists(full_path 
+                        + f.replace('.fits', '_error_conf.fits')):
+                    self.obs_error_conf.append(fits.open(full_path 
+                        + f.replace('.fits', '_error_conf.fits')))
+                    self.obs_error_conf_data.append(
+                            self.obs_error_conf[-1][0].data)
                 else:
                     self.obs_error_conf.append(None)
                     self.obs_error_conf_data.append(0)
                 self.obs_header.append(self.obs[-1][0].header)
-                self.obs_lon.append(np.linspace(self.obs_header[-1]['CRVAL1']
-                                                - self.obs_header[-1]['CDELT1']
-                                                *(self.obs_header[-1]['CRPIX1']-1),
-                                                self.obs_header[-1]['CRVAL1'] 
-                                                + self.obs_header[-1]['CDELT1']
-                                                *(self.obs_header[-1]['NAXIS1']
-                                                  -self.obs_header[-1]['CRPIX1']),
-                                                num=self.obs_header[-1]['NAXIS1']))
-                self.obs_lat.append(np.linspace(self.obs_header[-1]['CRVAL2']
-                                                - self.obs_header[-1]['CDELT2']
-                                                *(self.obs_header[-1]['CRPIX2']-1),
-                                                self.obs_header[-1]['CRVAL2'] 
-                                                + self.obs_header[-1]['CDELT2']
-                                                *(self.obs_header[-1]['NAXIS2']
-                                                  -self.obs_header[-1]['CRPIX2']),
-                                                num=self.obs_header[-1]['NAXIS2']))
-                if self.obs_header[-1]['NAXIS'] == 3 and not self.survey in missions_2d:
-                    self.obs_vel.append(np.linspace((self.obs_header[-1]['CRVAL3']
-                                                     - self.obs_header[-1]['CDELT3']
-                                                     *(self.obs_header[-1]['CRPIX3']-1)),
-                                                    (self.obs_header[-1]['CRVAL3'] 
-                                                     + self.obs_header[-1]['CDELT3']
-                                                     *(self.obs_header[-1]['NAXIS3']
-                                                       -self.obs_header[-1]['CRPIX3'])),
-                                                    num=self.obs_header[-1]['NAXIS3']))
+                self.obs_lon.append(np.linspace(
+                    self.obs_header[-1]['CRVAL1'] 
+                    - self.obs_header[-1]['CDELT1']
+                    *(self.obs_header[-1]['CRPIX1']-1),
+                    self.obs_header[-1]['CRVAL1'] 
+                    + self.obs_header[-1]['CDELT1']
+                    *(self.obs_header[-1]['NAXIS1']
+                        -self.obs_header[-1]['CRPIX1']),
+                    num=self.obs_header[-1]['NAXIS1']))
+                self.obs_lat.append(np.linspace(
+                    self.obs_header[-1]['CRVAL2']
+                    - self.obs_header[-1]['CDELT2']
+                    *(self.obs_header[-1]['CRPIX2']-1),
+                    self.obs_header[-1]['CRVAL2'] 
+                    + self.obs_header[-1]['CDELT2']
+                    *(self.obs_header[-1]['NAXIS2']
+                        -self.obs_header[-1]['CRPIX2']),
+                    num=self.obs_header[-1]['NAXIS2']))
+                if self.obs_header[-1]['NAXIS'] == 3 and \
+                        not self.survey in missions_2d:
+                    self.obs_vel.append(np.linspace((
+                        self.obs_header[-1]['CRVAL3']
+                        - self.obs_header[-1]['CDELT3']
+                        *(self.obs_header[-1]['CRPIX3']-1)),
+                        (self.obs_header[-1]['CRVAL3'] 
+                        + self.obs_header[-1]['CDELT3']
+                        *(self.obs_header[-1]['NAXIS3']
+                            -self.obs_header[-1]['CRPIX3'])),
+                        num=self.obs_header[-1]['NAXIS3']))
                 else:
                     self.obs_vel.append([None])
 
                 self.obs_frequency.append([None])
                 self.obs_wavelength.append([None])
-                self.obs_iid.append(np.array(self.obs_header[-1]['TRANSL'].split(', ')))
-                self.obs_i_iid.append(np.array(self.obs_header[-1]['TRANSI'].split(', ')).astype(int))
+                self.obs_iid.append(np.array(
+                    self.obs_header[-1]['TRANSL'].split(', ')))
+                self.obs_i_iid.append(np.array(
+                    self.obs_header[-1]['TRANSI'].split(', ')).astype(int))
 
         if os.path.exists(spectra_path):
             self.files.append(self.survey + '_resampled_conf.csv')
             self.obs_iid.append(np.array(['C+ 1']))
             self.obs_i_iid.append(np.array([0]))
-            self.obs_spectra = pd.read_csv(spectra_path + self.survey + '_combined.csv')
+            self.obs_spectra = pd.read_csv(spectra_path + self.survey 
+                    + '_combined.csv')
             self.obs_spectra_resampled = pd.read_csv(spectra_path + self.survey 
-                                                     + '_resampled.csv')
+                    + '_resampled.csv')
             self.obs_spectra_mid = pd.read_csv(spectra_path + self.survey
-                                               + '_resampled_conf.csv')
+                    + '_resampled_conf.csv')
             self.obs_data.append(self.obs_spectra_mid.Tmb.to_numpy())
             self.obs_lon.append(self.obs_spectra_mid.glon.to_numpy())
             self.obs_lat.append(np.zeros(1))
             self.obs_vel.append(self.obs_spectra_mid.Vel.to_numpy())
             self.obs_error_data.append(self.obs_spectra_mid.sigma.to_numpy())
-            self.obs_error_conf_data.append(self.obs_spectra_mid.sigma_conf.to_numpy())
-            self.obs_spectra_reduced = self.obs_spectra.loc[self.obs_spectra.glat == lat]
-            self.obs_spectra_resampled_reduced = self.obs_spectra_resampled.loc[self.obs_spectra_resampled.glat == lat]
+            self.obs_error_conf_data.append(
+                    self.obs_spectra_mid.sigma_conf.to_numpy())
+            self.obs_spectra_reduced = \
+                    self.obs_spectra.loc[self.obs_spectra.glat == lat]
+            self.obs_spectra_resampled_reduced = \
+                    self.obs_spectra_resampled.loc[self.obs_spectra_resampled.glat == lat]
 
         return
 
     # Open spectra as a dataframe if included
-    def get_obs_extent(self, filename=None, idx=None, kind='extent', verbose=False):
+    def get_obs_extent(self, filename=None, idx=None, kind='extent', 
+            verbose=False):
         '''
-        Return the extent of the observation with usable data (nonzero and non-NaN).
-        Can return either the dimension values ('extent') or the dimension indeces 
-        ('index'), specified with `kind`.
+        Return the extent of the observation with usable data (nonzero and 
+        non-NaN).
+        Can return either the dimension values ('extent') or the dimension 
+        indeces ('index'), specified with `kind`.
         
         Returns tuple of (lon, lat, vel)
         '''
@@ -265,13 +292,15 @@ class Observation(object):
                 lon = self.obs_lon[idx][~i_nan.all(1).all(0)]
                 lat = self.obs_lat[idx][~i_nan.all(2).all(0)]
                 extent = (lon, lat, None)
-                i_extent = (np.arange(data.shape[0]), ~i_nan.all(2).all(0), ~i_nan.all(1).all(0))
+                i_extent = (np.arange(data.shape[0]), ~i_nan.all(2).all(0), 
+                        ~i_nan.all(1).all(0))
             else:
                 vel = self.obs_vel[idx][~i_nan.all(2).all(1)]
                 lon = self.obs_lon[idx][~i_nan.all(1).all(0)]
                 lat = self.obs_lat[idx][~i_nan.all(2).all(0)]
                 extent = (lon, lat, vel)
-                i_extent = (~i_nan.all(2).all(1), ~i_nan.all(2).all(0), ~i_nan.all(1).all(0))
+                i_extent = (~i_nan.all(2).all(1), ~i_nan.all(2).all(0), 
+                        ~i_nan.all(1).all(0))
         else:
             print('ERROR: Choose a valid filename.')
             return

@@ -7,7 +7,7 @@ of clumps that are likely in a line-of-sight.
 #import numpy as np
 #from numba import jit_module
 
-# from .ensemble import *
+from .ensemble import *
 from kosmatau3d.models import constants
 
 
