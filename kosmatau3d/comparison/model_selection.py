@@ -3373,6 +3373,7 @@ def plot_comparison(path='/mnt/hpc_backup/yanitski/projects/pdr/KT3_history/Milk
 
                 if len(transitions_all):
                     transitions = copy(transitions_all)
+                    transitions_skipped = []
                 else:
                     transitions = os.listdir(path + survey + '/' + survey_file + '/')
                     for _ in copy(transitions):
