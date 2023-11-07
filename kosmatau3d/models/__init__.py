@@ -1,9 +1,10 @@
-'''
-The :code:`models` subpackage contains all of the code relevant for creating voxels.
+"""
+The :code:`models` subpackage contains all of the code relevant for creating
+voxels.
 There are currently two ways to model PDRs:
 
-- single-voxel model (:code:`class Voxel()`): this is useful to a homogeneous voxel 
-  to compare to pixels in an observation.
+- single-voxel model (:code:`class Voxel()`): this is useful to a homogeneous
+  voxel to compare to pixels in an observation.
   Note that the voxel does not necessarily need to be cubic; PDR clumps can 
   *overfill* a voxel resulting in a homogeneous *column*. 
   This functionality will require more attention if you plan to integrate 
@@ -15,15 +16,17 @@ There are currently two ways to model PDRs:
   of interstellar gas in the object being modelled. Currently this is setup to 
   model a Milky-Way-type galaxy.
 
-Most of the calculations are split into subsubpackages, although there is an object containing all
-of the evaluated voxels.
-This structure to the code was implemented with the intention of creating a model in memory to adjust
-the orientation of the model and thus the synthetic observation of it.
-While the Milky Way models are too large to utilise this feature, it is left in for future 
-development of the code.
-'''
+Most of the calculations are split into subsubpackages, although there is an
+object containing all of the evaluated voxels.
+This structure to the code was implemented with the intention of creating a
+model in memory to adjust the orientation of the model and thus the synthetic
+observation of it.
+While the Milky Way models are too large to utilise this feature, it is left
+in for future  development of the code.
+"""
 
 import dill
+import os
 import sys
 
 from copy import copy
@@ -42,41 +45,47 @@ from kosmatau3d.models import masspoints
 from kosmatau3d.models import radiativeTransfer
 from kosmatau3d.models import plotting
 
+
 def dill_grid():
-    '''
-    Use this function to load the grid, initialise all of the interpolation functions, and
-    save them in the package folder. This helps to reduce computation time when first running
-    a voxel. After the dilled files are created, load the grid from them by passing :code:`dill=True`
-    as a kwarg when running :code:`Voxel.setProperties()`.
-    '''
+    """
+    Use this function to load the grid, initialise all of the interpolation
+    functions, and save them in the package folder.
+    This helps to reduce computation time when first running a voxel.
+    After the dilled files are created, load the grid from them by passing
+    :code:`dill=True` as a kwarg when running :code:`Voxel.set_properties()`.
+    """
     model_directory = copy(constants.directory)
-    constants.directory = ''
+    constants.directory = ""
     observations.methods.initialise()
-    constants.changeDustWavelengths('all')
-    species.addMolecules('all')
+    constants.changeDustWavelengths("all")
+    species.addMolecules("all")
     interpolations.initialise_grid()
-    if not os.path.exists(constants.GRIDPATH + 'dilled/'):
-        os.mkdir(constants.GRIDPATH + 'dilled/')
-    with open(constants.GRIDPATH + 'dilled/intensity_interpolation', 'wb') as file:
+    if not os.path.exists(constants.GRIDPATH + "dilled/"):
+        os.mkdir(constants.GRIDPATH + "dilled/")
+    with open(constants.GRIDPATH + "dilled/intensity_interpolation", "wb") as file:
         dill.dump(interpolations.intensityInterpolation, file)
-    with open(constants.GRIDPATH + 'dilled/tau_interpolation', 'wb') as file:
+    with open(constants.GRIDPATH + "dilled/tau_interpolation", "wb") as file:
         dill.dump(interpolations.tauInterpolation, file)
-    with open(constants.GRIDPATH + 'dilled/dust_intensity_interpolation', 'wb') as file:
+    with open(constants.GRIDPATH + "dilled/dust_intensity_interpolation", "wb") as file:
         dill.dump(interpolations.dustIntensityInterpolation, file)
-    with open(constants.GRIDPATH + 'dilled/dust_tau_interpolation', 'wb') as file:
+    with open(constants.GRIDPATH + "dilled/dust_tau_interpolation", "wb") as file:
         dill.dump(interpolations.dustTauInterpolation, file)
-    with open(constants.GRIDPATH + 'dilled/taufuv_interpolation', 'wb') as file:
+    with open(constants.GRIDPATH + "dilled/taufuv_interpolation", "wb") as file:
         dill.dump(interpolations.taufuv_interpolation, file)
-    with open(constants.GRIDPATH + 'dilled/hi_column_density_interpolation', 'wb') as file:
+    with open(
+        constants.GRIDPATH + "dilled/hi_column_density_interpolation", "wb"
+    ) as file:
         dill.dump(interpolations.hi_column_density_interpolation, file)
-    with open(constants.GRIDPATH + 'dilled/h2_column_density_interpolation', 'wb') as file:
+    with open(
+        constants.GRIDPATH + "dilled/h2_column_density_interpolation", "wb"
+    ) as file:
         dill.dump(interpolations.h2_column_density_interpolation, file)
-    with open(constants.GRIDPATH + 'dilled/tg_interpolation', 'wb') as file:
+    with open(constants.GRIDPATH + "dilled/tg_interpolation", "wb") as file:
         dill.dump(interpolations.tg_interpolation, file)
     constants.directory = model_directory
     return
 
-def help():
 
+def help():
     print()
     return
