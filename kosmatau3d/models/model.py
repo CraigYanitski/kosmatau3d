@@ -104,9 +104,10 @@ class Model(object):
         debug=False,
     ):
         """
-        The `Model()` class, which is used to create large three-dimensional PDR models and as
-        well as a synthetic observation. For large models, it is best to stream the voxel
-        data to the hard disk and avoid keeping the data in memory.
+        The `Model()` class, which is used to create large three-dimensional
+        PDR models and as well as a synthetic observation. For large models, it
+        is best to stream the voxel data to the hard disk and avoid keeping the
+        data in memory.
         """
 
         if not len(clump_mass_range):
@@ -116,7 +117,8 @@ class Model(object):
             sys.exit("<<ERROR>> Define observing velocities in argument.")
             # sys.exit()
 
-        # this just adds a label to the type of model being created. ie 'disk', 'bar', 'sphere', etc.
+        # this just adds a label to the type of model being created.
+        # ie 'disk', 'bar', 'sphere', etc.
         constants.type = model_type
         constants.voxel_size = float(resolution)
         constants.HISTORYPATH = history_path
@@ -300,21 +302,23 @@ class Model(object):
 
     def getShape(self):
         """
-        Return `Shape` instance of model. This will soon be moved from a class to a subpackage.
+        Return `Shape` instance of model.
+
+        This will soon be moved from a class to a subpackage...
         """
         return self.__shape
 
     def getGrid(self):
         """
-        Return `voxelGrid` instance of the model. It contains all of the information regarding
-        voxels used in the model.
+        Return `voxelGrid` instance of the model. It contains all of the
+        information regarding voxels used in the model.
         """
         return self.__grid
 
     def getOrientation(self):
         """
-        Return orientation of model. This is important for integrating the radiative
-        transfer equation
+        Return orientation of model. This is important for integrating the
+        radiative transfer equation.
         """
         return self.__orientation
 
@@ -554,10 +558,10 @@ class SyntheticModel(object):
     """
     This is a class to load individual `kosmatau3d` models. This in merely for
     the convenience of examining the model information in a consistent manner.
-    There is an optional argument when initialising to set a base directory, which
-    makes it easier to load multiple models in succession. Due to the complexity
-    of the `kosmatau3d` models, it is not recommended to load multiple models at
-    the same time.
+    There is an optional argument when initialising to set a base directory,
+    which makes it easier to load multiple models in succession. Due to the
+    complexity of the `kosmatau3d` models, it is not recommended to load
+    multiple models at the same time.
     """
 
     def __init__(self, base_dir=""):
@@ -567,7 +571,8 @@ class SyntheticModel(object):
         `files` can be modified again when loading a model, but for now it
         has the default filenames created with `kosmatau3d`.
 
-        :param base_dir: the base directory to use when loading models. Default: `''`.
+        :param base_dir: the base directory to use when loading models.
+            Default: `''`.
 
 
         """
@@ -814,13 +819,13 @@ class SyntheticModel(object):
         Load all of the data for one model. Any additional information such as
         observing velocities, latitude, and longitude are computed as well.
 
-        **Note** that this can be quite computationally expensive. It is not recommended
-        to load multiple models at the same time.
+        **Note** that this can be quite computationally expensive. It is not
+        recommended to load multiple models at the same time.
 
         :param directory: The directory of all of the model. Note that this is
                           appended to `self.base_dir`.
-        :param kwargs: optional kwargs to modify the model files used (specified in
-                       `self.files`).
+        :param kwargs: optional kwargs to modify the model files used
+                       (specified in `self.files`).
 
 
         """

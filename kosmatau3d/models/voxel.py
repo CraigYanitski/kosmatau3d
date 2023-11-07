@@ -27,9 +27,9 @@ class Voxel(object):
     """
     This is a class to handle each voxel in KOSMA-tau^3. It contains ensembles
     of spherical PDR simulations (to mimic the fractal structure of PDRs), a FUV
-    field element, and element absorption, separated for dust and transitions. It
-    should have one clump ensemble and one interclump ensemble. This is to account
-    for the diffuse surroundings of a clump.
+    field element, and element absorption, separated for dust and transitions.
+    It should have one clump ensemble and one interclump ensemble. This is to
+    account for the diffuse surroundings of a clump.
     """
 
     # PRIVATE
@@ -80,11 +80,11 @@ class Voxel(object):
         return
 
     def __set_mass(self):
-        """ """
+        """Set the total mass."""
         self.__mass = self.__clump_mass.sum()
 
     def __set_clump_mass(self, r, z):
-        """ """
+        """Set the clump mass."""
         mass = [
             interpolations.interpolate_h2_mass(r, z),
             interpolations.interpolate_hi_mass(r, z),
@@ -93,7 +93,7 @@ class Voxel(object):
         return
 
     def __setVelocity(self, r):
-        """ """
+        """Set the average velocity."""
         velocity = interpolations.interpolate_galaxy_rotation(r)
 
         if constants.from_earth:
@@ -130,7 +130,8 @@ class Voxel(object):
         else:
             self.__velocity = np.array(velocity)
 
-        # Use this to check the evaluation of the velocity field. It is still not working correctly...
+        # Use this to check the evaluation of the velocity field. It is still
+        # not working correctly...
         # print(self.__velocity)
 
         ensembleDispersion = interpolations.interpolate_velocity_dispersion(r)
@@ -140,13 +141,13 @@ class Voxel(object):
         return
 
     def __set_ensemble_density(self, r):
-        """ """
+        """Set the ensemble-averaged density."""
         density = interpolations.interpolate_number_density(r)
         self.__ensemble_density = constants.density_factor * density.mean()
         return
 
     def __set_taufuv(self):
-        """ """
+        """Set the voxel-averaged FUV optical depth."""
         self.__taufuv = interpolations.interpolate_taufuv(
             self.__ensembleDensity, self.__clumpMass + self.__interclumpMass
         )
@@ -154,7 +155,7 @@ class Voxel(object):
 
     def __set_fuv(self, r, z):
         """
-        This is in units of the Draine field
+        This is in units of the Draine field.
         """
         fuv = interpolations.interpolate_fuv(r, z) / constants.u_draine0
         self.__fuv = np.clip(fuv, 1, None)
@@ -175,16 +176,16 @@ class Voxel(object):
     #   return
 
     def set_index(self, index):
-        """ """
+        """Change the index."""
         self.__index = index
         return
 
     def get_index(self):
-        """ """
+        """Return the voxel index."""
         return self.__index
 
     def set_position(self, x, y, z, r, phi):
-        """ """
+        """Change the voxel location."""
         self.__x = x
         self.__y = y
         self.__z = z
@@ -193,7 +194,7 @@ class Voxel(object):
         return
 
     def get_fuv(self):
-        """ """
+        """Return the voxel-averaged far-UV density."""
         return self.__fuv
 
     def set_properties(
@@ -679,7 +680,9 @@ class Voxel(object):
         ]
 
         if timed:
-            self.__logger.info("setProperties() time of execution:".format(time() - t0))
+            self.__logger.info(
+                "setProperties() time of execution: {}".format(time() - t0)
+            )
 
         # print('voxel initialised:', (time()-t0)/60)
         self.__logger.info("voxel initialised")
@@ -687,65 +690,78 @@ class Voxel(object):
         return
 
     def get_position(self):
-        """ """
+        """Return voxel position."""
         return np.array([self.__x, self.__y, self.__z])
 
     def get_density(self):
-        """ """
+        """Return the ensemble-averaged density."""
         return self.__ensemble_density
 
     def get_ensemble_mass(self, total=False):
-        """ """
+        """Return the ensemble mass."""
         if total:
             return np.sum(self.__ensemble_mass)
         else:
             return self.__ensemble_mass
 
     def get_model_mass(self, total=False):
-        """ """
+        """Return the mass represented by the model."""
         if total:
             return np.sum(self.__model_mass)
         else:
             return self.__model_mass
 
     def get_hi_mass(self, total=False):
-        """ """
+        """Return the :math:`\mathrm{HI}` mass represented in the model."""
         if total:
             return np.sum(self.__hi_mass)
         else:
             return self.__hi_mass
 
     def get_h2_mass(self, total=False):
-        """ """
+        """Return the :math:`\mathrm{H}_2` mass represented in the model."""
         if total:
             return np.sum(self.__h2_mass)
         else:
             return self.__h2_mass
 
     def get_volume_filling_factor(self):
-        """ """
+        """Return the volume-filling factor."""
         return self.__volume_factor
 
     def get_voxel_filling_factor(self):
-        """ """
+        """
+        Return the voxel-filling factor (the fraction of the voxel filled
+        by gas).
+        """
         return self.__voxel_filling_factor
 
     def get_velocity(self):
-        """ """
+        """
+        Return a tuple of the voxel velocity and ensemble-averaged dispersion.
+        """
         return self.__velocity, self.__ensemble_dispersion
 
     def get_clump_velocity(self):
-        """ """
+        """
+        Return a tuple of the velocity bins used in the calculation and the
+        indeces.
+        """
         return self.__clump_velocities, self.__clump_velocity_indeces
 
     def get_taufuv(self):
-        """ """
+        """return the voxel-averaged far-UV optical depth."""
         return self.__taufuv
 
     def get_species_number(
         self, species=None, abun=False, nref=[("H", 1), ("H2", 2)], total=True
     ):
-        """ """
+        """
+        Return the either the total number of species or fractional abundance
+        in each ensemble. The default functionality is to express the fractional
+        in terms of total hydrogen (:math:`N_\mathrm{H} = N_\mathrm{H}^0 +
+        2N_\mathrm{H}_2`).
+        """
         if species in [None, "all"]:
             species = constants.abundances
         elif isinstance(species, str):
@@ -783,11 +799,11 @@ class Voxel(object):
             return N_species
 
     def get_abundances(self, *args, **kwargs):
-        """ """
+        """Return species abundances."""
         return self.get_species_number(*args, **kwargs, abun=True)
 
     def get_dust_temperature(self, total=True):
-        """ """
+        """Return ensemble-averaged dust temperature."""
         if total:
             return (
                 np.asarray(self.__ensemble_mass) * np.asarray(self.t_dust)
@@ -796,7 +812,7 @@ class Voxel(object):
             return self.t_dust
 
     def get_gas_temperature(self, total=True):
-        """ """
+        """Return ensemble-averaged gas temperature."""
         if total:
             return (
                 np.asarray(self.__ensemble_mass) * np.asarray(self.t_gas)
@@ -815,7 +831,7 @@ class Voxel(object):
         verbose=False,
         timed=False,
     ):
-        """ """
+        """Calculate voxel-averaged absorption and emmisivity."""
         self.test_calc = test_calc
         self.test_opacity = test_opacity
         self.test_pexp = test_pexp
@@ -1381,17 +1397,17 @@ class Voxel(object):
 
         if timed:
             self.__logger.info(
-                "calculateEmission() time of execution:".format(time() - t0)
+                "calculateEmission() time of execution: {}".format(time() - t0)
             )
 
         return
 
     def gaussian(self, x, a, sigma):
-        """ """
+        """Return Gaussian."""
         return a * np.exp(-(x**2) / (2 * sigma**2))
 
     def two_gaussians(self, x, a1, a2, sigma):
-        """ """
+        """Return two Gaussians stacked horizontally."""
         g1 = self.gaussian(x, a1, sigma)
         g2 = self.gaussian(x, a2, sigma)
         return np.hstack((g1, g2))
@@ -1399,7 +1415,7 @@ class Voxel(object):
     def get_species_emissivity(
         self, kind="linear", include_dust=False, fit=True, total=True, hi=False
     ):
-        """ """
+        """Return line emission emissivity."""
         if self.suggested_calc:
             epsilon_species = []
             if include_dust:
@@ -1530,7 +1546,7 @@ class Voxel(object):
     def get_species_absorption(
         self, kind="linear", include_dust=False, fit=True, total=True, hi=False
     ):
-        """ """
+        """Return line emission absorption."""
         if self.suggested_calc:
             kappa_species = []
             if include_dust:
@@ -1670,7 +1686,7 @@ class Voxel(object):
     def get_species_optical_depth(
         self, kind="linear", include_dust=False, fit=True, total=True, hi=False
     ):
-        """ """
+        """Return line emission optical depth."""
         if self.suggested_calc:
             tau_species = []
             if include_dust:
@@ -1796,7 +1812,10 @@ class Voxel(object):
         total=True,
         hi=False,
     ):
-        """ """
+        """
+        Return line emission intensity. This integrated the radiative transfer
+        equation over the length of the voxel.
+        """
         if self.suggested_calc:
             if total and not integrated and not fit:
                 print(
@@ -2004,7 +2023,7 @@ class Voxel(object):
             return np.asarray(intensity_final)
 
     def get_dust_emissivity(self, fit=True, total=True, minimal=False):
-        """ """
+        """Return the dust continuum emissivity."""
         if self.suggested_calc:
             if fit:
                 emissivity = [
@@ -2026,7 +2045,7 @@ class Voxel(object):
             return np.asarray(emissivity)
 
     def get_dust_absorption(self, fit=True, total=True, minimal=False):
-        """ """
+        """Return the dust continuum absorption."""
         if self.suggested_calc:
             if fit:
                 absorption = [
@@ -2048,7 +2067,7 @@ class Voxel(object):
             return np.asarray(absorption)
 
     def get_dust_optical_depth(self, fit=True, total=True, minimal=False):
-        """ """
+        """Return the dust continuum optical depth."""
         if self.suggested_calc:
             if fit:
                 optical_depth = [
@@ -2070,7 +2089,10 @@ class Voxel(object):
             return np.asarray(optical_depth)
 
     def get_dust_intensity(self, fit=True, total=True, minimal=False):
-        """ """
+        """
+        Return the dust continuum intensity. This integrates the radiative
+        transfer equation over the length of the voxel.
+        """
         if self.suggested_calc:
             if fit:
                 if total:
@@ -2127,7 +2149,11 @@ class Voxel(object):
             return np.asarray(intensity)
 
     def plot_clump_number(self, effective=False, mass=False):
-        """ """
+        """
+        Plot the number of clumpy used as a function of velocity bin.
+
+        This requires further testing...
+        """
         import matplotlib.pyplot as plt
 
         xlabel = r"$v_i \ \left( \mathrm{\frac{km}{s}} \right)$"
@@ -2179,7 +2205,8 @@ class Voxel(object):
         logscale=False,
     ):
         """
-        Plot the transition emission with respect to the voxel velocity structure
+        Plot the transition emission with respect to the voxel velocity
+        structure.
         """
 
         import matplotlib.pyplot as plt
@@ -2285,8 +2312,8 @@ class Voxel(object):
         title="",
     ):
         """
-        Plot the either the intesity or optical depth spectrum at the voxel velocity (the velocity with the largest
-        ensemble).
+        Plot the either the intesity or optical depth spectrum at the voxel
+        velocity (the velocity with the largest ensemble).
         """
 
         import matplotlib as mpl
