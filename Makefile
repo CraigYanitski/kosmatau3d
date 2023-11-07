@@ -16,6 +16,8 @@ build:
 	@pip install --upgrade build
 	@python -m build
 
+# Ensure you update first the version number in `setup.py`, 
+# `pyproject.py`, and `docs/_source/conf.py`
 upload: build
 	@twine upload --repository pypi dist/*
 	@rm -rf dist
