@@ -161,7 +161,6 @@ def determine_rms(hdul, mission='', file=''):
     # print(mission, 'GOT C+', mission=='GOT C+')
 
     if mission == 'GOT C+':
-
         # Create velocity axis
         lon = astrokit.get_axis(1, hdul)
         lat = astrokit.get_axis(2, hdul)
@@ -199,7 +198,6 @@ def determine_rms(hdul, mission='', file=''):
         hdul_rms[0].data = deepcopy(rms)
 
     elif mission == 'COGAL':
-
         mean=True
 
         # Ensure data has the correct dimensions (in fits format: glon, glat, vel_lsr)
@@ -259,7 +257,6 @@ def determine_rms(hdul, mission='', file=''):
         hdul_rms[0].data = deepcopy(rms)
 
     elif mission == 'SEDIGISM':
-
         # Create velocity axis
         vel = astrokit.get_axis(3, hdul)
 
@@ -270,9 +267,7 @@ def determine_rms(hdul, mission='', file=''):
         hdul_rms = astrokit.rms_map(hdul, window=window, rms_range=None)
 
     else:
-
         print('{} not available for RMS calculation'.format(mission))
-
         return None
 
     return hdul_rms
