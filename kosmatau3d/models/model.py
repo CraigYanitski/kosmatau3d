@@ -567,12 +567,12 @@ class SyntheticModel(object):
     def __init__(self, base_dir=""):
         """
         This initialises the object along with the base directory.
-        The owned objects of `base_dir` and `files` are created.
-        `files` can be modified again when loading a model, but for now it
-        has the default filenames created with `kosmatau3d`.
+        The owned objects of :code:`base_dir` and :code:`files` are created.
+        :code:`files` can be modified again when loading a model, but for now
+        it has the default filenames created with :code:`kosmatau3d`.
 
         :param base_dir: the base directory to use when loading models.
-            Default: `''`.
+            Default: `""`.
 
 
         """
