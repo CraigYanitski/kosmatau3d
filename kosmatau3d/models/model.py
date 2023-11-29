@@ -1,3 +1,56 @@
+'''
+
+# :code:`models`
+
+This module contains the classes :code:`Model` and :code:`SyntheticModel`,
+which are used to create and load large models containing many voxels, 
+respectively.
+
+## :code:`Model`
+----------------
+
+For creating models, the process is to first create an instance with the 
+specified parameters, then calculate the emission in all of the voxels.
+All of the model data will be saved into its own directory, so be sure to give 
+a unique name to the :code:`folder` kwarg.
+
+```python
+from kosmatau3d import models
+
+model = models.Model() #create model with default kwargs
+model.calculateModel(kind='linear') #calculate emission in voxels
+```
+
+This method of executing the code will save much of the model data, including 
+both the intrinsic voxel data and the computed emission data.
+The synthetic observations can then be computed using the 
+:code:`radiativeTransfer` submodule:
+
+```python
+models.radiativeTransfer.calculateObservation(**kwargs)
+```
+
+Note that the evaluation of KOSMA-:math:`\tau` line emission and HI line
+emission is currently separated, and one can which between these modes of 
+operation using the :code:`hi` kwarg.
+
+## :code:`SyntheticModel`
+-------------------------
+
+For loading the models into memory, one must first create a 
+:code:`SyntheticModel` instance, then load the model directory.
+From there, one can access all of the information of the model (from voxel
+masses, densities, abundances, emission, synthetic observations, etc. in 
+addition to methods that can be used to plot the data).
+
+```python
+from kosmatau3d import models
+
+model = models.SyntheticModel(**kwargs)
+model.load_model(directory="/path/to/model/")
+```
+'''
+
 import astropy.units as u
 import importlib as il
 import logging
