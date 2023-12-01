@@ -34,8 +34,8 @@ Note that the evaluation of KOSMA-:math:`\tau` line emission and HI line
 emission is currently separated, and one can which between these modes of 
 operation using the :code:`hi` kwarg.
 
-## :code:`SyntheticModel`
--------------------------
+:code:`SyntheticModel`
+----------------------
 
 For loading the models into memory, one must first create a 
 :code:`SyntheticModel` instance, then load the model directory.
