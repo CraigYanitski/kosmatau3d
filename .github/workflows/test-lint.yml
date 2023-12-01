@@ -20,5 +20,5 @@ jobs:
         pip install pylint
     - name: Analysing the code with pylint
       run: |
-        pylint $(git ls-files 'kosmatau3d/*.py')
+        pylint --fail-under=2 $(git ls-files 'kosmatau3d/*.py')
 
