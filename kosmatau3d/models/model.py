@@ -1,12 +1,9 @@
 """
-:code:`models`
-==============
-
-This module contains the classes :code:`Model` and :code:`SyntheticModel`,
+A submodule containing the classes :code:`Model` and :code:`SyntheticModel`,
 which are used to create and load large models containing many voxels, 
 respectively.
 
-:code:`Model`
+:code:`Model()`
 -------------
 
 For creating models, the process is to first create an instance with the 
@@ -34,7 +31,7 @@ Note that the evaluation of KOSMA-:math:`\tau` line emission and HI line
 emission is currently separated, and one can which between these modes of 
 operation using the :code:`hi` kwarg.
 
-:code:`SyntheticModel`
+:code:`SyntheticModel()`
 ----------------------
 
 For loading the models into memory, one must first create a 
