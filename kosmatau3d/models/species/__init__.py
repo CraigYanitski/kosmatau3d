@@ -1,7 +1,7 @@
 """
 A subpackage to read and contain all of the species spectral line transition
 data.
-This relies on transition data used in KOSMA-:math:`\tau`, and is mainly
+This relies on transition data used in KOSMA-:math:`\\tau`, and is mainly
 used to plotting and to interpolate the dust continuum when calculating the 
 voxel-averaged emissivity and absorption.
 """

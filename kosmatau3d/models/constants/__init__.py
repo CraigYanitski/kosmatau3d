@@ -10,7 +10,7 @@ There are definitions to change the model parameters for when this is needed.
    
    The dust wavelengths are hard-coded since these appear in Weingartner &
    Draine (2001).
-   This will need to be updated if the dust calculations in KOSMA-:math:`\tau`
+   This will need to be updated if the dust calculations in KOSMA-:math:`\\tau`
    change.
 '''
 

@@ -1,5 +1,5 @@
 '''
-A subpackage to load all of the KOSMA-:math:`\tau` and input data required
+A subpackage to load all of the KOSMA-:math:`\\tau` and input data required
 to run :code:`kosmatau3d`.
 This subpackage will contain the input data needed to properly simulate the PDR. 
 All of the information specific to the object being simulated should be in 

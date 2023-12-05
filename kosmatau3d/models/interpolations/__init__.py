@@ -1,5 +1,5 @@
 """
-A subpackage to used to interpolate the KOSMA-:math:`\tau` grids and input 
+A subpackage to used to interpolate the KOSMA-:math:`\\tau` grids and input 
 data and store these methods to use in the evaluation of :code:`kosmatau3d`.
 This is a subpackage that can be used for the interpolation of the input data.
 It will contain functions to interpolate the intensity or optical depth

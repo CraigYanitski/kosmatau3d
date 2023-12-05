@@ -4,10 +4,10 @@ position.
 
 .. math::
    
-   \mathrm{d}T_\mathrm{B, \nu} = -T_\mathrm{B, \nu}(0) \kappa_\nu \mathrm{d}\ell + \epsilon_\nu \mathrm{d}\ell
+   \mathrm{d}T_\mathrm{B, \nu} = -T_\mathrm{B, \nu}(0) \kappa_\nu \mathrm{d}s + \epsilon_\nu \mathrm{d}s
 
 This form of the radiative transfer equation assumes we are in a regime
-where the Rayleigh-Jeans law applies (such that :math`h \nu << k 
+where the Rayleigh-Jeans law applies (such that :math:`h \nu << k 
 T_\mathrm{exc}`).
 
 This subpackage is intended to be run separately from the full 
