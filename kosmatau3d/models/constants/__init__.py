@@ -1,3 +1,20 @@
+'''
+A subpackage to contain all of the model constants used in the calculations 
+involved in :code:`kosmatau3d`.
+
+This subpackage contains all of the constants and parameters used throughout 
+the program. 
+There are definitions to change the model parameters for when this is needed.
+
+.. note::
+   
+   The dust wavelengths are hard-coded since these appear in Weingartner &
+   Draine (2001).
+   This will need to be updated if the dust calculations in KOSMA-:math:`\tau`
+   change.
+'''
+
+
 import inspect
 import os
 
@@ -8,13 +25,10 @@ import warnings
 
 from .change import *
 
+
 warnings.simplefilter('ignore', category=NumbaDeprecationWarning)
 warnings.simplefilter('ignore', category=NumbaPendingDeprecationWarning)
 
-'''
-This is a module to contain all of the constants and parameters used throughout the program. There are definitions
-to change the model parameters for when this is needed.
-'''
 
 # Directory information
 directory = ''

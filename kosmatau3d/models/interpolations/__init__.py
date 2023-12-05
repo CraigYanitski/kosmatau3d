@@ -1,3 +1,17 @@
+"""
+A subpackage to used to interpolate the KOSMA-:math:`\tau` grids and input 
+data and store these methods to use in the evaluation of :code:`kosmatau3d`.
+This is a subpackage that can be used for the interpolation of the input data.
+It will contain functions to interpolate the intensity or optical depth
+for any species, given an index.
+
+The method of interpolation is passed as an argument when initialising
+this class. The acceptabled values are 'linear', 'cubic', and 'radial'.
+The default method is 'linear'. For the large intensity and optical depth
+grids, 'cubic' and 'radial' are the same.
+"""
+
+
 import sys
 import warnings
 
@@ -8,16 +22,6 @@ from numba.core.errors import NumbaDeprecationWarning, NumbaPendingDeprecationWa
 from kosmatau3d.models import constants
 from .interpolate import *
 
-'''
-This is a module that can be used for the interpolation of the input data.
-It will contain functions to interpolate the intensity or optical depth
-for any species, given an index.
-
-The method of interpolation is passed as an argument when initialising
-this class. The acceptabled values are 'linear', 'cubic', and 'radial'.
-The default method is 'linear'. For the large intensity and optical depth
-grids, 'cubic' and 'radial' are the same.
-'''
 
 warnings.simplefilter('ignore', category=NumbaDeprecationWarning)
 warnings.simplefilter('ignore', category=NumbaPendingDeprecationWarning)

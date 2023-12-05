@@ -1,4 +1,6 @@
 """
+A subpackage to work with the different combinations of clumps contained within
+a voxel.
 This subpackage is to keep track of the combinations of clumps used
 in the calculation of the ensemble-averaged emission, as well as the
 associated emissivity and absorption.

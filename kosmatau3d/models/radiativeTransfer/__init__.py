@@ -1,3 +1,22 @@
+"""
+A subpackage to integrate the radiative transfer equation from a given 
+position.
+
+.. math::
+   
+   \mathrm{d}T_\mathrm{B, \nu} = -T_\mathrm{B, \nu}(0) \kappa_\nu \mathrm{d}\ell + \epsilon_\nu \mathrm{d}\ell
+
+This form of the radiative transfer equation assumes we are in a regime
+where the Rayleigh-Jeans law applies (such that :math`h \nu << k 
+T_\mathrm{exc}`).
+
+This subpackage is intended to be run separately from the full 
+three-dimensional :code:`kosmatau3d` model.
+There are a selection of options available that can simplify the calculation,
+but currently only the :code:`'disk'` option for the Milky Way is tested:.
+"""
+
+
 # import numpy as np
 # from astropy.io import fits
 # import matplotlib.pyplot as plt

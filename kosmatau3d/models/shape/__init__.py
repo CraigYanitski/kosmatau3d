@@ -1,8 +1,16 @@
+"""
+A subpackage to specify the layout of voxels in a larger three-dimensional
+model.
+This is left over from an early version of the code that used too many classes,
+and as such it is planned to be revised and moved into a module.
+"""
+
+
 import importlib as il
 
 from numba import jit_module
 
-from .Dimensions import *
+from .dimensions import *
 from kosmatau3d.models import constants
 
 

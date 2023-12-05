@@ -1,4 +1,5 @@
 """
+A subpackage containing information for the discrete clumps within a voxel.
 This is a subpackage to appropriately handle all of the information concerning
 a KOSMA-:math:`\\tau` clump.
 The interpolated values are loaded into some of the subpackage variables.

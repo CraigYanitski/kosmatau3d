@@ -22,7 +22,7 @@ This structure to the code was implemented with the intention of creating a
 model in memory to adjust the orientation of the model and thus the synthetic
 observation of it.
 While the Milky Way models are too large to utilise this feature, it is left
-in for future  development of the code.
+in the source code for future  development of the code.
 """
 
 import dill
@@ -48,6 +48,8 @@ from kosmatau3d.models import plotting
 
 def dill_grid():
     """
+    A function that can be used to serialise and save the interpolation 
+    functions to make debugging easier.
     Use this function to load the grid, initialise all of the interpolation
     functions, and save them in the package folder.
     This helps to reduce computation time when first running a voxel.
@@ -87,5 +89,6 @@ def dill_grid():
 
 
 def help():
+    """A currently defunct function to show information about this submodule."""
     print()
     return

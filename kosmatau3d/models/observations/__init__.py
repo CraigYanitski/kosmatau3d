@@ -1,14 +1,17 @@
+'''
+A subpackage to load all of the KOSMA-:math:`\tau` and input data required
+to run :code:`kosmatau3d`.
+This subpackage will contain the input data needed to properly simulate the PDR. 
+All of the information specific to the object being simulated should be in 
+their own folder in INPUTPATH. 
+The KOSMA-tau grid data is located in the folder 'grid'.
+'''
+
+
 import numpy as np
 
 from kosmatau3d.models import constants
 from .methods import *
-
-
-'''
-This module will contain the input data needed to properly simulate the PDR. All of the information specific
-to the object being simulated should be in their own folder in INPUTPATH. The KOSMA-tau grid data is located
-in the folder 'grid'.
-'''
 
 
 # Flags

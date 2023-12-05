@@ -1,3 +1,10 @@
+"""
+A subpackage containing various plotting functions both for individual models
+and :code:`kosmatau3d` in general.
+The model plotting functions have mostly been depreciated by the methods in the
+:code:`SyntheticModel` class.
+"""
+
 from pprint import pprint
 
 import numpy as np
@@ -16,6 +23,7 @@ from kosmatau3d.models import constants
 def plotModel(plot='total intensity', ce=[], ie=[], grid=None,
               directory='/home/craig/projects/pdr/KOSMA-tau^3/history/MilkyWay/r1000.0_s3015/',
               species='13C+ 1', debug=False):
+    """A depreciated function to plot the 3D distribution of a quantity."""
   
     allSpecies = ['13C 1', '13C 2', '13C 3', '13C+ 1', 'C 1', 'C 2', 'C+ 1', 'CO 1', 'CO 2', 'CO 3', 'CO 4', 'CO 5', 'CO 6', 'CO 7', '13CO 1', '13CO 2', '13CO 3', '13CO 4', '13CO 5', '13CO 6', '13CO 7', 'O 2', 'Dust 1', 'Dust 2', 'Dust 3', 'Dust 4', 'Dust 5', 'Dust 6', 'Dust 7', 'Dust 8', 'Dust 9', 'Dust 10', 'Dust 11', 'Dust 12', 'Dust 13', 'Dust 14', 'Dust 15', 'Dust 16', 'Dust 17', 'Dust 18', 'Dust 19', 'Dust 20', 'Dust 21', 'Dust 22', 'Dust 23', 'Dust 24', 'Dust 25', 'Dust 26', 'Dust 27', 'Dust 28', 'Dust 29', 'Dust 30', 'Dust 31', 'Dust 32', 'Dust 33', 'Dust 34', 'Dust 35', 'Dust 36', 'Dust 37', 'Dust 38', 'Dust 39', 'Dust 40']
   
@@ -192,7 +200,7 @@ def plotModel(plot='total intensity', ce=[], ie=[], grid=None,
 
 def PVplot(directory='', file='/channel_intensity.fits', latRange=[-np.pi/9,np.pi/9], species=[], dust=[], newMap=[],
            save=False, verbose=False, title=''):
-    # Plot the PV diagram for the selected latitude range.
+    """A depreciated function to plot the PV diagram for a model."""
   
     channelMap = fits.open(directory+file)
     
