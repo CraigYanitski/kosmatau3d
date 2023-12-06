@@ -99,7 +99,7 @@ dependencies:
       - jupytext==1.15.2
       - keyring==24.2.0
       - kiwisolver==1.4.5
-      - kosmatau3d # @git+https://github.com/CraigYanitski/kosmatau3d.git
+      - kosmatau3d@git+https://github.com/CraigYanitski/kosmatau3d.git
       - latexcodec==2.0.1
       - libsass==0.22.0
       - linkify-it-py==2.0.2
