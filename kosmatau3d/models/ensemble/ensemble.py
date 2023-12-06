@@ -1,10 +1,11 @@
 """
-.. _ensemble:
-
 This module contains a calculation of the different combinations needed to 
 calculate the voxel-averaged emission, as well as the calculations 
 of the probabilities to observe each combination as a function of the 
 internal velocity :math:`v_i`.
+
+.. _ensemble_:
+
 The procedure cycles through the available ensembles and performs the 
 calculations separately.
 
