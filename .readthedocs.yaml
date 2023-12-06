@@ -7,8 +7,8 @@ build:
   jobs:
     pre_build:
       - ls
-      - conda list
-      - echo $READTHEDOCS_OUTPUT
+      # - conda list
+      # - echo $READTHEDOCS_OUTPUT
     post_build:
       - ls
       #- ls _readthedocs/html
