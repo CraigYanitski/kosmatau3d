@@ -6,6 +6,9 @@ internal velocity :math:`v_i`.
 
 .. _ensemble_:
 
+Description
+-----------
+
 The procedure cycles through the available ensembles and performs the 
 calculations separately.
 
