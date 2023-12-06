@@ -1,10 +1,25 @@
-'''
-This module owes itself largely to the work  done by Silke Andree-Labsch and
-Christoph Bruckmann. It contains a number of combinations of fractal mass
-configurations, and therefore contains the ensemble-averaged intensity and
-optical depth.
-It can be either a clump or an interclump ensemble.
-'''
+"""
+.. _ensemble:
+
+This module contains a calculation of the different combinations needed to 
+calculate the voxel-averaged emission, as well as the calculations 
+of the probabilities to observe each combination as a function of the 
+internal velocity :math:`v_i`.
+The procedure cycles through the available ensembles and performs the 
+calculations separately.
+
+.. note::
+   
+   This module owes itself largely to the work  done by Silke Andree-Labsch and
+   Christoph Bruckmann. 
+   A clear deficiency in the calculations in this module is that we use a 
+   list of the necessary probabilities, which are of different shapes depending
+   on the number of combinations observed for a given velocity bin.
+   Since this computational difficulty is common in (astro) particle physics,
+   there should exist a python package to properly handle this in python.
+   This is a possible development that still needs to be tested and 
+   implemented.
+"""
 
 
 import sys

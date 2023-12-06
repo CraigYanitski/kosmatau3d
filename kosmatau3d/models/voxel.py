@@ -1,5 +1,10 @@
 """
-A module containing the :code:`Voxel` class.
+.. _voxel:
+
+A module containing the :code:`Voxel` class, which is used to model the 
+synthetic emission from one or more *ensembles*.
+The :code:`Voxel` class wraps together all of the computations of 
+:ref:`_masspoint`, :ref:`_combination`, and :ref:`_ensemble`.
 """
 
 import importlib as il
@@ -25,11 +30,15 @@ from kosmatau3d.models import (
 
 class Voxel(object):
     """
-    This is a class to handle each voxel in KOSMA-tau^3. It contains ensembles
-    of spherical PDR simulations (to mimic the fractal structure of PDRs), a FUV
-    field element, and element absorption, separated for dust and transitions.
-    It should have one clump ensemble and one interclump ensemble. This is to
-    account for the diffuse surroundings of a clump.
+    .. Voxel:
+
+    A class to compute the emission from a voxel in :code:`kosmatau3d`.
+    It contains ensembles of spherical PDR simulations (to mimic the fractal 
+    structure of PDRs), a FUV field element, and element absorption, separated 
+    for dust and transitions.
+    It has been tested to contain two ensembles: one for the dense clumpy 
+    medium and one for the diffuse interclump medium. 
+    This is to account for dense clumps embedded in a diffuse environment.
     """
 
     # PRIVATE

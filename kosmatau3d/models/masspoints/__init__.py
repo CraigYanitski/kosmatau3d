@@ -1,4 +1,6 @@
 """
+.. __masspoints__:
+
 A subpackage containing information for the discrete clumps within a voxel.
 This is a subpackage to appropriately handle all of the information concerning
 a KOSMA-:math:`\\tau` clump.

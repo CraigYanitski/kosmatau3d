@@ -1,10 +1,15 @@
-'''
+"""
+.. _masspoint:
+
 This is a module to handle one fractal mass in a combination.
-It will have the associated emission and extinction information from the KOSMA-tau simulations,
-which will be used to contribute to the Combination class' intrinsic intensity and optical depth.
-At the moment, the emission interpolation is performed for each individual species. It will be
-an future update to perform the interpolation for all species at the same time.
-'''
+It will have the associated emission and extinction information from the 
+KOSMA-:math:`\\tau` simulations, which will be used to contribute to the 
+combination intrinsic intensity and optical depth.
+At the moment, the emission interpolation is performed for each individual 
+species.
+It will be an future update to perform the interpolation for all species at the 
+same time.
+"""
 
 
 import importlib as il

@@ -1,4 +1,6 @@
 """
+.. __ensemble__:
+
 A subpackage containing information dealing with the probabilities for 
 different combinations of clumps contained within a voxel.
 This subpackage uses the ISM mass and discrete clump masses to compute the 
