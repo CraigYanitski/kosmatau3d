@@ -12,7 +12,8 @@
    .. autosummary::
       :toctree:
    {% for item in attributes %}
-      {{ item }}
+      {%- set shortitem = '.'.join(item.split('.')[-1]) %}
+      {{ shortitem }}
    {%- endfor %}
    {% endif %}
    {% endblock %}
@@ -25,7 +26,8 @@
       :toctree:
       :nosignatures:
    {% for item in functions %}
-      {{ item }}
+      {%- set shortitem = '.'.join(item.split('.')[-1]) %}
+      {{ shortitem }}
    {%- endfor %}
    {% endif %}
    {% endblock %}
@@ -39,7 +41,8 @@
       :template: custom-class-template.rst
       :nosignatures:
    {% for item in classes %}
-      {{ item }}
+      {%- set shortitem = '.'.join(item.split('.')[-1]) %}
+      {{ shortitem }}
    {%- endfor %}
    {% endif %}
    {% endblock %}
@@ -51,7 +54,8 @@
    .. autosummary::
       :toctree:
    {% for item in exceptions %}
-      {{ item }}
+      {%- set shortitem = '.'.join(item.split('.')[-1]) %}
+      {{ shortitem }}
    {%- endfor %}
    {% endif %}
    {% endblock %}

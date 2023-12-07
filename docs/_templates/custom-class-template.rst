@@ -1,3 +1,6 @@
+{%- set shortname = '.'.join(fullname.split('.')[1:]) %}
+.. _{{ shortname }}:
+
 {{ fullname | escape | underline}}
 
 .. currentmodule:: {{ module }}
