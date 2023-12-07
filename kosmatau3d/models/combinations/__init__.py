@@ -1,6 +1,4 @@
 """
-.. __combinations__:
-
 A subpackage to work with the different combinations of clumps contained within
 a voxel.
 This subpackage is to keep track of the combinations of clumps used

@@ -1,6 +1,4 @@
 """
-.. _combination:
-
 This is a module to handle a combination of fractal masses in an ensemble.
 It will have its associated probability, which will scale its intrinsic
 intensity and optical depth. It returns a tuple of the combination's

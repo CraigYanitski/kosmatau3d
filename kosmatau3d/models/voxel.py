@@ -1,10 +1,9 @@
 """
-.. _voxel:
-
 A module containing the :code:`Voxel` class, which is used to model the 
 synthetic emission from one or more *ensembles*.
 The :code:`Voxel` class wraps together all of the computations of 
-:ref:`masspoint`, :ref:`combination`, and :ref:`ensemble_`.
+:ref:`models.masspoints.masspoint`, :ref:`models.combinations.combination`, 
+and :ref:`models.ensemble.ensemble`.
 """
 
 import importlib as il

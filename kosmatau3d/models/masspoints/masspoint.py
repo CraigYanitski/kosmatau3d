@@ -1,6 +1,4 @@
 """
-.. _masspoint:
-
 This is a module to handle one fractal mass in a combination.
 It will have the associated emission and extinction information from the 
 KOSMA-:math:`\\tau` simulations, which will be used to contribute to the 
