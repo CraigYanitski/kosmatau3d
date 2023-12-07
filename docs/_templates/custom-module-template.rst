@@ -1,6 +1,6 @@
 {{ objname | escape | underline}}
 
-.. automodule:: {{ fullname }}
+.. automodule:: {{ objname }}
 
    {% block attributes %}
    {% if attributes %}
