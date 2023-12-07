@@ -1,6 +1,7 @@
-{{ objname | escape | underline}}
+{%- set shortname = '.'.join(fullname.split('.')[1:]) %}
+{{ shortname | escape | underline}}
 
-.. automodule:: {{ objname }}
+.. automodule:: {{ shortname }}
 
    {% block attributes %}
    {% if attributes %}
