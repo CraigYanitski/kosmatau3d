@@ -67,7 +67,8 @@
    :template: custom-module-template.rst
    :recursive:
 {% for item in modules %}
-   {{ item }}
+   {%- set shortitem = '.'.join(item.split('.')[1:]) %}
+   {{ shortitem }}
 {%- endfor %}
 {% endif %}
 {% endblock %}

@@ -1,7 +1,7 @@
 {%- set shortname = '.'.join(fullname.split('.')[1:]) %}
 .. _{{ shortname }}:
 
-{{ fullname | escape | underline}}
+{{ shortname | escape | underline}}
 
 .. currentmodule:: {{ module }}
 
@@ -19,7 +19,9 @@
       :nosignatures:
    {% for item in methods %}
       {%- if not item.startswith('_') %}
-      ~{{ name }}.{{ item }}
+      {%- set shortname = '.'.join(fullname.split('.')[1:]) %}
+      {%- set shortname = fullname.split('.')[-1] %}
+      ~{{ shortname }}.{{ item }}
       {%- endif -%}
    {%- endfor %}
    {% endif %}
@@ -31,7 +33,9 @@
 
    .. autosummary::
    {% for item in attributes %}
-      ~{{ name }}.{{ item }}
+      {%- set shortname = '.'.join(fullname.split('.')[1:]) %}
+      {%- set shortname = fullname.split('.')[-1] %}
+      ~{{ shortname }}.{{ item }}
    {%- endfor %}
    {% endif %}
    {% endblock %}
