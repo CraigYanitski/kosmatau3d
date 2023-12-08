@@ -19,7 +19,6 @@
       :nosignatures:
    {% for item in methods %}
       {%- if not item.startswith('_') %}
-      {%- set shortname = '.'.join(fullname.split('.')[1:]) %}
       {%- set shortname = fullname.split('.')[-1] %}
       ~{{ shortname }}.{{ item }}
       {%- endif -%}
@@ -33,7 +32,6 @@
 
    .. autosummary::
    {% for item in attributes %}
-      {%- set shortname = '.'.join(fullname.split('.')[1:]) %}
       {%- set shortname = fullname.split('.')[-1] %}
       ~{{ shortname }}.{{ item }}
    {%- endfor %}
