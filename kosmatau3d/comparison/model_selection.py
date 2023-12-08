@@ -1,8 +1,8 @@
-'''
+"""
 This subsubpackage contains functions to regrid and resample observational data,
 compute error, compare to grids of :code:`kosmatau3d` models, and plot the 
 results.
-'''
+"""
 
 import cygrid
 import numpy as np
@@ -3442,7 +3442,7 @@ def plot_comparison(path='/mnt/hpc_backup/yanitski/projects/pdr/KT3_history/Milk
 
                 file_transition_plots.append(copy(transition_plots))
                 file_transition_log_likelihood.append(deepcopy(transition_log_likelihood))
-                np.savez(f'{path}{survey}/{survey_file}/{prefix}{output_file}_comparison.npz', trans=file_transitions, chi2=file_transition_log_likelihood)
+                np.savez(f'{path}{survey}/{survey_file}/{prefix}{output_file}_{comp}_comparison.npz', trans=file_transitions, chi2=file_transition_log_likelihood)
 
             if normalise:
                 if (log_likelihood<0).all():
