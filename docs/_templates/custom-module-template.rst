@@ -62,13 +62,15 @@
 
 {% block modules %}
 {% if modules %}
+.. rubric:: {{ _('Modules') }}
+
 .. autosummary::
    :toctree:
    :template: custom-module-template.rst
    :recursive:
 {% for item in modules %}
    {%- set shortitem = '.'.join(item.split('.')[1:]) %}
-   {{ shortitem }}
+   {{ item }}
 {%- endfor %}
 {% endif %}
 {% endblock %}
