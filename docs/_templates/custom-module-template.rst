@@ -1,7 +1,7 @@
 {%- set shortname = '.'.join(fullname.split('.')[1:]) %}
 .. _{{ shortname }}:
 
-{{ shortname | escape | underline}}
+{{ shortname | escape | underline }}
 
 .. automodule:: {{ fullname }}
 
