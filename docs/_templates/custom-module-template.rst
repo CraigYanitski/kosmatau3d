@@ -13,7 +13,7 @@
       :toctree:
    {% for item in attributes %}
       {%- set shortitem = '.'.join(item.split('.')[1:]) %}
-      {{ shortitem }}
+      {{ item }}
    {%- endfor %}
    {% endif %}
    {% endblock %}
@@ -27,7 +27,7 @@
       :nosignatures:
    {% for item in functions %}
       {%- set shortitem = '.'.join(item.split('.')[1:]) %}
-      {{ shortitem }}
+      {{ item }}
    {%- endfor %}
    {% endif %}
    {% endblock %}
@@ -42,7 +42,7 @@
       :nosignatures:
    {% for item in classes %}
       {%- set shortitem = '.'.join(item.split('.')[1:]) %}
-      {{ shortitem }}
+      {{ item }}
    {%- endfor %}
    {% endif %}
    {% endblock %}
@@ -55,7 +55,7 @@
       :toctree:
    {% for item in exceptions %}
       {%- set shortitem = '.'.join(item.split('.')[1:]) %}
-      {{ shortitem }}
+      {{ item }}
    {%- endfor %}
    {% endif %}
    {% endblock %}
