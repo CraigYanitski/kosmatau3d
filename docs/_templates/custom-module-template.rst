@@ -13,7 +13,7 @@
       :toctree:
    {% for item in attributes %}
       {%- set shortitem = '.'.join(item.split('.')[1:]) %}
-      {{ item }}
+      {{ item }} | shortitem
    {%- endfor %}
    {% endif %}
    {% endblock %}
@@ -24,10 +24,11 @@
 
    .. autosummary::
       :toctree:
+      :template: custom-function-template
       :nosignatures:
    {% for item in functions %}
       {%- set shortitem = '.'.join(item.split('.')[1:]) %}
-      {{ item }}
+      {{ item }} | shortitem
    {%- endfor %}
    {% endif %}
    {% endblock %}
@@ -42,7 +43,7 @@
       :nosignatures:
    {% for item in classes %}
       {%- set shortitem = '.'.join(item.split('.')[1:]) %}
-      {{ item }}
+      {{ item }} | shortitem
    {%- endfor %}
    {% endif %}
    {% endblock %}
@@ -55,7 +56,7 @@
       :toctree:
    {% for item in exceptions %}
       {%- set shortitem = '.'.join(item.split('.')[1:]) %}
-      {{ item }}
+      {{ item }} | shortitem
    {%- endfor %}
    {% endif %}
    {% endblock %}
@@ -70,7 +71,7 @@
    :recursive:
 {% for item in modules %}
    {%- set shortitem = '.'.join(item.split('.')[1:]) %}
-   {{ item }}
+   {{ item }} | shortitem
 {%- endfor %}
 {% endif %}
 {% endblock %}
