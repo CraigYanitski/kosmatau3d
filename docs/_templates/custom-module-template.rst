@@ -70,7 +70,7 @@
    :recursive:
 {% for item in modules %}
    {%- set shortitem = '.'.join(item.split('.')[1:]) %}
-   {{ shortitem }} <{{ item }}>
+   {{ shortitem }}
 {%- endfor %}
 {% endif %}
 {% endblock %}
