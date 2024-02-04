@@ -3,6 +3,6 @@
 
 {{ shortname | escape | underline }}
 
-.. currentmodule:: {{ module }}
+.. currentmodule:: kosmatau3d
 
-.. autofunction:: {{objname }}
+.. autofunction:: {{ shortname }}
