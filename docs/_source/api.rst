@@ -1,9 +1,33 @@
-:code:`kosmatau3d`
-==================
+kosmatau3d
+==========
+
+.. automodule:: kosmatau3d
+
+   
+   
+   
+
+   
+   
+   
+
+   
+   
+   
+
+   
+   
+   
+
+
 
 .. autosummary::
-   :recursive:
+   :toctree:
    :template: custom-module-template.rst
-   :toctree: _autosummary
+   :recursive:
 
-   kosmatau3d
+   kosmatau3d.comparison
+   kosmatau3d.kosmatau
+   kosmatau3d.models
+   kosmatau3d.properties
+
