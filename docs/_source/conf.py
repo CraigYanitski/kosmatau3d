@@ -52,12 +52,12 @@ autosummary_generate = True  # Turn on sphinx.ext.autosummary
 # autosummary_imported_members = True # Used for function template
 autoclass_content = "both"  # Add __init__ doc (params) to class summaries
 html_show_sourcelink = (
-    False  # Remove 'view source code' from top of page (for html, not python)
+    True  # Remove 'view source code' from top of page (for html, not python)
 )
 autodoc_inherit_docstrings = True  # Inherit docstring from bas class if no docstring
 set_type_checking_flag = True  # Enable 'extensive' imports for sphinx_autodoc_typehints
 nbsphinx_allow_errors = True  # Continue through Jupyter errors
-add_module_names = False  # Reemove namespaces from class/method signatures
+add_module_names = False  # Remove namespaces from class/method signatures
 
 # Add any paths that contain templates here, relative to this directory.
 templates_path = ["../_templates"]

@@ -24,7 +24,7 @@
 
    .. autosummary::
       :toctree:
-      :template: custom-function-template
+      :template: custom-function-template.rst
       :nosignatures:
    {% for item in functions %}
       {%- set shortitem = '.'.join(item.split('.')[1:]) %}
@@ -71,7 +71,7 @@
    :recursive:
 {% for item in modules %}
    {%- set shortitem = '.'.join(item.split('.')[1:]) %}
-   {{ item }} | shortitem
+   :ref:`{{ shortitem }} <{{ item }}>`
 {%- endfor %}
 {% endif %}
 {% endblock %}
