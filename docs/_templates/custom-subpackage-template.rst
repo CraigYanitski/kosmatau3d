@@ -63,6 +63,8 @@
 
 {% block modules %}
 {% if modules %}
+.. currentmodule:: kosmatau3d
+
 .. rubric:: {{ _('Modules') }}
 
 .. autosummary::
@@ -71,7 +73,7 @@
    :recursive:
 {% for item in modules %}
    {%- set shortitem = '.'.join(item.split('.')[1:]) %}
-   {{ item }}
+   {{ shortitem }}
 {%- endfor %}
 {% endif %}
 {% endblock %}
