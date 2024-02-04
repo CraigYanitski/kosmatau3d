@@ -26,7 +26,7 @@ DataBase (ISMDB) hosted at the Observatoire de Paris-Meudon.
    3D Models <model>
    Comparison to Observations <comparison>
    Future Development <development>
-   API Reference <_autosummary/kosmatau3d>
+   API Reference <api>
    Acknowledgements <acknowledgements>
 
 Indices and tables
