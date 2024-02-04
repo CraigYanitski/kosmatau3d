@@ -1,3 +1,6 @@
+:code:`kosmatau3d`
+==================
+
 .. autosummary::
    :recursive:
    :template: custom-module-template.rst
