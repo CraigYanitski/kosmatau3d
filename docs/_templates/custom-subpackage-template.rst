@@ -5,7 +5,7 @@
 
 .. automodule:: {{ fullname }}
 
-   .. currentmodule:: {{ module }}
+   .. currentmodule:: {{ fullname }}
 
    {% block attributes %}
    {% if attributes %}
