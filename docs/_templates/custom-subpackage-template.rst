@@ -5,6 +5,8 @@
 
 .. automodule:: {{ fullname }}
 
+   .. currentmodule:: kosmatau3d
+
    {% block attributes %}
    {% if attributes %}
    .. rubric:: Module attributes
@@ -13,7 +15,7 @@
       :toctree:
    {% for item in attributes %}
       {%- set shortitem = '.'.join(item.split('.')[1:]) %}
-      {{ item }}
+      {{ shortitem }}
    {%- endfor %}
    {% endif %}
    {% endblock %}
@@ -28,7 +30,7 @@
       :nosignatures:
    {% for item in functions %}
       {%- set shortitem = '.'.join(item.split('.')[1:]) %}
-      {{ item }}
+      {{ shortitem }}
    {%- endfor %}
    {% endif %}
    {% endblock %}
@@ -43,7 +45,7 @@
       :nosignatures:
    {% for item in classes %}
       {%- set shortitem = '.'.join(item.split('.')[1:]) %}
-      {{ item }}
+      {{ shortitem }}
    {%- endfor %}
    {% endif %}
    {% endblock %}
@@ -56,7 +58,7 @@
       :toctree:
    {% for item in exceptions %}
       {%- set shortitem = '.'.join(item.split('.')[1:]) %}
-      {{ item }}
+      {{ shortitem }}
    {%- endfor %}
    {% endif %}
    {% endblock %}

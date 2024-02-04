@@ -3,6 +3,6 @@
 
 {{ shortname | escape | underline }}
 
-.. current module:: {{ module }}
+.. currentmodule:: {{ module }}
 
-.. auto{{ objtype }}:: {{objname }}
+.. autofunction:: {{objname }}
