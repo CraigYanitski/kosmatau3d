@@ -23,7 +23,7 @@ kosmatau3d
 
 .. autosummary::
    :toctree:
-   :template: custom-module-template.rst
+   :template: custom-subpackage-template.rst
    :recursive:
 
    kosmatau3d.comparison
