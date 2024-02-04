@@ -24,7 +24,7 @@
 
    .. autosummary::
       :toctree:
-      :template: custom-function-template_copy.rst
+      :template: custom-function-template.rst
       :nosignatures:
    {% for item in functions %}
       {%- set shortitem = '.'.join(item.split('.')[1:]) %}
