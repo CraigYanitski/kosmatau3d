@@ -5,8 +5,6 @@
 
 .. automodule:: {{ fullname }}
 
-   .. currentmodule:: kosmatau3d
-
    {% block attributes %}
    {% if attributes %}
    .. rubric:: Module attributes
@@ -34,6 +32,8 @@
    {%- endfor %}
    {% endif %}
    {% endblock %}
+
+   .. currentmodule:: kosmatau3d
 
    {% block classes %}
    {% if classes %}
