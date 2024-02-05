@@ -37,6 +37,8 @@
 
    .. currentmodule:: kosmatau3d
 
+   {{ classes }}
+
    {% block classes %}
    {% if classes %}
    .. rubric:: {{ _('Classes') }}
