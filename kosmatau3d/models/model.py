@@ -73,7 +73,8 @@ from .voxel_grid import VoxelGrid
 
 class Model(object):
     """
-    This is the highest class in the hierarchy of the kosmatau3d simulation.
+    This is the highest class in the hierarchy of the :code:`kosmatau3d`
+    simulation.
     It contains all of the information needed to properly model a PDR.
     """
 
@@ -606,12 +607,13 @@ class Model(object):
 
 class SyntheticModel(object):
     """
-    This is a class to load individual `kosmatau3d` models. This in merely for
-    the convenience of examining the model information in a consistent manner.
+    This is a class to load individual :code:`kosmatau3d` models.
+    This is merely for the convenience of examining the model information in
+    a consistent manner.
     There is an optional argument when initialising to set a base directory,
-    which makes it easier to load multiple models in succession. Due to the
-    complexity of the `kosmatau3d` models, it is not recommended to load
-    multiple models at the same time.
+    which makes it easier to load multiple models in succession.
+    Due to the complexity of the `kosmatau3d` models, it is not recommended
+    to load multiple models at the same time.
     """
 
     def __init__(self, base_dir=""):
