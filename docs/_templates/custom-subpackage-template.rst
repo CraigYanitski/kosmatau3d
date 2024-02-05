@@ -35,8 +35,6 @@
    {% endif %}
    {% endblock %}
 
-   .. currentmodule:: kosmatau3d
-
    {% block classes %}
    {% if classes %}
    .. rubric:: {{ _('Classes') }}
@@ -47,7 +45,7 @@
       :nosignatures:
    {% for item in classes %}
       {%- set shortitem = '.'.join(item.split('.')[1:]) %}
-      {{ shortitem }}
+      {{ item }}
    {%- endfor %}
    {% endif %}
    {% endblock %}
@@ -60,7 +58,7 @@
       :toctree:
    {% for item in exceptions %}
       {%- set shortitem = '.'.join(item.split('.')[1:]) %}
-      {{ shortitem }}
+      {{ item }}
    {%- endfor %}
    {% endif %}
    {% endblock %}
