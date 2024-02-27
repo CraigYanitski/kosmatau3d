@@ -34,8 +34,8 @@ DataBase (ISMDB) hosted at the Observatoire de Paris-Meudon.
    Clump Properties <properties>
    Voxels <voxel>
    3D Models <model>
-   Future Development <development>
-   API Reference <api>
+   Development <development>
+   API <api>
    Acknowledgements <acknowledgements>
 
 Indices and tables
