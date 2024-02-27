@@ -17,10 +17,12 @@ DataBase (ISMDB) hosted at the Observatoire de Paris-Meudon.
    Please send all questions and issues to yanitski@ph1.uni-koeln.de.
 
    Developers:
+   
    - `Craig Yanitski <https://github.com/CraigYanitski>`_
    - `Aditi Sinha <https://github.com/aditi0009>`_
 
    Previous contributers:
+   
    - Silke Andree-Labsch (depreciated version)
    - Christoph Bruckmann (depreciated version)
 
