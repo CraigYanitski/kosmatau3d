@@ -18,7 +18,7 @@ DataBase (ISMDB) hosted at the Observatoire de Paris-Meudon.
 
    Developers:
    
-   - `Craig Yanitski <https://github.com/CraigYanitski>`_
+   - `Craig N. Yanitski <https://github.com/CraigYanitski>`_
    - `Aditi Sinha <https://github.com/aditi0009>`_
 
    Previous contributers:
