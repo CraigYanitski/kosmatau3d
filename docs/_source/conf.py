@@ -94,7 +94,7 @@ html_title = "kosmatau3d"
 html_last_updated_fmt = "%d %b %Y"
 html_theme_options = {
     "switcher": {
-        "json_url": "https://kosmatau3d.readthedocs.io/en/latest/_static/switcher.json",
+        "json_url": "https://kosmatau3d.readthedocs.io/en/latest/_static/version_switcher.json",
         "version_match": release,
     },
     "github": "https://github.com/CraigYanitski/kosmatau3d",
