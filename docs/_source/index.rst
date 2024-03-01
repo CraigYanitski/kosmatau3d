@@ -31,12 +31,14 @@ DataBase (ISMDB) hosted at the Observatoire de Paris-Meudon.
    :caption: Sections:
 
    Installation <installation>
-   Clumps <properties>
-   Voxels <voxel>
-   3D Models <model>
+   Getting Started <getting-started>
    API <api>
    Development <development>
    Acknowledgements <acknowledgements>
+
+.. Clumps <properties>
+   Voxels <voxel>
+   3D Models <model>
 
 Indices and tables
 ==================

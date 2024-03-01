@@ -13,13 +13,15 @@
 import os
 import sys
 
+from datetime import date
+
 sys.path.insert(0, os.path.abspath("../../kosmatau3d/"))
 
 
 # -- Project information -----------------------------------------------------
 
 project = "kosmatau3d"
-copyright = "2023, Craig Yanitski"
+copyright = f"2022-{date.today().year}, Craig Yanitski"
 author = "Craig Yanitski"
 
 # The full version, including alpha/beta/rc tags
@@ -36,7 +38,9 @@ extensions = [
     # 'sphinx.ext.doctest',
     "sphinx.ext.autodoc",
     "sphinx.ext.autosummary",
-    "sphinx.ext.intersphinx",  # Link to other project's documentation (see mapping below)
+    "sphinx.ext.coverage",
+    "sphinx.ext.mathjax",
+    # "sphinx.ext.intersphinx",  # Link to other project's documentation (see mapping below)
     "sphinx.ext.viewcode",  # Add a link to the Python source code for classes, functions etc.
     # 'sphinx_autodoc_typehints', # Automatically document param types (less noise in class signature)
     "nbsphinx",  # Integrate Jupyter Notebooks and Sphinx
@@ -84,16 +88,22 @@ def setup(app):
 
 # -- Options for HTML output -------------------------------------------------
 
-# The theme to use for HTML and HTML Help pages.  See the documentation for
-# a list of builtin themes.
-# Default: alabaster
 html_theme = "pydata_sphinx_theme"
-html_css_files = ["readthedocs-custom.css"]  # Override some CSS settings
-
-# Add any paths that contain custom static files (such as style sheets) here,
-# relative to this directory. They are copied after the builtin static files,
-# so a file named "default.css" will overwrite the builtin "default.css".
 html_static_path = ["../_static"]
+html_title = "kosmatau3d"
+html_last_updated_fmt = "%d %b %Y"
+html_theme_options = {
+    "switcher": {
+        "json_url": "https://kosmatau3d.readthedocs.io/en/latest/_static/switcher.json",
+        "version_match": release,
+    },
+    "github": "https://github.com/CraigYanitski/kosmatau3d",
+    "navbar_start": ["navbar-logo", "version-switcher"],
+    # "navbar_persistent": [],
+    "show_version_warning_banner": True,
+    # "secondary_sidebar_items": ["page-toc"],
+}
+html_css_files = ["pydata-custom.css"]  # Override some CSS settings
 
 
 # List of patterns, relative to source directory, that match files and
@@ -105,10 +115,10 @@ html_static_path = ["../_static"]
 master_doc = "index"
 
 # Cross-reference existing Python objects
-intersphinx_mapping = {
-    "python": ("https://docs.python.org/3/", None),
-    "pandas": ("https://pandas.pydata.org/pandas-docs/stable", None),
-    "numpy": ("https://numpy.org/doc/stable", None),
-    "scipy": ("https://docs.scipy.org/doc/scipy", None),
-    "numba": ("https://numba.pydata.org/numba-doc/latest", None),
-}
+# intersphinx_mapping = {
+#     "python": ("https://docs.python.org/3/", None),
+#     "pandas": ("https://pandas.pydata.org/pandas-docs/stable", None),
+#     "numpy": ("https://numpy.org/doc/stable", None),
+#     "scipy": ("https://docs.scipy.org/doc/scipy", None),
+#     "numba": ("https://numba.pydata.org/numba-doc/latest", None),
+# }
