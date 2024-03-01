@@ -15,4 +15,6 @@ kosmatau3d/grid/dilled/*
 */.obsidian
 docs/_build
 docs/_source/_autosummary
+docs/_source/generated
+docs/_source/kosmatau3d.*
 dist/
