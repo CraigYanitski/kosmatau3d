@@ -102,6 +102,7 @@ html_theme_options = {
     # "navbar_persistent": [],
     "show_version_warning_banner": True,
     # "secondary_sidebar_items": ["page-toc"],
+    "show_prev_next": False,
 }
 html_css_files = ["pydata-custom.css"]  # Override some CSS settings
 
