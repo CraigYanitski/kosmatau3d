@@ -1,12 +1,13 @@
+******************
 Future Development
-==================
+******************
 
 As seen on the home page, this code is under active development.
 There are many planned extensions/improvements, so we offer this page to 
 describe them.
 
 Cython
-------
+======
 
 From the beginning it was known that compiling the code in cython would 
 dramatically improve its efficiency.
@@ -38,6 +39,9 @@ Previous contributers:
 
 - Silke Andree-Labsch (depreciated version)
 - Christoph Bruckmann (depreciated version)
+
+Upcoming developments
+---------------------
 
 .. toctree::
    :maxdepth: 2
