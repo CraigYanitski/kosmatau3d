@@ -9,29 +9,31 @@ describe them.
 Developers
 ==========
 
-Active contributers
+Active contributors
 -------------------
 
 .. Here the columns are for the developer and their affiliation.
    We will later include information about what they develop.
 
 =======================================================   ===================
+name                                                      affiliation
 =======================================================   ===================
 `Craig N. Yanitski <https://github.com/CraigYanitski>`_   Universität zu Köln
 `Aditi Sinha <https://github.com/aditi0009>`_             Universität zu Köln
 =======================================================   ===================
 
-Previous contributers
+Previous contributors
 ---------------------
 
-.. Here the columns are for the previous contributer and the version(s) of the
-   code they worked on
+.. Here the columns are for the previous contributor and the version(s) of the
+   code they worked on.
 
-===================   =====================
-===================   =====================
-Silke Andree-Labsch   (depreciated version)
-Christoph Bruckmann   (depreciated version)
-===================   =====================
+===================   ============================
+name                  version(s)
+===================   ============================
+Silke Andree-Labsch   (depreciated version) [#f1]_
+Christoph Bruckmann   (depreciated version) [#f1]_
+===================   ============================
 
 Planned development
 ===================
@@ -45,9 +47,7 @@ Below we list the developments planned for upcoming versions of
 | v1.1.0  | - restructuring of code                                           |
 |         |   - :code:`masspoints` -> :code:`clumps`                          |
 +---------+-------------------------------------------------------------------+
-| test    | ...                                                               |
-| multi-  |                                                                   |
-| lines   |                                                                   |
+| ...     | ...                                                               |
 +---------+-------------------------------------------------------------------+
 
 
@@ -81,6 +81,14 @@ to develop these features.
 |             | representation of the model as well as compute the synthetic  |
 |             | observation.                                                  |
 +-------------+---------------------------------------------------------------+
+
+.. rubric:: Footnotes
+
+.. [#f1]
+
+   The *depreciated* version of :code:`kosmatau3d` is the version written by 
+   Silke Andree-Labsch c. 2015 (KOSMA-_math:`\tau` 3D) that predates the 
+   publically-available code
 
 .. toctree::
    :maxdepth: 2
