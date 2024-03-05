@@ -29,10 +29,10 @@ Previous contributors
    code they worked on.
 
 ===================   ===========================
-name                  version(s)
+name                  version(s) [#f1]_
 ===================   ===========================
-Silke Andree-Labsch   (deprecated version) [#f1]_
-Christoph Bruckmann   (deprecated version) [#f1]_
+Silke Andree-Labsch   (deprecated version)
+Christoph Bruckmann   (deprecated version)
 ===================   ===========================
 
 Planned development
@@ -49,6 +49,8 @@ Below we list the developments planned for upcoming versions of
 |         |   - :mod:`masspoints` -> :mod:`clumps`                            |
 |         |                                                                   |
 |         |   - :mod:`observations` -> :mod:`model_data`                      |
+|         |                                                                   |
+|         | - removal of circular imports                                     |
 +---------+-------------------------------------------------------------------+
 | ...     | ...                                                               |
 +---------+-------------------------------------------------------------------+
@@ -85,8 +87,8 @@ to develop these features.
 |             | observation.                                                  |
 +-------------+---------------------------------------------------------------+
 | recursive   | :mod:`radiativeTransfer` is currently functioning by          |
-| radiative   | looping through the voxels in a sightline to integrate the    |
-| transfer    | radiative transfer equation.                                  |
+| RT          | looping through the voxels in a sightline to integrate the    |
+|             | radiative transfer equation.                                  |
 |             | This can and should be cleaned-up by rewriting this as a      |
 |             | recursive function that can be called for one sightline.      |
 |             | It might involve improving the current linear approximation   |
@@ -98,7 +100,7 @@ to develop these features.
 
 .. [#f1]
 
-   The *depreciated* version of :code:`kosmatau3d` is the version written by 
+   The *deprecated* version of :code:`kosmatau3d` is the version written by 
    Silke Andree-Labsch c. 2015 (KOSMA-:math:`\tau` 3D) that predates the 
    publically-available code
 

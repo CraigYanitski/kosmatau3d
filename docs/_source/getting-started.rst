@@ -1,14 +1,15 @@
+***************
 Getting Started
-===============
+***************
 
 The Single-Voxel model
-----------------------
+======================
 
-This is the base functionality of kosmatau3d, and has been successfully used in 
-PDR research.
+This is the base functionality of :code:`kosmatau3d`, and has been successfully 
+used in PDR research.
 
 KOSMA-:math:`\tau` Properties
------------------------------
+=============================
 
 It is imperative to understand the functionality and assumptions used in 
 KOSMA-:math:`\tau` when using :code:`kosmatau3d` [#f1]_. 
@@ -19,7 +20,7 @@ It assumes the density profile of a Bonnor-Ebert sphere, that is, a gaseous
 sphere in pressure equilibrium with its environment.
 
 Three-dimensional PDR Models
-----------------------------
+============================
 
 The most complex functionality of kosmatau3d, and the reason for its 
 development since its conception (Andree-Labsch et al. 2017). 

@@ -1,5 +1,6 @@
+**************************
 Comparison to observations
-==========================
+**************************
 
 Of course every astrophysicist has their own method of comparing observed and 
 synthetic observations, but a few tools are included in :code:`kosmatau3d`.

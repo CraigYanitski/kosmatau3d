@@ -1,5 +1,6 @@
+************
 Installation
-============
+************
 
 To install kosmatau3d, download the git repo, then simply install using,
 

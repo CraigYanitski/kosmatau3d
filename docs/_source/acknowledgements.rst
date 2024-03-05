@@ -1,23 +1,35 @@
+****************
 Acknowledgements
-================
+****************
 
 :code:`kosmatau3d` is the result of two doctoral theses.
-It owes its current form to rigourous testing and suggestion from several people.
+It owes its current form to rigourous testing and suggestion from several 
+people.
 Its core developers are Silke Andree-Labsch (for KOSMA-:math:`\tau` 3D) and 
 Craig Yanitski (for :code:`kosmatau3d`).
-Both were supervised by Volker Ossenkopf-Okada in the group C1 in SFB 956.
+Both were advised by Priv. Doz. Dr. Volker Ossenkopf-Okada in the group C1 in 
+`SFB 956 <https://www.sfb956.de>`_.
+Aditi Sinha is also developer focusing on the implementation of 
+:code:`kosmatau3d` as a subgrid model for the SILCC (M)HD simulations.
+She is advised by Priv. Doz. Dr. Volker Ossenkopf-Okada in the group A6 in 
+`SFB 1601 <https://sfb1601.astro.uni-koeln.de>`_.
 Further feedback and assistance were provided by Markus Rollig, Christoph 
 Bruckmann, Yoko Okada, Aleena Baby, Slawa Kabanovic, Christof Buchbender, Ronan 
 Higgins, Juan-Luis Verbena, Cristian Guevara, and Prachi Khatri.
 
 Citing :code:`kosmatau3d`
--------------------------
+=========================
 
 Please cite the two primary papers describing the functionality of 
-:code:`kosmatau3d`: Andree-Labsch et al. (2017) and Yanitski et al. (2024).
+:code:`kosmatau3d`: 
+`Andree-Labsch et al. (2017) <https://ui.adsabs.harvard.edu/abs/2017A%26A...598A...2A/abstract>`_ 
+and Yanitski et al. (2024, in prep).
+Cite as well the code itself: Yanitski, C. N. :code:`kosmatau3d` [Computer 
+software]. :code:`https://github.com/CraigYanitski/kosmatau3d`.
 If use the single-voxel model to compare to the pixels in a map (the so-called 
-`column` mode of :code:`kosmatau3d.models.Voxel()`), then please also cite 
-Okada, Yanitski et al. (2024), which is the first description of this feature.
+`column` mode of :class:`kosmatau3d.models.Voxel()`), then please also cite 
+Okada, Yanitski et al. (2024, in prep), which is the first description of this 
+feature.
 
 .. toctree::
    :maxdepth: 2
