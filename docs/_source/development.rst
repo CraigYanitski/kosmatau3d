@@ -16,8 +16,8 @@ Active contributers
    We will later include information about what they develop.
 
 =======================================================   ===================
-`Craig N. Yanitski <https://github.com/CraigYanitski>`_   Universität zu Köln
 =======================================================   ===================
+`Craig N. Yanitski <https://github.com/CraigYanitski>`_   Universität zu Köln
 `Aditi Sinha <https://github.com/aditi0009>`_             Universität zu Köln
 =======================================================   ===================
 
@@ -27,6 +27,7 @@ Previous contributers
 .. Here the columns are for the previous contributer and the version(s) of the
    code they worked on
 
+===================   =====================
 ===================   =====================
 Silke Andree-Labsch   (depreciated version)
 Christoph Bruckmann   (depreciated version)
