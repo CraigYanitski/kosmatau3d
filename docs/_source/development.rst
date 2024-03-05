@@ -28,12 +28,12 @@ Previous contributors
 .. Here the columns are for the previous contributor and the version(s) of the
    code they worked on.
 
-===================   ============================
+===================   ===========================
 name                  version(s)
-===================   ============================
-Silke Andree-Labsch   (depreciated version) [#f1]_
-Christoph Bruckmann   (depreciated version) [#f1]_
-===================   ============================
+===================   ===========================
+Silke Andree-Labsch   (deprecated version) [#f1]_
+Christoph Bruckmann   (deprecated version) [#f1]_
+===================   ===========================
 
 Planned development
 ===================
@@ -46,9 +46,9 @@ Below we list the developments planned for upcoming versions of
 +=========+===================================================================+
 | v1.1.0  | - restructuring of code                                           |
 |         |                                                                   |
-|         |   - :mod:`masspoints` -> :mod:`clumps`                      |
+|         |   - :mod:`masspoints` -> :mod:`clumps`                            |
 |         |                                                                   |
-|         |   - :mod:`observations` -> :mod:`model_data`                |
+|         |   - :mod:`observations` -> :mod:`model_data`                      |
 +---------+-------------------------------------------------------------------+
 | ...     | ...                                                               |
 +---------+-------------------------------------------------------------------+
@@ -84,7 +84,7 @@ to develop these features.
 |             | representation of the model as well as compute the synthetic  |
 |             | observation.                                                  |
 +-------------+---------------------------------------------------------------+
-| recursive   | :mod:`radiativeTransfer` is currently functioning by       |
+| recursive   | :mod:`radiativeTransfer` is currently functioning by          |
 | radiative   | looping through the voxels in a sightline to integrate the    |
 | transfer    | radiative transfer equation.                                  |
 |             | This can and should be cleaned-up by rewriting this as a      |
