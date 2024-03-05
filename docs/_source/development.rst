@@ -46,9 +46,9 @@ Below we list the developments planned for upcoming versions of
 +=========+===================================================================+
 | v1.1.0  | - restructuring of code                                           |
 |         |                                                                   |
-|         |   - :module:`masspoints` -> :module:`clumps`                      |
+|         |   - :mod:`masspoints` -> :mod:`clumps`                      |
 |         |                                                                   |
-|         |   - :module:`observations` -> :module:`model_data`                |
+|         |   - :mod:`observations` -> :mod:`model_data`                |
 +---------+-------------------------------------------------------------------+
 | ...     | ...                                                               |
 +---------+-------------------------------------------------------------------+
@@ -84,7 +84,7 @@ to develop these features.
 |             | representation of the model as well as compute the synthetic  |
 |             | observation.                                                  |
 +-------------+---------------------------------------------------------------+
-| recursive   | :module:`radiativeTransfer` is currently functioning by       |
+| recursive   | :mod:`radiativeTransfer` is currently functioning by       |
 | radiative   | looping through the voxels in a sightline to integrate the    |
 | transfer    | radiative transfer equation.                                  |
 |             | This can and should be cleaned-up by rewriting this as a      |
