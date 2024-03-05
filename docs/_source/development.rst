@@ -45,7 +45,10 @@ Below we list the developments planned for upcoming versions of
 | version | changes                                                           |
 +=========+===================================================================+
 | v1.1.0  | - restructuring of code                                           |
-|         |   - :code:`masspoints` -> :code:`clumps`                          |
+|         |                                                                   |
+|         |   - :module:`masspoints` -> :module:`clumps`                      |
+|         |                                                                   |
+|         |   - :module:`observations` -> :module:`model_data`                |
 +---------+-------------------------------------------------------------------+
 | ...     | ...                                                               |
 +---------+-------------------------------------------------------------------+
@@ -81,13 +84,22 @@ to develop these features.
 |             | representation of the model as well as compute the synthetic  |
 |             | observation.                                                  |
 +-------------+---------------------------------------------------------------+
+| recursive   | :module:`radiativeTransfer` is currently functioning by       |
+| radiative   | looping through the voxels in a sightline to integrate the    |
+| transfer    | radiative transfer equation.                                  |
+|             | This can and should be cleaned-up by rewriting this as a      |
+|             | recursive function that can be called for one sightline.      |
+|             | It might involve improving the current linear approximation   |
+|             | used in the computation (see                                  |
+|             | `Yanitski 2023 <https://kups.ub.uni-koeln.de/71850/>`_).      |
++-------------+---------------------------------------------------------------+
 
 .. rubric:: Footnotes
 
 .. [#f1]
 
    The *depreciated* version of :code:`kosmatau3d` is the version written by 
-   Silke Andree-Labsch c. 2015 (KOSMA-_math:`\tau` 3D) that predates the 
+   Silke Andree-Labsch c. 2015 (KOSMA-:math:`\tau` 3D) that predates the 
    publically-available code
 
 .. toctree::
