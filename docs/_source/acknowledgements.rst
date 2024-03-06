@@ -23,8 +23,7 @@ Citing :code:`kosmatau3d`
 Please cite the two primary papers describing the functionality of 
 :code:`kosmatau3d`: 
 
-- `Andree-Labsch, S., Ossenkopf-Okada, V., & Röllig, M. 2017, *Astronomy & 
-Astrophysics*\ , 598, A2 <https://ui.adsabs.harvard.edu/abs/2017A%26A...598A...2A/abstract>`_ 
+- `Andree-Labsch, S., Ossenkopf-Okada, V., & Röllig, M. 2017, *Astronomy & Astrophysics*\ , 598, A2 <https://ui.adsabs.harvard.edu/abs/2017A%26A...598A...2A/abstract>`_ 
 
 - Yanitski, C. N., Ossenkopf-Okada, V., and Röllig, M. 2024, in prep
 
