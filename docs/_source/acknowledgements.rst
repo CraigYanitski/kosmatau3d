@@ -3,10 +3,10 @@ Acknowledgements
 ****************
 
 :code:`kosmatau3d` is the result of two doctoral theses.
-It owes its current form to rigourous testing and suggestion from several 
+It owes its current form to rigourous testing and suggestions from several 
 people.
-Its core :doc:`developers <development>` were Silke Andree-Labsch (for KOSMA-:math:`\tau` 3D) and 
-Craig Yanitski (for :code:`kosmatau3d`).
+Its core :doc:`developers <development>` were Silke Andree-Labsch (for 
+KOSMA-:math:`\tau` 3D) and Craig Yanitski (for :code:`kosmatau3d`).
 Both were advised by Priv. Doz. Dr. Volker Ossenkopf-Okada in the group C1 in 
 `SFB 956 <https://www.sfb956.de>`_.
 Aditi Sinha is now also developer focusing on the implementation of 
@@ -25,20 +25,24 @@ Please cite the two primary papers describing the functionality of
 
 .. - `Andree-Labsch, S., Ossenkopf-Okada, V., & Röllig, M. 2017, *Astronomy & Astrophysics*\ , 598, A2 <https://ui.adsabs.harvard.edu/abs/2017A%26A...598A...2A/abstract>`_ 
 
-- Andree-Labsch, S., Ossenkopf-Okada, V., & Röllig, M. 2017, *Astronomy & Astrophysics*\ , 598, A2
+- Andree-Labsch, S., Ossenkopf-Okada, V., & Röllig, M. 2017, 
+  *Astronomy & Astrophysics*\ , 598, A2
 
-- Yanitski, C. N., Ossenkopf-Okada, V., and Röllig, M. 2024, in prep
+.. - Yanitski, C. N., Ossenkopf-Okada, V., and Röllig, M. 2024, in prep
+
+- Yanitski, C. N. 2023, PhD thesis, Universität zu Köln, Kölner 
+  UniversitätsPublikationsServer
 
 Cite as well the code itself: 
 
 - Yanitski, C. N. :code:`kosmatau3d` [Computer software]. 
-:code:`https://github.com/CraigYanitski/kosmatau3d`.
+  :code:`https://github.com/CraigYanitski/kosmatau3d`.
 
 If use the single-voxel model to compare to the pixels in a map (the so-called 
 `column` mode of :class:`kosmatau3d.models.Voxel()`), then please also cite the 
 first description of this feature:
 
-- Okada, Y., Yanitski, C. N. et al. 2024, in prep
+- Okada, Y., Yanitski, C. N., et al. 2024, in prep
 
 .. toctree::
    :maxdepth: 2

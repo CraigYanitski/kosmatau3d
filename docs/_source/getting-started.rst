@@ -16,8 +16,32 @@ KOSMA-:math:`\tau` when using :code:`kosmatau3d` [#f1]_.
 KOSMA-:math:`\tau` is an isotropically-radiated, spherically symmetric PDR code.
 It is maintained by Markus Röllig at the Universität zu Köln, and utilises 
 chemical models from Amiel Sternberg at Tel Aviv University.
-It assumes the density profile of a Bonnor-Ebert sphere, that is, a gaseous 
-sphere in pressure equilibrium with its environment.
+
+It assumes a piece-wise density profile approximating that of a Bonnor-Ebert 
+sphere, that is, a gaseous sphere in pressure equilibrium with its environment.
+For the total hydrogen surface density of the PDR :math:`n_s`, we define
+the density profile as,
+
+.. math::
+   
+   n(r) = 
+   \begin{dcases}
+   \left( \frac{r}{r_\mathrm{cl}} \right)^{-\gamma} & r > r_\mathrm{core} \\
+   \left( \frac{r_\mathrm{core}}{r_\mathrm{cl}} \right)^{-\gamma} & r \leq r_\mathrm{core}
+   \end{dcases},
+
+for a given core radius :math:`r_\mathrm{core}` and powerlaw index 
+:math:`\gamma`.
+The for the KOSMA-:math:`\tau` grids in :code:`kosmatau3d`, we use the values
+:math:`0.2 r_\mathrm{cl}` and :math:`1.5`, respectively.
+With this definition, we can also write the total hydrogen number as,
+
+.. math::
+   N_H &= \int_0^{r_\mathrm{cl}} \mathrm{d}r 4 \pi r^2 n(r), \\
+   &= \frac{4 \pi}{3} n_s r_\mathrm{cl}^3 \left( 1 - \frac{\gamma}{3} \left( 
+   \frac{r_\mathrm{core}}{r_\mathrm{cl}} \right)^{3-\gamma} \right).
+
+
 
 Three-dimensional PDR Models
 ============================
