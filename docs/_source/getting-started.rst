@@ -25,10 +25,12 @@ the density profile as,
 .. math::
    
    n(r) = 
-   \begin{dcases}
-   \left( \frac{r}{r_\mathrm{cl}} \right)^{-\gamma} & r > r_\mathrm{core} \\
-   \left( \frac{r_\mathrm{core}}{r_\mathrm{cl}} \right)^{-\gamma} & r \leq r_\mathrm{core}
-   \end{dcases},
+   \left\{
+      \begin{aligned}
+         \left( \frac{r}{r_\mathrm{cl}} \right)^{-\gamma} & r > r_\mathrm{core} \\
+         \left( \frac{r_\mathrm{core}}{r_\mathrm{cl}} \right)^{-\gamma} & r \leq r_\mathrm{core}
+      \end{aligned}
+   \right. ,
 
 for a given core radius :math:`r_\mathrm{core}` and powerlaw index 
 :math:`\gamma`.
