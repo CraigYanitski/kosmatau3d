@@ -27,8 +27,10 @@ the density profile as,
    n(r) = n_s
    \left\{
       \begin{aligned}
-         \left( \frac{r}{r_\mathrm{cl}} \right)^{-\gamma} & r > r_\mathrm{core} \\
-         \left( \frac{r_\mathrm{core}}{r_\mathrm{cl}} \right)^{-\gamma} & r \leq r_\mathrm{core}
+         \left( \frac{r}{r_\mathrm{cl}} \right)^{-\gamma} 
+         & r > r_\mathrm{core} \\
+         \left( \frac{r_\mathrm{core}}{r_\mathrm{cl}} \right)^{-\gamma} 
+         & r \leq r_\mathrm{core}
       \end{aligned}
    \right. \hspace{1cm} ,
 
@@ -41,7 +43,8 @@ With this definition, we can also write the total hydrogen number as,
 .. math::
    N_H &= \int_0^{r_\mathrm{cl}} \mathrm{d}r 4 \pi r^2 n(r), \\
    &= \frac{4 \pi}{3} n_s r_\mathrm{cl}^3 \left( 1 - \frac{\gamma}{3} \left( 
-   \frac{r_\mathrm{core}}{r_\mathrm{cl}} \right)^{3-\gamma} \right).
+   \frac{r_\mathrm{core}}{r_\mathrm{cl}} \right)^{3-\gamma} \right)
+   \hspace{1cm} .
 
 
 
