@@ -251,83 +251,84 @@ class Voxel(object):
         debug=False,
     ):
         """
-        This method calculates the radii assuming an origin of (0,0). It then averages
-        over a subgrid of 3x3. It might be improved later by having functionality to
-        change the subgrid dimensions.
+        This method initialises all of the voxel parameters and, if not already
+        evaluated, also initialises the KOSMA-:math:`\\tau` grid and prepares
+        interpolation routines.
 
-        There are a few kwargs that can be used to initialise a Voxel instance:
+        There are quite a few kwargs that can be used to initialise a
+        :class:`Voxel` instance:
 
         Model parameters
         ----------------
 
         :param alpha: The power law distribution required for initial mass function dN(M)/dM = M^-alpha.
-               The default is 1.84 as determined in Heithausen et al. (1998).
+            The default is 1.84 as determined in Heithausen et al. (1998).
         :param gamma: The power law mass-size relation satisfying M = C R^gamma. The default is 2.31 as
-               determined in Heithausen et al. (1998).
+            determined in Heithausen et al. (1998).
         :param velocityRange: The range (list) of the observed radial velocities. By default it
-                       is [-10, 10].
+            is [-10, 10].
         :param velocityNumber: The number of observed velocities in the specified range (including
-                        endpoints). The default is 51.
+            endpoints). The default is 51.
         :param clumpMassNumber: The number of clump masses for each set. This should be a list of
-                         integers with the same length as clumpMassRange. The default is
-                         [3, 1].
+            integers with the same length as clumpMassRange. The default is
+            [3, 1].
         :param clumpMassRange: The range (list) of clump masses for each set. This is a list of
-                        ranges with the same length as clumpMassNumber. The ranges can have
-                        length 1, in which case it only evaluates that clump mass. The
-                        masses are in units of dex(Msol). By default it is [[0, 2], [-2]].
+            ranges with the same length as clumpMassNumber. The ranges can have
+            length 1, in which case it only evaluates that clump mass. The
+            masses are in units of dex(Msol). By default it is [[0, 2], [-2]].
         :param clumpDensity: This changes the default clump density in the constants module. This
-                      overrides the voxel density kwarg, and is useful for creating interclumps
-                      medium that is not scaled according to the clumps. the default is
-                      [None, 1911], so the first clump set takes the voxel density. This is in
-                      units of cm^-3.
+            overrides the voxel density kwarg, and is useful for creating interclumps
+            medium that is not scaled according to the clumps. the default is
+            [None, 1911], so the first clump set takes the voxel density. This is in
+            units of cm^-3.
         :param clumpFUV: This changes the default clump FUV in the constants module. This overrides
-                  the voxel FUV kwarg. It is a list of length of the number of clump sets.
-                  Use a value of None to use the voxel FUV field. The default is [None, 1], in
-                  units of the Draine field.
+            the voxel FUV kwarg. It is a list of length of the number of clump sets.
+            Use a value of None to use the voxel FUV field. The default is [None, 1], in
+            units of the Draine field.
         :param clumpNmax: The maximum number of the largest clump in the ensemble. This helps to limit
-                   the calculation of a large combination of clumps by rescaling the voxel (thus
-                   eliminating any change to the brightness temperature). Larger combinations are used
-                   if the rescaled voxel is smaller than the largest clump. The default is [1, 100].
+            the calculation of a large combination of clumps by rescaling the voxel (thus
+            eliminating any change to the brightness temperature). Larger combinations are used
+            if the rescaled voxel is smaller than the largest clump. The default is [1, 100].
         :param voxel_size: The voxel size in parsecs. The default is 1 pc.
         :param transitions: The transitions included in the model. This is a list of strings, where each
-                   string has the element name (as in the grid) followed by the transition
-                   number (Which is taken from KOSMA-tau). It is set to the first transition
-                   of C+, C, and CO by default.
+            string has the element name (as in the grid) followed by the transition
+            number (Which is taken from KOSMA-tau). It is set to the first transition
+            of C+, C, and CO by default.
         :param dust: This is a string to limit how much of the dust continuum is included. The
-              available continuum ranges from 1 nm to 3.1 mm. This can be limited to the range
-              of molecular lines by setting dust='molecular' (22 dust lines), or to the range of
-              PAH dust features by setting dust='PAH' (201 dust lines). All dust lines (333)
-              will be calculated if dust=''
+            available continuum ranges from 1 nm to 3.1 mm. This can be limited to the range
+            of molecular lines by setting dust='molecular' (22 dust lines), or to the range of
+            PAH dust features by setting dust='PAH' (201 dust lines). All dust lines (333)
+            will be calculated if dust=''
 
         Voxel properties
         ----------------
 
         :param ensembleMass: This can be either a float or list of floats, depending on how many clump
-                     sets you have. The default is 100 Msol.
+            sets you have. The default is 100 Msol.
         :param velocity: The radial velocity of the observed Voxel instance. This is used with the
-                  model velocities to determine the number of clumps seen at a given velocity.
-                  The default is 0 km/s.
+            model velocities to determine the number of clumps seen at a given velocity.
+            The default is 0 km/s.
         :param ensembleDispersion: The velocity dispersion of the ensemble. This is used with the
-                            model velocities to determine the number of clumps at a given
-                            velocity. The default is 1 km/s.
+            model velocities to determine the number of clumps at a given
+            velocity. The default is 1 km/s.
         :param ensembleDensity: The observed hydrogen density in the voxel. This is different from and overridden by
-                 any default density specified in the constants module. the default is
-                 15000 cm^-3.
+            any default density specified in the constants module. the default is
+            15000 cm^-3.
         :param FUV: The FUV field of the voxel. All clumps are isotropically radiated with this
-             field. It is different from and overridden by any default FUV field specified
-             in the constants module. The default is 20000 Draine units.
+            field. It is different from and overridden by any default FUV field specified
+            in the constants module. The default is 20000 Draine units.
         :param crir: The primary cosmic ray ionisation rate with respect to molecular hydrogen (zeta_H2). By default,
-              the local rate is used (2e-16).
+            the local rate is used (2e-16).
 
         Flags
         -----
 
         :param suggested_calc: This flag is used to specify the corrected
-        version of the calculation should be used. It is True by default.
+            version of the calculation should be used. It is True by default.
         :param fromFile: This flag can be set to retrieve the voxel properties
-        from a file. It is False by default.
+            from a file. It is False by default.
         :param verbose: This is mainly used for debugging purposes. It prints
-        various statements as the code is evaluated.
+            various statements as the code is evaluated.
 
         """
         # print('Voxel instance initialised')
