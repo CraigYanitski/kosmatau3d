@@ -44,6 +44,8 @@ Below we list the developments planned for upcoming versions of
 +---------+-------------------------------------------------------------------+
 | version | changes                                                           |
 +=========+===================================================================+
+| v1.0.8  | - new :class:`Voxel` method to return species column density      |
++=========+===================================================================+
 | v1.1.0  | - restructuring of code                                           |
 |         |                                                                   |
 |         |   - :mod:`masspoints` -> :mod:`clumps`                            |
