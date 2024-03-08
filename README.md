@@ -6,10 +6,12 @@
 *** for contributors-url, forks-url, etc. This is an optional, concise syntax you may use.
 *** https://www.markdownguide.org/basic-syntax/#reference-style-links
 -->
+![pylint][pylint-url]
 [![Contributors][contributors-shield]][contributors-url]
 [![Forks][forks-shield]][forks-url]
 [![Stargazers][stars-shield]][stars-url]
 [![Issues][issues-shield]][issues-url]
+<!-- [![License: GPL v3][(https://img.shields.io/badge/License-GPLv3-blue.svg)]][license-url] -->
 [![GNU GPLv3 License][license-shield]][license-url]
 
 
@@ -185,8 +187,12 @@ developments made.
 [stars-url]: https://github.com/CraigYanitski/kosmatau3d/stargazers
 [issues-shield]: https://img.shields.io/github/issues/CraigYanitski/kosmatau3d.svg?style=for-the-badge
 [issues-url]: https://github.com/CraigYanitski/kosmatau3d/issues
-[license-shield]: https://img.shields.io/github/license/CraigYanitski/kosmatau3d.svg?style=for-the-badge
-[license-url]: https://github.com/CraigYanitski/kosmatau3d/blob/master/LICENSE.txt
+[license-shield]: https://img.shields.io/badge/License-GPLv3-blue.svg
+<!-- https://img.shields.io/github/license/CraigYanitski/kosmatau3d.svg?style=for-the-badge -->
+[license-url]: https://www.gnu.org/licenses/gpl-3.0
+<!-- https://github.com/CraigYanitski/kosmatau3d/blob/master/LICENSE.txt -->
+<!-- [pylint-shield]:  -->
+[pylint-url]: https://github.com/CraigYanitski/kosmatau3d/actions/workflows/test-lint.yml/badge.svg
 [product-screenshot]: images/screenshot.png
 [Next.js]: https://img.shields.io/badge/next.js-000000?style=for-the-badge&logo=nextdotjs&logoColor=white
 [Next-url]: https://nextjs.org/
