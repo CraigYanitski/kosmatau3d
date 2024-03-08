@@ -6,12 +6,12 @@
 *** for contributors-url, forks-url, etc. This is an optional, concise syntax you may use.
 *** https://www.markdownguide.org/basic-syntax/#reference-style-links
 -->
-[![pylint][pylint-shield]][pylint-url]
-[![Contributors][contributors-shield]][contributors-url]
 [![Forks][forks-shield]][forks-url]
 [![Stargazers][stars-shield]][stars-url]
-[![Issues][issues-shield]][issues-url]
 <!-- [![License: GPL v3][(https://img.shields.io/badge/License-GPLv3-blue.svg)]][license-url] -->
+[![pylint][pylint-shield]][pylint-url]
+[![Contributors][contributors-shield]][contributors-url]
+[![Issues][issues-shield]][issues-url]
 [![GNU GPLv3 License][license-shield]][license-url]
 
 
