@@ -63,9 +63,10 @@ models will soon be developed.
 
    The spherical KOSMA-:math:`\tau` PDR models are referred to as clumps in the 
    context of :code:`kosmatau3d`.
-   The distinction must be made that the `clumps` referenced in this 
-   documentation are not by any means the astronomical clumps that will 
-   eventually collapse into stellar clusters.
-   :code:`kosmatau3d` is a `fractal` model to simulate the inhomogeneous 
-   structure of the ISM using a multitude of smaller clumps (see eg. Stutzki 
-   et al. 1998).
+   The distinction must be made that while the *clumps* referenced in this 
+   documentation are the astronomical clumps that will eventually collapse into
+   stars, they are approximately in hydrostatic equilibrium.
+   Thus we are able to compute an instantaneous synthetic  observation.
+   :code:`kosmatau3d` is a *fractal* model to simulate the inhomogeneous 
+   structure of the ISM using a multitude of these smaller clumps (see eg. 
+   Stutzki et al. 1998).
