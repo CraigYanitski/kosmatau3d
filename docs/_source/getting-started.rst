@@ -36,9 +36,9 @@ the density profile as,
    \left\{
       \begin{aligned}
          \left( \frac{r}{r_\mathrm{cl}} \right)^{-\gamma} 
-         & r > r_\mathrm{core} \\
+         & \hspace{0.5cm} & r > r_\mathrm{core} \\
          \left( \frac{r_\mathrm{core}}{r_\mathrm{cl}} \right)^{-\gamma} 
-         & r \leq r_\mathrm{core}
+         & \hspace{0.5cm} & r \leq r_\mathrm{core}
       \end{aligned}
    \right. \hspace{1cm} ,
 
@@ -88,8 +88,8 @@ dependence of the total number of hydrogen atoms:
       \begin{aligned}
          - \frac{4\pi\, r_\mathrm{cl}}{\gamma} 
          \left( \frac{n}{n_\mathrm{s}} \right)^{-\frac{3}{\gamma}} 
-         & n_\mathrm{s} < n < n_\mathrm{core} \\
-         0 & n = n_\mathrm{core}
+         & \hspace{0.5cm} & n_\mathrm{s} < n < n_\mathrm{core} \\
+         0 & \hspace{0.5cm} & n = n_\mathrm{core}
       \end{aligned}
    \right. \hspace{1cm} ,
 
@@ -109,9 +109,9 @@ integrating the core to derive its probability, we obtain,
       \begin{aligned}
          - N_H^{-1} \frac{4\pi\, r_\mathrm{cl}}{\gamma} 
          \left( \frac{n}{n_\mathrm{s}} \right)^{-\frac{3}{\gamma}} 
-         & n_\mathrm{s} < n < n_\mathrm{core} \\
+         & \hspace{0.5cm} & n_\mathrm{s} < n < n_\mathrm{core} \\
          N_H^{-1} \frac{4\pi}{3} r_\mathrm{cl}^3 n_\mathrm{core} 
-         & n = n_\mathrm{core}
+         & \hspace{0.5cm} & n = n_\mathrm{core}
       \end{aligned}
    \right. \hspace{1cm} .
 
