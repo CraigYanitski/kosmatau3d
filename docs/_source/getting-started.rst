@@ -54,11 +54,12 @@ With this definition, we can also write the total hydrogen number as,
    \frac{r_\mathrm{core}}{r_\mathrm{cl}} \right)^{3-\gamma} \right)
    \hspace{1cm} .
 
-For $\gamma>0$, the number density increases towards the core, and is constant 
-and maximal for $r<r_\mathrm{cl}$ with density $n_\mathrm{core}$.
-Momentarily neglecting the core, so $n\in [n_\mathrm{s}, n_\mathrm{core})$,
-we can write the dependence of the total number of hydrogen atoms as a function
-of density:
+For :math:`\gamma\! >\! 0`, the number density increases towards the core, 
+and is constant and maximal for :math:`r\! <\! r_\mathrm{cl}` with density 
+:math:`n_\mathrm{core}`.
+Momentarily neglecting the core, so 
+:math:`n\! \in\! \left[ n_\mathrm{s}, n_\mathrm{core})`, we can write the 
+dependence of the total number of hydrogen atoms as a function of density:
 
 .. math::
    \frac{\mathrm{d}N_H}{\mathrm{d}n} &= \frac{\mathrm{d}N}{\mathrm{d}r}
