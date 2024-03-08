@@ -55,17 +55,68 @@ With this definition, we can also write the total hydrogen number as,
    \hspace{1cm} .
 
 For :math:`\gamma\! >\! 0`, the number density increases towards the core, 
-and is constant and maximal for :math:`r\! <\! r_\mathrm{cl}` with density 
-:math:`n_\mathrm{core}`.
+and is constant and maximal for :math:`r\! <\! r_\mathrm{core}` with 
+corresponding density :math:`n_\mathrm{core}`.
+It is also possible to derive the total hydrogen number as a function of 
+density, but the piece-wise nature of our density profile means we will need
+to separate our equation for :math:`n\! <\! n_\mathrm{core}` and 
+:math:`n\! =\! n_\mathrm{core}`.
 Momentarily neglecting the core, so 
-:math:`n\! \in\! \left[ n_\mathrm{s}, n_\mathrm{core})`, we can write the 
-dependence of the total number of hydrogen atoms as a function of density:
+:math:`n\! \in\! \left[ n_\mathrm{s}, n_\mathrm{core} \right)`, we can write 
+the dependence of the total number of hydrogen atoms as a function of density:
 
 .. math::
    \frac{\mathrm{d}N_H}{\mathrm{d}n} &= \frac{\mathrm{d}N}{\mathrm{d}r}
    \left( \frac{\mathrm{d}n}{\mathrm{d}r} \right)^{-1} \hspace{1cm} , \\
+   &= \left( -\gamma\, r_\mathrm{cl}\, n_\mathrm{s} 
+   \left( \frac{n}{n_\mathrm{s}} \right)^{\frac{\gamma + 1}{\gamma}} \right)^{-1} 
+   4\pi\, r_\mathrm{s}^2 \left( \frac{n}{n_\mathrm{s}} \right)^{- \frac{2}{\gamma}} 
+   n_\mathrm{s} \frac{n}{n_\mathrm{s}} \hspace{1cm} , \\
    &= - \frac{4\pi\, r_\mathrm{cl}}{\gamma} 
-   \left( \frac{n}{n_\mathrm{s}} \right)^{-\frac{3}{\gamma}} \hspace{1cm} .
+   \left( \frac{n}{n_\mathrm{s}} \right)^{-\frac{3}{\gamma}} \hspace{1cm} ,
+
+where we have expressed the radius as a function of density. 
+For :math:`n\! =\! n_\mathrm{core}`, we can simply perform a spherical 
+integration with a constant density to derive the total number of hydrogen 
+atoms. 
+Since the core has constant density, we can write the final form of the density
+dependence of the total number of hydrogen atoms:
+
+.. math::
+   \frac{\mathrm{d}N_H (n)}{\mathrm{d}n} = 
+   \left{
+      \begin{aligned}
+         - \frac{4\pi\, r_\mathrm{cl}}{\gamma} 
+         \left( \frac{n}{n_\mathrm{s}} \right)^{-\frac{3}{\gamma}} 
+         & n_\mathrm{s} < n < n_\mathrm{core} \\
+         0 & n = n_\mathrm{core}
+      \end{aligned}
+   \right. \hspace{1cm} ,
+
+The density probability distribution function (PDF) for the spherical clump 
+can be defined as,
+
+.. math::
+   \mathcal{P}(n) \equiv N_H^{-1} \frac{\mathrm{d}N_H (n)}{\mathrm{d}n} 
+   \hspace{1cm} .
+
+Using the density profile of the KOSMA-:math:`\tau` clumps, as well as manually 
+integrating the core to derive its probability, we obtain,
+
+.. math::
+   \mathcal{P}(n) = 
+   \left{
+      \begin{aligned}
+         - N_H^{-1} \frac{4\pi\, r_\mathrm{cl}}{\gamma} 
+         \left( \frac{n}{n_\mathrm{s}} \right)^{-\frac{3}{\gamma}} 
+         & n_\mathrm{s} < n < n_\mathrm{core} \\
+         N_H^{-1} \frac{4\pi}{3} r_\mathrm{cl}^3 n_\mathrm{core} 
+         & n = n_\mathrm{core}
+      \end{aligned}
+   \right. \hspace{1cm} .
+
+How this is utilised in :code:`kosmatau3d` for the fractal ISM will soon be 
+explained in the *ensmble* section.
 
 .. rubric:: Footnotes
 
