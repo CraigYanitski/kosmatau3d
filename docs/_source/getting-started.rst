@@ -84,7 +84,7 @@ dependence of the total number of hydrogen atoms:
 
 .. math::
    \frac{\mathrm{d}N_H (n)}{\mathrm{d}n} = 
-   \left{
+   \left\{
       \begin{aligned}
          - \frac{4\pi\, r_\mathrm{cl}}{\gamma} 
          \left( \frac{n}{n_\mathrm{s}} \right)^{-\frac{3}{\gamma}} 
@@ -105,7 +105,7 @@ integrating the core to derive its probability, we obtain,
 
 .. math::
    \mathcal{P}(n) = 
-   \left{
+   \left\{
       \begin{aligned}
          - N_H^{-1} \frac{4\pi\, r_\mathrm{cl}}{\gamma} 
          \left( \frac{n}{n_\mathrm{s}} \right)^{-\frac{3}{\gamma}} 
