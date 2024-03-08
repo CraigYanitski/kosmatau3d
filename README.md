@@ -179,13 +179,13 @@ developments made.
 
 <!-- MARKDOWN LINKS & IMAGES -->
 <!-- https://www.markdownguide.org/basic-syntax/#reference-style-links -->
-[contributors-shield]: https://img.shields.io/github/contributors/CraigYanitski/kosmatau3d.svg?style=for-the-badge
+[contributors-shield]: https://img.shields.io/github/contributors/CraigYanitski/kosmatau3d.svg
 [contributors-url]: https://github.com/CraigYanitski/kosmatau3d/graphs/contributors
-[forks-shield]: https://img.shields.io/github/forks/CraigYanitski/kosmatau3d.svg?style=for-the-badge
+[forks-shield]: https://img.shields.io/github/forks/CraigYanitski/kosmatau3d.svg
 [forks-url]: https://github.com/CraigYanitski/kosmatau3d/network/members
-[stars-shield]: https://img.shields.io/github/stars/CraigYanitski/kosmatau3d.svg?style=for-the-badge
+[stars-shield]: https://img.shields.io/github/stars/CraigYanitski/kosmatau3d.svg
 [stars-url]: https://github.com/CraigYanitski/kosmatau3d/stargazers
-[issues-shield]: https://img.shields.io/github/issues/CraigYanitski/kosmatau3d.svg?style=for-the-badge
+[issues-shield]: https://img.shields.io/github/issues/CraigYanitski/kosmatau3d.svg
 [issues-url]: https://github.com/CraigYanitski/kosmatau3d/issues
 [license-shield]: https://img.shields.io/badge/License-GPLv3-blue.svg
 <!-- https://img.shields.io/github/license/CraigYanitski/kosmatau3d.svg?style=for-the-badge -->
