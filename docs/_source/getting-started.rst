@@ -8,6 +8,14 @@ The Single-Voxel model
 This is the base functionality of :code:`kosmatau3d`, and has been successfully 
 used in PDR research.
 
+Three-dimensional PDR Models
+============================
+
+The most complex functionality of kosmatau3d, and the reason for its 
+development since its conception (Andree-Labsch et al. 2017). 
+This has so-far been used to model the Orion Bar and the Milky Way, though more 
+models will soon be developed.
+
 KOSMA-:math:`\tau` Properties
 =============================
 
@@ -24,7 +32,7 @@ the density profile as,
 
 .. math::
    
-   n(r) = n_s
+   n(r) = n_\mathrm{s}
    \left\{
       \begin{aligned}
          \left( \frac{r}{r_\mathrm{cl}} \right)^{-\gamma} 
@@ -41,21 +49,22 @@ The for the KOSMA-:math:`\tau` grids in :code:`kosmatau3d`, we use the values
 With this definition, we can also write the total hydrogen number as,
 
 .. math::
-   N_H &= \int_0^{r_\mathrm{cl}} \mathrm{d}r 4 \pi r^2 n(r), \\
-   &= \frac{4 \pi}{3} n_s r_\mathrm{cl}^3 \left( 1 - \frac{\gamma}{3} \left( 
+   N_H &= \int_0^{r_\mathrm{cl}} \mathrm{d}r\, 4 \pi\, r^2\, n(r), \\
+   &= \frac{4 \pi}{3}\, n_\mathrm{s}\, r_\mathrm{cl}^3 \left( 1 - \frac{\gamma}{3} \left( 
    \frac{r_\mathrm{core}}{r_\mathrm{cl}} \right)^{3-\gamma} \right)
    \hspace{1cm} .
 
+For $\gamma>0$, the number density increases towards the core, and is constant 
+and maximal for $r<r_\mathrm{cl}$ with density $n_\mathrm{core}$.
+Momentarily neglecting the core, so $n\in [n_\mathrm{s}, n_\mathrm{core})$,
+we can write the dependence of the total number of hydrogen atoms as a function
+of density:
 
-
-Three-dimensional PDR Models
-============================
-
-The most complex functionality of kosmatau3d, and the reason for its 
-development since its conception (Andree-Labsch et al. 2017). 
-This has so-far been used to model the Orion Bar and the Milky Way, though more 
-models will soon be developed.
-
+.. math::
+   \frac{\mathrm{d}N_H}{\mathrm{d}n} &= \frac{\mathrm{d}N}{\mathrm{d}r}
+   \left( \frac{\mathrm{d}n}{\mathrm{d}r} \right)^{-1} \hspace{1cm} , \\
+   &= - \frac{4\pi\, r_\mathrm{cl}}{\gamma} 
+   \left( \frac{n}{n_\mathrm{s}} \right)^{-\frac{3}{\gamma}} \hspace{1cm} .
 
 .. rubric:: Footnotes
 
