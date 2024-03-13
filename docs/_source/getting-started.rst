@@ -32,7 +32,7 @@ the density profile as,
 
 .. math::
    
-   n(r) = n_\mathrm{s}
+   n_\mathrm{H, cl}(r) = n_\mathrm{s}
    \left\{
       \begin{aligned}
          \left( \frac{r}{r_\mathrm{cl}} \right)^{-\gamma} 
@@ -49,7 +49,7 @@ The for the KOSMA-:math:`\tau` grids in :code:`kosmatau3d`, we use the values
 With this definition, we can also write the total hydrogen number as,
 
 .. math::
-   N_H &= \int_0^{r_\mathrm{cl}} \mathrm{d}r\, 4 \pi\, r^2\, n(r), \\
+   N_\mathrm{H, cl} &= \int_0^{r_\mathrm{cl}} \mathrm{d}r\, 4 \pi\, r^2\, n(r), \\
    &= \frac{4 \pi}{3}\, n_\mathrm{s}\, r_\mathrm{cl}^3 \left( 1 - \frac{\gamma}{3} \left( 
    \frac{r_\mathrm{core}}{r_\mathrm{cl}} \right)^{3-\gamma} \right)
    \hspace{1cm} .
@@ -66,8 +66,10 @@ Momentarily neglecting the core, so
 the dependence of the total number of hydrogen atoms as a function of density:
 
 .. math::
-   \frac{\mathrm{d}N_H}{\mathrm{d}n} &= \frac{\mathrm{d}N}{\mathrm{d}r}
-   \left( \frac{\mathrm{d}n}{\mathrm{d}r} \right)^{-1} \hspace{1cm} , \\
+   \frac{\mathrm{d}N_\mathrm{H, cl}}{\mathrm{d}n} &= 
+   \frac{\mathrm{d}N_\mathrm{H, cl}}{\mathrm{d}r}
+   \left( \frac{\mathrm{d}n_\mathrm{H, cl}}{\mathrm{d}r} \right)^{-1} 
+   \hspace{1cm} , \\
    &= \left( -\gamma\, r_\mathrm{cl}\, n_\mathrm{s} 
    \left( \frac{n}{n_\mathrm{s}} \right)^{\frac{\gamma + 1}{\gamma}} \right)^{-1} 
    4\pi\, r_\mathrm{s}^2 \left( \frac{n}{n_\mathrm{s}} \right)^{- \frac{2}{\gamma}} 
@@ -76,18 +78,18 @@ the dependence of the total number of hydrogen atoms as a function of density:
    \left( \frac{n}{n_\mathrm{s}} \right)^{-\frac{3}{\gamma}} \hspace{1cm} ,
 
 where we have expressed the radius as a function of density. 
-For :math:`n\! =\! n_\mathrm{core}`, we can simply perform a spherical 
-integration with a constant density to derive the total number of hydrogen 
-atoms. 
+For :math:`n_\mathrm{H, cl}\! =\! n_\mathrm{core}`, we can simply perform a 
+spherical integration with a constant density to derive the total number of 
+hydrogen atoms. 
 Since the core has constant density, we can write the final form of the density
 dependence of the total number of hydrogen atoms:
 
 .. math::
-   \frac{\mathrm{d}N_H (n)}{\mathrm{d}n} = 
+   \frac{\mathrm{d}N_\mathrm{H, cl} (n)}{\mathrm{d}n} = 
    \left\{
       \begin{aligned}
          - \frac{4\pi\, r_\mathrm{cl}}{\gamma} 
-         \left( \frac{n}{n_\mathrm{s}} \right)^{-\frac{3}{\gamma}} 
+         \left( \frac{n_\mathrm{cl}}{n_\mathrm{s}} \right)^{-\frac{3}{\gamma}} 
          & \hspace{0.5cm} & n_\mathrm{s} < n < n_\mathrm{core} \\
          0 & \hspace{0.5cm} & n = n_\mathrm{core}
       \end{aligned}
@@ -97,26 +99,27 @@ The density probability distribution function (PDF) for the spherical clump
 can be defined as,
 
 .. math::
-   \mathcal{P}(n) \equiv N_H^{-1} \frac{\mathrm{d}N_H (n)}{\mathrm{d}n} 
+   \mathcal{P}_\mathrm{cl}(n) \equiv N_\mathrm{H, cl}^{-1} 
+   \frac{\mathrm{d}N_\mathrm{H, cl} (n)}{\mathrm{d}n} 
    \hspace{1cm} .
 
 Using the density profile of the KOSMA-:math:`\tau` clumps, as well as manually 
 integrating the core to derive its probability, we obtain,
 
 .. math::
-   \mathcal{P}(n) = 
+   \mathcal{P}_\mathrm{cl}(n) = 
    \left\{
       \begin{aligned}
-         - N_H^{-1} \frac{4\pi\, r_\mathrm{cl}}{\gamma} 
+         - N_\mathrm{H, cl}^{-1} \frac{4\pi\, r_\mathrm{cl}}{\gamma} 
          \left( \frac{n}{n_\mathrm{s}} \right)^{-\frac{3}{\gamma}} 
          & \hspace{0.5cm} & n_\mathrm{s} < n < n_\mathrm{core} \\
-         N_H^{-1} \frac{4\pi}{3} r_\mathrm{cl}^3 n_\mathrm{core} 
+         N_\mathrm{H, cl}^{-1} \frac{4\pi}{3} r_\mathrm{cl}^3 n_\mathrm{core} 
          & \hspace{0.5cm} & n = n_\mathrm{core}
       \end{aligned}
    \right. \hspace{1cm} .
 
 How this is utilised in :code:`kosmatau3d` for the fractal ISM will soon be 
-explained in the *ensmble* section.
+explained in the *ensemble* section.
 
 .. rubric:: Footnotes
 
