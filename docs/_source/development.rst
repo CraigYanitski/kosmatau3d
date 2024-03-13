@@ -44,18 +44,20 @@ Below we list the developments planned for upcoming versions of
 +---------+-------------------------------------------------------------------+
 | version | changes                                                           |
 +=========+===================================================================+
-| v1.0.8  | - new :class:`Voxel` method to return species column density      |
+| v1.0.8  | - new :class:`models.Voxel()` method to return species column     |
+|         |   density                                                         |
 |         |                                                                   |
-|         |   - should have similar inputs to :meth:`Voxel.get_abundances()`  |
-|         |     and :attr:`constants.voxel_size` for calculation.             |
+|         |   - should have similar inputs to                                 |
+|         |     :meth:`models.Voxel.get_abundances()` and                     |
+|         |     :attr:`models.constants.voxel_size` for calculation.          |
 +---------+-------------------------------------------------------------------+
 | ...     | ...                                                               |
 +---------+-------------------------------------------------------------------+
 | v1.1.0  | - restructuring of code                                           |
 |         |                                                                   |
-|         |   - :mod:`masspoints` -> :mod:`clumps`                            |
+|         |   - :mod:`models.masspoints` -> :mod:`models.clumps`              |
 |         |                                                                   |
-|         |   - :mod:`observations` -> :mod:`model_data`                      |
+|         |   - :mod:`models.observations` -> :mod:`models.model_data`        |
 |         |                                                                   |
 |         | - removal of circular imports                                     |
 +---------+-------------------------------------------------------------------+
