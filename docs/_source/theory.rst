@@ -117,13 +117,14 @@ Currently [#f2]_ KOSMA-:math:`\tau` uses a modified Draine spectrum for the spec
 energy distribution (SED) incident on the clump surface, which can be scaled 
 by a given factor.
 We therefore denote the far-UV radiation as :math:`\chi` in units of 
-:mat:`\chi_\mathrm{D}`.
+:math:`\chi_\mathrm{D}`.
 
 
 Ensembles
 =========
 
-Here I will soon explain 
+Here I will soon explain the mathematics and statistics associated with 
+groups of clumps in an ensemble.
 
 .. rubric:: Footnotes
 
