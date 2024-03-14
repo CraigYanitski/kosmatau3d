@@ -39,3 +39,9 @@ models will soon be developed.
    :code:`kosmatau3d` is a *fractal* model to simulate the inhomogeneous 
    structure of the ISM using a multitude of these smaller clumps (see eg. 
    Stutzki et al. 1998).
+
+.. toctree::
+   :maxdepth: 1
+   :caption: Contents:
+
+   Theory <theory>
