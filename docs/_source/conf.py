@@ -34,7 +34,7 @@ release = "1.0.7"
 # extensions coming with Sphinx (named 'sphinx.ext.*') or your custom
 # ones.
 extensions = [
-    "sphinxcontrib.embedpdf",  # enable rendering of pdf images in documentation
+    # "sphinxcontrib.embedpdf",  # enable rendering of pdf images in documentation
     # 'sphinx.ext.duration',
     # 'sphinx.ext.doctest',
     "sphinx.ext.autodoc",

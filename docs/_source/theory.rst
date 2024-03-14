@@ -11,6 +11,9 @@ KOSMA-:math:`\tau` is an isotropically-radiated, spherically symmetric PDR code.
 It is maintained by Markus Röllig at the Universität zu Köln, and utilises 
 chemical models from Amiel Sternberg at Tel Aviv University.
 
+Density
+-------
+
 It assumes a piece-wise density profile approximating that of a Bonnor-Ebert 
 sphere, that is, a gaseous sphere in pressure equilibrium with its environment.
 For the total hydrogen surface density of the PDR :math:`n_s`, we define
@@ -105,7 +108,40 @@ integrating the core to derive its probability, we obtain,
    \right. \hspace{1cm} .
 
 How this is utilised in :code:`kosmatau3d` for the fractal ISM will soon be 
-explained in the *Ensembles* section.
+explained in the Ensembles_ section.
+
+Far-UV radiation
+----------------
+
+Currently [#f2]_ KOSMA-:math:`\tau` uses a modified Draine spectrum for the spectral 
+energy distribution (SED) incident on the clump surface, which can be scaled 
+by a given factor.
+We therefore denote the far-UV radiation as :math:`\chi` in units of 
+:mat:`\chi_\mathrm{D}`.
+
 
 Ensembles
 =========
+
+Here I will soon explain 
+
+.. rubric:: Footnotes
+
+.. [#f1]
+
+   The spherical KOSMA-:math:`\tau` PDR models are referred to as clumps in the 
+   context of :code:`kosmatau3d`.
+   The distinction must be made that while the *clumps* referenced in this 
+   documentation are the astronomical clumps that will eventually collapse into
+   stars, they are approximately in hydrostatic equilibrium.
+   Thus we are able to compute an instantaneous synthetic  observation.
+   :code:`kosmatau3d` is a *fractal* model to simulate the inhomogeneous 
+   structure of the ISM using a multitude of these smaller clumps (see eg. 
+   Stutzki et al. 1998).
+
+.. [#f2]
+
+   At some point in the future this will be extended to utilise a user-defined 
+   SED, but currently there is nobody developing this.
+   It is particularily important in order to use KOSMA-:math:`\tau` to model 
+   the X-ray dominated regions (XDRs) around active galactic nuclei (AGNs).

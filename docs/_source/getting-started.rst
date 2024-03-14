@@ -9,12 +9,18 @@ This is the base functionality of :code:`kosmatau3d`.
 A *voxel*, or volumetric pixel, is one cell in a three-dimensional spatial
 grid.
 It contains one or more *ensembles* of KOSMA-:math:`\tau` clumps (see 
-:ref:`Theory <theory>` for more information about these), which each contribute 
+:doc:`Theory <theory>` for more information about these), which each contribute 
 to the emissivity and absorption in the voxel.
 It performs a probabilistic calculation of the the emission by considering all 
 possible combinations of clumps in the line-of-sight.
 
-.. image:: _static/uniform_RT-small.pdf
+.. figure:: _static/uniform_RT-small_cropped.png
+   :alt: voxel diagram
+
+   A diagram representing how the voxels work.
+   The region in the red box is the ISM we want to model, with the clumps 
+   shown as scatter points.
+   The blue boxes are the voxels.
 
 Three-dimensional PDR Models
 ============================
@@ -24,24 +30,8 @@ development since its conception (Andree-Labsch et al. 2017).
 This has so-far been used to model the Orion Bar and the Milky Way, though more 
 models will soon be developed.
 
-.. image:: _static/integrated_C+1.png
+.. figure:: _static/integrated_C+1.png
+   :alt: model showing integrated C+
 
-.. rubric:: Footnotes
-
-.. [#f1]
-
-   The spherical KOSMA-:math:`\tau` PDR models are referred to as clumps in the 
-   context of :code:`kosmatau3d`.
-   The distinction must be made that while the *clumps* referenced in this 
-   documentation are the astronomical clumps that will eventually collapse into
-   stars, they are approximately in hydrostatic equilibrium.
-   Thus we are able to compute an instantaneous synthetic  observation.
-   :code:`kosmatau3d` is a *fractal* model to simulate the inhomogeneous 
-   structure of the ISM using a multitude of these smaller clumps (see eg. 
-   Stutzki et al. 1998).
-
-.. toctree::
-   :maxdepth: 1
-   :caption: Contents:
-
-   Theory <theory>
+   One Galactic model, where the voxels are coloured according to the 
+   \[C\mathsc{ii}\] intensity integrated over the spectrum.
