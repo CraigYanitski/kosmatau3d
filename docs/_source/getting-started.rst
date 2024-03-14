@@ -9,7 +9,7 @@ This is the base functionality of :code:`kosmatau3d`.
 A *voxel*, or volumetric pixel, is one cell in a three-dimensional spatial
 grid.
 It contains one or more *ensembles* of KOSMA-:math:`\tau` clumps (see 
-:ref:`Theory <theory>` for more information about these), which each contribute 
+:ref:`Theory <theory.rst>` for more information about these), which each contribute 
 to the emissivity and absorption in the voxel.
 It performs a probabilistic calculation of the the emission by considering all 
 possible combinations of clumps in the line-of-sight.
