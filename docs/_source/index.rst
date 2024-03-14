@@ -23,6 +23,7 @@ DataBase (ISMDB) hosted at the Observatoire de Paris-Meudon.
 
    Installation <installation>
    Getting Started <getting-started>
+   Theory <theory>
    API <api>
    Development <development>
    Acknowledgements <acknowledgements>
