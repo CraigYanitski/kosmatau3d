@@ -16,6 +16,7 @@ possible combinations of clumps in the line-of-sight.
 
 .. figure:: _static/uniform_RT-small_cropped.png
    :alt: voxel diagram
+   :width: 200
 
    A diagram representing how the voxels work.
    The region in the red box is the ISM we want to model, with the clumps 
@@ -34,4 +35,5 @@ models will soon be developed.
    :alt: model showing integrated C+
 
    One Galactic model, where the voxels are coloured according to the 
-   \[C\mathsc{ii}\] intensity integrated over the spectrum.
+   \[CII\] :math:`158\, \mu\mathrm{m}` intensity integrated over the spectrum
+   (-350 to 350 :math:`km\, s^{-1}`).
