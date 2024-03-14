@@ -34,13 +34,14 @@ release = "1.0.7"
 # extensions coming with Sphinx (named 'sphinx.ext.*') or your custom
 # ones.
 extensions = [
+    "sphinxcontrib.embedpdf",  # enable rendering of pdf images in documentation
     # 'sphinx.ext.duration',
     # 'sphinx.ext.doctest',
     "sphinx.ext.autodoc",
     "sphinx.ext.autosummary",
     "sphinx.ext.coverage",
     "sphinx.ext.mathjax",
-    # "sphinx.ext.intersphinx",  # Link to other project's documentation (see mapping below)
+    "sphinx.ext.intersphinx",  # Link to other project's documentation (see mapping below)
     "sphinx.ext.viewcode",  # Add a link to the Python source code for classes, functions etc.
     # 'sphinx_autodoc_typehints', # Automatically document param types (less noise in class signature)
     "nbsphinx",  # Integrate Jupyter Notebooks and Sphinx
