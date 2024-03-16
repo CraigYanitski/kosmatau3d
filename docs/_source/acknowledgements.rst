@@ -27,11 +27,14 @@ Please cite the two primary papers describing the functionality of
 
 - Andree-Labsch, S., Ossenkopf-Okada, V., & Röllig, M. 2017, 
   *Astronomy & Astrophysics*\ , 598, A2
+  `link <https://ui.adsabs.harvard.edu/abs/2017A%26A...598A...2A/abstract>`
 
 .. - Yanitski, C. N., Ossenkopf-Okada, V., and Röllig, M. 2024, in prep
 
+.. - `Yanitski, C. N. 2023, PhD thesis, Universität zu Köln, Kölner UniversitätsPublikationsServer <https://kups.ub.uni-koeln.de/71850/>`
+
 - Yanitski, C. N. 2023, PhD thesis, Universität zu Köln, Kölner 
-  UniversitätsPublikationsServer
+  UniversitätsPublikationsServer `link <https://kups.ub.uni-koeln.de/71850/>`
 
 Cite as well the code itself: 
 
@@ -42,7 +45,7 @@ If use the single-voxel model to compare to the pixels in a map (the so-called
 `column` mode of :class:`kosmatau3d.models.Voxel()`), then please also cite the 
 first description of this feature:
 
-- Okada, Y., Yanitski, C. N., et al. 2024, in prep
+- Okada, Y., Yanitski, C. N., et al. 2024, in preparation
 
 .. toctree::
    :maxdepth: 2
