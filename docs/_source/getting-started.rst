@@ -31,7 +31,7 @@ Three-dimensional PDR Models
 
 The most complex functionality of kosmatau3d, and the reason for its 
 development since its conception 
-(`Andree-Labsch et al. 2017 <https://ui.adsabs.harvard.edu/abs/2017A%26A...598A...2A/abstract>`). 
+(`Andree-Labsch et al. 2017 <https://ui.adsabs.harvard.edu/abs/2017A%26A...598A...2A/abstract>`_). 
 This has so-far been used to model the Orion Bar and the Milky Way, though more 
 models will soon be developed.
 The figure below depicts the \[CII\] :math:`158\, \mu\mathrm{m}` integrated 
@@ -51,7 +51,7 @@ a velocity component to its emission.
 Because of this, it is important to first get the velocity information for each 
 voxel in the model correct before integrating the radiative transfer equation.
 The procedure is described in detail in Ch. IV of 
-`Yanitski (2023) <https://kups.ub.uni-koeln.de/71850/>`, and it results in a 
+`Yanitski (2023) <https://kups.ub.uni-koeln.de/71850/>`_, and it results in a 
 longitude-velocity diagram like below.
 We focus on galactic latitude :math:`b\! =\! 0` to avoid the complications 
 regarding partially-filled voxels.
