@@ -58,6 +58,7 @@ regarding partially-filled voxels.
 
 .. figure:: _static/model_C+1.png
    :alt: model synthetic C+ 1
+   :width: 500
 
    The synthetic emission resulting from the model above.
    Note the large-scale velocity structure of the Milky Way is replicated.
