@@ -3,7 +3,7 @@ version: "2"
 build:
   os: "ubuntu-22.04"
   tools:
-    python: "mambaforge-22.9" # "3.11" # 
+    python: "3.11" # "mambaforge-22.9" # "3.11" # 
   jobs:
     pre_build:
       - ls
@@ -16,12 +16,14 @@ build:
       #- rm -rf _readthedocs/html
       #- sphinx-build -b html docs/_source _readthedocs/html
 
-conda:
-  environment: docs/environment.yaml
+# conda:
+#   environment: docs/environment.yaml
 
-    # python:
-    #   install:
-    #     - requirements: docs/requirements.txt
+python:
+  install:
+    - requirements: docs/requirements-test.txt
+    - method: pip
+      path: .
 
 sphinx:
   builder: html
