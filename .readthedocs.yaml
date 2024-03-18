@@ -7,10 +7,10 @@ build:
   jobs:
     pre_build:
       - ls
-      - pip list
+      # - pip list
       # - echo $READTHEDOCS_OUTPUT
     post_build:
-      - ls
+      # - ls
       #- ls _readthedocs/html
       #- ls _readthedocs/html/_sources
       #- rm -rf _readthedocs/html
@@ -21,7 +21,7 @@ build:
 
 python:
   install:
-    - requirements: docs/requirements-test.txt
+    - requirements: docs/requirements.txt
     - method: pip
       path: .
 
