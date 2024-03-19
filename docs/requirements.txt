@@ -1,4 +1,4 @@
-kosmatau3d
+# kosmatau3d
 #@git+https://github.com/CraigYanitski/kosmatau3d.git
 ipython
 jupytext
