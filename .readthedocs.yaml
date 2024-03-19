@@ -9,7 +9,7 @@ build:
       - ls
       # - pip list
       # - echo $READTHEDOCS_OUTPUT
-    post_build:
+    # post_build:
       # - ls
       #- ls _readthedocs/html
       #- ls _readthedocs/html/_sources
