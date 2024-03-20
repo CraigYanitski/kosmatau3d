@@ -1,21 +1,21 @@
 """
-This module contains a calculation of the different combinations needed to 
-calculate the voxel-averaged emission, as well as the calculations 
-of the probabilities to observe each combination as a function of the 
+This module contains a calculation of the different combinations needed to
+calculate the voxel-averaged emission, as well as the calculations
+of the probabilities to observe each combination as a function of the
 internal velocity :math:`v_i`.
-The procedure cycles through the available ensembles and performs the 
+The procedure cycles through the available ensembles and performs the
 calculations separately.
 
 .. note::
-   
+
    This module owes itself largely to the work  done by Silke Andree-Labsch and
-   Christoph Bruckmann. 
-   A clear deficiency in the calculations in this module is that we use a 
+   Christoph Bruckmann.
+   A clear deficiency in the calculations in this module is that we use a
    list of the necessary probabilities, which are of different shapes depending
    on the number of combinations observed for a given velocity bin.
    Since this computational difficulty is common in (astro) particle physics,
    there should exist a python package to properly handle this in python.
-   This is a possible development that still needs to be tested and 
+   This is a possible development that still needs to be tested and
    implemented.
 """
 
@@ -82,7 +82,7 @@ def calculate_combinations(clumpN, test=True, verbose=False):
         else:
             if dimension == 1:
                 grid = np.arange(ranges[i, 0, 0], ranges[i, 0, 1])
-                combinations.append(np.array([grid.flatten()], dtype=np.int))
+                combinations.append(np.array([grid.flatten()], dtype=int))
             elif dimension == 2:
                 grid = np.mgrid[
                     ranges[i, 0, 0] : ranges[i, 0, 1], ranges[i, 1, 0] : ranges[i, 1, 1]
@@ -367,7 +367,21 @@ def create_clump_combinations(
         ensemble.CLmaxProbableNumber[ens] = CLmaxProbableNumber
         ensemble.CLmaxStandardDeviation[ens] = CLmaxStandardDeviation
 
+<<<<<<< HEAD
         warnings.filterwarnings("default", category=RuntimeWarning)
+=======
+        warnings.filterwarnings('default', category=RuntimeWarning)
+
+        if verbose:
+            print('\nNj\n', self.__Nj)
+            print('\nsurface probability {}, expected number {}, standard deviation {}\n'.format(surfaceProbability,
+                                                                                                 maxProbableNumber,
+                                                                                                 maxStandardDeviation))
+            print('\nDelta Nji\n', self.__deltaNji)
+            print('\nsurface probability, expected number, standard deviation:\n', surfaceProbability,
+                  '\n', probableNumber, '\n', standardDeviation)
+            input()
+>>>>>>> 5f205e3 (adding column density function!)
 
         lower = np.zeros([constants.clump_log_mass[ens].size, 1])
         clumpLower = np.maximum(
@@ -733,7 +747,7 @@ def calculate(afuv, debug=False, test=False):
     opticaldepthresult = np.array(opticaldepthresult)
 
     intensity = intensityresult.sum(0)
-    opticaldepth = -np.log((opticaldepthresult.sum(0)).astype(np.float))
+    opticaldepth = -np.log((opticaldepthresult.sum(0)).astype(float))
     gc.collect()
 
     return (intensity, opticaldepth)
@@ -794,6 +808,7 @@ def print_ensembleparameters():
     np.set_printoptions(precision=4, suppress=True)
 
     for i in range(len(ensemble.clumpNj)):
+<<<<<<< HEAD
         print("\nC L U M P   S E T   {}\n".format(i + 1))
         print("Nj:\n{}".format(ensemble.clumpNj[i].astype(np.float)))
         print("delta Nji:\n{}\n".format(ensemble.clumpDeltaNji[i].astype(np.float).T))
@@ -805,6 +820,13 @@ def print_ensembleparameters():
                 ensemble.clumpNormalisedDeltaNji[i].astype(np.float).T
             )
         )
+=======
+        print('\nC L U M P   S E T   {}\n'.format(i+1))
+        print('Nj:\n{}'.format(ensemble.clumpNj[i].astype(float)))
+        print('delta Nji:\n{}\n'.format(ensemble.clumpDeltaNji[i].astype(float).T))
+        print('Normalised Nj:\n{}'.format(ensemble.clumpNormalisedNj[i].astype(float)))
+        print('Normalised delta Nj:\n{}\n'.format(ensemble.clumpNormalisedDeltaNji[i].astype(float).T))
+>>>>>>> 5f205e3 (adding column density function!)
 
     return
 

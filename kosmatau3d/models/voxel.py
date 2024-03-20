@@ -1,8 +1,8 @@
 """
-A module containing the :code:`Voxel` class, which is used to model the 
+A module containing the :code:`Voxel` class, which is used to model the
 synthetic emission from one or more *ensembles*.
-The :code:`Voxel` class wraps together all of the computations of 
-:ref:`models.masspoints.masspoint`, :ref:`models.combinations.combination`, 
+The :code:`Voxel` class wraps together all of the computations of
+:ref:`models.masspoints.masspoint`, :ref:`models.combinations.combination`,
 and :ref:`models.ensemble.ensemble`.
 """
 
@@ -842,6 +842,12 @@ class Voxel(object):
             return np.sum(N_species, axis=0)
         else:
             return N_species
+    def get_column_density(self, *args, **kwargs):
+
+        """Return column densities."""
+        area = (constants.voxel_size * 3.086* (10**(18)))**2
+        cd = ((self.get_species_number(*args, **kwargs))/area)
+        return cd
 
     def get_abundances(self, *args, **kwargs):
         """Return species abundances."""

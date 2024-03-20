@@ -1,13 +1,13 @@
 '''
-A subpackage to contain all of the model constants used in the calculations 
+A subpackage to contain all of the model constants used in the calculations
 involved in :code:`kosmatau3d`.
 
-This subpackage contains all of the constants and parameters used throughout 
-the program. 
+This subpackage contains all of the constants and parameters used throughout
+the program.
 There are definitions to change the model parameters for when this is needed.
 
 .. note::
-   
+
    The dust wavelengths are hard-coded since these appear in Weingartner &
    Draine (2001).
    This will need to be updated if the dust calculations in KOSMA-:math:`\\tau`
@@ -102,6 +102,7 @@ u_draine0 = 8.93717e-14  # erg/cm^-3 #2.89433*10**39 # erg/pc^3 #
 mass_h = 1.007276466812*1.6605*10**-27  # in [kg]
 mass_solar = 1.98852*10**30  # in [kg]
 pc = 3.08567758149*10**16  # in [m]
+pc_to_cm = 3.08567758149*10**18 #in [cm]
 
 h = 6.62606957*10**-34  # in [J s]
 c = 2.99792458*10**8  # in [m/s]

@@ -1,5 +1,5 @@
 '''
-This is a subpackage containing a class to compare methods of interpolating the 
+This is a subpackage containing a class to compare methods of interpolating the
 KOSMA-:math:`\\tau` grid.
 '''
 
@@ -18,7 +18,7 @@ class CompareInterpolation():
     This is a class to facilitate the comparison of interpolation methods.
     '''
 
-    def __init__(self, tmb_file='clump_Tmb_LineCenter.dat', tau_file='clump_tau_LineCenter.dat', 
+    def __init__(self, tmb_file='clump_Tmb_LineCenter.dat', tau_file='clump_tau_LineCenter.dat',
                  n_param=4):
         '''
         Initialise attributes and open grid files.
@@ -36,7 +36,7 @@ class CompareInterpolation():
         self.tau_orig = []
         self.tau_interp_lin = []
         self.tau_interp_ml = []
-        
+
         return
 
     def open_files(self, n_param=4):
@@ -57,13 +57,13 @@ class CompareInterpolation():
         self.tmb_data = (tmb[:, :n_param], tmb[:, n_param:])
         tau = np.genfromtxt(self.path+self.tau_file)
         self.tau_data = (tau[:, :n_param], tau[:, n_param:])
-        
+
         return
 
     def interpolate(self, transition=None, full_grid=False, all_species=False, savedir='', verbose=False):
         '''
         Perform interpolation of model grid at each point in multiple ways.
-        Currently this performs a linear interpolation as well as predicting 
+        Currently this performs a linear interpolation as well as predicting
         the interpolated point using extremely-randomised trees.
         '''
 
@@ -96,26 +96,26 @@ class CompareInterpolation():
             tau_orig = []
             tau_interp_lin = []
             tau_interp_ml = []
-            idx = np.all([self.tmb_data[0][:, p]==params[p] 
+            idx = np.all([self.tmb_data[0][:, p]==params[p]
                           for p in range(len(params))], axis=0)
-                
+
             if not full_grid:
                 tmb_data = (copy(self.tmb_data[0][~idx]), copy(self.tmb_data[1][~idx]))
                 tau_data = (copy(self.tau_data[0][~idx]), copy(self.tau_data[1][~idx]))
-        
+
             if all_species:
                 i_species = np.arange(len(self.species))
                 # print(tmb_data[1][:, i_species].shape)
                 # print(tau_data[1][:, i_species].shape)
                 tmb_orig = self.tmb_data[1][idx]
                 tau_orig = self.tau_data[1][idx]
-                lin_interp = LinearNDInterpolator(tmb_data[0], 
+                lin_interp = LinearNDInterpolator(tmb_data[0],
                                                   tmb_data[1][:, i_species])
                 tmb_interp_lin.append(lin_interp(params))
                 ml_interp = ExtraTreesRegressor(random_state=0)
                 ml_interp.fit(tmb_data[0], tmb_data[1][:, i_species])
                 tmb_interp_ml.append(ml_interp.predict(np.asarray(params).reshape(1, -1)))
-                lin_interp = LinearNDInterpolator(tau_data[0], 
+                lin_interp = LinearNDInterpolator(tau_data[0],
                                                   tau_data[1][:, i_species])
                 tau_interp_lin.append(lin_interp(params))
                 ml_interp = ExtraTreesRegressor(random_state=0)
@@ -123,30 +123,30 @@ class CompareInterpolation():
                 tau_interp_ml.append(ml_interp.predict(np.asarray(params).reshape(1, -1)))
 
             for species in transition:
-                
+
                 if all_species:
                     continue
 
                 if verbose:
                     print(species + '\t\t', end='\r')
-                
+
                 i_species = self.species.index(species)
 
                 # Interpolate intensity
                 tmb_orig.append(self.tmb_data[1][idx, i_species])
                 # - linear
-                lin_interp = LinearNDInterpolator(tmb_data[0], 
+                lin_interp = LinearNDInterpolator(tmb_data[0],
                                                   tmb_data[1][:, i_species])
                 tmb_interp_lin.append(lin_interp(params))
                 # - ML
                 ml_interp = ExtraTreesRegressor(random_state=0)
                 ml_interp.fit(tmb_data[0], tmb_data[1][:, i_species])
                 tmb_interp_ml.append(ml_interp.predict(np.asarray(params).reshape(1, -1)))
-                
+
                 # Interpolate optical depth
                 tau_orig.append(self.tau_data[1][idx, i_species])
                 # - linear
-                lin_interp = LinearNDInterpolator(tau_data[0], 
+                lin_interp = LinearNDInterpolator(tau_data[0],
                                                   tau_data[1][:, i_species])
                 tau_interp_lin.append(lin_interp(params))
                 # - ML
@@ -156,7 +156,7 @@ class CompareInterpolation():
 
             if verbose:
                 print('\r')
-            
+
             self.tmb_orig.append(tmb_orig)
             self.tmb_interp_lin.append(tmb_interp_lin)
             self.tmb_interp_ml.append(tmb_interp_ml)
@@ -173,7 +173,7 @@ class CompareInterpolation():
 
         self.save_results(directory=savedir, full_grid=full_grid)
         print(f'\nsaved comparison to {savedir}')
-        
+
         return
 
     def save_results(self, directory='', full_grid=True):
@@ -217,4 +217,3 @@ class CompareInterpolation():
         ax.set_xlabel('Parameter', fontsize=24)
         ax.set_ylabel('Relative error', fontsize=24)
         return ax
-
