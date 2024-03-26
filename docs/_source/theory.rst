@@ -142,7 +142,7 @@ This distribution is bourne out of turbulence, and may vary between star
 forming regions.
 The value we used in the Milky Way is :math:`1.84`, which was determined from 
 the Polaris Flare 
-(:ref:`Heithausen et al. 1998 <https://ui.adsabs.harvard.edu/abs/1998A%26A...331L..65H/abstract>`_).
+(`Heithausen et al. 1998 <https://ui.adsabs.harvard.edu/abs/1998A%26A...331L..65H/abstract>`_).
 
 We combine the clump mass distribution with a mass-size relation,
 
@@ -151,7 +151,7 @@ We combine the clump mass distribution with a mass-size relation,
 
 where :math:`r_\mathrm{cl}` is the radius of the clump and :math:`\varpi` is 
 mass-size index (determined to be :math:`2.31` in 
-:ref:`Heithausen et al. 1998 <https://ui.adsabs.harvard.edu/abs/1998A%26A...331L..65H/abstract>`_), 
+`Heithausen et al. 1998 <https://ui.adsabs.harvard.edu/abs/1998A%26A...331L..65H/abstract>`_), 
 in order to approximately derive the clump surface density distribution,
 
 .. math::
