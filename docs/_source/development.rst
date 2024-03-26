@@ -44,12 +44,16 @@ Below we list the developments planned for upcoming versions of
 +---------+-------------------------------------------------------------------+
 | version | changes                                                           |
 +=========+===================================================================+
-| v1.0.8  | - new :class:`models.Voxel()` method to return species column     |
+| v1.0.8  | - new method in :class:`models.Voxel()` to return species column  |
 |         |   density                                                         |
 |         |                                                                   |
 |         |   - should have similar inputs to                                 |
 |         |     :meth:`models.Voxel.get_abundances()` and                     |
 |         |     :attr:`models.constants.voxel_size` for calculation.          |
+|         |                                                                   |
+|         |   - will include a voxel size-invariant option that adds the      |
+|         |     column density of each clump in the ensemble (as done in      |
+|         |     §7 of Röllig & Ossenkopf-Okada 2022)                          |
 +---------+-------------------------------------------------------------------+
 | ...     | ...                                                               |
 +---------+-------------------------------------------------------------------+
@@ -60,6 +64,26 @@ Below we list the developments planned for upcoming versions of
 |         |   - :mod:`models.observations` -> :mod:`models.model_data`        |
 |         |                                                                   |
 |         | - removal of circular imports                                     |
++---------+-------------------------------------------------------------------+
+| v1.1.x  | - New features                                                    |
+|         |                                                                   |
+|         |   - python implementation of the Mathematica routines from        |
+|         |     Markus Röllig                                                 |
+|         |                                                                   |
+|         |     - will be placed in :mod:`kosmatau3d.kosmatau`                |
+|         |                                                                   |
+|         |     - should help streamline the processing of the                |
+|         |       KOSMA-:math:`\tau` output and compare to :code:`kosmatau3d` |
+|         |       results                                                     |
+|         |                                                                   |
+|         |   - parsing of KOSMA-:math:`\tau` grid parameters directly from   |
+|         |     header                                                        |
+|         |                                                                   |
+|         |     - should be simple to implement using `pandas` to open the    |
+|         |       file                                                        |
+|         |                                                                   |
+|         |     - one should also implement a failsafe to ignore parameters   |
+|         |       that do not change, since this will cause an error          |
 +---------+-------------------------------------------------------------------+
 | ...     | ...                                                               |
 +---------+-------------------------------------------------------------------+
