@@ -2,8 +2,21 @@
 Getting Started
 ***************
 
+The best way to get started with all of the finer details of how to use the 
+code and how it works is to review the 
+`notebook <https://github.com/CraigYanitski/kosmatau3d/blob/main/notebooks/single-voxel/voxel.ipynb>`.
+Since the code is still in early development, all of the examples show the 
+features of a voxel_ in the framework of this code.
+The three-dimensional uses of this code have thus-far been limited to models 
+of the Milky Way as they appear in Yanitski (2023).
+Some of the results are shown in 'Three-dimensional PDR Models'_, but potential 
+users are encouraged to contact yanitski@ph1.uni-koeln.de to iterate on their 
+use-case.
+
 The Single-Voxel model
 ======================
+
+.. _voxel:
 
 This is the base functionality of :code:`kosmatau3d`.
 A *voxel*, or volumetric pixel, is one cell in a three-dimensional spatial
