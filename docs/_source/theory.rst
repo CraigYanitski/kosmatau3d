@@ -125,6 +125,37 @@ Ensembles
 
 Here I will soon explain the mathematics and statistics associated with 
 groups of clumps in an ensemble.
+Most of this information will be placed here after the publication of Yanitski 
+et al. (2024).
+
+The basis of the fractal approximation of the ISM is the clump mass 
+distribution:
+
+.. math::
+   \frac{\mathrm{d} N_\mathrm{cl}}{\mathrm{d} m_\mathrm{cl}} 
+   \propto m_\mathrm{cl}^{-\alpha} \hspace{1cm} ,
+
+where :math:`N_\mathrm{cl}` is the number of clumps of a given mass 
+:math:`m_\mathrm{cl}` and :math:`\alpha` is the index of the clump mass 
+distribution.
+This distribution is bourne out of turbulence, and may vary between star 
+forming regions.
+The value we used in the Milky Way is :math:`1.84`, which was determined from 
+the Polaris Flare 
+(:ref:`Heithausen et al. 1998 <https://ui.adsabs.harvard.edu/abs/1998A%26A...331L..65H/abstract>`_).
+
+We combine the clump mass distribution with a mass-size relation,
+
+.. math::
+   m_\mathrm{cl} \propto r_\mathrm{cl}^\varpi \hspace{1cm} ,
+
+where :math:`r_\mathrm{cl}` is the radius of the clump and :math:`\varpi` is 
+mass-size index (determined to be :math:`2.31` in 
+:ref:`Heithausen et al. 1998 <https://ui.adsabs.harvard.edu/abs/1998A%26A...331L..65H/abstract>`_), 
+in order to approximately derive the clump surface density distribution,
+
+.. math::
+   
 
 .. rubric:: Footnotes
 
