@@ -3,6 +3,8 @@
    You can adapt this file completely to your liking, but it should at least
    contain the root `toctree` directive.
 
+:html_theme.sidebar_primary.remove:
+
 ****************************************
 The documentation of a clumpy PDR model.
 ****************************************
