@@ -105,6 +105,12 @@ html_theme_options = {
     # "secondary_sidebar_items": ["page-toc"],
     "show_prev_next": False,
 }
+html_sidebars = {
+    "installation": [],
+    "getting-started": [],
+    "development": [],
+    "acknowledgement": [],
+}
 html_css_files = ["pydata-custom.css"]  # Override some CSS settings
 
 
