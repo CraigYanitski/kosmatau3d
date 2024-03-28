@@ -18,6 +18,19 @@ The Single-Voxel model
 
 .. _voxel:
 
+.. sidebar::
+
+   .. figure:: _static/uniform_RT-small_comp.png
+      :alt: voxel diagram
+      :width: 500
+
+      A diagram representing how the voxels work.
+      The region in the red box is the ISM we want to model, with the clumps 
+      shown as scatter points.
+      The blue boxes are the voxels.
+      In order for the probabilistic calculation to be accurate, the clumps are 
+      randomly positioned in the voxel.
+
 This is the base functionality of :code:`kosmatau3d`.
 A *voxel*, or volumetric pixel, is one cell in a three-dimensional spatial
 grid.
@@ -27,20 +40,90 @@ to the emissivity and absorption in the voxel.
 It performs a probabilistic calculation of the emission by considering all 
 possible combinations of clumps in the line-of-sight (see the schematic below).
 
+Below is a minimal example of how to initialise and set the properties in a voxel.
+Note that there are plenty of other parameters that can be adjusted to modify 
+the physics of the ensembles contained within the voxel, and most of them are 
+explained in :class:`kosmatau3d.models.voxel.Voxel` and in the jupyter
+`notebook <https://github.com/CraigYanitski/kosmatau3d/blob/main/notebooks/single-voxel/voxel.ipynb>`_.
 
-.. figure:: _static/uniform_RT-small_comp.png
-   :alt: voxel diagram
-   :width: 500
+.. code:: python
 
-   A diagram representing how the voxels work.
-   The region in the red box is the ISM we want to model, with the clumps 
-   shown as scatter points.
-   The blue boxes are the voxels.
-   In order for the probabilistic calculation to be accurate, the clumps are 
-   randomly positioned in the voxel.
+   >>> from kosmatau3d import models
+   >>> vox = models.Voxel()
+   >>> vox.set_properties(
+   ...     voxel_size=1,
+   ...     clump_mass_number=[3],
+   ...     clump_mass_range=[[0,2]],
+   ...     ensemble_mass=1e1,
+   ...     ensemble_density=1e5,
+   ...     fuv=1e5,
+   ... )
+
+This will create a voxel with side length :math:`\ell_\mathrm{vox}=1\,\mathrm{pc}` 
+(so the volume is :math:`1\, \mathrm{pc}^3`) containing an ensemble with 
+three distinct clump masses: :math:`1`, :math:`10`, and :math:`100\, M_\odot`.
+The number of each of these clumps in the ensemble is calculated from the 
+`clump-mass distribution` as explained in :doc:`Theory <theory>`.
+Since the mass of the ensemble in this example is lower than the maximum 
+mass of the clumps in the ensemble, this example will only contain a fraction 
+of the largest clump.
+This showcases a key property of voxels in :code:`kosmatau3d`: the 
+scale-invariance of the calculations.
+
+Now that a voxel has been initialised with an ensemble, it is possible to 
+obtain intrinsic properties such as the fractional abundance by,
+
+.. code:: python
+
+   >>> vox.get_abundances(species=["H2", "H", "C+", "CO"])
+
+where the abundances are normalised by the total hydrogen abundance 
+(:math:`n_\mathrm{H} = n_\mathrm{H^0} + 2\, n_\mathrm{H_2}`).
+Extrinsic properties such as column density are also available at this 
+point, but for the emission it is necessary to first execute the computation:
+
+.. code:: python
+
+   >>> vox.calculate_emission()
+
+This will compute the emissivity and absorption for the line and continuum emission
+from the base KOSMA-:math:`\tau` models.
+One can then access the result using,
+
+.. code:: python
+
+   >>> vox.get_species_emissivity()
+
+Read the documentation of :class:`kosmatau3d.models.voxel.Voxel` to find out 
+the different arguments for this method.
+In the current procedure for calculating the emission, we use the peak intensity 
+and optical depth as well as post-processing the HI :math:`21\, \mathrm{cm}` line 
+emission by making an isothermal approximation.
+for that reason we have split the accessing methods for the continuum and line 
+emission into :code:`get_dust_...` and :code:`get_species_...`, respectively, 
+and there is a kwarg :code:`hi` that can be set to :code:`True` to get the 
+HI line emission.
+The emission values that are available are,
+
+* emissivity :math:`\epsilon_\nu` in :math:`\frac{K}{pc}`
+* absorption :math:`\kappa_\nu` in :math:`\frac{1}{pc}`
+* intensity :math:`\I_\nu` in :math:`K`
+* optical depth :math:`\tau_\nu` (dimensionless)
+
+The intensity and optical depth require integrating over the length-scale of the 
+voxel, so they should not be used in three-dimensional models.
 
 Three-dimensional PDR Models
 ============================
+
+.. sidebar::
+
+   .. figure:: _static/integrated_C+1.png
+      :alt: model showing integrated C+
+
+      One Galactic model, where the voxels are coloured according to the 
+      \[CII\] :math:`158\, \mu\mathrm{m}` intensity integrated over the spectrum
+      (:math:`-350` to :math:`350\, \mathrm{km\, s^{-1}}`).
 
 The most complex functionality of kosmatau3d, and the reason for its 
 development since its conception 
@@ -50,13 +133,6 @@ models will soon be developed.
 The figure below depicts the \[CII\] :math:`158\, \mu\mathrm{m}` integrated 
 intensity in each voxel of one of the galactic models, which is then used to 
 compute the synthetic observation.
-
-.. figure:: _static/integrated_C+1.png
-   :alt: model showing integrated C+
-
-   One Galactic model, where the voxels are coloured according to the 
-   \[CII\] :math:`158\, \mu\mathrm{m}` intensity integrated over the spectrum
-   (:math:`-350` to :math:`350\, \mathrm{km\, s^{-1}}`).
 
 The benefit of using :code:`kosmatau3d` voxels for the model is two-fold: 
 it uniquely accounts for the inhomogeneity and shadowing in PDRs and has 
@@ -69,10 +145,12 @@ longitude-velocity diagram like below.
 We focus on galactic latitude :math:`b\! =\! 0` to avoid the complications 
 regarding partially-filled voxels.
 
-.. figure:: _static/model_C+1.png
-   :alt: model synthetic C+ 1
-   :width: 500
+.. sidebar::
 
-   The synthetic emission resulting from the model above.
-   Note the large-scale velocity structure of the Milky Way is replicated.
+   .. figure:: _static/model_C+1.png
+      :alt: model synthetic C+ 1
+      :width: 500
+
+      The synthetic emission resulting from the model above.
+      Note the large-scale velocity structure of the Milky Way is replicated.
 
