@@ -107,7 +107,7 @@ The emission values that are available are,
 
 * emissivity :math:`\epsilon_\nu` in :math:`\frac{K}{pc}`
 * absorption :math:`\kappa_\nu` in :math:`\frac{1}{pc}`
-* intensity :math:`\I_\nu` in :math:`K`
+* intensity :math:`I_\nu` in :math:`K`
 * optical depth :math:`\tau_\nu` (dimensionless)
 
 The intensity and optical depth require integrating over the length-scale of the 

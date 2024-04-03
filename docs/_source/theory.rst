@@ -104,7 +104,7 @@ integrating the core to derive its probability, we obtain,
          - N_\mathrm{H, cl}^{-1} \frac{4\pi\, r_\mathrm{cl}}{\gamma} 
          \left( \frac{n}{n_\mathrm{s}} \right)^{-\frac{3}{\gamma}} 
          & \hspace{0.5cm} & n_\mathrm{s} < n < n_\mathrm{core} \\
-         N_\mathrm{H, cl}^{-1} \frac{4\pi}{3} r_\mathrm{cl}^3 n_\mathrm{core} 
+         N_\mathrm{H, cl}^{-1} \frac{4\pi}{3} r_\mathrm{core}^3 n_\mathrm{core} 
          & \hspace{0.5cm} & n = n_\mathrm{core}
       \end{aligned}
    \right. \hspace{1cm} .
