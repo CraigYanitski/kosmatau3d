@@ -98,13 +98,12 @@ Using the density profile of the KOSMA-:math:`\tau` clumps, as well as manually
 integrating the core to derive its probability, we obtain,
 
 .. math::
-   \mathcal{P}_\mathrm{cl}(n) = 
+   \mathcal{P}_\mathrm{cl}(n) = N_\mathrm{H, cl}^{-1} 4\pi r_\mathrm{cl}^3
    \left\{
       \begin{aligned}
-         - N_\mathrm{H, cl}^{-1} \frac{4\pi\, r_\mathrm{cl}}{\gamma} 
-         \left( \frac{n}{n_\mathrm{s}} \right)^{-\frac{3}{\gamma}} 
+         - \frac{1}{\gamma} \left( \frac{n}{n_\mathrm{s}} \right)^{-\frac{3}{\gamma}} 
          & \hspace{0.5cm} & n_\mathrm{s} < n < n_\mathrm{core} \\
-         N_\mathrm{H, cl}^{-1} \frac{4\pi}{3} r_\mathrm{core}^3 n_\mathrm{core} 
+         \frac{1}{3} \left( \frac{n}{n_\mathrm{s}} \right)^{\frac{\gamma - 3}{\gamma}} 
          & \hspace{0.5cm} & n = n_\mathrm{core}
       \end{aligned}
    \right. \hspace{1cm} .
@@ -121,6 +120,8 @@ by a given factor.
 We therefore denote the far-UV radiation as :math:`\chi` in units of 
 :math:`\chi_\mathrm{D}`.
 
+More information about the various far-UV spectra will be provided here upon 
+the initial publication for :code:`kosmatau3d`.
 
 Ensembles
 =========
