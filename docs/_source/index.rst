@@ -13,9 +13,9 @@ University.
 It's functionality and use in modelling the Galactic cooling lines in the 
 Milky Way are explained in 
 `Yanitski (2023) <https://kups.ub.uni-koeln.de/71850/>`_.
-It will soon be able to download its required data from the InterStellar Medium 
-DataBase (ISMDB) hosted at the Observatoire de Paris-Meudon when their API is 
-completed.
+It will soon be able to download its required data from the 
+`InterStellar Medium DataBase (ISMDB) <https://ismdb.obspm.fr/>`_ hosted at 
+the Observatoire de Paris-Meudon when their API is completed.
 
 .. caution::
    This documentation and the corresponding code are under active development.
