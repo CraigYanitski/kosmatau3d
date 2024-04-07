@@ -367,21 +367,7 @@ def create_clump_combinations(
         ensemble.CLmaxProbableNumber[ens] = CLmaxProbableNumber
         ensemble.CLmaxStandardDeviation[ens] = CLmaxStandardDeviation
 
-<<<<<<< HEAD
         warnings.filterwarnings("default", category=RuntimeWarning)
-=======
-        warnings.filterwarnings('default', category=RuntimeWarning)
-
-        if verbose:
-            print('\nNj\n', self.__Nj)
-            print('\nsurface probability {}, expected number {}, standard deviation {}\n'.format(surfaceProbability,
-                                                                                                 maxProbableNumber,
-                                                                                                 maxStandardDeviation))
-            print('\nDelta Nji\n', self.__deltaNji)
-            print('\nsurface probability, expected number, standard deviation:\n', surfaceProbability,
-                  '\n', probableNumber, '\n', standardDeviation)
-            input()
->>>>>>> 5f205e3 (adding column density function!)
 
         lower = np.zeros([constants.clump_log_mass[ens].size, 1])
         clumpLower = np.maximum(
@@ -808,7 +794,6 @@ def print_ensembleparameters():
     np.set_printoptions(precision=4, suppress=True)
 
     for i in range(len(ensemble.clumpNj)):
-<<<<<<< HEAD
         print("\nC L U M P   S E T   {}\n".format(i + 1))
         print("Nj:\n{}".format(ensemble.clumpNj[i].astype(np.float)))
         print("delta Nji:\n{}\n".format(ensemble.clumpDeltaNji[i].astype(np.float).T))
@@ -820,13 +805,6 @@ def print_ensembleparameters():
                 ensemble.clumpNormalisedDeltaNji[i].astype(np.float).T
             )
         )
-=======
-        print('\nC L U M P   S E T   {}\n'.format(i+1))
-        print('Nj:\n{}'.format(ensemble.clumpNj[i].astype(float)))
-        print('delta Nji:\n{}\n'.format(ensemble.clumpDeltaNji[i].astype(float).T))
-        print('Normalised Nj:\n{}'.format(ensemble.clumpNormalisedNj[i].astype(float)))
-        print('Normalised delta Nj:\n{}\n'.format(ensemble.clumpNormalisedDeltaNji[i].astype(float).T))
->>>>>>> 5f205e3 (adding column density function!)
 
     return
 
