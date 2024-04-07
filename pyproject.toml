@@ -6,7 +6,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "kosmatau3d"
-version = "1.0.9"
+version = "1.0.10"
 authors = [
 	{ name="Craig Yanitski", email="yanitski@ph1.uni-koeln.de" },
 ]
@@ -17,6 +17,25 @@ classifiers = [
 	"Programming Language :: Python :: 3",
     "License :: OSI Approved :: GNU General Public License v3 (GPLv3)",
     "Operating System :: Unix",
+]
+dependencies = [
+    "astrokit",
+    "astropy",
+    "dill",
+    "jupyter-book",
+    "jupyterlab",
+    "matplotlib",
+    "numba>=0.49.1",
+    "numpy",
+    "pandas",
+    "pyqt5",
+    "scikit-learn",
+    "scipy",
+    "spectres",
+    "sphinx",
+    "sphinx-autoapi",
+    "tqdm",
+    "cygrid",
 ]
 
 [project.urls]
