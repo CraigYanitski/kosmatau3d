@@ -6,7 +6,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "kosmatau3d"
-version = "1.0.8"
+version = "1.0.9"
 authors = [
 	{ name="Craig Yanitski", email="yanitski@ph1.uni-koeln.de" },
 ]
