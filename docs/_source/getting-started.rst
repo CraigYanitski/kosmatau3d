@@ -46,18 +46,20 @@ the physics of the ensembles contained within the voxel, and most of them are
 explained in :class:`kosmatau3d.models.voxel.Voxel` and in the jupyter
 `notebook <https://github.com/CraigYanitski/kosmatau3d/blob/main/notebooks/single-voxel/voxel.ipynb>`_.
 
-.. code:: python
+.. sidebar::
 
-   >>> from kosmatau3d import models
-   >>> vox = models.Voxel()
-   >>> vox.set_properties(
-   ...     voxel_size=1,
-   ...     clump_mass_number=[3],
-   ...     clump_mass_range=[[0,2]],
-   ...     ensemble_mass=1e1,
-   ...     ensemble_density=1e5,
-   ...     fuv=1e5,
-   ... )
+   .. code:: python
+
+      >>> from kosmatau3d import models
+      >>> vox = models.Voxel()
+      >>> vox.set_properties(
+      ...     voxel_size=1,
+      ...     clump_mass_number=[3],
+      ...     clump_mass_range=[[0,2]],
+      ...     ensemble_mass=1e1,
+      ...     ensemble_density=1e5,
+      ...     fuv=1e5,
+      ... )
 
 This will create a voxel with side length :math:`\ell_\mathrm{vox}=1\,\mathrm{pc}` 
 (so the volume is :math:`1\, \mathrm{pc}^3`) containing an ensemble with 
