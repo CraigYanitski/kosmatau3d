@@ -46,7 +46,3 @@ If use the single-voxel model to compare to the pixels in a map (the so-called
 first description of this feature:
 
 - Okada, Y., Yanitski, C. N., et al. 2024, in preparation
-
-.. toctree::
-   :maxdepth: 2
-   :caption: Content
