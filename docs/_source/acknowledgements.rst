@@ -1,3 +1,5 @@
+:html_theme.sidebar_primary.remove:
+
 ****************
 Acknowledgements
 ****************
@@ -13,6 +15,7 @@ Aditi Sinha is now also developer focusing on the implementation of
 :code:`kosmatau3d` as a subgrid model for the SILCC (M)HD simulations.
 She is advised by Priv. Doz. Dr. Volker Ossenkopf-Okada in the group A6 in 
 `SFB 1601 <https://sfb1601.astro.uni-koeln.de>`_.
+
 Further feedback and assistance were provided by Markus Rollig, Christoph 
 Bruckmann, Yoko Okada, Aleena Baby, Slawa Kabanovic, Christof Buchbender, Ronan 
 Higgins, Juan-Luis Verbena, Cristian Guevara, and Prachi Khatri.
