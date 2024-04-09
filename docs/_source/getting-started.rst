@@ -48,6 +48,8 @@ the physics of the ensembles contained within the voxel, and most of them are
 explained in :class:`kosmatau3d.models.voxel.Voxel` and in the jupyter
 `notebook <https://github.com/CraigYanitski/kosmatau3d/blob/main/notebooks/single-voxel/voxel.ipynb>`_.
 
+.. sidebar::
+
 ..  code-block:: python
 
     >>> from kosmatau3d import models
