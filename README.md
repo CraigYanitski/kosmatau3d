@@ -54,7 +54,7 @@ editable package in bash with,
 pip install -e .
 ```
 
-You can now keep it up-to-date using :code:`git pull` in this directory.
+You can now keep it up-to-date using `git pull` in this directory.
 
 ## Creating a voxel
 
