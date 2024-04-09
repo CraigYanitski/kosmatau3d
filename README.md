@@ -47,11 +47,14 @@ git clone https://github.com/CraigYanitski/kosmatau3d
 cd kosmatau3d
 ```
 
-Now that you are in the root directory of this repository, install this package in bash with,
+Now that you are in the root directory of this repository, install it as an 
+editable package in bash with,
 
 ```bash
-pip install .
+pip install -e .
 ```
+
+You can now keep it up-to-date using :code:`git pull` in this directory.
 
 ## Creating a voxel
 
@@ -100,17 +103,19 @@ This will periodically be improved over time.
 ### Single-voxel models
 
 This is the basic component of `kosmatau3d`.
-It is made available as a self-sufficient object for use in other subgridding models.
+It is made available as a self-sufficient object for use in other subgridding 
+models.
 Given a volume-filling factor, mass, and FUV field, the single voxel object
 calculates the wavelength-dependant intensity, optical depth, absorption, and
 emissivity (assuming no background intensity) for a clumpy PDR ensemble.
-The explanation of this model is thoroughly-explained in `./notebooks/voxel.ipynb`.
+The explanation of this model is thoroughly-explained in 
+`./notebooks/voxel.ipynb`.
 
 The objects that will modelled with this method are:
 
 - IC 1396
-  - (Okada et al. in prep) first application of directly comparing single
-  voxels with an observational map
+  - (Okada, Yanitski, et al. in prep) first application of directly comparing 
+  single voxels with an observational map
 
 ### 3D models
 
@@ -126,15 +131,18 @@ distant galaxies.
 The objects that will modelled with this method are:
 
 - Milky Way
-  - (Yanitski et al. in prep) an approximate description compared to
-  COBE-DIRBE, Planck, COBE-FIRAS, GOT C+, CfA, Mopra, ThrUMMS, and SEDIGISM data
+  - (Yanitski et al. in prep) an approximate description of the Milky Way 
+  emission compared to COBE-DIRBE, Planck, COBE-FIRAS, GOT C+, CfA, Mopra, 
+  ThrUMMS, and SEDIGISM data
 
 ## Code Corrections
 
-The major changes to the functionality of the `kosmatau3d` model over the KOSMA-tau-3D 
-model of Silke et al. (2017) are described in the document `./docs/treatise.pdf`, 
-and the major changes to the Milky Way model will also
-appear in the upcoming Yanitski et al. (2023) paper.
+The major changes to the functionality of the `kosmatau3d` model over the 
+KOSMA-tau-3D model of Silke et al. (2017) are described in the document 
+`./docs/treatise.pdf`, and the major changes to the Milky Way model will also
+appear in the upcoming Yanitski et al. (2024) paper.
+Most of the functionality is explained in Ch. III and IV in 
+[Yanitski (2023)](https://kups.ub.uni-koeln.de/71850/).
 There will be other documents to state the other various corrections and
 developments made.
 
