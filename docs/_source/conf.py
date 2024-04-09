@@ -59,7 +59,7 @@ autoclass_content = "both"  # Add __init__ doc (params) to class summaries
 html_show_sourcelink = (
     True  # Remove 'view source code' from top of page (for html, not python)
 )
-autodoc_inherit_docstrings = True  # Inherit docstring from bas class if no docstring
+autodoc_inherit_docstrings = True  # Inherit docstring from base class if no docstring
 set_type_checking_flag = True  # Enable 'extensive' imports for sphinx_autodoc_typehints
 nbsphinx_allow_errors = True  # Continue through Jupyter errors
 add_module_names = False  # Remove namespaces from class/method signatures
@@ -76,7 +76,11 @@ templates_path = ["../_templates"]
 
 def skip_member(app, what, name, obj, skip, options):
     # List of external module names to skip
-    external_modules_to_skip = ["scipy", "scipy.interpolate"]
+    external_modules_to_skip = [
+        "scipy",
+        "scipy.interpolate",
+        "kosmatau3d.models.interpolations.interpolate.interpolate",
+    ]
 
     if what == "module" and obj.__name__ in external_modules_to_skip:
         return True
