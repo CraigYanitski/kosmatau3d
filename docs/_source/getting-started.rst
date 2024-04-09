@@ -1,3 +1,5 @@
+:html_theme.sidebar_primary.remove:
+
 ***************
 Getting Started
 ***************
@@ -46,24 +48,23 @@ the physics of the ensembles contained within the voxel, and most of them are
 explained in :class:`kosmatau3d.models.voxel.Voxel` and in the jupyter
 `notebook <https://github.com/CraigYanitski/kosmatau3d/blob/main/notebooks/single-voxel/voxel.ipynb>`_.
 
-.. sidebar::
+.. code-block:: python
 
-   .. code:: python
+   >>> from kosmatau3d import models
+   >>> vox = models.Voxel()
+   >>> vox.set_properties(
+   ...     voxel_size=1,
+   ...     clump_mass_number=[3],
+   ...     clump_mass_range=[[0,2]],
+   ...     ensemble_mass=1e1,
+   ...     ensemble_density=1e5,
+   ...     fuv=1e5,
+   ... )
 
-      >>> from kosmatau3d import models
-      >>> vox = models.Voxel()
-      >>> vox.set_properties(
-      ...     voxel_size=1,
-      ...     clump_mass_number=[3],
-      ...     clump_mass_range=[[0,2]],
-      ...     ensemble_mass=1e1,
-      ...     ensemble_density=1e5,
-      ...     fuv=1e5,
-      ... )
-
-This will create a voxel with side length :math:`\ell_\mathrm{vox}=1\,\mathrm{pc}` 
-(so the volume is :math:`1\, \mathrm{pc}^3`) containing an ensemble with 
-three distinct clump masses: :math:`1`, :math:`10`, and :math:`100\, M_\odot`.
+This will create a voxel with side length 
+:math:`\ell_\mathrm{vox}=1\,\mathrm{pc}` (so the volume is 
+:math:`1\, \mathrm{pc}^3`) containing an ensemble with three distinct clump 
+masses: :math:`1`, :math:`10`, and :math:`100\, M_\odot`.
 The number of each of these clumps in the ensemble is calculated from the 
 `clump-mass distribution` as explained in :doc:`Theory <theory>`.
 Since the mass of the ensemble in this example is lower than the maximum 
@@ -147,12 +148,65 @@ longitude-velocity diagram like below.
 We focus on galactic latitude :math:`b\! =\! 0` to avoid the complications 
 regarding partially-filled voxels.
 
-.. sidebar::
+We use the :class:`kosmatau3d.models.model.Model()` to initialise all voxels, 
+compute their radiative properties, and save the relevant data in FITS files.
+It shares many kwargs with :meth:`set_properties`, though some are renamed 
+to fit the context of a three-dimensional model.
+A minimal working example to create a galactic model with voxel size 
+:math:`\ell_\mathrm{vox}=400\,\mathrm{pc}` is,
 
-   .. figure:: _static/model_C+1.png
-      :alt: model synthetic C+ 1
-      :width: 500
+.. code:: python
 
-      The synthetic emission resulting from the model above.
-      Note the large-scale velocity structure of the Milky Way is replicated.
+   >>> from kosmatau3d import models
+   >>> kwargs = { ... }
+   >>> galaxy = models.Model(resolution=400, 
+   ...     history_path='.', 
+   ...     folder='temp', 
+   ...     **kwargs)
+   >>> galaxy.calculate_model()
 
+Here :code:`kwargs` can be used to specify any of the model parameters.
+A distinct difference in making the full model is that the kwargs are given 
+when initialising the object instance rather than through a separate method.
+While all of the physical and emissive properties are calculated at this stage, 
+a synthetic observation requires the :mod:`kosmatau.radiative_transfer`:
+
+.. code:: python
+
+   >>> models.radiative_transfer.calculateObservation(directory='temp/', 
+   ...     slRange=[(-np.pi, np.pi), (-np.pi/2, np.pi/2)], 
+   ...     nsl=[180, 90])
+
+This will result in a synthetic datacube of the region for all of the included 
+transitions (by default all of them) and a subset of the dust continuum (where 
+22 wavelengths are used; enough to span the FIR emission).
+From the synthetic intensity datacube, it is possible to get the 
+position-velocity diagram as below.
+
+.. figure:: _static/model_C+1.png
+   :alt: model synthetic C+ 1
+   :width: 500
+
+   The synthetic emission resulting from the model above.
+   Note the large-scale velocity structure of the Milky Way is replicated.
+
+It should be noted, though, that the procedure described thus-far in this 
+section is for **one** model, but for scientific modelling it is likely useful 
+to analyse the sythetic emission from a grid of models to constrain some 
+parameters.
+There is a convenient method to do this with the github repository.
+From the root directory of the repo, we can run a grid of models using,
+
+.. code:: bash
+
+   $ mkdir ../kt3_models
+   $ python terminal_scripts/run_model_grid.py -f ../kt3_models -m 0
+
+By default, this will run a grid of three models of varying resolution 
+(specifically :math:`400\,\mathrm{pc}`, :math:`400\,\mathrm{pc}`, and 
+:math:`400\,\mathrm{pc}`), though you may notice that it takes a long time to 
+finish.
+For that reason, it might be better to set :code:`-m 8` for example to 
+multiprocess the radiative transfer calculation.
+At the moment, :meth:`calculateModel()` does not have the ability to utilise 
+multiprocessing.
