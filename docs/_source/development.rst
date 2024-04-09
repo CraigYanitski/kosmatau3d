@@ -1,3 +1,5 @@
+:html_theme.sidebar_primary.remove:
+
 ***********
 Development
 ***********
@@ -44,16 +46,21 @@ Below we list the developments planned for upcoming versions of
 +---------+-------------------------------------------------------------------+
 | version | changes                                                           |
 +=========+===================================================================+
-| v1.0.8  | - new method in :class:`models.Voxel()` to return species column  |
-|         |   density                                                         |
+| v1.0.8\ | - new method in :class:`models.Voxel()` to return species column  |
+| v1.0.10 |   density                                                         |
 |         |                                                                   |
 |         |   - should have similar inputs to                                 |
 |         |     :meth:`models.Voxel.get_abundances()` and                     |
 |         |     :attr:`models.constants.voxel_size` for calculation.          |
++---------+-------------------------------------------------------------------+
+| v1.0.11 | - column density method new features                              |
 |         |                                                                   |
 |         |   - will include a voxel size-invariant option that adds the      |
-|         |     column density of each clump in the ensemble (as done in      |
-|         |     §7 of Röllig & Ossenkopf-Okada 2022)                          |
+|         |     column density of each clump in the ensemble                  |
+|         |                                                                   |
+|         |   - will have beam size and possible filling factor as optional   |
+|         |     arguments (to mimic the work in §7 of Röllig &                |
+|         |     Ossenkopf-Okada 2022)                                         |
 +---------+-------------------------------------------------------------------+
 | ...     | ...                                                               |
 +---------+-------------------------------------------------------------------+
@@ -76,11 +83,13 @@ Below we list the developments planned for upcoming versions of
 |         |       KOSMA-:math:`\tau` output and compare to :code:`kosmatau3d` |
 |         |       results                                                     |
 |         |                                                                   |
+|         |   - unify loading of data files to use :code:`pandas`             |
+|         |                                                                   |
 |         |   - parsing of KOSMA-:math:`\tau` grid parameters directly from   |
 |         |     header                                                        |
 |         |                                                                   |
-|         |     - should be simple to implement using `pandas` to open the    |
-|         |       file                                                        |
+|         |     - should be simple to implement using :code:`pandas` to open  |
+|         |       the file                                                    |
 |         |                                                                   |
 |         |     - one should also implement a failsafe to ignore parameters   |
 |         |       that do not change, since this will cause an error          |
@@ -135,8 +144,4 @@ to develop these features.
 
    The *deprecated* version of :code:`kosmatau3d` is the version written by 
    Silke Andree-Labsch c. 2015 (KOSMA-:math:`\tau` 3D) that predates the 
-   publically-available code
-
-.. toctree::
-   :maxdepth: 2
-   :caption: Content
+   publicly-available code
