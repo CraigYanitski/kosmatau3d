@@ -46,9 +46,9 @@ Below we list the developments planned for upcoming versions of
 +---------+-------------------------------------------------------------------+
 | version | changes                                                           |
 +=========+===================================================================+
-| v1.0.8\ | - new method in :class:`models.Voxel()` to return species column  |
-| v1.0.10 |   density                                                         |
-|         |                                                                   |
+| v1.0.8/ | - new method in :class:`models.Voxel()` to return species column  |
+|         |   density                                                         |
+| v1.0.10 |                                                                   |
 |         |   - should have similar inputs to                                 |
 |         |     :meth:`models.Voxel.get_abundances()` and                     |
 |         |     :attr:`models.constants.voxel_size` for calculation.          |
