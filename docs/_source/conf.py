@@ -108,8 +108,9 @@ html_theme_options = {
 html_sidebars = {
     "installation": [],
     "getting-started": [],
+    "theory": [],
     "development": [],
-    "acknowledgement": [],
+    "acknowledgements": [],
 }
 html_css_files = ["pydata-custom.css"]  # Override some CSS settings
 
