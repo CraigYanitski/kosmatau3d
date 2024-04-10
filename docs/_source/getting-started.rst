@@ -55,7 +55,9 @@ explained in :class:`kosmatau3d.models.voxel.Voxel` and in the jupyter
     
     something
 
-..  code-block:: python
+.. code-block:: python
+    :caption:
+    :linenos:
 
     >>> from kosmatau3d import models
     >>> vox = models.Voxel()
