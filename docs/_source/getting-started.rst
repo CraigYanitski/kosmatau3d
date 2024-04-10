@@ -210,8 +210,8 @@ From the root directory of the repo, we can run a grid of models using,
    $ python terminal_scripts/run_model_grid.py -f ../kt3_models -m 0
 
 By default, this will run a grid of three models of varying resolution 
-(specifically :math:`400\,\mathrm{pc}`, :math:`400\,\mathrm{pc}`, and 
-:math:`400\,\mathrm{pc}`), though you may notice that it takes a long time to 
+(specifically :math:`400\,\mathrm{pc}`, :math:`200\,\mathrm{pc}`, and 
+:math:`100\,\mathrm{pc}`), though you may notice that it takes a long time to 
 finish.
 For that reason, it might be better to set :code:`-m 8` for example to 
 multiprocess the radiative transfer calculation.
