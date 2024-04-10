@@ -49,26 +49,21 @@ the physics of the ensembles contained within the voxel, and most of them are
 explained in :class:`kosmatau3d.models.voxel.Voxel` and in the jupyter
 `notebook <https://github.com/CraigYanitski/kosmatau3d/blob/main/notebooks/single-voxel/voxel.ipynb>`_.
 
-:doc:`generic <generic>`
-
-.. sidebar::
-    
-    something
+.. :doc:`generic <generic>`
 
 .. code-block:: python
-    :caption: block
-    :linenos:
-
-    >>> from kosmatau3d import models
-    >>> vox = models.Voxel()
-    >>> vox.set_properties(
-    ...     voxel_size=1,
-    ...     clump_mass_number=[3],
-    ...     clump_mass_range=[[0,2]],
-    ...     ensemble_mass=1e1,
-    ...     ensemble_density=1e5,
-    ...     fuv=1e5,
-    ... )
+   :caption: Initialise voxel object and set ISM properties
+   
+   >>> from kosmatau3d import models
+   >>> vox = models.Voxel()
+   >>> vox.set_properties(
+   ...     voxel_size=1,
+   ...     clump_mass_number=[3],
+   ...     clump_mass_range=[[0,2]],
+   ...     ensemble_mass=1e1,
+   ...     ensemble_density=1e5,
+   ...     fuv=1e5,
+   ... )
 
 This will create a voxel with side length 
 :math:`\ell_\mathrm{vox}=1\,\mathrm{pc}` (so the volume is 
@@ -85,26 +80,26 @@ scale-invariance of the calculations.
 Now that a voxel has been initialised with an ensemble, it is possible to 
 obtain intrinsic properties such as the fractional abundance by,
 
-..  code:: python
+.. code:: python
 
-    >>> vox.get_abundances(species=["H2", "H", "C+", "CO"])
+   >>> vox.get_abundances(species=["H2", "H", "C+", "CO"])
 
 where the abundances are normalised by the total hydrogen abundance 
 (:math:`n_\mathrm{H} = n_\mathrm{H^0} + 2\, n_\mathrm{H_2}`).
 Extrinsic properties such as column density are also available at this 
 point, but for the emission it is necessary to first execute the computation:
 
-..  code:: python
+.. code:: python
 
-    >>> vox.calculate_emission()
+   >>> vox.calculate_emission()
 
 This will compute the emissivity and absorption for the line and continuum emission
 from the base KOSMA-:math:`\tau` models.
 One can then access the result using,
 
-..  code:: python
+.. code:: python
 
-    >>> vox.get_species_emissivity()
+   >>> vox.get_species_emissivity()
 
 Read the documentation of :class:`kosmatau3d.models.voxel.Voxel` to find out 
 the different arguments for this method.
@@ -164,15 +159,16 @@ to fit the context of a three-dimensional model.
 A minimal working example to create a galactic model with voxel size 
 :math:`\ell_\mathrm{vox}=400\,\mathrm{pc}` is,
 
-..  code:: python
+.. code-block:: python
+   :caption: Initialise galactic model and compute emission
 
-    >>> from kosmatau3d import models
-    >>> kwargs = { ... }
-    >>> galaxy = models.Model(resolution=400, 
-    ...     history_path='.', 
-    ...     folder='temp', 
-    ...     **kwargs)
-    >>> galaxy.calculate_model()
+   >>> from kosmatau3d import models
+   >>> kwargs = { ... }
+   >>> galaxy = models.Model(resolution=400, 
+   ...     history_path='.', 
+   ...     folder='temp', 
+   ...     **kwargs)
+   >>> galaxy.calculate_model()
 
 Here :code:`kwargs` can be used to specify any of the model parameters.
 A distinct difference in making the full model is that the kwargs are given 
@@ -180,12 +176,13 @@ when initialising the object instance rather than through a separate method.
 While all of the physical and emissive properties are calculated at this stage, 
 a synthetic observation requires the :mod:`kosmatau.radiative_transfer`:
 
-..  code:: python
+.. code:: python
+   :caption: Compute synthetic observation
     
-    >>> import numpy as np
-    >>> models.radiative_transfer.calculateObservation(directory='temp/', 
-    ...     slRange=[(-np.pi, np.pi), (-np.pi/2, np.pi/2)], 
-    ...     nsl=[180, 90])
+   >>> import numpy as np
+   >>> models.radiative_transfer.calculateObservation(directory='temp/', 
+   ...     slRange=[(-np.pi, np.pi), (-np.pi/2, np.pi/2)], 
+   ...     nsl=[180, 90])
 
 This will result in a synthetic datacube of the region for all of the included 
 transitions (by default all of them) and a subset of the dust continuum (where 
@@ -207,10 +204,10 @@ parameters.
 There is a convenient method to do this with the github repository.
 From the root directory of the repo, we can run a grid of models using,
 
-..  code:: bash
+.. code:: bash
 
-    $ mkdir ../kt3_models
-    $ python terminal_scripts/run_model_grid.py -f ../kt3_models -m 0
+   $ mkdir ../kt3_models
+   $ python terminal_scripts/run_model_grid.py -f ../kt3_models -m 0
 
 By default, this will run a grid of three models of varying resolution 
 (specifically :math:`400\,\mathrm{pc}`, :math:`400\,\mathrm{pc}`, and 
