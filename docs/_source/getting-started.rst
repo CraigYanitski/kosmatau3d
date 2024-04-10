@@ -20,7 +20,8 @@ The Single-Voxel model
 
 .. _voxel:
 
-.. sidebar::
+.. sidebar:: Voxel representation
+
 
    .. figure:: _static/uniform_RT-small_comp.png
       :alt: voxel diagram
@@ -50,7 +51,9 @@ explained in :class:`kosmatau3d.models.voxel.Voxel` and in the jupyter
 
 :doc:`generic <generic>`
 
-.. sidebar:: something
+.. sidebar::
+    
+    something
 
 ..  code-block:: python
 
@@ -123,7 +126,7 @@ voxel, so they should not be used in three-dimensional models.
 Three-dimensional PDR Models
 ============================
 
-.. sidebar::
+.. sidebar:: Galactic model
 
    .. figure:: _static/integrated_C+1.png
       :alt: model showing integrated C+
