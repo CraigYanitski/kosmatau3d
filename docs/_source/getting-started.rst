@@ -170,13 +170,22 @@ A minimal working example to create a galactic model with voxel size
    ...     **kwargs)
    >>> galaxy.calculate_model()
 
+.. sidebar:: [CII] :math:`158\, \mu\mathrm{m}` 
+
+   .. figure:: _static/model_C+1.png
+      :alt: model synthetic C+ 1
+      :width: 500
+
+      The synthetic emission resulting from the model above.
+      Note the large-scale velocity structure of the Milky Way is replicated.
+
 Here :code:`kwargs` can be used to specify any of the model parameters.
 A distinct difference in making the full model is that the kwargs are given 
 when initialising the object instance rather than through a separate method.
 While all of the physical and emissive properties are calculated at this stage, 
 a synthetic observation requires the :mod:`kosmatau.radiative_transfer`:
 
-.. code:: python
+.. code-block:: python
    :caption: Compute synthetic observation
     
    >>> import numpy as np
@@ -189,13 +198,6 @@ transitions (by default all of them) and a subset of the dust continuum (where
 22 wavelengths are used; enough to span the FIR emission).
 From the synthetic intensity datacube, it is possible to get the 
 position-velocity diagram as below.
-
-.. figure:: _static/model_C+1.png
-   :alt: model synthetic C+ 1
-   :width: 500
-
-   The synthetic emission resulting from the model above.
-   Note the large-scale velocity structure of the Milky Way is replicated.
 
 It should be noted, though, that the procedure described thus-far in this 
 section is for **one** model, but for scientific modelling it is likely useful 
