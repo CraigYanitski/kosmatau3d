@@ -41,8 +41,9 @@ With this definition, we can also write the total hydrogen number as,
 
 .. math::
    N_\mathrm{H, cl} &= \int_0^{r_\mathrm{cl}} \mathrm{d}r\, 4 \pi\, r^2\, n(r), \\
-   &= \frac{4 \pi}{3}\, n_\mathrm{s}\, r_\mathrm{cl}^3 \left( 1 - \frac{\gamma}{3} \left( 
-   \frac{r_\mathrm{core}}{r_\mathrm{cl}} \right)^{3-\gamma} \right)
+   &= \frac{4 \pi}{3 - \gamma}\, n_\mathrm{s}\, r_\mathrm{cl}^3 \left( 1 - 
+   \frac{\gamma}{3} \left( \frac{r_\mathrm{core}}{r_\mathrm{cl}} 
+   \right)^{3-\gamma} \right)
    \hspace{1cm} .
 
 For :math:`\gamma\! >\! 0`, the number density increases towards the core, 
@@ -58,8 +59,8 @@ the dependence of the total number of hydrogen atoms as a function of density:
 
 .. math::
    \frac{\mathrm{d}N_\mathrm{H, cl}}{\mathrm{d}n} &= 
-   \frac{\mathrm{d}N_\mathrm{H, cl}}{\mathrm{d}r}
    \left( \frac{\mathrm{d}n_\mathrm{H, cl}}{\mathrm{d}r} \right)^{-1} 
+   \frac{\mathrm{d}N_\mathrm{H, cl}}{\mathrm{d}r}
    \hspace{1cm} , \\
    &= \left( -\gamma\, r_\mathrm{cl}\, n_\mathrm{s} 
    \left( \frac{n}{n_\mathrm{s}} \right)^{\frac{\gamma + 1}{\gamma}} \right)^{-1} 
