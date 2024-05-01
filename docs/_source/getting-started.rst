@@ -189,7 +189,8 @@ a synthetic observation requires the :mod:`kosmatau.radiative_transfer`:
    :caption: Compute synthetic observation
     
    >>> import numpy as np
-   >>> models.radiative_transfer.calculateObservation(directory='temp/', 
+   >>> from models.radiative_transfer import calculateObservation
+   >>> calculateObservation(directory='temp/', 
    ...     slRange=[(-np.pi, np.pi), (-np.pi/2, np.pi/2)], 
    ...     nsl=[180, 90])
 
