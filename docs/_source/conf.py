@@ -57,14 +57,10 @@ extensions = [
 autosummary_generate = True  # Turn on sphinx.ext.autosummary
 # autosummary_imported_members = True # Used for function template
 autoclass_content = "both"  # Add __init__ doc (params) to class summaries
-html_show_sourcelink = (
-    True  # Remove 'view source code' from top of page (for html, not python)
-)
 autodoc_inherit_docstrings = True  # Inherit docstring from base class if no docstring
 set_type_checking_flag = True  # Enable 'extensive' imports for sphinx_autodoc_typehints
 nbsphinx_allow_errors = True  # Continue through Jupyter errors
 add_module_names = False  # Remove namespaces from class/method signatures
-todo_include_todos = True
 
 # Add any paths that contain templates here, relative to this directory.
 templates_path = ["../_templates"]
@@ -97,8 +93,11 @@ def setup(app):
 
 html_theme = "pydata_sphinx_theme"
 html_static_path = ["../_static"]
+html_js_files = ["custom-icon.js"]
 html_title = "kosmatau3d"
 html_last_updated_fmt = "%d %b %Y"
+html_show_sourcelink = True
+todo_include_todos = True
 html_theme_options = {
     "switcher": {
         "json_url": "https://kosmatau3d.readthedocs.io/en/latest/_static/version_switcher.json",
