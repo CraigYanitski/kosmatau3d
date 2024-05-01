@@ -168,16 +168,16 @@ in order to approximately derive the clump surface density distribution.
 
 .. |this| replace:: a simple substitution
 
+.. |heithausen1998url| replace:: https://ui.adsabs.harvard.edu/abs/1998A%26A...331L..65H/abstract
+
+.. |heithausen1998p| replace:: `Heithausen et al. (1998) <|heithausen1998url|>`_
+
+.. |heithausen1998t| replace:: `Heithausen et al. 1998 <https://ui.adsabs.harvard.edu/abs/1998A%26A...331L..65H/abstract>`_
+
 .. rubric:: References
 
 Heithausen, A., Bensch, F., Stutzki, J., Falgarone, E., & Panis, J. F. 1998
 :emphasis:`Astronomy & Astrophysics`, 331, L65
-
-.. |heithausen1998url| replace:: https://ui.adsabs.harvard.edu/abs/1998A%26A...331L..65H/abstract
-
-.. |heithausen1998p| replace:: `Heithausen et al. (1998) <https://ui.adsabs.harvard.edu/abs/1998A%26A...331L..65H/abstract>`_
-
-.. |heithausen1998t| replace:: `Heithausen et al. 1998 <https://ui.adsabs.harvard.edu/abs/1998A%26A...331L..65H/abstract>`_
 
 Yanitski, C. N., Ossenkopf-Okada, V., & Röllig, M. 2024, in preparation
 
