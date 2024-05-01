@@ -64,6 +64,7 @@ autodoc_inherit_docstrings = True  # Inherit docstring from base class if no doc
 set_type_checking_flag = True  # Enable 'extensive' imports for sphinx_autodoc_typehints
 nbsphinx_allow_errors = True  # Continue through Jupyter errors
 add_module_names = False  # Remove namespaces from class/method signatures
+todo_include_todos = True
 
 # Add any paths that contain templates here, relative to this directory.
 templates_path = ["../_templates"]
