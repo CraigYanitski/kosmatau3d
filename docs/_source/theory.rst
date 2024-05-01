@@ -158,6 +158,7 @@ mass-size index (determined to be :math:`2.31` in
 in order to approximately derive the clump surface density distribution.
 
 .. todo::
+   
    This derivation is being completed at the moment.
    Please be patient :-)
 
