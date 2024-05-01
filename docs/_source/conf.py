@@ -102,7 +102,18 @@ html_theme_options = {
         "json_url": "https://kosmatau3d.readthedocs.io/en/latest/_static/version_switcher.json",
         "version_match": release,
     },
-    "github": "https://github.com/CraigYanitski/kosmatau3d",
+    "icon_links": [
+        {
+            "name": "GitHub",
+            "url": "https://github.com/CraigYanitski/kosmatau3d/",
+            "icon": "fa-brands fa-github",  # icons from `fontawesome`
+        },
+        {
+            "name": "PyPI",
+            "url": "https://pypi.org/project/kosmatau3d/",
+            "icon": "fa-custom fa-pypi",
+        },
+    ],
     "navbar_start": ["navbar-logo", "version-switcher"],
     # "navbar_persistent": [],
     "show_version_warning_banner": True,
