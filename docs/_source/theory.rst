@@ -163,6 +163,22 @@ in order to approximately derive the clump surface density distribution.
    This derivation is being completed at the moment.
    Please be patient :-)
 
+   I am also testing my references such as |heithausen1998t| and 
+   |heithausen1998p|.
+
+.. rubric:: References
+
+Heithausen, A., Bensch, F., Stutzki, J., Falgarone, E., & Panis, J. F. 1998
+:emphasis:`Astronomy & Astrophysics`, 331, L65
+
+.. |HEITHAUSEN1998URL| https://ui.adsabs.harvard.edu/abs/1998A%26A...331L..65H/abstract
+
+.. |HEITHAUSEN1998P| `Heithausen et al. (1998) <|heithausen1998url|>`_
+
+.. |HEITHAUSEN1998T| `Heithausen et al. 1998 <|heithausen1998url|>`_
+
+Yanitski, C. N., Ossenkopf-Okada, V., & Röllig, M. 2024, in preparation
+
 .. rubric:: Footnotes
 
 .. [#f1]
