@@ -17,9 +17,6 @@ It is only used in the :mod:`comparison` submodule, which is used to
 process observation files and compare with the synthetic observations from 
 kosmatau3d [#f1]_.
 You will need to install these or similar packages to use this submodule.
-.. :code:`astrokit` is a package developed by Slawa Kabanovic during his PhD, and 
-.. it can be used to work with observational data, create slices, and calculate 
-.. observational error.
 :code:`healpy` is the python port of the well-kown and maintained HEALPix code.
 It only installs well in a Linux environment, so that is why it is not a 
 strict dependency.
