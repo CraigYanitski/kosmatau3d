@@ -114,6 +114,11 @@ html_theme_options = {
             "url": "https://pypi.org/project/kosmatau3d/",
             "icon": "fa-custom fa-pypi",
         },
+        {
+            "name": "email",
+            "url": "mailto:yanitski@ph1.uni-koeln.de",
+            "icon": "fa-regular fa-envelope",
+        },
     ],
     "navbar_start": ["navbar-logo", "version-switcher"],
     # "navbar_persistent": [],
