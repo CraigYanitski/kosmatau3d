@@ -5,12 +5,11 @@ Getting Started
 ***************
 
 The best way to get started with all of the finer details of how to use the 
-code and how it works is to review the 
-`notebook <https://github.com/CraigYanitski/kosmatau3d/blob/main/notebooks/single-voxel/voxel.ipynb>`_.
+code and how it works is to review the `notebook`_.
 Since the code is still in early development, all of the examples show the 
 features of a voxel_ in the framework of this code.
 The three-dimensional uses of this code have thus-far been limited to models 
-of the Milky Way as they appear in Yanitski (2023).
+of the Milky Way as they appear in `Yanitski (2023)`_.
 Some of the results are shown in `Three-dimensional PDR Models`_, but potential 
 users are encouraged to contact yanitski@ph1.uni-koeln.de to iterate on their 
 use-case.
@@ -47,7 +46,10 @@ Below is a minimal example of how to initialise and set the properties in a voxe
 Note that there are plenty of other parameters that can be adjusted to modify 
 the physics of the ensembles contained within the voxel, and most of them are 
 explained in :class:`kosmatau3d.models.voxel.Voxel` and in the jupyter
-`notebook <https://github.com/CraigYanitski/kosmatau3d/blob/main/notebooks/single-voxel/voxel.ipynb>`_.
+notebook_.
+
+.. _notebook: https://github.com/CraigYanitski/kosmatau3d/
+   blob/main/notebooks/single-voxel/voxel.ipynb
 
 .. :doc:`generic <generic>`
 
@@ -133,8 +135,7 @@ Three-dimensional PDR Models
       (:math:`-350` to :math:`350\, \mathrm{km\, s^{-1}}`).
 
 The most complex functionality of kosmatau3d, and the reason for its 
-development since its conception 
-(`Andree-Labsch et al. 2017 <https://ui.adsabs.harvard.edu/abs/2017A%26A...598A...2A/abstract>`_). 
+development since its conception (`Andree-Labsch et al. 2017`_). 
 This has so-far been used to model the Orion Bar and the Milky Way, though more 
 models will soon be developed.
 The figure below depicts the \[CII\] :math:`158\, \mu\mathrm{m}` integrated 
@@ -146,9 +147,8 @@ it uniquely accounts for the inhomogeneity and shadowing in PDRs and has
 a velocity component to its emission.
 Because of this, it is important to first get the velocity information for each 
 voxel in the model correct before integrating the radiative transfer equation.
-The procedure is described in detail in Ch. IV of 
-`Yanitski (2023) <https://kups.ub.uni-koeln.de/71850/>`_, and it results in a 
-longitude-velocity diagram like below.
+The procedure is described in detail in Ch. IV of `Yanitski (2023)`_, and it 
+results in a longitude-velocity diagram like below.
 We focus on galactic latitude :math:`b\! =\! 0` to avoid the complications 
 regarding partially-filled voxels.
 
@@ -220,3 +220,20 @@ For that reason, it might be better to set :code:`-m 8` for example to
 multiprocess the radiative transfer calculation.
 At the moment, :meth:`calculateModel()` does not have the ability to utilise 
 multiprocessing.
+
+.. rubric:: References
+
+Andree-Labsch, S., Ossenkopf-Okada, V., & Röllig, M. 2017, 
+:emphasis:`Astronomy & Astrophysics`, 598, A2
+
+.. _labsch2017url: https://ui.adsabs.harvard.edu/abs/
+   2017A%26A...598A...2A/abstract
+.. _Andree-Labsch et al. 2017: labsch2017url_
+.. _Andree-Labsch et al. (2017): labsch2017url_
+
+Yanitski 2023, :emphasis:`The Milky Way with kosmatau3d: Modelling the Galactic 
+cooling lines using clumpy PDRs`, PhD thesis, (Universität zu Köln)
+
+.. _yanitski2023url: https://kups.ub.uni-koeln.de/71850/
+.. _Yanitski 2023: yanitski2023url_
+.. _Yanitski (2023): yanitski2023url_

@@ -12,14 +12,26 @@ the KOSMA-:math:`\tau` PDR model from the Universität zu Köln and Tel Aviv
 University.
 It's functionality and use in modelling the Galactic cooling lines in the 
 Milky Way are explained in 
-`Yanitski (2023) <https://kups.ub.uni-koeln.de/71850/>`_.
+`Yanitski (2023)`_.
 It will soon be able to download its required data from the 
-`InterStellar Medium DataBase (ISMDB) <https://ismdb.obspm.fr/>`_ hosted at 
-the Observatoire de Paris-Meudon when their API is completed.
+`InterStellar Medium DataBase (ISMDB)`_ hosted at the Observatoire de 
+Paris-Meudon when their API is completed.
+
+.. _ISMDB: https://ismdb.obspm.fr/
+.. _InterStellar Medium DataBase (ISMDB): ISMDB_
 
 .. caution::
    This documentation and the corresponding code are under active development.
    Please send all questions and issues to yanitski@ph1.uni-koeln.de.
+
+.. rubric:: References
+
+Yanitski 2023, :emphasis:`The Milky Way with kosmatau3d: Modelling the Galactic 
+cooling lines using clumpy PDRs`, PhD thesis, (Universität zu Köln)
+
+.. _yanitski2023url: https://kups.ub.uni-koeln.de/71850/
+.. _Yanitski 2023: yanitski2023url_
+.. _Yanitski (2023): yanitski2023url_
 
 .. toctree::
    :maxdepth: 2

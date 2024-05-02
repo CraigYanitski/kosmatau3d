@@ -59,8 +59,8 @@ Below we list the developments planned for upcoming versions of
 |         |     column density of each clump in the ensemble                  |
 |         |                                                                   |
 |         |   - will have beam size and possible filling factor as optional   |
-|         |     arguments (to mimic the work in §7 of Röllig &                |
-|         |     Ossenkopf-Okada 2022)                                         |
+|         |     arguments (to mimic the work in §7 of                         |
+|         |     `Röllig & Ossenkopf-Okada 2022`_)                             |
 +---------+-------------------------------------------------------------------+
 | ...     | ...                                                               |
 +---------+-------------------------------------------------------------------+
@@ -118,8 +118,8 @@ to develop these features.
 |             | much work to rewrite in cython.                               |
 +-------------+---------------------------------------------------------------+
 | GUI         | This existed in the first iteration of KOSMA-:math:`\tau` 3D  |
-|             | developed by Silke Andree-Labsch (see Andree-Labsch et al.    |
-|             | 2017).                                                        |
+|             | developed by Silke Andree-Labsch (see `Andree-Labsch et al.   |
+|             | 2017`_).                                                      |
 |             | While it existed to give some order to the series of scripts  |
 |             | that existed before implementing an object-orientated         |
 |             | approach, it is still a good idea to implement this and give  |
@@ -135,8 +135,33 @@ to develop these features.
 |             | recursive function that can be called for one sightline.      |
 |             | It might involve improving the current linear approximation   |
 |             | used in the computation (see                                  |
-|             | `Yanitski 2023 <https://kups.ub.uni-koeln.de/71850/>`_).      |
+|             | `Yanitski 2023`_).                                            |
 +-------------+---------------------------------------------------------------+
+
+.. rubric:: References
+
+Andree-Labsch, S., Ossenkopf-Okada, V., & Röllig, M. 2017, 
+:emphasis:`Astronomy & Astrophysics`, 598, A2
+
+.. _labsch2017url: https://ui.adsabs.harvard.edu/abs/
+   2017A%26A...598A...2A/abstract
+.. _Andree-Labsch et al. 2017: labsch2017url_
+.. _Andree-Labsch et al. (2017): labsch2017url_
+
+Röllig, M., & Ossenkopf-Okada, V. 2022, :emphasis:`Astronomy & Astrophysics`,
+664, A67
+
+.. _röllig2022url: https://ui.adsabs.harvard.edu/
+   abs/2022A%26A...664A..67R/abstract
+.. _Röllig & Ossenkopf-Okada 2022: röllig2022url_
+.. _Röllig & Ossenkopf-Okada (2022): röllig2022url_
+
+Yanitski 2023, :emphasis:`The Milky Way with kosmatau3d: Modelling the Galactic 
+cooling lines using clumpy PDRs`, PhD thesis, (Universität zu Köln)
+
+.. _yanitski2023url: https://kups.ub.uni-koeln.de/71850/
+.. _Yanitski 2023: yanitski2023url_
+.. _Yanitski (2023): yanitski2023url_
 
 .. rubric:: Footnotes
 

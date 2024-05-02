@@ -10,15 +10,18 @@ people.
 Its core :doc:`developers <development>` were Silke Andree-Labsch (for 
 KOSMA-:math:`\tau` 3D) and Craig Yanitski (for :code:`kosmatau3d`).
 Both were advised by Priv. Doz. Dr. Volker Ossenkopf-Okada in the group C1 in 
-`SFB 956 <https://www.sfb956.de>`_.
+`SFB 956`_.
 Aditi Sinha is now also developer focusing on the implementation of 
 :code:`kosmatau3d` as a subgrid model for the SILCC (M)HD simulations.
 She is advised by Priv. Doz. Dr. Volker Ossenkopf-Okada in the group A6 in 
-`SFB 1601 <https://sfb1601.astro.uni-koeln.de>`_.
+`SFB 1601`_.
 
 Further feedback and assistance were provided by Markus Rollig, Christoph 
 Bruckmann, Yoko Okada, Aleena Baby, Slawa Kabanovic, Christof Buchbender, Ronan 
 Higgins, Juan-Luis Verbena, Cristian Guevara, and Prachi Khatri.
+
+.. _SFB 956: https://www.sfb956.de
+.. _SFB 1601: https://sfb1601.astro.uni-koeln.de
 
 Citing :code:`kosmatau3d`
 =========================

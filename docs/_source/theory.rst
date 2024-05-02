@@ -129,8 +129,8 @@ Ensembles
 
 Here I will soon explain the mathematics and statistics associated with 
 groups of clumps in an ensemble.
-Most of this information will be placed here after the publication of Yanitski 
-et al. (2024).
+Most of this information will be placed here after the publication of `Yanitski 
+et al. (2024)`_.
 
 The basis of the fractal approximation of the ISM is the clump mass 
 distribution:
@@ -145,8 +145,7 @@ distribution.
 This distribution is bourne out of turbulence, and may vary between star 
 forming regions.
 The value we used in the Milky Way is :math:`1.84`, which was determined from 
-the Polaris Flare 
-(`Heithausen et al. 1998 <https://ui.adsabs.harvard.edu/abs/1998A%26A...331L..65H/abstract>`_).
+the Polaris Flare (`Heithausen et al. 1998`_).
 
 We combine the clump mass distribution with a mass-size relation,
 
@@ -154,8 +153,7 @@ We combine the clump mass distribution with a mass-size relation,
    m_\mathrm{cl} \propto r_\mathrm{cl}^\varpi \hspace{1cm} ,
 
 where :math:`r_\mathrm{cl}` is the radius of the clump and :math:`\varpi` is 
-mass-size index (determined to be :math:`2.31` in 
-`Heithausen et al. 1998 <https://ui.adsabs.harvard.edu/abs/1998A%26A...331L..65H/abstract>`_), 
+mass-size index (determined to be :math:`2.31` in `Heithausen et al. 1998`_), 
 in order to approximately derive the clump surface density distribution.
 
 .. todo::
@@ -163,23 +161,29 @@ in order to approximately derive the clump surface density distribution.
    This derivation is being completed at the moment.
    Please be patient :-)
 
-   I am also testing my references such as |heithausen1998t| and 
-   |heithausen1998p| or |this|.
-
-.. |this| replace:: a simple substitution
-
-.. |heithausen1998url| replace:: https://ui.adsabs.harvard.edu/abs/1998A%26A...331L..65H/abstract
-
-.. |heithausen1998p| replace:: `Heithausen et al. (1998) <|heithausen1998url|>`_
-
-.. |heithausen1998t| replace:: `Heithausen et al. 1998 <https://ui.adsabs.harvard.edu/abs/1998A%26A...331L..65H/abstract>`_
-
 .. rubric:: References
 
 Heithausen, A., Bensch, F., Stutzki, J., Falgarone, E., & Panis, J. F. 1998
 :emphasis:`Astronomy & Astrophysics`, 331, L65
 
+.. _heithausen1998url: https://ui.adsabs.harvard.edu/abs/
+   1998A%26A...331L..65H/abstract
+.. _Heithausen et al. 1998: heithausen1998url_
+.. _Heithausen et al. (1998): heithausen1998url_
+
+Stutzki, J., Bensch, F., Heithausen, A., Ossenkopf, V. & Zielinsky, M. 1998,
+:emphasis:`Astronomy & Astrophysics`, 336, 697
+
+.. _stutzki1998url: https://ui.adsabs.harvard.edu/abs/
+   1998A%26A...336..697S/abstract
+.. _Stutzki et al. 1998: stutzki1998url_
+.. _Stutzki et al. (1998): stutzki1998url_
+
 Yanitski, C. N., Ossenkopf-Okada, V., & Röllig, M. 2024, in preparation
+
+.. _yanitski2024url: :doc:`<not-available>`
+.. _Yanitski et al. 2024: yanitski2024url_
+.. _Yanitski et al. (2024): yanitski2024url_
 
 .. rubric:: Footnotes
 
@@ -193,7 +197,7 @@ Yanitski, C. N., Ossenkopf-Okada, V., & Röllig, M. 2024, in preparation
    Thus we are able to compute an instantaneous synthetic  observation.
    :code:`kosmatau3d` is a *fractal* model to simulate the inhomogeneous 
    structure of the ISM using a multitude of these smaller clumps (see eg. 
-   Stutzki et al. 1998).
+   `Stutzki et al. 1998`_).
 
 .. [#f2]
 
