@@ -436,7 +436,7 @@ parameters = {
     #'H13CO+ 1', 'H13CO+ 2', 'H13CO+ 3', 'H13CO+ 4', 'H13CO+ 5',
     #'H3O+ 1', 'H3O+ 2', 'H3O+ 3', 'H3O+ 4', 'H3O+ 5'],
     # 'dust': 'PAH',
-    "dust": ["240um", "550um"],
+    "dust": ["70.79um", "158.5", "240um", "550um"],
     "abundances": ["C+", "C", "CO", "13C+", "13C", "13CO"],
     "clump_mass_range": [[0, 2], [-3]],  # [-3]
     "clump_mass_number": [3, 1],  # 1
