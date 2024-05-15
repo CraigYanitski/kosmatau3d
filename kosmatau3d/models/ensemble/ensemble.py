@@ -88,7 +88,7 @@ def calculate_combinations(clumpN, test=True, verbose=False):
                     ranges[i, 0, 0] : ranges[i, 0, 1], ranges[i, 1, 0] : ranges[i, 1, 1]
                 ]
                 combinations.append(
-                    np.array([grid[0].flatten(), grid[1].flatten()], dtype=np.int)
+                    np.array([grid[0].flatten(), grid[1].flatten()], dtype=np.int64)
                 )
             elif dimension == 3:
                 grid = np.mgrid[
@@ -99,7 +99,7 @@ def calculate_combinations(clumpN, test=True, verbose=False):
                 combinations.append(
                     np.array(
                         [grid[0].flatten(), grid[1].flatten(), grid[2].flatten()],
-                        dtype=np.int,
+                        dtype=np.int64,
                     )
                 )
             elif dimension == 4:
@@ -117,7 +117,7 @@ def calculate_combinations(clumpN, test=True, verbose=False):
                             grid[2].flatten(),
                             grid[3].flatten(),
                         ],
-                        dtype=np.int,
+                        dtype=np.int64,
                     )
                 )
             elif dimension == 5:
@@ -137,7 +137,7 @@ def calculate_combinations(clumpN, test=True, verbose=False):
                             grid[3].flatten(),
                             grid[4].flatten(),
                         ],
-                        dtype=np.int,
+                        dtype=np.int64,
                     )
                 )
             elif dimension == 6:
@@ -159,7 +159,7 @@ def calculate_combinations(clumpN, test=True, verbose=False):
                             grid[4].flatten(),
                             grid[5].flatten(),
                         ],
-                        dtype=np.int,
+                        dtype=np.int64,
                     )
                 )
             elif dimension == 7:
@@ -183,7 +183,7 @@ def calculate_combinations(clumpN, test=True, verbose=False):
                             grid[5].flatten(),
                             grid[6].flatten(),
                         ],
-                        dtype=np.int,
+                        dtype=np.int64,
                     )
                 )
             else:
@@ -256,7 +256,7 @@ def create_clump_combinations(
                 -constants.n_sigma * dispersion,
                 constants.n_sigma * dispersion,
                 num=np.round(2 * constants.n_sigma * dispersion / velocityStep).astype(
-                    np.int
+                    np.int64
                 )
                 + 1,
             )
@@ -279,7 +279,7 @@ def create_clump_combinations(
                 constants.n_sigma * system_dispersion,
                 num=np.round(
                     2 * constants.n_sigma * system_dispersion / velocityStep
-                ).astype(np.int)
+                ).astype(np.int64)
                 + 1,
             )
             velocityStep = (
@@ -390,10 +390,10 @@ def create_clump_combinations(
             print("\nupper,lower:\n", clumpUpper, "\n", clumpLower)
 
         ensemble.clumpNumberRange[ens] = np.array(
-            [clumpLower, clumpUpper + 1], dtype=np.int
+            [clumpLower, clumpUpper + 1], dtype=np.int64
         ).T
         ensemble.CLmaxNumberRange[ens] = np.array(
-            [CLmaxLower, CLmaxUpper + 1], dtype=np.int
+            [CLmaxLower, CLmaxUpper + 1], dtype=np.int64
         ).T
 
         if verbose:
