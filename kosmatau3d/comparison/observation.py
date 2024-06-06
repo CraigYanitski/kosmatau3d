@@ -47,7 +47,7 @@ cobe_idl_transitions = np.array(
 )
 # cobe_idl_indeces = np.array([0, 1, 2, 4, 5, 7, 8, 9, 13, 14, 18])
 cobe_idl_indeces = np.array([0, 1, 2, 4, 5, 7, 8, 9, 13, 18])
-missions_2d = ["COBE-FIRAS", "COBE-DIRBE", "Planck"]
+missions_2d = ["COBE-FIRAS", "COBE-DIRBE", "Planck", "HiGAL"]
 
 
 class Observation(object):

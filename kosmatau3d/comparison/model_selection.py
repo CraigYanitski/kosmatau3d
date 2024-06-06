@@ -151,6 +151,9 @@ cobe_idl_linfrq = np.array([
 cobe_idl_transitions = np.array([
     'CO 1',       'CO 2', 'CO 3', 'CO 4',  'C 1', 'CO 5',
     'CO 6', 'CO 7 + C 2', 'C+ 1',  'O 1', 'CO 8'])
+higal_wavelengths = {'70um': '70.79um', 
+                     '160um': '158.5um', 
+                     '250um': '240um'}
 
 
 def determine_rms(hdul, mission='', file=''):
@@ -409,6 +412,8 @@ def regrid_observations(path='/media/hpc_backup/yanitski/projects/'
                 ico2_gridder_err = cygrid.WcsGrid(twod_header)
             ico2_gridder_err.set_kernel(*target_kernel)
             iCO2 = True
+        elif survey == 'HiGAL':
+            dust = True
         elif survey == 'Planck':
             dust = True
         elif survey == 'COBE-FIRAS' or survey == 'COBE-DIRBE':
@@ -799,6 +804,91 @@ def regrid_observations(path='/media/hpc_backup/yanitski/projects/'
                     min_vel = vel.min()
                 if vel.max() > max_vel:
                     max_vel = vel.max()
+            elif survey == 'HiGAL':
+                # not used
+                
+                print(file)
+
+                # Specify observation type
+                transitions = ['550um']
+
+                # Open file and get data
+                obs = fits.open(path + survey + '/' + file)
+
+                if obs[1].header['ORDERING'] == 'NESTED':
+                    nest = True
+                else:
+                    nest = False
+
+                if 'commander' in file:
+                    obs_tkj = obs[1].data['I_ML'] * 1e-6
+                    obs_t = obs[1].data['TEMP_ML']
+                    obs_beta = obs[1].data['BETA_ML']
+                    obs_gamma = 6.646e-34/1.38e-23/obs_t
+                    obs_data = obs_tkj 
+                    # * (nu_planck/545e9)**(obs_beta+1) 
+                    # * (np.exp(obs_gamma*545e9)-1)
+                    # / (np.exp(obs_gamma*nu_planck)-1)
+                    obs_error = obs[1].data['I_RMS'] * 1e-6
+                elif 'GNILC' in file:
+                    freq = int(file.split('F')[1].split('_')[0])
+                    obs_data = obs[1].data['I'] * 32.56 / freq ** 2
+                    obs_error = np.full_like(obs_data, obs_data.min())
+                else:
+                    print('File {} not available in survey {}'.format(
+                        file, survey))
+                    continue
+
+                nside = obs[1].header['NSIDE']
+                npix = hp.nside2npix(nside)
+
+                # fix header
+                if 'CDELT3' in temp_header.keys():
+                    temp_header['NAXIS'] = 2
+                    del temp_header['NAXIS3']
+                    del temp_header['CTYPE3']
+                    del temp_header['CDELT3']
+                    del temp_header['CRVAL3']
+                    del temp_header['CRPIX3']
+
+                # Gridding parameters (split large files into multiple chuncks)
+                chunck = 1000000
+                n_chuncks = int(np.ceil(obs_data.size/chunck))
+                lat_mesh, lon_mesh = np.degrees(hp.pix2ang(nside=nside, 
+                    ipix=np.arange(npix), nest=nest))
+                lat_mesh = 90 - lat_mesh
+
+                # Grid
+                dust_gridder = cygrid.WcsGrid(temp_header)
+                dust_gridder.set_kernel(*target_kernel)
+                for _ in range(n_chuncks):
+                    dust_gridder.grid(lon_mesh[_*chunck:(_+1)*chunck],
+                                      lat_mesh[_*chunck:(_+1)*chunck],
+                                      obs_data[_*chunck:(_+1)*chunck])
+                dust_gridder_err = cygrid.WcsGrid(temp_header)
+                dust_gridder_err.set_kernel(*target_kernel)
+                for _ in range(n_chuncks):
+                    dust_gridder_err.grid(lon_mesh[_*chunck:(_+1)*chunck],
+                                          lat_mesh[_*chunck:(_+1)*chunck],
+                                          obs_error[_*chunck:(_+1)*chunck])
+
+                print('save file')
+                temp_header['TRANSL'] = transitions[0]
+                temp_header['TRANSI'] = '0'
+                grid_hdu = fits.PrimaryHDU(data=dust_gridder.get_datacube(), 
+                        header=fits.Header(temp_header))
+                grid_hdu_err = fits.PrimaryHDU(
+                        data=dust_gridder_err.get_datacube(), 
+                        header=fits.Header(twod_header))
+                grid_hdu.writeto(path + survey + '/regridded/temp/planck_' 
+                        + file.split('_')[2] + '_regridded.fits',
+                        overwrite=True, output_verify='ignore')
+                grid_hdu_err.writeto(path + survey + '/regridded/temp/planck_' 
+                        + file.split('_')[2] + '_regridded_error.fits', 
+                        overwrite=True, output_verify='ignore')
+                del obs_data
+                del obs_error
+                del obs
             elif survey == 'Planck':
                 print(file)
 
@@ -2067,7 +2157,7 @@ def model_selection_new(path='/mnt/yanitski_backup/yanitski/projects/pdr/KT3_his
         print('\n\n  {}'.format(survey))
         print('  ' + '-'*len(survey))
 
-        if survey in ('HiGAL', 'GRS', 'CGPS', 'SGPS', 'VGPS'):
+        if survey in ('GRS', 'CGPS', 'SGPS', 'VGPS'):   #'HiGAL', 
             continue
 
         if path[-1] != '/': path += '/'
@@ -2109,9 +2199,15 @@ def model_selection_new(path='/mnt/yanitski_backup/yanitski/projects/pdr/KT3_his
             vel_obs = obs.obs_vel[f]
             i_lat_obs_init = obs.get_obs_extent(idx=f, kind='index')[1]
 
-            for i, transition in enumerate(transitions):
+            for i, transition_obs in enumerate(transitions):
 
-                print('\n  fitting', transition)
+                print(f'\n  fitting {transition_obs}')
+
+                if transition_obs in higal_wavelengths.keys():
+                    transition = higal_wavelengths[transition_obs]
+                    print(f'  -- change to {transition}')
+                else:
+                    transition = transition_obs
 
                 chi2_grid = []
                 loglikelihood_grid = []
