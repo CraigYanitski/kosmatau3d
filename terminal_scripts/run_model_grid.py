@@ -18,7 +18,7 @@ parser.add_argument(
     "-f",
     "--folder",
     type=str,
-    default="/mnt/yanitski_backup/yanitski/projects/pdr/KT3_history",
+    default="/mnt/Milky-Way_models/yanitski/projects/pdr/KT3_history", #"/mnt/yanitski_backup/yanitski/projects/pdr/KT3_history",
     help="Folder containing kosmatau3d models",
 )
 parser.add_argument(
@@ -75,6 +75,13 @@ parser.add_argument(
     help="Overwrite the pre-computed model",
 )
 parser.add_argument(
+    "--test",
+    type=str,
+    default="false",
+    choices=["true", "false"],
+    help="test grid with the first model in the 'convergence' grid",
+)
+parser.add_argument(
     "-i",
     "--index",
     type=int,
@@ -91,10 +98,20 @@ parser.add_argument(
 
 args = parser.parse_args()
 
+if args.test == "true":
+    args.grid = "convergence"
+    test = True
+else:
+    test = False
+
 # convergence
 if args.grid == "convergence":
-    folder = "r{}_convergence/"
-    res = (400,)  # , 200, 100)
+    if test:
+        folder = "r{}_convergence_test/"
+        res = (400,)
+    else:
+        folder = "r{}_convergence/"
+        res = (400, 200, 100)
     diameter = list(36 - _ / 1e3 for _ in res)
     grid_flag = True
     param_keys = ("resolution", "x", "y", "new_grid")
@@ -436,7 +453,8 @@ parameters = {
     #'H13CO+ 1', 'H13CO+ 2', 'H13CO+ 3', 'H13CO+ 4', 'H13CO+ 5',
     #'H3O+ 1', 'H3O+ 2', 'H3O+ 3', 'H3O+ 4', 'H3O+ 5'],
     # 'dust': 'PAH',
-    "dust": ["70.79um", "158.5", "240um", "550um"],
+    # "dust": ["240um", "550um"],
+    "dust": ["20.um", "30.24um", "70.79um", "158.5um", "177.8um", "240um", "550um", "1.1mm", "1.3mm", "2.4mm", "1.8mm", "3.1mm"],
     "abundances": ["C+", "C", "CO", "13C+", "13C", "13CO"],
     "clump_mass_range": [[0, 2], [-3]],  # [-3]
     "clump_mass_number": [3, 1],  # 1
