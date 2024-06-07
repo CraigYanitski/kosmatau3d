@@ -80,15 +80,17 @@ dependence of the total number of hydrogen atoms:
    \frac{\mathrm{d}N_\mathrm{H, cl} (n)}{\mathrm{d}n} = 
    \left\{
       \begin{aligned}
-         - \frac{4\pi\, r_\mathrm{cl}}{\gamma} 
+         \frac{4\pi\, r_\mathrm{cl}}{\gamma} 
          \left( \frac{n_\mathrm{cl}}{n_\mathrm{s}} \right)^{-\frac{3}{\gamma}} 
          & \hspace{0.5cm} & n_\mathrm{s} < n < n_\mathrm{core} \\
          0 & \hspace{0.5cm} & n = n_\mathrm{core}
       \end{aligned}
-   \right. \hspace{1cm} ,
+   \right. \hspace{1cm} .
 
+Here we have removed the negative sign from the derivative since to be valid 
+for increasing density.
 The density probability distribution function (PDF) for the spherical clump 
-can be defined as,
+is defined as,
 
 .. math::
    \mathcal{P}_\mathrm{cl}(n) \equiv N_\mathrm{H, cl}^{-1} 
@@ -102,9 +104,9 @@ integrating the core to derive its probability, we obtain,
    \mathcal{P}_\mathrm{cl}(n) = N_\mathrm{H, cl}^{-1} 4\pi r_\mathrm{cl}^3
    \left\{
       \begin{aligned}
-         - \frac{1}{\gamma} \left( \frac{n}{n_\mathrm{s}} \right)^{-\frac{3}{\gamma}} 
+         \frac{1}{\gamma} \left( \frac{n}{n_\mathrm{s}} \right)^{-\frac{3}{\gamma}} 
          & \hspace{0.5cm} & n_\mathrm{s} < n < n_\mathrm{core} \\
-         \frac{1}{3} \left( \frac{n}{n_\mathrm{s}} \right)^{\frac{\gamma - 3}{\gamma}} 
+         \frac{1}{3} \left( \frac{n_\mathrm{core}}{n_\mathrm{s}} \right)^{\frac{\gamma - 3}{\gamma}} 
          & \hspace{0.5cm} & n = n_\mathrm{core}
       \end{aligned}
    \right. \hspace{1cm} .
