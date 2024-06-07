@@ -22,6 +22,7 @@ setup(
     # dependency_links = ['https://github.com/skabanovic/astrokit'],
     install_requires=[  #'astrokit @ git+https://github.com/skabanovic/astrokit.git',
         "astropy",
+        "astrokit @ git+https://github.com/skabanovic/astrokit.git",
         "cygrid",
         "dill",
         "jupyter-book",

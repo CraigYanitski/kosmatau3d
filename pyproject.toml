@@ -19,7 +19,7 @@ classifiers = [
     "Operating System :: Unix",
 ]
 dependencies = [
-    "astrokit",
+    "astrokit @ git+https://github.com/skabanovic/astrokit.git",
     "astropy",
     "dill",
     "jupyter-book",
