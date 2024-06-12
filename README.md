@@ -83,7 +83,7 @@ built-in plotting methods.
 >>> vox.plot_spectrum()
 ```
 
-## Documentation (in prep.)
+<!-- ## Documentation (in prep.)
 
 At the moment there is no CI/CD to automatically compile the documentation files.
 In order to properly view the current documentation, from the root directory run,
@@ -96,7 +96,7 @@ browse index.html
 ```
 
 You should now see the homepage of the documentation in its current form.
-This will periodically be improved over time.
+This will periodically be improved over time. -->
 
 ## Functionality
 
