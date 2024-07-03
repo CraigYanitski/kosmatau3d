@@ -5684,9 +5684,14 @@ def plot_comparison(
         cb = fig_overall.colorbar(
             cm, ax=axes_overall[sub_indeces], fraction=fraction, aspect=cb_aspect
         )
-        cb.ax.ticklabel_format(
-            axis="y", useOffset=False, style="plain", useMathText=True
-        )
+        #
+        # put this back soon
+        #
+        # cb.ax.ticklabel_format(
+        #     axis="y", useOffset=False, style="plain", useMathText=True
+        # )
+        #
+        #
         # cb.ax.yaxis.offsetText.set_text('')
         # offsetx, offsety = cb.ax.yaxis.offsetText.get_position()
         # cb.ax.text(-1.5, 1.0, f'{cb.ax.yaxis.major.formatter.offset:1.3e}', fontsize=labelsize, ha='center', va='bottom')
