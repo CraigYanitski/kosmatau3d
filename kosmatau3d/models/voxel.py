@@ -504,7 +504,7 @@ class Voxel(object):
             volume_factor = [volume_factor] * len(constants.clump_mass_number)
         if volume_factor:
             ensemble_density = [
-                ensemble_mass[ens]
+                self.__ensemble_mass[ens]
                 * constants.mass_solar
                 / constants.mass_h
                 / volume_factor[ens]
@@ -513,6 +513,7 @@ class Voxel(object):
                 / 100**3
                 for ens in range(len(constants.clump_mass_number))
             ]
+        self.__volume_factor = volume_factor
         if isinstance(ensemble_density, (list, tuple, np.ndarray)):
             self.__ensemble_density = ensemble_density
         else:
@@ -842,11 +843,11 @@ class Voxel(object):
             return np.sum(N_species, axis=0)
         else:
             return N_species
-    def get_column_density(self, *args, **kwargs):
 
+    def get_column_density(self, *args, **kwargs):
         """Return column densities."""
-        area = (constants.voxel_size * 3.086* (10**(18)))**2
-        cd = ((self.get_species_number(*args, **kwargs))/area)
+        area = (constants.voxel_size * 3.086 * (10 ** (18))) ** 2
+        cd = (self.get_species_number(*args, **kwargs)) / area
         return cd
 
     def get_abundances(self, *args, **kwargs):
