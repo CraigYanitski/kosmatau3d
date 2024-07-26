@@ -35,7 +35,7 @@ the density profile as,
 
 for a given core radius :math:`r_\mathrm{core}` and powerlaw index 
 :math:`\gamma`.
-The for the KOSMA-:math:`\tau` grids in :code:`kosmatau3d`, we use the values
+Then for the KOSMA-:math:`\tau` grids in :code:`kosmatau3d`, we use the values
 :math:`0.2 r_\mathrm{cl}` and :math:`1.5`, respectively.
 With this definition, we can also write the total hydrogen number as,
 
