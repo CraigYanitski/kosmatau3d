@@ -513,13 +513,23 @@ class Voxel(object):
                 / 100**3
                 for ens in range(len(constants.clump_mass_number))
             ]
-        self.__volume_factor = volume_factor
-        if isinstance(ensemble_density, (list, tuple, np.ndarray)):
-            self.__ensemble_density = ensemble_density
         else:
-            self.__ensemble_density = [ensemble_density] * len(
-                constants.clump_mass_number
-            )
+            if isinstance(ensemble_density, (list, tuple, np.ndarray)):
+                self.__ensemble_density = ensemble_density
+            else:
+                self.__ensemble_density = [ensemble_density] * len(
+                    constants.clump_mass_number
+                )
+            self.__volume_factor = [
+                self.__ensemble_mass[ens]
+                * constants.mass_solar
+                / self.__ensemble_density[ens]
+                / constants.mass_h
+                / constants.voxel_size**3
+                / constants.pc**3
+                / 100**3
+                for ens in range(len(constants.clump_mass_number))
+            ]
 
         if isinstance(fuv, (list, tuple, np.ndarray)):
             self.__fuv = fuv
